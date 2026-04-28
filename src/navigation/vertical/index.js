@@ -1,0 +1,82 @@
+export default [
+  {
+    title: 'Dashboard',
+    to: { name: 'dashboard' },
+    icon: { icon: 'ri-home-smile-2-line' },
+  },
+  { heading: 'USER MANAGEMENT' },
+  {
+    title: 'Data User',
+    to: { name: 'iam-users' },
+    icon: { icon: 'ri-user-3-line' },
+    roles: ['ADMIN'],
+  },
+  {
+    title: 'Data Karyawan',
+    to: { name: 'master-karyawan' },
+    icon: { icon: 'ri-contacts-line' },
+    roles: ['ADMIN'],
+  },
+  {
+    title: 'Data Role',
+    to: { name: 'iam-roles' },
+    icon: { icon: 'ri-shield-user-line' },
+    roles: ['ADMIN'],
+  },
+  {
+    title: 'Data Perusahaan',
+    to: { name: 'master-perusahaan' },
+    icon: { icon: 'ri-building-line' },
+    roles: ['ADMIN'],
+  },
+  { heading: 'MASTER DATA' },
+  {
+    title: 'Data Investor',
+    to: { name: 'master-investor' },
+    icon: { icon: 'ri-money-dollar-circle-line' },
+    roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR', 'AR'],
+  },
+  {
+    title: 'Data Resto',
+    to: { name: 'master-resto' },
+    icon: { icon: 'ri-store-2-line' },
+    roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR', 'AR'],
+  },
+  {
+    title: 'Data Brand',
+    to: { name: 'master-brand' },
+    icon: { icon: 'ri-price-tag-3-line' },
+    roles: ['ADMIN'],
+  },
+  {
+    title: 'Data Barang',
+    to: { name: 'master-barang' },
+    icon: { icon: 'ri-box-3-line' },
+    roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR', 'AR'],
+  },
+  { heading: 'ACCOUNT RECEIVABLE' },
+  {
+    title: 'Klien AR',
+    to: { name: 'finance-klien-ar' },
+    icon: { icon: 'ri-building-4-line' },
+    roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR', 'AR'],
+  },
+  {
+    title: 'Invoice',
+    to: { name: 'finance-invoice-index' },
+    icon: { icon: 'ri-file-list-3-line' },
+    roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'],
+  },
+  {
+    title: 'Opening Balance',
+    to: { name: 'finance-opening-balance' },
+    icon: { icon: 'ri-history-line' },
+    roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'],
+  },
+  {
+    title: 'Approval Opening Balance',
+    to: { name: 'finance-opening-balance-approval' },
+    icon: { icon: 'ri-task-line' },
+    roles: ['DIREKTUR'],
+  },
+]

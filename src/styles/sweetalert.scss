@@ -1,0 +1,164 @@
+.swal2-container.iron-swal-container {
+  padding: 1.5rem;
+  backdrop-filter: blur(14px);
+  z-index: 3200 !important;
+}
+
+.iron-swal-popup {
+  position: relative;
+  overflow: hidden;
+  width: min(28rem, calc(100vw - 2rem));
+  border: 1px solid transparent;
+  border-radius: 30px;
+  padding: 1.85rem 1.75rem 1.5rem;
+  text-align: center;
+  box-shadow: 0 26px 70px rgba(15, 23, 42, 0.22);
+}
+
+.iron-swal-popup::before {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 8.5rem;
+  content: '';
+  background: radial-gradient(circle at top, rgba(102, 108, 255, 0.2), transparent 72%);
+  pointer-events: none;
+}
+
+.iron-swal-popup > * {
+  position: relative;
+  z-index: 1;
+}
+
+.iron-swal-popup.iron-swal-light {
+  border-color: rgba(38, 43, 67, 0.08);
+  background: linear-gradient(180deg, #fff 0%, #f8f9ff 100%) !important;
+  box-shadow: 0 24px 60px rgba(38, 43, 67, 0.14);
+}
+
+.iron-swal-popup.iron-swal-dark {
+  border-color: rgba(234, 234, 255, 0.08);
+  background: linear-gradient(180deg, rgba(68, 72, 108, 0.98) 0%, rgba(48, 51, 78, 0.98) 100%) !important;
+  box-shadow: 0 30px 76px rgba(16, 17, 33, 0.48);
+}
+
+.swal2-icon.iron-swal-icon {
+  margin: 0 auto 0.65rem;
+}
+
+.iron-swal-popup .swal2-icon.swal2-success,
+.iron-swal-popup .swal2-icon.swal2-error,
+.iron-swal-popup .swal2-icon.swal2-warning,
+.iron-swal-popup .swal2-icon.swal2-info,
+.iron-swal-popup .swal2-icon.swal2-question {
+  width: 5rem;
+  height: 5rem;
+  border-width: 0.22rem;
+}
+
+.iron-swal-popup .swal2-icon.swal2-success {
+  border-color: rgba(155, 218, 128, 0.55);
+  box-shadow: 0 14px 28px rgba(114, 225, 40, 0.12);
+}
+
+.iron-swal-popup .swal2-success [class^='swal2-success-circular-line'],
+.iron-swal-popup .swal2-success .swal2-success-fix,
+.iron-swal-popup .swal2-success::before,
+.iron-swal-popup .swal2-success::after {
+  background: transparent !important;
+}
+
+.iron-swal-popup .swal2-success [class^='swal2-success-line'] {
+  background-color: #9edb7b !important;
+}
+
+.swal2-title.iron-swal-title {
+  padding: 0;
+  margin-top: 0.2rem;
+  font-size: 1.95rem;
+  font-weight: 700;
+  line-height: 1.12;
+}
+
+.swal2-html-container.iron-swal-html {
+  max-width: 20rem;
+  margin: 0.65rem auto 0;
+  font-size: 1.02rem;
+  line-height: 1.6;
+}
+
+.iron-swal-light .swal2-html-container.iron-swal-html {
+  color: rgba(38, 43, 67, 0.72);
+}
+
+.iron-swal-dark .swal2-html-container.iron-swal-html {
+  color: rgba(234, 234, 255, 0.76);
+}
+
+.swal2-actions.iron-swal-actions {
+  width: 100%;
+  margin-top: 1.55rem;
+  gap: 0.75rem;
+}
+
+.swal2-confirm.iron-swal-confirm,
+.swal2-cancel.iron-swal-cancel {
+  min-width: 7.25rem;
+  border-radius: 16px;
+  padding: 0.82rem 1.45rem;
+  font-weight: 600;
+  box-shadow: none !important;
+}
+
+.swal2-confirm.iron-swal-confirm {
+  box-shadow: 0 14px 28px rgba(102, 108, 255, 0.24) !important;
+}
+
+.iron-swal-popup .swal2-loader {
+  width: 3.25rem;
+  height: 3.25rem;
+  border-width: 0.28em;
+}
+
+.iron-swal-popup .swal2-timer-progress-bar {
+  background: rgba(102, 108, 255, 0.35);
+}
+
+.iron-swal-loading-popup {
+  width: min(23.5rem, calc(100vw - 2rem));
+  padding-top: 1.7rem;
+  padding-bottom: 1.55rem;
+}
+
+.iron-swal-loading-popup .swal2-title.iron-swal-title {
+  margin-top: 0.55rem;
+  font-size: 1.45rem;
+}
+
+.iron-swal-loading-popup .swal2-html-container.iron-swal-html {
+  margin-top: 0.35rem;
+}
+
+@media (max-width: 600px) {
+  .iron-swal-popup {
+    width: min(22.5rem, calc(100vw - 1.5rem));
+    border-radius: 24px;
+    padding: 1.55rem 1.15rem 1.35rem;
+  }
+
+  .iron-swal-popup .swal2-icon.swal2-success,
+  .iron-swal-popup .swal2-icon.swal2-error,
+  .iron-swal-popup .swal2-icon.swal2-warning,
+  .iron-swal-popup .swal2-icon.swal2-info,
+  .iron-swal-popup .swal2-icon.swal2-question {
+    width: 4.6rem;
+    height: 4.6rem;
+  }
+
+  .swal2-title.iron-swal-title {
+    font-size: 1.7rem;
+  }
+
+  .swal2-html-container.iron-swal-html {
+    font-size: 0.98rem;
+  }
+}
