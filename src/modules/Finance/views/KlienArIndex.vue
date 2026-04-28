@@ -341,7 +341,7 @@ const headers = [
   { title: 'Alias',       key: 'alias',        sortable: false },
   { title: 'Tipe',        key: 'tipe_klien',   sortable: false },
   { title: 'Kategori AR', key: 'kategori_ar',  sortable: false },
-  { title: 'Perusahaan',  key: 'perusahaan',   sortable: false },
+  { title: 'Penagih',  key: 'perusahaan',   sortable: false },
   { title: 'Staff AR',    key: 'karyawan_ar',  sortable: false },
   { title: 'Status',      key: 'status',       sortable: false },
   { title: 'Aksi',        key: 'actions',      sortable: false, align: 'center', width: '120px' },

@@ -65,4 +65,22 @@ export default [
     component: () => import('@/modules/Finance/views/OpeningBalanceApprovalIndex.vue'),
     meta: { requiresAuth: true, roles: ['DIREKTUR'] },
   },
+  {
+    path: '/finance/aging-report',
+    name: 'finance-aging-report',
+    component: () => import('@/modules/Finance/views/AgingReportIndex.vue'),
+    meta: { requiresAuth: true, roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR'] },
+  },
+  {
+    path: '/finance/rekap-klien',
+    name: 'finance-rekap-klien',
+    component: () => import('@/modules/Finance/views/RekapKlienIndex.vue'),
+    meta: { requiresAuth: true, roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR'] },
+  },
+  {
+    path: '/finance/pembayaran',
+    name: 'finance-pembayaran',
+    component: () => import('@/modules/Finance/views/PembayaranArIndex.vue'),
+    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'] },
+  },
 ]

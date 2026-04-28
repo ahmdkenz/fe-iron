@@ -8,13 +8,24 @@
         { title: 'Invoice', disabled: true }
       ]"
     >
-      <VBtn
-        color="primary"
-        prepend-icon="ri-add-line"
-        :to="{ name: 'finance-invoice-create' }"
-      >
-        Buat Invoice
-      </VBtn>
+      <div class="d-flex gap-2">
+        <VBtn
+          color="secondary"
+          variant="tonal"
+          prepend-icon="ri-download-2-line"
+          :loading="exporting"
+          @click="exportCsv"
+        >
+          Export CSV
+        </VBtn>
+        <VBtn
+          color="primary"
+          prepend-icon="ri-add-line"
+          :to="{ name: 'finance-invoice-create' }"
+        >
+          Buat Invoice
+        </VBtn>
+      </div>
     </PageHeader>
 
     <!-- Summary Cards -->
@@ -233,6 +244,28 @@
         <template #item.tanggal_invoice="{ item }">
           {{ formatDate(item.tanggal_invoice) }}
         </template>
+        <template #item.tanggal_jatuh_tempo="{ item }">
+          <span
+            v-if="item.tanggal_jatuh_tempo"
+            :class="isOverdue(item) ? 'text-error font-weight-bold' : ''"
+          >
+            {{ formatDate(item.tanggal_jatuh_tempo) }}
+            <VChip
+              v-if="isOverdue(item)"
+              color="error"
+              size="x-small"
+              variant="tonal"
+              label
+              class="ms-1"
+            >
+              Overdue
+            </VChip>
+          </span>
+          <span
+            v-else
+            class="text-medium-emphasis"
+          >-</span>
+        </template>
         <template #item.total_tagihan="{ item }">
           {{ formatCurrency(item.total_tagihan) }}
         </template>
@@ -362,13 +395,15 @@ const summary       = reactive({ total_invoice: null, total_tagihan: null, total
 const showDelete    = ref(false)
 const deleteError   = ref('')
 const selectedInvoice = ref(null)
+const exporting     = ref(false)
 
 const headers = [
   { title: 'No',             key: 'no',             sortable: false, width: '60px' },
   { title: 'No Invoice',     key: 'no_invoice',     sortable: false },
   { title: 'Klien',          key: 'klien_ar',       sortable: false },
   { title: 'Perusahaan',     key: 'perusahaan',     sortable: false },
-  { title: 'Tanggal',        key: 'tanggal_invoice', sortable: false },
+  { title: 'Tanggal',        key: 'tanggal_invoice',    sortable: false },
+  { title: 'Jatuh Tempo',   key: 'tanggal_jatuh_tempo', sortable: false },
   { title: 'Total Tagihan',  key: 'total_tagihan',  sortable: false },
   { title: 'Sisa Tagihan',   key: 'sisa_tagihan',   sortable: false },
   { title: 'Status',         key: 'status',         sortable: false },
@@ -470,6 +505,37 @@ function onTableOptions({ page, itemsPerPage }) {
   params.page = page
   params.per_page = itemsPerPage
   loadList()
+}
+
+async function exportCsv() {
+  exporting.value = true
+  try {
+    const token   = localStorage.getItem('token')
+    const apiBase = import.meta.env.VITE_API_BASE_URL ?? ''
+    const query   = new URLSearchParams()
+    if (params.status)        query.set('status', params.status)
+    if (params.klien_ar_id)   query.set('klien_ar_id', params.klien_ar_id)
+    if (params.periode_bulan) query.set('periode_bulan', params.periode_bulan)
+    if (params.periode_tahun) query.set('periode_tahun', params.periode_tahun)
+
+    const res = await fetch(`${apiBase}/finance/invoices/export?${query}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    const blob = await res.blob()
+    const url  = URL.createObjectURL(blob)
+    const a    = document.createElement('a')
+    a.href     = url
+    a.download = `invoice-ar-${new Date().toISOString().slice(0, 10)}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  } finally {
+    exporting.value = false
+  }
+}
+
+function isOverdue(item) {
+  if (!item.tanggal_jatuh_tempo || item.status === 'LUNAS') return false
+  return new Date(item.tanggal_jatuh_tempo) < new Date(new Date().toDateString())
 }
 
 function confirmDelete(inv) { selectedInvoice.value = inv; deleteError.value = ''; showDelete.value = true }

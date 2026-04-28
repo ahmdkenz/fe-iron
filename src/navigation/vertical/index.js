@@ -79,4 +79,22 @@ export default [
     icon: { icon: 'ri-task-line' },
     roles: ['DIREKTUR'],
   },
+  {
+    title: 'Aging Report',
+    to: { name: 'finance-aging-report' },
+    icon: { icon: 'ri-bar-chart-grouped-line' },
+    roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR'],
+  },
+  {
+    title: 'Rekap per Klien',
+    to: { name: 'finance-rekap-klien' },
+    icon: { icon: 'ri-pie-chart-2-line' },
+    roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR'],
+  },
+  {
+    title: 'Riwayat Pembayaran',
+    to: { name: 'finance-pembayaran' },
+    icon: { icon: 'ri-money-cny-circle-line' },
+    roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'],
+  },
 ]

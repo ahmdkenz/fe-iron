@@ -173,6 +173,24 @@
                       label="Tanggal"
                       :value="formatDate(invoice.tanggal_invoice)"
                     />
+                    <DetailRow
+                      v-if="invoice.tanggal_jatuh_tempo"
+                      label="Jatuh Tempo"
+                    >
+                      <span :class="isOverdue ? 'text-error font-weight-bold' : ''">
+                        {{ formatDate(invoice.tanggal_jatuh_tempo) }}
+                        <VChip
+                          v-if="isOverdue"
+                          color="error"
+                          size="x-small"
+                          variant="tonal"
+                          label
+                          class="ms-1"
+                        >
+                          Lewat Jatuh Tempo
+                        </VChip>
+                      </span>
+                    </DetailRow>
                     <DetailRow label="Periode">
                       <span>{{ formatDate(invoice.periode_awal) }} - {{ formatDate(invoice.periode_akhir) }}</span>
                     </DetailRow>
