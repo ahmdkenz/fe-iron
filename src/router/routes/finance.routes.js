@@ -26,7 +26,7 @@ export default [
   {
     path: '/finance/invoices/create',
     name: 'finance-invoice-create',
-    component: () => import('@/modules/Finance/views/InvoiceCreate.vue'),
+    component: () => import('@/modules/Finance/views/InvoiceFormPage.vue'),
     meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'] },
   },
   {
@@ -38,7 +38,7 @@ export default [
   {
     path: '/finance/invoices/:id/edit',
     name: 'finance-invoice-edit',
-    component: () => import('@/modules/Finance/views/InvoiceEdit.vue'),
+    component: () => import('@/modules/Finance/views/InvoiceFormPage.vue'),
     meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'] },
   },
   {
@@ -50,13 +50,13 @@ export default [
   {
     path: '/finance/opening-balance/create',
     name: 'finance-opening-balance-create',
-    component: () => import('@/modules/Finance/views/OpeningBalanceCreate.vue'),
+    component: () => import('@/modules/Finance/views/OpeningBalanceFormPage.vue'),
     meta: { requiresAuth: true, roles: ['MANAGER', 'SUPERVISOR', 'AR'] },
   },
   {
     path: '/finance/opening-balance/:id/edit',
     name: 'finance-opening-balance-edit',
-    component: () => import('@/modules/Finance/views/OpeningBalanceCreate.vue'),
+    component: () => import('@/modules/Finance/views/OpeningBalanceFormPage.vue'),
     meta: { requiresAuth: true, roles: ['MANAGER', 'SUPERVISOR', 'AR'] },
   },
   {

@@ -1,12 +1,12 @@
 <template>
   <div>
-    <PageHeader 
-      title="Buat Invoice AR" 
-      subtitle="Buat invoice tagihan baru"
+    <PageHeader
+      :title="isEditing ? 'Edit Invoice AR' : 'Buat Invoice AR'"
+      :subtitle="isEditing ? 'Ubah data invoice (hanya status Draft)' : 'Buat invoice tagihan baru'"
       :breadcrumbs="[
         { title: 'Dashboard', to: { name: 'dashboard' } },
         { title: 'Invoice', to: { name: 'finance-invoice-index' } },
-        { title: 'Buat Invoice', disabled: true }
+        { title: isEditing ? 'Edit Invoice' : 'Buat Invoice', disabled: true }
       ]"
     >
       <VBtn
@@ -22,7 +22,27 @@
       </VBtn>
     </PageHeader>
 
+    <div
+      v-if="loadingData"
+      class="text-center py-12"
+    >
+      <VProgressCircular
+        indeterminate
+        color="primary"
+      />
+    </div>
+
+    <VAlert
+      v-else-if="isEditing && !invoice"
+      type="error"
+      variant="tonal"
+      class="mb-4"
+    >
+      Invoice tidak ditemukan atau tidak dapat diedit.
+    </VAlert>
+
     <VForm
+      v-else
       ref="formRef"
       @submit.prevent
     >
@@ -48,9 +68,9 @@
                 density="compact"
                 variant="outlined"
                 readonly
-                hint="Otomatis terisi setelah klien dipilih"
-                persistent-hint
-                :loading="noInvoiceLoading"
+                :hint="isEditing ? '' : 'Otomatis terisi setelah klien dipilih'"
+                :persistent-hint="!isEditing"
+                :loading="!isEditing && noInvoiceLoading"
               />
             </VCol>
             <VCol
@@ -64,7 +84,7 @@
                 variant="outlined"
                 type="date"
                 :rules="[v => !!v || 'Tanggal wajib diisi']"
-                @update:model-value="refreshNoInvoice"
+                @update:model-value="onTanggalChange"
               />
             </VCol>
             <VCol
@@ -141,7 +161,7 @@
               md="6"
             >
               <VTextField
-                :model-value="selectedKlienInfo"
+                :model-value="perusahaanPenagih"
                 label="Perusahaan Penagih"
                 density="compact"
                 variant="outlined"
@@ -197,15 +217,16 @@
             >
               <VTextField
                 :model-value="formatCurrency(form.tagihan_periode_sebelumnya)"
-                label="Carryover (Sisa Tagihan Sebelumnya)"
+                :label="isEditing ? 'Carryover (Readonly)' : 'Carryover (Sisa Tagihan Sebelumnya)'"
                 density="compact"
                 variant="outlined"
                 readonly
-                :loading="carryoverLoading"
-                prepend-inner-icon="ri-information-line"
+                :loading="!isEditing && carryoverLoading"
+                :prepend-inner-icon="isEditing ? undefined : 'ri-information-line'"
               />
             </VCol>
             <VCol
+              v-if="!isEditing"
               cols="12"
               md="6"
             >
@@ -340,20 +361,31 @@
 
       <!-- Action Buttons -->
       <div class="d-flex gap-3 justify-end">
+        <template v-if="!isEditing">
+          <VBtn
+            variant="tonal"
+            color="secondary"
+            :disabled="saving"
+            @click="submitAs('DRAFT')"
+          >
+            Simpan sebagai Draft
+          </VBtn>
+          <VBtn
+            color="primary"
+            :disabled="saving"
+            @click="submitAs('TERKIRIM')"
+          >
+            Simpan & Kirim
+          </VBtn>
+        </template>
         <VBtn
+          v-else
           variant="tonal"
           color="secondary"
           :disabled="saving"
-          @click="submitAs('DRAFT')"
+          @click="submitAs()"
         >
-          Simpan sebagai Draft
-        </VBtn>
-        <VBtn
-          color="primary"
-          :disabled="saving"
-          @click="submitAs('TERKIRIM')"
-        >
-          Simpan & Kirim
+          Simpan Perubahan
         </VBtn>
       </div>
     </VForm>
@@ -361,8 +393,8 @@
 </template>
 
 <script setup>
-import { computed, reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, onMounted, reactive, ref } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useCrud } from '@/composables/useCrud'
 import { useLazyFetchAll } from '@/composables/useLazyFetchAll'
 import { useSweetAlert } from '@/composables/useSweetAlert'
@@ -372,8 +404,13 @@ import api from '@/utils/axios'
 import InvoiceItemRow from '../components/InvoiceItemRow.vue'
 
 const router = useRouter()
+const route  = useRoute()
 const { showError } = useSweetAlert()
-const { create, saving } = useCrud('/finance/invoices')
+
+const id        = route.params.id
+const isEditing = computed(() => !!id)
+
+const { create, fetchOne, update, saving } = useCrud('/finance/invoices')
 const { items: klienList, loading: klienLoading, fetchAll: fetchKlien } = useCrud('/finance/klien-ar')
 const { items: barangList, loading: barangLoading, fetchAll: fetchBarang } = useCrud('/master/barang')
 const { ensureLoaded: ensureKlienLoaded } = useLazyFetchAll(fetchKlien)
@@ -383,6 +420,8 @@ const { formatCurrency } = useFormatter()
 const formRef          = ref(null)
 const errorMessage     = ref('')
 const itemsError       = ref('')
+const loadingData      = ref(!!id)
+const invoice          = ref(null)
 const noInvoiceLoading = ref(false)
 const carryoverLoading = ref(false)
 const selectedKlien    = ref(null)
@@ -400,10 +439,10 @@ const form = reactive({
   items: [],
 })
 
-const selectedKlienInfo = computed(() => {
-  if (!selectedKlien.value) return ''
-  
-  return selectedKlien.value.perusahaan?.nama_perusahaan ?? ''
+const perusahaanPenagih = computed(() => {
+  if (isEditing.value) return invoice.value?.perusahaan?.nama_perusahaan ?? ''
+
+  return selectedKlien.value?.perusahaan?.nama_perusahaan ?? ''
 })
 
 const subtotal = computed(() =>
@@ -414,14 +453,20 @@ const totalTagihan = computed(() =>
   subtotal.value + (form.tagihan_periode_sebelumnya ?? 0),
 )
 
-async function onKlienChange(id) {
-  selectedKlien.value = klienList.value.find(k => k.id === id) ?? null
+function onTanggalChange() {
+  if (!isEditing.value) refreshNoInvoice()
+}
+
+async function onKlienChange(klienId) {
+  if (isEditing.value) return
+
+  selectedKlien.value = klienList.value.find(k => k.id === klienId) ?? null
   form.no_invoice = ''
   form.tagihan_periode_sebelumnya = 0
 
-  if (!id) return
+  if (!klienId) return
 
-  await Promise.all([refreshNoInvoice(), loadCarryover(id)])
+  await Promise.all([refreshNoInvoice(), loadCarryover(klienId)])
 }
 
 async function refreshNoInvoice() {
@@ -473,77 +518,90 @@ function addItem() {
 function updateItem(idx, val) { form.items[idx] = val }
 function removeItem(idx)      { form.items.splice(idx, 1) }
 
-async function submitAs(status) {
+async function submitAs(status = null) {
   const { valid } = await formRef.value.validate()
   if (!valid) return
 
   if (form.items.length === 0) {
     itemsError.value = 'Minimal 1 item tagihan wajib diisi.'
-    
+
     return
   }
-  itemsError.value  = ''
+  itemsError.value   = ''
   errorMessage.value = ''
 
-  const payload = { ...form, status }
+  const payload = { ...form }
+  if (status) payload.status = status
 
-  const res = await create(payload)
+  const res = isEditing.value
+    ? await update(id, payload)
+    : await create(payload)
+
   if (res.success) {
     setFlashAlert({
       icon: 'success',
       title: 'Berhasil',
-      text: 'Invoice berhasil dibuat.',
+      text: isEditing.value ? 'Perubahan invoice berhasil disimpan.' : 'Invoice berhasil dibuat.',
     })
-    router.push({ name: 'finance-invoice-show', params: { id: res.data.id } })
+    router.push({ name: 'finance-invoice-show', params: { id: id ?? res.data.id } })
   } else {
     errorMessage.value = res.message ?? 'Terjadi kesalahan'
     await showError(errorMessage.value)
   }
 }
 
-// Terbilang (Indonesian number to words)
+onMounted(async () => {
+  if (!isEditing.value) return
+
+  const [, , data] = await Promise.all([
+    ensureKlienLoaded(),
+    ensureBarangLoaded(),
+    fetchOne(id),
+  ])
+
+  loadingData.value = false
+  if (!data || data.status !== 'DRAFT') return
+
+  invoice.value = data
+  Object.assign(form, {
+    no_invoice:                  data.no_invoice,
+    tanggal_invoice:             data.tanggal_invoice,
+    tanggal_jatuh_tempo:         data.tanggal_jatuh_tempo ?? '',
+    periode_awal:                data.periode_awal,
+    periode_akhir:               data.periode_akhir,
+    klien_ar_id:                 data.klien_ar_id,
+    no_surat_jalan:              data.no_surat_jalan ?? '',
+    tagihan_periode_sebelumnya:  data.tagihan_periode_sebelumnya ?? 0,
+    keterangan:                  data.keterangan ?? '',
+    items: (data.items ?? []).map(it => ({
+      id:           it.id,
+      barang_id:    it.barang_id,
+      nama_barang:  it.nama_barang,
+      qty:          it.qty,
+      satuan:       it.satuan,
+      harga_satuan: it.harga_satuan,
+      subtotal:     it.subtotal,
+      keterangan:   it.keterangan ?? '',
+    })),
+  })
+})
+
 function terbilang(angka) {
   if (!angka || angka === 0) return 'nol rupiah'
 
   const satuan = ['',
-    'satu',
-    'dua',
-    'tiga',
-    'empat',
-    'lima',
-    'enam',
-    'tujuh',
-    'delapan',
-    'sembilan',
-    'sepuluh',
-    'sebelas',
-    'dua belas',
-    'tiga belas',
-    'empat belas',
-    'lima belas',
-    'enam belas',
-    'tujuh belas',
-    'delapan belas',
-    'sembilan belas']
+    'satu', 'dua', 'tiga', 'empat', 'lima',
+    'enam', 'tujuh', 'delapan', 'sembilan',
+    'sepuluh', 'sebelas', 'dua belas', 'tiga belas', 'empat belas',
+    'lima belas', 'enam belas', 'tujuh belas', 'delapan belas', 'sembilan belas']
 
   function ratusan(n) {
     if (n < 20) return satuan[n]
-    const puluhan = Math.floor(n / 10)
-    const sisa    = n % 10
+    const pStr = ['', '', 'dua puluh', 'tiga puluh', 'empat puluh',
+      'lima puluh', 'enam puluh', 'tujuh puluh', 'delapan puluh', 'sembilan puluh']
+    const sisa = n % 10
 
-    const pStr    = ['',
-      '',
-      'dua puluh',
-      'tiga puluh',
-      'empat puluh',
-      'lima puluh',
-      'enam puluh',
-      'tujuh puluh',
-      'delapan puluh',
-      'sembilan puluh']
-
-    
-    return (pStr[puluhan] + (sisa ? ' ' + satuan[sisa] : '')).trim()
+    return (pStr[Math.floor(n / 10)] + (sisa ? ' ' + satuan[sisa] : '')).trim()
   }
 
   function ribuan(n) {
@@ -551,7 +609,7 @@ function terbilang(angka) {
     const ratus = Math.floor(n / 100)
     const sisa  = n % 100
     const r     = ratus === 1 ? 'seratus' : satuan[ratus] + ' ratus'
-    
+
     return (r + (sisa ? ' ' + ratusan(sisa) : '')).trim()
   }
 
@@ -559,27 +617,25 @@ function terbilang(angka) {
     if (n === 0) return ''
     if (n < 1000) return ribuan(n)
     if (n < 1000000) {
-      const rb  = Math.floor(n / 1000)
+      const rb   = Math.floor(n / 1000)
       const sisa = n % 1000
       const r    = rb === 1 ? 'seribu' : ribuan(rb) + ' ribu'
-      
+
       return (r + (sisa ? ' ' + ribuan(sisa) : '')).trim()
     }
     if (n < 1000000000) {
-      const jt  = Math.floor(n / 1000000)
+      const jt   = Math.floor(n / 1000000)
       const sisa = n % 1000000
-      
+
       return (ribuan(jt) + ' juta' + (sisa ? ' ' + convert(sisa) : '')).trim()
     }
-    const ml  = Math.floor(n / 1000000000)
+    const ml   = Math.floor(n / 1000000000)
     const sisa = n % 1000000000
-    
+
     return (ribuan(ml) + ' miliar' + (sisa ? ' ' + convert(sisa) : '')).trim()
   }
 
-  const bulat = Math.floor(angka)
-  
-  return convert(bulat) + ' rupiah'
+  return convert(Math.floor(angka)) + ' rupiah'
 }
 </script>
 
