@@ -9,13 +9,13 @@ export default [
     path: '/finance/klien-ar/create',
     name: 'finance-klien-ar-create',
     component: () => import('@/modules/Finance/views/KlienArFormPage.vue'),
-    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR'] },
+    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'] },
   },
   {
     path: '/finance/klien-ar/:id/edit',
     name: 'finance-klien-ar-edit',
     component: () => import('@/modules/Finance/views/KlienArFormPage.vue'),
-    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR'] },
+    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'] },
   },
   {
     path: '/finance/invoices',

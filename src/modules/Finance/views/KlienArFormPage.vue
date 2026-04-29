@@ -232,6 +232,7 @@
               md="6"
             >
               <VTextField
+                v-if="isArRole"
                 :model-value="displayPerusahaan"
                 label="Perusahaan (Penagih)"
                 density="compact"
@@ -241,12 +242,35 @@
                 :loading="isEditing && perusahaanLoading"
                 readonly
               />
+              <VAutocomplete
+                v-else
+                v-model="form.perusahaan_id"
+                label="Perusahaan (Penagih)"
+                density="compact"
+                variant="outlined"
+                :items="perusahaanList"
+                item-title="nama_perusahaan"
+                item-value="id"
+                :rules="[v => !!v || 'Perusahaan wajib dipilih']"
+                :error-messages="errors.perusahaan_id"
+                :loading="perusahaanLoading"
+                @focus="ensurePerusahaanLoaded()"
+              >
+                <template #item="{ props: p, item }">
+                  <VListItem
+                    v-bind="p"
+                    :title="item.raw.nama_perusahaan"
+                    :subtitle="item.raw.kode_perusahaan"
+                  />
+                </template>
+              </VAutocomplete>
             </VCol>
             <VCol
               cols="12"
               md="6"
             >
               <VTextField
+                v-if="isArRole"
                 :model-value="displayKaryawan"
                 label="Staff AR"
                 density="compact"
@@ -256,6 +280,28 @@
                 :loading="isEditing && karyawanLoading"
                 readonly
               />
+              <VAutocomplete
+                v-else
+                v-model="form.karyawan_ar_id"
+                label="Staff AR"
+                density="compact"
+                variant="outlined"
+                :items="karyawanList"
+                item-title="nama_karyawan"
+                item-value="id"
+                :rules="[v => !!v || 'Staff AR wajib dipilih']"
+                :error-messages="errors.karyawan_ar_id"
+                :loading="karyawanLoading"
+                @focus="ensureKaryawanLoaded()"
+              >
+                <template #item="{ props: p, item }">
+                  <VListItem
+                    v-bind="p"
+                    :title="item.raw.nama_karyawan"
+                    :subtitle="item.raw.nik"
+                  />
+                </template>
+              </VAutocomplete>
             </VCol>
             <VCol
               v-if="form.tipe_klien === 'RESTO'"
@@ -337,6 +383,7 @@ const authStore = useAuthStore()
 const { showError } = useSweetAlert()
 const id = route.params.id
 const isEditing = computed(() => !!id)
+const isArRole = computed(() => authStore.isArOnly)
 
 const { create, update, saving, fetchOne } = useCrud('/finance/klien-ar')
 const { items: perusahaanList, loading: perusahaanLoading, fetchAll: fetchPerusahaan } = useCrud('/master/perusahaan')
@@ -406,8 +453,8 @@ const defaultForm = () => ({
   no_npwp: '',
   kat_1: '',
   kat_2: '',
-  perusahaan_id: authStore.user?.karyawan?.perusahaan_id ?? null,
-  karyawan_ar_id: authStore.user?.karyawan?.id ?? null,
+  perusahaan_id: isArRole.value ? (authStore.user?.karyawan?.perusahaan_id ?? null) : null,
+  karyawan_ar_id: isArRole.value ? (authStore.user?.karyawan?.id ?? null) : null,
   resto_id: null,
   status: 1,
 })
