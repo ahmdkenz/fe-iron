@@ -19,7 +19,7 @@
     </PageHeader>
 
     <VCard>
-      <VCardText class="d-flex flex-wrap gap-4 pb-0">
+      <VCardText class="d-flex flex-wrap align-center gap-4 pb-0">
         <VTextField
           v-model="params.search"
           placeholder="Cari kode / nama klien..."
@@ -32,18 +32,27 @@
         />
         <VBtnToggle
           v-model="activeKategori"
-          density="compact"
           variant="outlined"
           divided
+          mandatory
           @update:model-value="onKategoriChange"
         >
-          <VBtn value="">
+          <VBtn
+            value=""
+            min-width="90"
+          >
             Semua
           </VBtn>
-          <VBtn value="INTERNAL">
+          <VBtn
+            value="INTERNAL"
+            min-width="90"
+          >
             Internal
           </VBtn>
-          <VBtn value="EKSTERNAL">
+          <VBtn
+            value="EKSTERNAL"
+            min-width="90"
+          >
             Eksternal
           </VBtn>
         </VBtnToggle>
@@ -57,6 +66,7 @@
         :per-page="meta.per_page"
         :page="meta.current_page"
         class="mt-2"
+        wrap-text
         @update:options="onTableOptions"
       >
         <template #item.no="{ index }">
@@ -336,14 +346,14 @@ const selectedKlien = ref(null)
 
 const headers = [
   { title: 'No',          key: 'no',           sortable: false, width: '60px' },
-  { title: 'Kode',        key: 'kode_klien',   sortable: false },
-  { title: 'Nama Klien',  key: 'nama_klien',   sortable: false },
-  { title: 'Alias',       key: 'alias',        sortable: false },
-  { title: 'Tipe',        key: 'tipe_klien',   sortable: false },
-  { title: 'Kategori AR', key: 'kategori_ar',  sortable: false },
-  { title: 'Penagih',  key: 'perusahaan',   sortable: false },
-  { title: 'Staff AR',    key: 'karyawan_ar',  sortable: false },
-  { title: 'Status',      key: 'status',       sortable: false },
+  { title: 'Kode',        key: 'kode_klien',   sortable: false, minWidth: '140px' },
+  { title: 'Nama Klien',  key: 'nama_klien',   sortable: false, minWidth: '200px' },
+  { title: 'Alias',       key: 'alias',        sortable: false, minWidth: '100px' },
+  { title: 'Tipe',        key: 'tipe_klien',   sortable: false, minWidth: '90px' },
+  { title: 'Kategori AR', key: 'kategori_ar',  sortable: false, minWidth: '120px' },
+  { title: 'Penagih',     key: 'perusahaan',   sortable: false, minWidth: '120px' },
+  { title: 'Staff AR',    key: 'karyawan_ar',  sortable: false, minWidth: '160px' },
+  { title: 'Status',      key: 'status',       sortable: false, minWidth: '90px' },
   { title: 'Aksi',        key: 'actions',      sortable: false, align: 'center', width: '120px' },
 ]
 
