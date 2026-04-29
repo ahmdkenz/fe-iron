@@ -231,56 +231,31 @@
               cols="12"
               md="6"
             >
-              <VAutocomplete
-                v-model="form.perusahaan_id"
+              <VTextField
+                :model-value="displayPerusahaan"
                 label="Perusahaan (Penagih)"
                 density="compact"
                 variant="outlined"
-                :items="perusahaanList"
-                item-title="nama_perusahaan"
-                item-value="id"
-                :rules="[v => !!v || 'Perusahaan wajib dipilih']"
+                :rules="[() => !!form.perusahaan_id || 'Perusahaan wajib dipilih']"
                 :error-messages="errors.perusahaan_id"
-                :loading="perusahaanLoading"
-                clearable
-                @focus="ensurePerusahaanLoaded()"
-                @update:model-value="onPerusahaanChange"
-              >
-                <template #item="{ props: p, item }">
-                  <VListItem
-                    v-bind="p"
-                    :title="item.raw.nama_perusahaan"
-                    :subtitle="item.raw.kode_perusahaan"
-                  />
-                </template>
-              </VAutocomplete>
+                :loading="isEditing && perusahaanLoading"
+                readonly
+              />
             </VCol>
             <VCol
               cols="12"
               md="6"
             >
-              <VAutocomplete
-                v-model="form.karyawan_ar_id"
+              <VTextField
+                :model-value="displayKaryawan"
                 label="Staff AR"
                 density="compact"
                 variant="outlined"
-                :items="karyawanList"
-                item-title="nama_karyawan"
-                item-value="id"
-                :rules="[v => !!v || 'Staff AR wajib dipilih']"
+                :rules="[() => !!form.karyawan_ar_id || 'Staff AR wajib dipilih']"
                 :error-messages="errors.karyawan_ar_id"
-                :loading="karyawanLoading"
-                clearable
-                @focus="ensureKaryawanLoaded()"
-              >
-                <template #item="{ props: p, item }">
-                  <VListItem
-                    v-bind="p"
-                    :title="item.raw.nama_karyawan"
-                    :subtitle="item.raw.nik"
-                  />
-                </template>
-              </VAutocomplete>
+                :loading="isEditing && karyawanLoading"
+                readonly
+              />
             </VCol>
             <VCol
               v-if="form.tipe_klien === 'RESTO'"
@@ -354,9 +329,11 @@ import { useSweetAlert } from '@/composables/useSweetAlert'
 import { setFlashAlert } from '@/utils/flashAlert'
 import api from '@/utils/axios.js'
 import { BOOLEAN_STATUS_OPTIONS, normalizeBooleanStatus } from '@/utils/status.js'
+import { useAuthStore } from '@/stores/auth.store.js'
 
 const route = useRoute()
 const router = useRouter()
+const authStore = useAuthStore()
 const { showError } = useSweetAlert()
 const id = route.params.id
 const isEditing = computed(() => !!id)
@@ -388,6 +365,20 @@ const kategoriArOptions = [
 
 const statusOptions = BOOLEAN_STATUS_OPTIONS
 
+const displayPerusahaan = computed(() => {
+  if (isEditing.value)
+    return perusahaanList.value?.find(p => p.id === form.perusahaan_id)?.nama_perusahaan ?? ''
+
+  return authStore.user?.karyawan?.perusahaan?.nama_perusahaan ?? ''
+})
+
+const displayKaryawan = computed(() => {
+  if (isEditing.value)
+    return karyawanList.value?.find(k => k.id === form.karyawan_ar_id)?.nama_karyawan ?? ''
+
+  return authStore.user?.karyawan?.nama_karyawan ?? ''
+})
+
 const errors = reactive({
   kode_klien: [],
   nama_klien: [],
@@ -415,8 +406,8 @@ const defaultForm = () => ({
   no_npwp: '',
   kat_1: '',
   kat_2: '',
-  perusahaan_id: null,
-  karyawan_ar_id: null,
+  perusahaan_id: authStore.user?.karyawan?.perusahaan_id ?? null,
+  karyawan_ar_id: authStore.user?.karyawan?.id ?? null,
   resto_id: null,
   status: 1,
 })
@@ -427,10 +418,6 @@ function resetErrors() {
   Object.keys(errors).forEach(key => {
     errors[key] = []
   })
-}
-
-function onPerusahaanChange() {
-  form.karyawan_ar_id = null
 }
 
 async function refreshKodeKlienPreview() {
@@ -486,7 +473,7 @@ onMounted(async () => {
   if (!isEditing.value) {
     await refreshKodeKlienPreview()
     pageLoading.value = false
-    
+
     return
   }
 
