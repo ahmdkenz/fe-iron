@@ -1,135 +1,151 @@
 <template>
-  <VRow
-    align="center"
-    class="invoice-item-row mb-1"
+  <VCard
+    class="invoice-item-card mb-3"
+    variant="outlined"
+    rounded="lg"
   >
-    <VCol
-      cols="12"
-      md="4"
-    >
-      <VAutocomplete
-        :model-value="localItem.barang_id"
-        label="Barang"
-        density="compact"
-        variant="outlined"
-        :items="barangList"
-        item-title="nama_barang"
-        item-value="id"
-        :loading="barangLoading"
-        clearable
-        hide-details
-        @update:model-value="onBarangChange"
-      >
-        <template #item="{ props: p, item }">
-          <VListItem
-            v-bind="p"
-            :title="item.raw.nama_barang"
-            :subtitle="item.raw.kode_barang"
-          />
-        </template>
-      </VAutocomplete>
-    </VCol>
-
-    <VCol
-      cols="12"
-      md="3"
-    >
-      <VTextField
-        :model-value="localItem.nama_barang"
-        label="Nama Barang"
-        density="compact"
-        variant="outlined"
-        :rules="[v => !!v || 'Nama barang wajib diisi']"
-        hide-details="auto"
-        @update:model-value="value => updateField('nama_barang', value)"
-      />
-    </VCol>
-
-    <VCol
-      cols="6"
-      md="1"
-    >
-      <VTextField
-        :model-value="localItem.qty"
-        label="Qty"
-        density="compact"
-        variant="outlined"
-        type="number"
-        min="0"
-        :rules="[v => v > 0 || 'Qty > 0']"
-        hide-details="auto"
-        @update:model-value="value => updateNumberField('qty', value)"
-      />
-    </VCol>
-
-    <VCol
-      cols="6"
-      md="1"
-    >
-      <VTextField
-        :model-value="localItem.satuan"
-        label="Satuan"
-        density="compact"
-        variant="outlined"
-        hide-details
-        @update:model-value="value => updateField('satuan', value)"
-      />
-    </VCol>
-
-    <VCol
-      cols="6"
-      md="2"
-    >
-      <VTextField
-        :model-value="localItem.harga_satuan"
-        label="Harga Satuan"
-        density="compact"
-        variant="outlined"
-        type="number"
-        min="0"
-        :rules="[v => v >= 0 || 'Harga harus >= 0']"
-        prefix="Rp"
-        hide-details="auto"
-        @update:model-value="value => updateNumberField('harga_satuan', value)"
-      />
-    </VCol>
-
-    <VCol
-      cols="5"
-      md="1"
-    >
-      <VTextField
-        :model-value="formatNumber(localItem.subtotal)"
-        label="Subtotal"
-        density="compact"
-        variant="outlined"
-        prefix="Rp"
-        readonly
-        hide-details
-      />
-    </VCol>
-
-    <VCol
-      cols="1"
-      md="auto"
-    >
+    <div class="item-card-header">
+      <div class="d-flex align-center gap-2">
+        <VIcon
+          icon="ri-list-unordered"
+          size="15"
+          class="text-medium-emphasis"
+        />
+        <span class="text-caption text-medium-emphasis font-weight-semibold text-uppercase">
+          Item Tagihan
+        </span>
+      </div>
       <VBtn
         icon
-        size="small"
+        size="x-small"
         variant="text"
         color="error"
         @click="$emit('remove')"
       >
         <VIcon
           icon="ri-delete-bin-line"
-          size="18"
+          size="16"
         />
         <VTooltip activator="parent">
           Hapus Baris
         </VTooltip>
       </VBtn>
-    </VCol>
-  </VRow>
+    </div>
+
+    <VDivider />
+
+    <VCardText class="pa-3">
+      <VRow dense>
+        <!-- Baris 1: Barang + Nama Barang -->
+        <VCol
+          cols="12"
+          sm="6"
+        >
+          <VAutocomplete
+            :model-value="localItem.barang_id"
+            label="Barang"
+            density="compact"
+            variant="outlined"
+            :items="barangList"
+            item-title="nama_barang"
+            item-value="id"
+            :loading="barangLoading"
+            clearable
+            hide-details
+            @update:model-value="onBarangChange"
+          >
+            <template #item="{ props: p, item }">
+              <VListItem
+                v-bind="p"
+                :title="item.raw.nama_barang"
+                :subtitle="item.raw.kode_barang"
+              />
+            </template>
+          </VAutocomplete>
+        </VCol>
+
+        <VCol
+          cols="12"
+          sm="6"
+        >
+          <VTextField
+            :model-value="localItem.nama_barang"
+            label="Nama Barang"
+            density="compact"
+            variant="outlined"
+            :rules="[v => !!v || 'Nama barang wajib diisi']"
+            hide-details="auto"
+            @update:model-value="value => updateField('nama_barang', value)"
+          />
+        </VCol>
+
+        <!-- Baris 2: Qty + Satuan + Harga + Subtotal -->
+        <VCol
+          cols="6"
+          sm="2"
+        >
+          <VTextField
+            :model-value="localItem.qty"
+            label="Qty"
+            density="compact"
+            variant="outlined"
+            type="number"
+            min="0"
+            :rules="[v => v > 0 || 'Qty > 0']"
+            hide-details="auto"
+            @update:model-value="value => updateNumberField('qty', value)"
+          />
+        </VCol>
+
+        <VCol
+          cols="6"
+          sm="2"
+        >
+          <VTextField
+            :model-value="localItem.satuan"
+            label="Satuan"
+            density="compact"
+            variant="outlined"
+            hide-details
+            @update:model-value="value => updateField('satuan', value)"
+          />
+        </VCol>
+
+        <VCol
+          cols="12"
+          sm="4"
+        >
+          <VTextField
+            :model-value="localItem.harga_satuan"
+            label="Harga Satuan"
+            density="compact"
+            variant="outlined"
+            type="number"
+            min="0"
+            :rules="[v => v >= 0 || 'Harga harus >= 0']"
+            prefix="Rp"
+            hide-details="auto"
+            @update:model-value="value => updateNumberField('harga_satuan', value)"
+          />
+        </VCol>
+
+        <VCol
+          cols="12"
+          sm="4"
+        >
+          <VTextField
+            :model-value="formatNumber(localItem.subtotal)"
+            label="Subtotal"
+            density="compact"
+            variant="outlined"
+            prefix="Rp"
+            readonly
+            hide-details
+          />
+        </VCol>
+      </VRow>
+    </VCardText>
+  </VCard>
 </template>
 
 <script setup>
@@ -229,8 +245,20 @@ function formatNumber(value) {
 </script>
 
 <style scoped>
-.invoice-item-row {
-  border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-  padding-bottom: 4px;
+.invoice-item-card {
+  border-color: rgba(var(--v-border-color), var(--v-border-opacity));
+  transition: border-color 0.2s;
+}
+
+.invoice-item-card:hover {
+  border-color: rgba(var(--v-theme-primary), 0.4);
+}
+
+.item-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: rgba(var(--v-theme-on-surface), 0.03);
 }
 </style>

@@ -24,12 +24,16 @@
 
     <div
       v-if="loadingData"
-      class="text-center py-12"
+      class="text-center py-16"
     >
       <VProgressCircular
         indeterminate
         color="primary"
+        size="48"
       />
+      <div class="text-body-2 text-medium-emphasis mt-3">
+        Memuat data invoice...
+      </div>
     </div>
 
     <VAlert
@@ -46,348 +50,445 @@
       ref="formRef"
       @submit.prevent
     >
-      <!-- Section 1: Info Invoice -->
-      <VCard class="mb-4">
-        <VCardTitle class="pa-4 pb-2">
-          <VIcon
-            icon="ri-file-list-3-line"
-            class="me-2"
-          />
-          Informasi Invoice
-        </VCardTitle>
-        <VDivider />
-        <VCardText>
-          <VRow>
-            <VCol
-              cols="12"
-              md="4"
-            >
-              <VTextField
-                v-model="form.no_invoice"
-                label="No. Invoice"
-                density="compact"
-                variant="outlined"
-                readonly
-                :hint="isEditing ? '' : 'Otomatis terisi setelah klien dipilih'"
-                :persistent-hint="!isEditing"
-                :loading="!isEditing && noInvoiceLoading"
-              />
-            </VCol>
-            <VCol
-              cols="12"
-              md="4"
-            >
-              <VTextField
-                v-model="form.tanggal_invoice"
-                label="Tanggal Invoice"
-                density="compact"
-                variant="outlined"
-                type="date"
-                :rules="[v => !!v || 'Tanggal wajib diisi']"
-                @update:model-value="onTanggalChange"
-              />
-            </VCol>
-            <VCol
-              cols="12"
-              md="4"
-            >
-              <VTextField
-                v-model="form.tanggal_jatuh_tempo"
-                label="Tanggal Jatuh Tempo"
-                density="compact"
-                variant="outlined"
-                type="date"
-                hint="Opsional"
-                persistent-hint
-              />
-            </VCol>
-            <VCol
-              cols="12"
-              md="4"
-            >
-              <VTextField
-                v-model="form.no_surat_jalan"
-                label="No. Surat Jalan"
-                density="compact"
-                variant="outlined"
-              />
-            </VCol>
-          </VRow>
-        </VCardText>
-      </VCard>
-
-      <!-- Section 2: Klien & Periode -->
-      <VCard class="mb-4">
-        <VCardTitle class="pa-4 pb-2">
-          <VIcon
-            icon="ri-building-4-line"
-            class="me-2"
-          />
-          Klien & Periode
-        </VCardTitle>
-        <VDivider />
-        <VCardText>
-          <VRow>
-            <VCol
-              cols="12"
-              md="6"
-            >
-              <VAutocomplete
-                v-model="form.klien_ar_id"
-                label="Klien AR"
-                density="compact"
-                variant="outlined"
-                :items="klienList"
-                item-title="nama_klien"
-                item-value="id"
-                :rules="[v => !!v || 'Klien wajib dipilih']"
-                :loading="klienLoading"
-                clearable
-                @focus="ensureKlienLoaded()"
-                @update:model-value="onKlienChange"
-              >
-                <template #item="{ props: p, item }">
-                  <VListItem
-                    v-bind="p"
-                    :title="item.raw.nama_klien"
-                    :subtitle="`${item.raw.kode_klien} · ${item.raw.tipe_klien}`"
-                  />
-                </template>
-              </VAutocomplete>
-            </VCol>
-
-            <VCol
-              cols="12"
-              md="6"
-            >
-              <VTextField
-                :model-value="perusahaanPenagih"
-                label="Perusahaan Penagih"
-                density="compact"
-                variant="outlined"
-                readonly
-              />
-            </VCol>
-
-            <VCol
-              cols="12"
-              md="6"
-            >
-              <VTextField
-                v-model="form.periode_awal"
-                label="Periode Awal"
-                density="compact"
-                variant="outlined"
-                type="date"
-                :rules="[v => !!v || 'Periode awal wajib diisi']"
-              />
-            </VCol>
-            <VCol
-              cols="12"
-              md="6"
-            >
-              <VTextField
-                v-model="form.periode_akhir"
-                label="Periode Akhir"
-                density="compact"
-                variant="outlined"
-                type="date"
-                :rules="[v => !!v || 'Periode akhir wajib diisi']"
-              />
-            </VCol>
-          </VRow>
-        </VCardText>
-      </VCard>
-
-      <!-- Section 3: Carryover -->
-      <VCard class="mb-4">
-        <VCardTitle class="pa-4 pb-2">
-          <VIcon
-            icon="ri-history-line"
-            class="me-2"
-          />
-          Tagihan Periode Sebelumnya
-        </VCardTitle>
-        <VDivider />
-        <VCardText>
-          <VRow align="center">
-            <VCol
-              cols="12"
-              md="6"
-            >
-              <VTextField
-                :model-value="formatCurrency(form.tagihan_periode_sebelumnya)"
-                :label="isEditing ? 'Carryover (Readonly)' : 'Carryover (Sisa Tagihan Sebelumnya)'"
-                density="compact"
-                variant="outlined"
-                readonly
-                :loading="!isEditing && carryoverLoading"
-                :prepend-inner-icon="isEditing ? undefined : 'ri-information-line'"
-              />
-            </VCol>
-            <VCol
-              v-if="!isEditing"
-              cols="12"
-              md="6"
-            >
-              <span class="text-body-2 text-medium-emphasis">
-                Nilai ini otomatis diambil dari sisa tagihan klien yang belum lunas.
-              </span>
-            </VCol>
-          </VRow>
-        </VCardText>
-      </VCard>
-
-      <!-- Section 4: Item Invoice -->
-      <VCard class="mb-4">
-        <VCardTitle class="pa-4 pb-2 d-flex align-center justify-space-between">
-          <span><VIcon
-            icon="ri-list-check-2"
-            class="me-2"
-          />Item Tagihan</span>
-          <VBtn
-            color="primary"
-            size="small"
-            prepend-icon="ri-add-line"
-            variant="tonal"
-            @click="addItem"
-          >
-            Tambah Baris
-          </VBtn>
-        </VCardTitle>
-        <VDivider />
-        <VCardText>
-          <div
-            v-if="form.items.length === 0"
-            class="text-center text-medium-emphasis py-8"
-          >
-            Belum ada item. Klik "Tambah Baris" untuk mulai.
-          </div>
-          <InvoiceItemRow
-            v-for="(itm, idx) in form.items"
-            :key="idx"
-            :item="itm"
-            :barang-list="barangList"
-            :barang-loading="barangLoading"
-            @update:item="updateItem(idx, $event)"
-            @remove="removeItem(idx)"
-          />
-          <VAlert
-            v-if="itemsError"
-            type="error"
-            variant="tonal"
-            density="compact"
-            class="mt-2"
-          >
-            {{ itemsError }}
-          </VAlert>
-        </VCardText>
-      </VCard>
-
-      <!-- Section 5: Ringkasan -->
-      <VCard class="mb-4">
-        <VCardTitle class="pa-4 pb-2">
-          <VIcon
-            icon="ri-calculator-line"
-            class="me-2"
-          />
-          Ringkasan Tagihan
-        </VCardTitle>
-        <VDivider />
-        <VCardText>
-          <VRow justify="end">
-            <VCol
-              cols="12"
-              md="5"
-            >
-              <table class="summary-table w-100">
-                <tr>
-                  <td class="text-medium-emphasis">
-                    Subtotal
-                  </td>
-                  <td class="text-right font-weight-medium">
-                    {{ formatCurrency(subtotal) }}
-                  </td>
-                </tr>
-                <tr>
-                  <td class="text-medium-emphasis">
-                    Tagihan Periode Sebelumnya
-                  </td>
-                  <td class="text-right font-weight-medium">
-                    {{ formatCurrency(form.tagihan_periode_sebelumnya) }}
-                  </td>
-                </tr>
-                <tr class="text-h6 font-weight-bold">
-                  <td>Total Tagihan</td>
-                  <td class="text-right text-primary">
-                    {{ formatCurrency(totalTagihan) }}
-                  </td>
-                </tr>
-                <tr>
-                  <td
-                    colspan="2"
-                    class="text-caption text-medium-emphasis pt-2"
-                  >
-                    Terbilang: <em>{{ terbilang(totalTagihan) }}</em>
-                  </td>
-                </tr>
-              </table>
-            </VCol>
-          </VRow>
-        </VCardText>
-      </VCard>
-
-      <!-- Section 6: Keterangan -->
-      <VCard class="mb-4">
-        <VCardText>
-          <VTextField
-            v-model="form.keterangan"
-            label="Keterangan"
-            density="compact"
-            variant="outlined"
-          />
-        </VCardText>
-      </VCard>
-
-      <!-- Error global -->
       <VAlert
         v-if="errorMessage"
         type="error"
         variant="tonal"
+        closable
         class="mb-4"
       >
         {{ errorMessage }}
       </VAlert>
 
-      <!-- Action Buttons -->
-      <div class="d-flex gap-3 justify-end">
-        <template v-if="!isEditing">
-          <VBtn
-            variant="tonal"
-            color="secondary"
-            :disabled="saving"
-            @click="submitAs('DRAFT')"
-          >
-            Simpan sebagai Draft
-          </VBtn>
-          <VBtn
-            color="primary"
-            :disabled="saving"
-            @click="submitAs('TERKIRIM')"
-          >
-            Simpan & Kirim
-          </VBtn>
-        </template>
-        <VBtn
-          v-else
-          variant="tonal"
-          color="secondary"
-          :disabled="saving"
-          @click="submitAs()"
+      <VRow>
+        <!-- ─── Kolom Utama ─── -->
+        <VCol
+          cols="12"
+          lg="8"
         >
-          Simpan Perubahan
-        </VBtn>
-      </div>
+          <!-- Section 1: Informasi Invoice -->
+          <VCard class="mb-4 section-card">
+            <div class="section-header">
+              <div class="section-icon bg-primary">
+                <VIcon
+                  icon="ri-file-list-3-line"
+                  size="16"
+                  color="white"
+                />
+              </div>
+              <span class="text-subtitle-1 font-weight-semibold">Informasi Invoice</span>
+            </div>
+            <VDivider />
+            <VCardText class="pt-4">
+              <VRow>
+                <VCol
+                  cols="12"
+                  md="6"
+                >
+                  <VTextField
+                    v-model="form.no_invoice"
+                    label="No. Invoice"
+                    density="compact"
+                    variant="outlined"
+                    readonly
+                    :hint="isEditing ? '' : 'Otomatis terisi setelah klien dipilih'"
+                    :persistent-hint="!isEditing"
+                    :loading="!isEditing && noInvoiceLoading"
+                    prepend-inner-icon="ri-hashtag"
+                  />
+                </VCol>
+                <VCol
+                  cols="12"
+                  md="6"
+                >
+                  <VTextField
+                    v-model="form.tanggal_invoice"
+                    label="Tanggal Invoice"
+                    density="compact"
+                    variant="outlined"
+                    type="date"
+                    prepend-inner-icon="ri-calendar-line"
+                    :rules="[v => !!v || 'Tanggal wajib diisi']"
+                    @update:model-value="onTanggalChange"
+                  />
+                </VCol>
+                <VCol
+                  cols="12"
+                  md="6"
+                >
+                  <VTextField
+                    v-model="form.tanggal_jatuh_tempo"
+                    label="Tanggal Jatuh Tempo"
+                    density="compact"
+                    variant="outlined"
+                    type="date"
+                    prepend-inner-icon="ri-calendar-check-line"
+                    hint="Opsional"
+                    persistent-hint
+                  />
+                </VCol>
+                <VCol
+                  cols="12"
+                  md="6"
+                >
+                  <VTextField
+                    v-model="form.no_surat_jalan"
+                    label="No. Surat Jalan"
+                    density="compact"
+                    variant="outlined"
+                    prepend-inner-icon="ri-truck-line"
+                  />
+                </VCol>
+              </VRow>
+            </VCardText>
+          </VCard>
+
+          <!-- Section 2: Klien & Periode -->
+          <VCard class="mb-4 section-card">
+            <div class="section-header">
+              <div class="section-icon bg-success">
+                <VIcon
+                  icon="ri-building-4-line"
+                  size="16"
+                  color="white"
+                />
+              </div>
+              <span class="text-subtitle-1 font-weight-semibold">Klien & Periode</span>
+            </div>
+            <VDivider />
+            <VCardText class="pt-4">
+              <VRow>
+                <VCol
+                  cols="12"
+                  md="6"
+                >
+                  <VAutocomplete
+                    v-model="form.klien_ar_id"
+                    label="Klien AR"
+                    density="compact"
+                    variant="outlined"
+                    :items="klienList"
+                    item-title="nama_klien"
+                    item-value="id"
+                    prepend-inner-icon="ri-user-3-line"
+                    :rules="[v => !!v || 'Klien wajib dipilih']"
+                    :loading="klienLoading"
+                    clearable
+                    @focus="ensureKlienLoaded()"
+                    @update:model-value="onKlienChange"
+                  >
+                    <template #item="{ props: p, item }">
+                      <VListItem
+                        v-bind="p"
+                        :title="item.raw.nama_klien"
+                        :subtitle="`${item.raw.kode_klien} · ${item.raw.tipe_klien}`"
+                      />
+                    </template>
+                  </VAutocomplete>
+                </VCol>
+
+                <VCol
+                  cols="12"
+                  md="6"
+                >
+                  <VTextField
+                    :model-value="perusahaanPenagih"
+                    label="Perusahaan Penagih"
+                    density="compact"
+                    variant="outlined"
+                    prepend-inner-icon="ri-bank-line"
+                    readonly
+                  />
+                </VCol>
+
+                <VCol cols="12">
+                  <div class="text-caption text-medium-emphasis mb-2 d-flex align-center gap-1">
+                    <VIcon
+                      icon="ri-calendar-2-line"
+                      size="13"
+                    />
+                    Rentang Periode Tagihan
+                  </div>
+                  <VRow>
+                    <VCol
+                      cols="12"
+                      md="6"
+                    >
+                      <VTextField
+                        v-model="form.periode_awal"
+                        label="Periode Awal"
+                        density="compact"
+                        variant="outlined"
+                        type="date"
+                        prepend-inner-icon="ri-calendar-event-line"
+                        :rules="[v => !!v || 'Periode awal wajib diisi']"
+                      />
+                    </VCol>
+                    <VCol
+                      cols="12"
+                      md="6"
+                    >
+                      <VTextField
+                        v-model="form.periode_akhir"
+                        label="Periode Akhir"
+                        density="compact"
+                        variant="outlined"
+                        type="date"
+                        prepend-inner-icon="ri-calendar-event-fill"
+                        :rules="[v => !!v || 'Periode akhir wajib diisi']"
+                      />
+                    </VCol>
+                  </VRow>
+                </VCol>
+              </VRow>
+            </VCardText>
+          </VCard>
+
+          <!-- Section 3: Item Tagihan -->
+          <VCard class="mb-4 section-card">
+            <div class="section-header">
+              <div class="d-flex align-center gap-3">
+                <div class="section-icon bg-warning">
+                  <VIcon
+                    icon="ri-list-check-2"
+                    size="16"
+                    color="white"
+                  />
+                </div>
+                <span class="text-subtitle-1 font-weight-semibold">Item Tagihan</span>
+                <VChip
+                  v-if="form.items.length > 0"
+                  size="x-small"
+                  color="warning"
+                  variant="tonal"
+                  class="font-weight-medium"
+                >
+                  {{ form.items.length }} item
+                </VChip>
+              </div>
+              <VBtn
+                color="primary"
+                size="small"
+                prepend-icon="ri-add-line"
+                variant="tonal"
+                @click="addItem"
+              >
+                Tambah Baris
+              </VBtn>
+            </div>
+            <VDivider />
+
+            <VCardText>
+              <div
+                v-if="form.items.length === 0"
+                class="text-center text-medium-emphasis py-10"
+              >
+                <VIcon
+                  icon="ri-inbox-line"
+                  size="44"
+                  class="mb-3 d-block opacity-40"
+                />
+                <div class="text-body-2">
+                  Belum ada item.
+                </div>
+                <div class="text-caption mt-1">
+                  Klik "Tambah Baris" untuk mulai menambahkan tagihan.
+                </div>
+              </div>
+
+              <InvoiceItemRow
+                v-for="(itm, idx) in form.items"
+                :key="idx"
+                :item="itm"
+                :barang-list="barangList"
+                :barang-loading="barangLoading"
+                @update:item="updateItem(idx, $event)"
+                @remove="removeItem(idx)"
+              />
+
+              <VAlert
+                v-if="itemsError"
+                type="error"
+                variant="tonal"
+                density="compact"
+                class="mt-1"
+              >
+                {{ itemsError }}
+              </VAlert>
+            </VCardText>
+          </VCard>
+
+          <!-- Section 4: Keterangan -->
+          <VCard class="mb-4">
+            <div class="section-header">
+              <div class="section-icon bg-secondary">
+                <VIcon
+                  icon="ri-sticky-note-line"
+                  size="16"
+                  color="white"
+                />
+              </div>
+              <span class="text-subtitle-1 font-weight-semibold">Keterangan</span>
+              <VChip
+                size="x-small"
+                color="secondary"
+                variant="tonal"
+              >
+                Opsional
+              </VChip>
+            </div>
+            <VDivider />
+            <VCardText class="pt-4">
+              <VTextField
+                v-model="form.keterangan"
+                label="Keterangan tambahan"
+                density="compact"
+                variant="outlined"
+                prepend-inner-icon="ri-chat-1-line"
+              />
+            </VCardText>
+          </VCard>
+        </VCol>
+
+        <!-- ─── Sidebar Ringkasan ─── -->
+        <VCol
+          cols="12"
+          lg="4"
+        >
+          <div class="sticky-sidebar">
+            <!-- Carryover Banner -->
+            <VCard
+              class="mb-4"
+              color="info"
+              variant="tonal"
+            >
+              <VCardText class="pa-4">
+                <div class="d-flex align-center gap-2 mb-3">
+                  <VIcon
+                    icon="ri-history-line"
+                    size="18"
+                  />
+                  <span class="text-body-2 font-weight-semibold">Tagihan Periode Sebelumnya</span>
+                </div>
+                <div class="text-h5 font-weight-bold mb-1">
+                  {{ formatCurrency(form.tagihan_periode_sebelumnya) }}
+                </div>
+                <div
+                  v-if="!isEditing"
+                  class="text-caption"
+                >
+                  Otomatis dari sisa tagihan klien yang belum lunas
+                </div>
+                <VProgressLinear
+                  v-if="!isEditing && carryoverLoading"
+                  indeterminate
+                  color="info"
+                  class="mt-2 rounded"
+                />
+              </VCardText>
+            </VCard>
+
+            <!-- Ringkasan Total -->
+            <VCard class="mb-4">
+              <div class="section-header">
+                <div class="section-icon bg-primary">
+                  <VIcon
+                    icon="ri-calculator-line"
+                    size="16"
+                    color="white"
+                  />
+                </div>
+                <span class="text-subtitle-1 font-weight-semibold">Ringkasan Tagihan</span>
+              </div>
+              <VDivider />
+              <VCardText class="pt-4">
+                <table class="summary-table w-100">
+                  <tr>
+                    <td class="text-body-2 text-medium-emphasis pb-2">
+                      Subtotal Item
+                    </td>
+                    <td class="text-body-2 text-right font-weight-medium pb-2">
+                      {{ formatCurrency(subtotal) }}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="text-body-2 text-medium-emphasis pb-2">
+                      Tagihan Sebelumnya
+                    </td>
+                    <td class="text-body-2 text-right font-weight-medium pb-2">
+                      {{ formatCurrency(form.tagihan_periode_sebelumnya) }}
+                    </td>
+                  </tr>
+                </table>
+
+                <VDivider class="my-3" />
+
+                <div class="d-flex justify-space-between align-center mb-2">
+                  <span class="text-subtitle-1 font-weight-bold">Total Tagihan</span>
+                  <span class="text-h6 font-weight-bold text-primary">
+                    {{ formatCurrency(totalTagihan) }}
+                  </span>
+                </div>
+
+                <VCard
+                  variant="tonal"
+                  color="primary"
+                  class="pa-3 rounded-lg"
+                >
+                  <div class="text-caption text-medium-emphasis">
+                    Terbilang:
+                  </div>
+                  <div class="text-caption font-weight-medium mt-1">
+                    <em>{{ terbilang(totalTagihan) }}</em>
+                  </div>
+                </VCard>
+              </VCardText>
+            </VCard>
+
+            <!-- Action Buttons -->
+            <VCard>
+              <VCardText class="pa-4">
+                <template v-if="!isEditing">
+                  <VBtn
+                    block
+                    color="primary"
+                    class="mb-3"
+                    size="large"
+                    prepend-icon="ri-send-plane-line"
+                    :disabled="saving"
+                    :loading="saving"
+                    @click="submitAs('TERKIRIM')"
+                  >
+                    Simpan & Kirim
+                  </VBtn>
+                  <VBtn
+                    block
+                    variant="tonal"
+                    color="secondary"
+                    prepend-icon="ri-draft-line"
+                    :disabled="saving"
+                    @click="submitAs('DRAFT')"
+                  >
+                    Simpan sebagai Draft
+                  </VBtn>
+                </template>
+                <VBtn
+                  v-else
+                  block
+                  color="primary"
+                  size="large"
+                  prepend-icon="ri-save-line"
+                  :disabled="saving"
+                  :loading="saving"
+                  @click="submitAs()"
+                >
+                  Simpan Perubahan
+                </VBtn>
+              </VCardText>
+            </VCard>
+          </div>
+        </VCol>
+      </VRow>
     </VForm>
   </div>
 </template>
@@ -640,7 +741,39 @@ function terbilang(angka) {
 </script>
 
 <style scoped>
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+}
+
+.section-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.section-card {
+  border-inline-start: 3px solid rgb(var(--v-theme-primary));
+}
+
+.sticky-sidebar {
+  position: sticky;
+  top: 80px;
+}
+
+
+.summary-table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
 .summary-table td {
-  padding: 4px 8px;
+  padding: 3px 0;
 }
 </style>
