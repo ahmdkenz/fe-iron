@@ -139,6 +139,7 @@
         <VCardText>
           <VRow>
             <VCol
+              v-if="form.tipe_klien !== 'PT'"
               cols="12"
               md="6"
             >
@@ -151,6 +152,7 @@
               />
             </VCol>
             <VCol
+              v-if="form.tipe_klien !== 'PT'"
               cols="12"
               md="6"
             >
@@ -377,7 +379,6 @@ const kodePreviewLoading = ref(false)
 const tipeKlienOptions = [
   { label: 'PT', value: 'PT' },
   { label: 'Resto', value: 'RESTO' },
-  { label: 'Stokis', value: 'STOKIS' },
   { label: 'Mitra', value: 'MITRA' },
 ]
 
@@ -527,6 +528,11 @@ onMounted(async () => {
 watch(() => form.tipe_klien, async tipeKlien => {
   if (tipeKlien !== 'RESTO')
     form.resto_id = null
+
+  if (tipeKlien === 'PT') {
+    form.tipe_outlet = ''
+    form.stokis_area = ''
+  }
 
   if (tipeKlien === 'MITRA')
     form.kategori_ar = 'EKSTERNAL'
