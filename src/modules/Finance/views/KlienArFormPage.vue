@@ -176,30 +176,6 @@
             </VCol>
             <VCol
               cols="12"
-              md="3"
-            >
-              <VTextField
-                v-model="form.kat_1"
-                label="Kategori 1"
-                density="compact"
-                variant="outlined"
-                :error-messages="errors.kat_1"
-              />
-            </VCol>
-            <VCol
-              cols="12"
-              md="3"
-            >
-              <VTextField
-                v-model="form.kat_2"
-                label="Kategori 2"
-                density="compact"
-                variant="outlined"
-                :error-messages="errors.kat_2"
-              />
-            </VCol>
-            <VCol
-              cols="12"
               md="6"
             >
               <VSelect
@@ -435,8 +411,6 @@ const errors = reactive({
   tipe_outlet: [],
   stokis_area: [],
   no_npwp: [],
-  kat_1: [],
-  kat_2: [],
   perusahaan_id: [],
   karyawan_ar_id: [],
   resto_id: [],
@@ -451,8 +425,6 @@ const defaultForm = () => ({
   tipe_outlet: '',
   stokis_area: '',
   no_npwp: '',
-  kat_1: '',
-  kat_2: '',
   perusahaan_id: isArRole.value ? (authStore.user?.karyawan?.perusahaan_id ?? null) : null,
   karyawan_ar_id: isArRole.value ? (authStore.user?.karyawan?.id ?? null) : null,
   resto_id: null,
@@ -542,8 +514,6 @@ onMounted(async () => {
       tipe_outlet: data.tipe_outlet ?? '',
       stokis_area: data.stokis_area ?? '',
       no_npwp: data.no_npwp ?? '',
-      kat_1: data.kat_1 ?? '',
-      kat_2: data.kat_2 ?? '',
       perusahaan_id: data.perusahaan_id ?? null,
       karyawan_ar_id: data.karyawan_ar_id ?? null,
       resto_id: data.resto_id ?? null,

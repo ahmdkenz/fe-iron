@@ -263,14 +263,6 @@
           :value="selectedKlien.no_npwp"
         />
         <DetailRow
-          label="Kategori 1"
-          :value="selectedKlien.kat_1"
-        />
-        <DetailRow
-          label="Kategori 2"
-          :value="selectedKlien.kat_2"
-        />
-        <DetailRow
           label="Perusahaan"
           :value="selectedKlien.perusahaan?.nama_perusahaan"
         />
