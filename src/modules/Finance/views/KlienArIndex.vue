@@ -30,32 +30,6 @@
           prepend-inner-icon="ri-search-line"
           @update:model-value="debouncedFetch"
         />
-        <VBtnToggle
-          v-model="activeKategori"
-          variant="outlined"
-          divided
-          mandatory
-          @update:model-value="onKategoriChange"
-        >
-          <VBtn
-            value=""
-            min-width="90"
-          >
-            Semua
-          </VBtn>
-          <VBtn
-            value="INTERNAL"
-            min-width="90"
-          >
-            Internal
-          </VBtn>
-          <VBtn
-            value="EKSTERNAL"
-            min-width="90"
-          >
-            Eksternal
-          </VBtn>
-        </VBtnToggle>
       </VCardText>
 
       <BaseTable
@@ -90,16 +64,6 @@
             label
           >
             {{ item.tipe_klien }}
-          </VChip>
-        </template>
-        <template #item.kategori_ar="{ item }">
-          <VChip
-            :color="item.kategori_ar === 'INTERNAL' ? 'secondary' : 'warning'"
-            size="small"
-            variant="tonal"
-            label
-          >
-            {{ item.kategori_ar }}
           </VChip>
         </template>
         <template #item.perusahaan="{ item }">
@@ -240,16 +204,6 @@
             {{ selectedKlien.tipe_klien }}
           </VChip>
         </DetailRow>
-        <DetailRow label="Kategori AR">
-          <VChip
-            :color="selectedKlien.kategori_ar === 'INTERNAL' ? 'secondary' : 'warning'"
-            size="small"
-            variant="tonal"
-            label
-          >
-            {{ selectedKlien.kategori_ar }}
-          </VChip>
-        </DetailRow>
         <DetailRow
           label="Tipe Outlet"
           :value="selectedKlien.tipe_outlet"
@@ -342,25 +296,16 @@ const headers = [
   { title: 'Nama Klien',  key: 'nama_klien',   sortable: false, minWidth: '200px' },
   { title: 'Alias',       key: 'alias',        sortable: false, minWidth: '100px' },
   { title: 'Tipe',        key: 'tipe_klien',   sortable: false, minWidth: '90px' },
-  { title: 'Kategori AR', key: 'kategori_ar',  sortable: false, minWidth: '120px' },
   { title: 'Penagih',     key: 'perusahaan',   sortable: false, minWidth: '120px' },
   { title: 'Staff AR',    key: 'karyawan_ar',  sortable: false, minWidth: '160px' },
   { title: 'Status',      key: 'status',       sortable: false, minWidth: '90px' },
   { title: 'Aksi',        key: 'actions',      sortable: false, align: 'center', width: '120px' },
 ]
 
-const activeKategori = ref('')
-
 function tipeColor(tipe) {
   const map = { PT: 'primary', RESTO: 'info', STOKIS: 'warning', MITRA: 'success' }
 
   return map[tipe] ?? 'secondary'
-}
-
-function onKategoriChange(val) {
-  params.kategori_ar = val || undefined
-  params.page = 1
-  fetchList()
 }
 
 let debounceTimer = null

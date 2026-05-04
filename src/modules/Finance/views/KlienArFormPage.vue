@@ -107,22 +107,6 @@
               />
             </VCol>
 
-            <VCol
-              cols="12"
-              md="3"
-            >
-              <VSelect
-                v-model="form.kategori_ar"
-                label="Kategori AR"
-                density="compact"
-                variant="outlined"
-                :items="kategoriArOptions"
-                item-title="label"
-                item-value="value"
-                :rules="[v => !!v || 'Kategori AR wajib dipilih']"
-                :error-messages="errors.kategori_ar"
-              />
-            </VCol>
           </VRow>
         </VCardText>
       </VCard>
@@ -382,11 +366,6 @@ const tipeKlienOptions = [
   { label: 'Mitra', value: 'MITRA' },
 ]
 
-const kategoriArOptions = [
-  { label: 'Internal', value: 'INTERNAL' },
-  { label: 'Eksternal', value: 'EKSTERNAL' },
-]
-
 const statusOptions = BOOLEAN_STATUS_OPTIONS
 
 const displayPerusahaan = computed(() => {
@@ -408,7 +387,6 @@ const errors = reactive({
   nama_klien: [],
   alias: [],
   tipe_klien: [],
-  kategori_ar: [],
   tipe_outlet: [],
   stokis_area: [],
   no_npwp: [],
@@ -422,7 +400,6 @@ const defaultForm = () => ({
   nama_klien: '',
   alias: '',
   tipe_klien: 'PT',
-  kategori_ar: 'INTERNAL',
   tipe_outlet: '',
   stokis_area: '',
   no_npwp: '',
@@ -511,7 +488,6 @@ onMounted(async () => {
       nama_klien: data.nama_klien ?? '',
       alias: data.alias ?? '',
       tipe_klien: data.tipe_klien ?? 'PT',
-      kategori_ar: data.kategori_ar ?? 'INTERNAL',
       tipe_outlet: data.tipe_outlet ?? '',
       stokis_area: data.stokis_area ?? '',
       no_npwp: data.no_npwp ?? '',
@@ -533,9 +509,6 @@ watch(() => form.tipe_klien, async tipeKlien => {
     form.tipe_outlet = ''
     form.stokis_area = ''
   }
-
-  if (tipeKlien === 'MITRA')
-    form.kategori_ar = 'EKSTERNAL'
 
   await refreshKodeKlienPreview()
 })
