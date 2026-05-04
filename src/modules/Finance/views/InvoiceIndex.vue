@@ -510,19 +510,14 @@ function onTableOptions({ page, itemsPerPage }) {
 async function exportCsv() {
   exporting.value = true
   try {
-    const token   = localStorage.getItem('token')
-    const apiBase = import.meta.env.VITE_API_BASE_URL ?? ''
-    const query   = new URLSearchParams()
+    const query = new URLSearchParams()
     if (params.status)        query.set('status', params.status)
     if (params.klien_ar_id)   query.set('klien_ar_id', params.klien_ar_id)
     if (params.periode_bulan) query.set('periode_bulan', params.periode_bulan)
     if (params.periode_tahun) query.set('periode_tahun', params.periode_tahun)
 
-    const res = await fetch(`${apiBase}/finance/invoices/export?${query}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-    const blob = await res.blob()
-    const url  = URL.createObjectURL(blob)
+    const res = await api.get(`/finance/invoices/export?${query}`, { responseType: 'blob' })
+    const url  = URL.createObjectURL(res.data)
     const a    = document.createElement('a')
     a.href     = url
     a.download = `invoice-ar-${new Date().toISOString().slice(0, 10)}.csv`
@@ -540,12 +535,15 @@ function isOverdue(item) {
 
 function confirmDelete(inv) { selectedInvoice.value = inv; deleteError.value = ''; showDelete.value = true }
 
-function printInvoice(id) {
-  const token   = localStorage.getItem('token')
-  const apiBase = import.meta.env.VITE_API_BASE_URL ?? ''
-  const baseUrl = apiBase.replace(/\/api\/v\d+\/?$/, '')
-
-  window.open(`${baseUrl}/print/invoice/${id}?token=${encodeURIComponent(token)}`, '_blank')
+async function printInvoice(id) {
+  try {
+    const res = await api.get(`/finance/invoices/${id}/print`, { responseType: 'blob' })
+    const blobUrl = URL.createObjectURL(res.data)
+    window.open(blobUrl, '_blank')
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 30_000)
+  } catch {
+    await showError('Gagal membuka dokumen cetak')
+  }
 }
 
 async function doDelete() {

@@ -1060,12 +1060,15 @@ async function submitResubmit() {
   }
 }
 
-function printInvoice() {
-  const token = localStorage.getItem('token')
-  const apiBase = import.meta.env.VITE_API_BASE_URL ?? ''
-  const baseUrl = apiBase.replace(/\/api\/v\d+\/?$/, '')
-
-  window.open(`${baseUrl}/print/invoice/${id.value}?token=${encodeURIComponent(token)}`, '_blank')
+async function printInvoice() {
+  try {
+    const res = await api.get(`/finance/invoices/${id.value}/print`, { responseType: 'blob' })
+    const blobUrl = URL.createObjectURL(res.data)
+    window.open(blobUrl, '_blank')
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 30_000)
+  } catch {
+    await showError('Gagal membuka dokumen cetak')
+  }
 }
 
 async function refreshPendingOpeningBalanceBadge() {

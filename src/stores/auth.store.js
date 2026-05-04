@@ -22,12 +22,11 @@ function hasAnyRole(user, targetRoles = []) {
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
-    token: localStorage.getItem('token') || null,
-    user: JSON.parse(localStorage.getItem('user') || 'null'),
+    user: null,
   }),
 
   getters: {
-    isLoggedIn: state => !!state.token,
+    isLoggedIn: state => state.user !== null,
     roles: state => normalizeRoles(state.user),
     primaryRole: state => state.user?.role?.name ?? normalizeRoles(state.user)[0] ?? null,
     hasRole: state => role => normalizeRoles(state.user).includes(role),
@@ -66,26 +65,17 @@ export const useAuthStore = defineStore('auth', {
   actions: {
     async login(username, password) {
       const { data } = await api.post('/auth/login', { username, password })
-
-      this.token = data.data.token
       this.user = data.data.user
-      localStorage.setItem('token', this.token)
-      localStorage.setItem('user', JSON.stringify(this.user))
     },
 
     async fetchMe() {
       const { data } = await api.get('/auth/me')
-
       this.user = data.data
-      localStorage.setItem('user', JSON.stringify(this.user))
     },
 
     logout() {
       api.post('/auth/logout').catch(() => {})
-      this.token = null
       this.user = null
-      localStorage.removeItem('token')
-      localStorage.removeItem('user')
     },
   },
 })

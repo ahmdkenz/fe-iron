@@ -1,6 +1,7 @@
 import { setupLayouts } from 'virtual:meta-layouts'
 import { createRouter, createWebHistory } from 'vue-router'
 import routes from '@/router/index'
+import { useAuthStore } from '@/stores/auth.store'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -26,19 +27,19 @@ function normalizeRoles(user) {
   return [...new Set(roles.filter(Boolean))]
 }
 
-// Auth guard
+// Auth guard — reads from Pinia store (populated by bootstrap fetchMe before mount)
 router.beforeEach((to, _from, next) => {
-  const token = localStorage.getItem('token')
-  const user = JSON.parse(localStorage.getItem('user') || 'null')
-  const roles = normalizeRoles(user)
+  const authStore = useAuthStore()
+  const isLoggedIn = authStore.isLoggedIn
+  const roles = normalizeRoles(authStore.user)
   const requiresAuth = to.matched.some(r => r.meta.requiresAuth)
   const requiresGuest = to.matched.some(r => r.meta.requiresGuest)
   const routeRoles = to.matched.flatMap(r => r.meta.roles ?? [])
 
-  if (requiresAuth && !token)
+  if (requiresAuth && !isLoggedIn)
     return next({ name: 'login' })
 
-  if (requiresGuest && token)
+  if (requiresGuest && isLoggedIn)
     return next({ name: 'dashboard' })
 
   if (requiresAuth && routeRoles.length > 0 && !routeRoles.some(role => roles.includes(role)))

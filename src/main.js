@@ -10,25 +10,22 @@ import '@styles/styles.scss'
 import 'sweetalert2/dist/sweetalert2.min.css'
 import './styles/sweetalert.scss'
 
-// Create vue app
 const app = createApp(App)
-
-// Register plugins
 registerPlugins(app)
 
 const authStore = useAuthStore(store)
 
-app.mount('#app')
-
+// Always verify session state before mounting.
+// This ensures the router guard has accurate auth state on first load/refresh,
+// preventing a flash-redirect to login for authenticated users.
 async function bootstrap() {
-  if (authStore.token) {
-    try {
-      await authStore.fetchMe()
-    } catch {
-      authStore.logout()
-    }
+  try {
+    await authStore.fetchMe()
+  } catch {
+    // 401 = no active session, the router guard will redirect to /login
   }
 
+  app.mount('#app')
 }
 
 void bootstrap()
