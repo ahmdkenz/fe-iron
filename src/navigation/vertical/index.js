@@ -97,4 +97,28 @@ export default [
     icon: { icon: 'ri-money-cny-circle-line' },
     roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'],
   },
+  {
+    title: 'Mutasi Piutang',
+    to: { name: 'finance-mutasi-piutang' },
+    icon: { icon: 'ri-exchange-funds-line' },
+    roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR'],
+  },
+  {
+    title: 'Invoice Jatuh Tempo',
+    to: { name: 'finance-jatuh-tempo' },
+    icon: { icon: 'ri-time-line' },
+    roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'],
+  },
+  {
+    title: 'Rekap Pembayaran',
+    to: { name: 'finance-rekap-pembayaran' },
+    icon: { icon: 'ri-bank-card-line' },
+    roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR'],
+  },
+  {
+    title: 'Kinerja AR',
+    to: { name: 'finance-kinerja-ar' },
+    icon: { icon: 'ri-user-star-line' },
+    roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR'],
+  },
 ]

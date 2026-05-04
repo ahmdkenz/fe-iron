@@ -83,4 +83,28 @@ export default [
     component: () => import('@/modules/Finance/views/PembayaranArIndex.vue'),
     meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'] },
   },
+  {
+    path: '/finance/mutasi-piutang',
+    name: 'finance-mutasi-piutang',
+    component: () => import('@/modules/Finance/views/MutasiPiutangIndex.vue'),
+    meta: { requiresAuth: true, roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR'] },
+  },
+  {
+    path: '/finance/jatuh-tempo',
+    name: 'finance-jatuh-tempo',
+    component: () => import('@/modules/Finance/views/JatuhTempoIndex.vue'),
+    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'] },
+  },
+  {
+    path: '/finance/rekap-pembayaran',
+    name: 'finance-rekap-pembayaran',
+    component: () => import('@/modules/Finance/views/RekapPembayaranIndex.vue'),
+    meta: { requiresAuth: true, roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR'] },
+  },
+  {
+    path: '/finance/kinerja-ar',
+    name: 'finance-kinerja-ar',
+    component: () => import('@/modules/Finance/views/KinerjaArIndex.vue'),
+    meta: { requiresAuth: true, roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR'] },
+  },
 ]
