@@ -180,11 +180,13 @@
 
 <script setup>
 import { onMounted, reactive, ref } from 'vue'
+import { useAuthStore } from '@/stores/auth.store'
 import { useCrud } from '@/composables/useCrud'
 import { useLazyFetchAll } from '@/composables/useLazyFetchAll'
 import { useFormatter } from '@/composables/useFormatter'
 import api from '@/utils/axios'
 
+const authStore = useAuthStore()
 const { formatCurrency, formatDate } = useFormatter()
 const { items: klienList, loading: klienLoading, fetchAll: fetchKlien } = useCrud('/finance/klien-ar')
 const { ensureLoaded: ensureKlienLoaded } = useLazyFetchAll(fetchKlien)
@@ -193,9 +195,10 @@ const loading = ref(false)
 const report  = reactive({ as_of_date: null, summary: null, rows: [] })
 
 const filters = reactive({
-  filter_type: 'upcoming',
-  days:        30,
-  klien_ar_id: null,
+  filter_type:  'upcoming',
+  days:         30,
+  klien_ar_id:  null,
+  karyawan_id:  null,
 })
 
 const daysOptions = [
@@ -232,6 +235,7 @@ async function doFetch() {
     const params = { filter_type: filters.filter_type }
     if (filters.filter_type === 'upcoming') params.days = filters.days
     if (filters.klien_ar_id) params.klien_ar_id = filters.klien_ar_id
+    if (filters.karyawan_id) params.karyawan_id = filters.karyawan_id
 
     const { data } = await api.get('/finance/jatuh-tempo', { params })
     Object.assign(report, data.data)
@@ -240,7 +244,13 @@ async function doFetch() {
   }
 }
 
-onMounted(doFetch)
+onMounted(() => {
+  const isPrivileged = authStore.isAdmin || authStore.isManager || authStore.isSupervisor || authStore.isDirector
+  if (!isPrivileged && authStore.user?.karyawan_id) {
+    filters.karyawan_id = authStore.user.karyawan_id
+  }
+  doFetch()
+})
 </script>
 
 <style scoped>

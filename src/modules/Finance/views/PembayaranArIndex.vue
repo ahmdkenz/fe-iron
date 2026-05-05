@@ -115,10 +115,12 @@
 
 <script setup>
 import { computed, onBeforeUnmount, onMounted } from 'vue'
+import { useAuthStore } from '@/stores/auth.store'
 import { useCrud } from '@/composables/useCrud'
 import { useLazyFetchAll } from '@/composables/useLazyFetchAll'
 import { useFormatter } from '@/composables/useFormatter'
 
+const authStore = useAuthStore()
 const { formatCurrency, formatDate } = useFormatter()
 const { items, loading, meta, params, fetchList } = useCrud('/finance/pembayaran')
 const { items: klienList, loading: klienLoading, fetchAll: fetchKlien } = useCrud('/finance/klien-ar')
@@ -128,6 +130,7 @@ params.klien_ar_id       = null
 params.metode_pembayaran = null
 params.tanggal_dari      = null
 params.tanggal_sampai    = null
+params.karyawan_id       = null
 
 const headers = [
   { title: 'No',          key: 'no',                sortable: false, width: '50px' },
@@ -170,6 +173,12 @@ function onTableOptions({ page, itemsPerPage }) {
   fetchList()
 }
 
-onMounted(doFetch)
+onMounted(() => {
+  const isPrivileged = authStore.isAdmin || authStore.isManager || authStore.isSupervisor || authStore.isDirector
+  if (!isPrivileged && authStore.user?.karyawan_id) {
+    params.karyawan_id = authStore.user.karyawan_id
+  }
+  doFetch()
+})
 onBeforeUnmount(() => controller?.abort())
 </script>

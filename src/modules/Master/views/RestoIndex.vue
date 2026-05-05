@@ -79,7 +79,7 @@
             variant="tonal"
             label
           >
-            {{ item.brand.kode_brand }}
+            {{ item.brand.nama_brand }}
           </VChip>
           <span v-else>-</span>
         </template>

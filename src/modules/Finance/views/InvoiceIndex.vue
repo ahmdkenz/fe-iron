@@ -480,6 +480,7 @@ async function loadSummary() {
         periode_bulan: params.periode_bulan,
         periode_tahun: params.periode_tahun,
         klien_ar_id: params.klien_ar_id,
+        ...(!canSeeAll && { karyawan_id: params.karyawan_id }),
       },
       signal: controller.signal,
     })

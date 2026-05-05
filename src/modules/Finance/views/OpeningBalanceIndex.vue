@@ -452,6 +452,7 @@ async function loadSummary() {
         status: params.status,
         approval_status: params.approval_status,
         klien_ar_id: params.klien_ar_id,
+        karyawan_id: params.karyawan_id,
         periode_bulan: params.periode_bulan,
         periode_tahun: params.periode_tahun,
       },
@@ -503,6 +504,10 @@ async function printInvoice(id) {
 }
 
 onMounted(() => {
+  const isPrivileged = authStore.isAdmin || authStore.isManager || authStore.isSupervisor
+  if (!isPrivileged && authStore.user?.karyawan_id) {
+    params.karyawan_id = authStore.user.karyawan_id
+  }
   loadKlien()
   loadList()
   loadSummary()
