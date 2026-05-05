@@ -105,7 +105,6 @@
                 :items="perusahaanList"
                 item-title="nama_perusahaan"
                 item-value="id"
-                :rules="[v => !!v || 'Perusahaan wajib dipilih']"
                 :error-messages="errors.perusahaan_id"
                 :loading="perusahaanLoading"
                 clearable
@@ -133,11 +132,10 @@
                 :items="brandList"
                 item-title="nama_brand"
                 item-value="id"
-                :rules="[v => !!v || 'Brand wajib dipilih']"
                 :error-messages="errors.brand_id"
                 :loading="brandLoading"
                 clearable
-                :disabled="!form.perusahaan_id && !isEditing"
+                @focus="ensureBrandLoaded()"
                 @update:model-value="onBrandChange"
               >
                 <template #item="{ props: p, item }">
@@ -372,17 +370,22 @@ const form = reactive({
 })
 
 async function fetchBrandsByPerusahaan(perusahaanId) {
-  if (!perusahaanId) { brandList.value = [] 
-
-    return }
   brandLoading.value = true
   try {
-    const res = await api.get('/master/brand', { params: { all: true, perusahaan_id: perusahaanId } })
+    const params = perusahaanId ? { all: true, perusahaan_id: perusahaanId } : { all: true }
+    const res = await api.get('/master/brand', { params })
 
     brandList.value = res.data?.data ?? []
   } finally {
     brandLoading.value = false
   }
+}
+
+let brandLoaded = false
+async function ensureBrandLoaded() {
+  if (brandLoaded || brandList.value.length > 0) return
+  await fetchBrandsByPerusahaan(form.perusahaan_id ?? null)
+  brandLoaded = true
 }
 
 async function refreshKodePreview() {
@@ -404,6 +407,7 @@ async function refreshKodePreview() {
 function onPerusahaanChange(val) {
   form.brand_id = null
   kodePreview.value = ''
+  brandLoaded = false
   fetchBrandsByPerusahaan(val)
 }
 
