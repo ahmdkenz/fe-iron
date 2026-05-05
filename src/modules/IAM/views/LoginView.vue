@@ -30,7 +30,7 @@
           class="text-secondary text-body-2"
           style="max-width: 380px; line-height: 1.6;"
         >
-          Infrastruktur pelaporan presisi tinggi untuk memantau, menganalisis, dan mengoptimalkan aliran data enterprise Anda secara real-time.
+          Infrastruktur pelaporan presisi tinggi untuk memantau, menganalisis, dan mengoptimalkan aliran data enterprise secara real-time.
         </p>
       </div>
 
