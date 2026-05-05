@@ -376,20 +376,27 @@ import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useCrud } from '@/composables/useCrud.js'
 import { useLazyFetchAll } from '@/composables/useLazyFetchAll.js'
 import { useFormatter } from '@/composables/useFormatter.js'
+import { useAuthStore } from '@/stores/auth.store'
 import api from '@/utils/axios.js'
 import InvoiceStatusBadge from '../components/InvoiceStatusBadge.vue'
 
 const { showSuccess, showError } = useSweetAlert()
+const authStore = useAuthStore()
 const { items, loading, meta, params, fetchList, remove } = useCrud('/finance/invoices')
 const { items: klienList, loading: klienLoading, fetchAll: fetchKlien } = useCrud('/finance/klien-ar')
 const { ensureLoaded: ensureKlienLoaded } = useLazyFetchAll(fetchKlien)
 const { formatCurrency, formatDate } = useFormatter()
+
+const canSeeAll = authStore.hasAnyRole(['ADMIN', 'MANAGER', 'SUPERVISOR'])
 
 // Extend params with filter fields
 params.status        = ''
 params.klien_ar_id   = null
 params.periode_bulan = null
 params.periode_tahun = null
+if (!canSeeAll) {
+  params.karyawan_id = authStore.user?.karyawan?.id
+}
 
 const summary       = reactive({ total_invoice: null, total_tagihan: null, total_pembayaran: null, total_sisa: null })
 const showDelete    = ref(false)

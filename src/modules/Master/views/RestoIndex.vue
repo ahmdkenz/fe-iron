@@ -378,5 +378,10 @@ async function doDelete() {
   }
 }
 
-onMounted(() => fetchList())
+onMounted(() => {
+  if (authStore.isArOnly && authStore.user?.karyawan_id) {
+    params.karyawan_id = authStore.user.karyawan_id
+  }
+  fetchList()
+})
 </script>

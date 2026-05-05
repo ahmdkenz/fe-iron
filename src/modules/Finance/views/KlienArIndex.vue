@@ -285,6 +285,11 @@ const authStore = useAuthStore()
 const { showSuccess, showError } = useSweetAlert()
 const { items, loading, meta, params, fetchList, remove } = useCrud('/finance/klien-ar')
 
+const canSeeAll = authStore.hasAnyRole(['ADMIN', 'MANAGER', 'SUPERVISOR'])
+if (!canSeeAll) {
+  params.karyawan_ar_id = authStore.user?.karyawan?.id
+}
+
 const showDelete = ref(false)
 const showDetail = ref(false)
 const deleteError = ref('')
