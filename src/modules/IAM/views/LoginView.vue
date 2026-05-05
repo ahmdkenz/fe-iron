@@ -224,7 +224,7 @@
                 color="white"
               />
             </template>
-            {{ isSubmitting ? 'Memproses...' : 'Masuk Sistem' }}
+            {{ isSubmitting ? 'Memproses...' : 'Login' }}
           </VBtn>
           
           <div class="text-center mt-6 text-body-2">
