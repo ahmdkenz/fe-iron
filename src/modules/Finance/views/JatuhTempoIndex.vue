@@ -195,10 +195,10 @@ const loading = ref(false)
 const report  = reactive({ as_of_date: null, summary: null, rows: [] })
 
 const filters = reactive({
-  filter_type:  'upcoming',
-  days:         30,
-  klien_ar_id:  null,
-  karyawan_id:  null,
+  filter_type:    'upcoming',
+  days:           30,
+  klien_ar_id:    null,
+  karyawan_ar_id: null,
 })
 
 const daysOptions = [
@@ -235,7 +235,7 @@ async function doFetch() {
     const params = { filter_type: filters.filter_type }
     if (filters.filter_type === 'upcoming') params.days = filters.days
     if (filters.klien_ar_id) params.klien_ar_id = filters.klien_ar_id
-    if (filters.karyawan_id) params.karyawan_id = filters.karyawan_id
+    if (filters.karyawan_ar_id) params.karyawan_ar_id = filters.karyawan_ar_id
 
     const { data } = await api.get('/finance/jatuh-tempo', { params })
     Object.assign(report, data.data)
@@ -247,7 +247,7 @@ async function doFetch() {
 onMounted(() => {
   const isPrivileged = authStore.isAdmin || authStore.isManager || authStore.isSupervisor || authStore.isDirector
   if (!isPrivileged && authStore.user?.karyawan_id) {
-    filters.karyawan_id = authStore.user.karyawan_id
+    filters.karyawan_ar_id = authStore.user.karyawan_id
   }
   doFetch()
 })
