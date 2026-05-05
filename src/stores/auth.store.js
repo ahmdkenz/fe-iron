@@ -65,7 +65,9 @@ export const useAuthStore = defineStore('auth', {
   actions: {
     async login(username, password) {
       const { data } = await api.post('/auth/login', { username, password })
-      this.user = data.data.user
+      const { user, token } = data.data
+      localStorage.setItem('auth_token', token)
+      this.user = user
     },
 
     async fetchMe() {
@@ -73,8 +75,9 @@ export const useAuthStore = defineStore('auth', {
       this.user = data.data
     },
 
-    logout() {
-      api.post('/auth/logout').catch(() => {})
+    async logout() {
+      await api.post('/auth/logout').catch(() => {})
+      localStorage.removeItem('auth_token')
       this.user = null
     },
   },

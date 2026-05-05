@@ -4,12 +4,17 @@ const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
   headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
   timeout: 15000,
-  withCredentials: true,
+})
+
+api.interceptors.request.use(config => {
+  const token = localStorage.getItem('auth_token')
+  if (token) config.headers.Authorization = `Bearer ${token}`
+  return config
 })
 
 // Handle 401 globally.
 // Skip redirect for /auth/me — that endpoint is called during bootstrap to check
-// if a session exists; a 401 there just means the user is not logged in yet.
+// if a token exists; a 401 there just means the user is not logged in yet.
 api.interceptors.response.use(
   response => response,
   error => {
