@@ -112,58 +112,44 @@
         </div>
       </VCardText>
       <VDivider class="mt-2" />
-
       <VProgressLinear v-if="loading" indeterminate color="primary" />
-
-      <VTable density="compact" class="rekap-table">
-        <thead>
-          <tr>
-            <th>Tanggal</th>
-            <th class="text-right">Transfer</th>
-            <th class="text-right">Cash</th>
-            <th class="text-right">Giro</th>
-            <th class="text-right">Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="row in report.rows" :key="row.tanggal">
-            <td class="font-weight-medium">{{ formatDate(row.tanggal) }}</td>
-            <td class="text-right">
-              <span v-if="row.transfer > 0" class="text-info">{{ formatCurrency(row.transfer) }}</span>
-              <span v-else class="text-medium-emphasis">-</span>
-            </td>
-            <td class="text-right">
-              <span v-if="row.cash > 0" class="text-success">{{ formatCurrency(row.cash) }}</span>
-              <span v-else class="text-medium-emphasis">-</span>
-            </td>
-            <td class="text-right">
-              <span v-if="row.giro > 0" class="text-warning">{{ formatCurrency(row.giro) }}</span>
-              <span v-else class="text-medium-emphasis">-</span>
-            </td>
-            <td class="text-right font-weight-bold">{{ formatCurrency(row.total) }}</td>
-          </tr>
-
-          <tr v-if="!loading && (!report.rows || report.rows.length === 0)">
-            <td colspan="5" class="text-center text-medium-emphasis py-6">
-              Tidak ada data pembayaran
-            </td>
-          </tr>
-
-          <tr v-if="report.rows?.length" class="font-weight-bold bg-surface-variant">
-            <td>Total</td>
-            <td class="text-right text-info">{{ formatCurrency(report.summary?.transfer ?? 0) }}</td>
-            <td class="text-right text-success">{{ formatCurrency(report.summary?.cash ?? 0) }}</td>
-            <td class="text-right text-warning">{{ formatCurrency(report.summary?.giro ?? 0) }}</td>
-            <td class="text-right">{{ formatCurrency(report.summary?.total ?? 0) }}</td>
-          </tr>
-        </tbody>
-      </VTable>
+      <BaseTable
+        :headers="headers"
+        :items="paginatedRows"
+        :total="report.rows.length"
+        :loading="loading"
+        :per-page="perPage"
+        :page="page"
+        @update:options="onTableOptions"
+      >
+        <template #item.no="{ index }">
+          {{ (page - 1) * perPage + index + 1 }}
+        </template>
+        <template #item.tanggal="{ item }">
+          <span class="font-weight-medium">{{ formatDate(item.tanggal) }}</span>
+        </template>
+        <template #item.transfer="{ item }">
+          <span v-if="item.transfer > 0" class="text-info">{{ formatCurrency(item.transfer) }}</span>
+          <span v-else class="text-medium-emphasis">-</span>
+        </template>
+        <template #item.cash="{ item }">
+          <span v-if="item.cash > 0" class="text-success">{{ formatCurrency(item.cash) }}</span>
+          <span v-else class="text-medium-emphasis">-</span>
+        </template>
+        <template #item.giro="{ item }">
+          <span v-if="item.giro > 0" class="text-warning">{{ formatCurrency(item.giro) }}</span>
+          <span v-else class="text-medium-emphasis">-</span>
+        </template>
+        <template #item.total="{ item }">
+          <span class="font-weight-bold">{{ formatCurrency(item.total) }}</span>
+        </template>
+      </BaseTable>
     </VCard>
   </div>
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useCrud } from '@/composables/useCrud'
 import { useLazyFetchAll } from '@/composables/useLazyFetchAll'
 import { useFormatter } from '@/composables/useFormatter'
@@ -181,11 +167,32 @@ const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().sl
 const lastDay  = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10)
 
 const filters = reactive({
-  tanggal_dari:       firstDay,
-  tanggal_sampai:     lastDay,
-  metode_pembayaran:  null,
-  klien_ar_id:        null,
+  tanggal_dari:      firstDay,
+  tanggal_sampai:    lastDay,
+  metode_pembayaran: null,
+  klien_ar_id:       null,
 })
+
+const page    = ref(1)
+const perPage = ref(15)
+
+const paginatedRows = computed(() =>
+  report.rows.slice((page.value - 1) * perPage.value, page.value * perPage.value)
+)
+
+function onTableOptions({ page: p, itemsPerPage }) {
+  page.value    = p
+  perPage.value = itemsPerPage
+}
+
+const headers = [
+  { title: 'No',       key: 'no',       sortable: false, width: '50px' },
+  { title: 'Tanggal',  key: 'tanggal',  sortable: false },
+  { title: 'Transfer', key: 'transfer', sortable: false, align: 'end' },
+  { title: 'Cash',     key: 'cash',     sortable: false, align: 'end' },
+  { title: 'Giro',     key: 'giro',     sortable: false, align: 'end' },
+  { title: 'Total',    key: 'total',    sortable: false, align: 'end' },
+]
 
 const metodeOptions = [
   { label: 'Transfer', value: 'TRANSFER' },
@@ -194,6 +201,7 @@ const metodeOptions = [
 ]
 
 async function doFetch() {
+  page.value    = 1
   loading.value = true
   try {
     const params = {}
@@ -211,11 +219,3 @@ async function doFetch() {
 
 onMounted(doFetch)
 </script>
-
-<style scoped>
-.rekap-table th,
-.rekap-table td {
-  padding: 8px 12px;
-  white-space: nowrap;
-}
-</style>

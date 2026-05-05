@@ -121,65 +121,54 @@
         </div>
       </VCardText>
       <VDivider class="mt-2" />
-
       <VProgressLinear v-if="loading" indeterminate color="primary" />
-
-      <VTable density="compact" class="mutasi-table">
-        <thead>
-          <tr>
-            <th>Klien</th>
-            <th>Perusahaan</th>
-            <th class="text-right">Saldo Awal</th>
-            <th class="text-right">Invoice Masuk</th>
-            <th class="text-right">Pembayaran</th>
-            <th class="text-right">Saldo Akhir</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="row in report.rows" :key="row.klien_id">
-            <td>
-              <div class="font-weight-medium">{{ row.nama_klien }}</div>
-              <div class="text-caption text-medium-emphasis">{{ row.kode_klien }}</div>
-            </td>
-            <td>
-              <VChip v-if="row.perusahaan" color="secondary" size="small" variant="tonal" label>
-                {{ row.perusahaan }}
-              </VChip>
-              <span v-else>-</span>
-            </td>
-            <td class="text-right">{{ formatCurrency(row.saldo_awal) }}</td>
-            <td class="text-right text-warning font-weight-medium">
-              {{ row.invoice_masuk > 0 ? formatCurrency(row.invoice_masuk) : '-' }}
-            </td>
-            <td class="text-right text-success font-weight-medium">
-              {{ row.pembayaran > 0 ? formatCurrency(row.pembayaran) : '-' }}
-            </td>
-            <td class="text-right font-weight-bold" :class="row.saldo_akhir > 0 ? 'text-error' : 'text-success'">
-              {{ formatCurrency(row.saldo_akhir) }}
-            </td>
-          </tr>
-
-          <tr v-if="!loading && (!report.rows || report.rows.length === 0)">
-            <td colspan="6" class="text-center text-medium-emphasis py-6">
-              Tidak ada data mutasi piutang
-            </td>
-          </tr>
-
-          <tr v-if="report.rows?.length" class="font-weight-bold bg-surface-variant">
-            <td colspan="2">Total</td>
-            <td class="text-right">{{ formatCurrency(report.summary?.saldo_awal ?? 0) }}</td>
-            <td class="text-right text-warning">{{ formatCurrency(report.summary?.invoice_masuk ?? 0) }}</td>
-            <td class="text-right text-success">{{ formatCurrency(report.summary?.pembayaran ?? 0) }}</td>
-            <td class="text-right text-error">{{ formatCurrency(report.summary?.saldo_akhir ?? 0) }}</td>
-          </tr>
-        </tbody>
-      </VTable>
+      <BaseTable
+        :headers="headers"
+        :items="paginatedRows"
+        :total="report.rows.length"
+        :loading="loading"
+        :per-page="perPage"
+        :page="page"
+        @update:options="onTableOptions"
+      >
+        <template #item.no="{ index }">
+          {{ (page - 1) * perPage + index + 1 }}
+        </template>
+        <template #item.nama_klien="{ item }">
+          <div class="font-weight-medium">{{ item.nama_klien }}</div>
+          <div class="text-caption text-medium-emphasis">{{ item.kode_klien }}</div>
+        </template>
+        <template #item.perusahaan="{ item }">
+          <VChip v-if="item.perusahaan" color="secondary" size="small" variant="tonal" label>
+            {{ item.perusahaan }}
+          </VChip>
+          <span v-else>-</span>
+        </template>
+        <template #item.saldo_awal="{ item }">
+          {{ formatCurrency(item.saldo_awal) }}
+        </template>
+        <template #item.invoice_masuk="{ item }">
+          <span class="text-warning font-weight-medium">
+            {{ item.invoice_masuk > 0 ? formatCurrency(item.invoice_masuk) : '-' }}
+          </span>
+        </template>
+        <template #item.pembayaran="{ item }">
+          <span class="text-success font-weight-medium">
+            {{ item.pembayaran > 0 ? formatCurrency(item.pembayaran) : '-' }}
+          </span>
+        </template>
+        <template #item.saldo_akhir="{ item }">
+          <span class="font-weight-bold" :class="item.saldo_akhir > 0 ? 'text-error' : 'text-success'">
+            {{ formatCurrency(item.saldo_akhir) }}
+          </span>
+        </template>
+      </BaseTable>
     </VCard>
   </div>
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useCrud } from '@/composables/useCrud'
 import { useLazyFetchAll } from '@/composables/useLazyFetchAll'
 import { useFormatter } from '@/composables/useFormatter'
@@ -192,7 +181,7 @@ const { ensureLoaded: ensureKlienLoaded } = useLazyFetchAll(fetchKlien)
 const loading = ref(false)
 const report  = reactive({ periode_awal: null, periode_akhir: null, summary: null, rows: [] })
 
-const now = new Date()
+const now      = new Date()
 const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10)
 const lastDay  = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10)
 
@@ -202,7 +191,30 @@ const filters = reactive({
   klien_ar_id:   null,
 })
 
+const page    = ref(1)
+const perPage = ref(15)
+
+const paginatedRows = computed(() =>
+  report.rows.slice((page.value - 1) * perPage.value, page.value * perPage.value)
+)
+
+function onTableOptions({ page: p, itemsPerPage }) {
+  page.value    = p
+  perPage.value = itemsPerPage
+}
+
+const headers = [
+  { title: 'No',           key: 'no',            sortable: false, width: '50px' },
+  { title: 'Klien',        key: 'nama_klien',    sortable: false },
+  { title: 'Perusahaan',   key: 'perusahaan',    sortable: false },
+  { title: 'Saldo Awal',   key: 'saldo_awal',    sortable: false, align: 'end' },
+  { title: 'Invoice Masuk',key: 'invoice_masuk', sortable: false, align: 'end' },
+  { title: 'Pembayaran',   key: 'pembayaran',    sortable: false, align: 'end' },
+  { title: 'Saldo Akhir',  key: 'saldo_akhir',   sortable: false, align: 'end' },
+]
+
 async function doFetch() {
+  page.value    = 1
   loading.value = true
   try {
     const params = {}
@@ -219,11 +231,3 @@ async function doFetch() {
 
 onMounted(doFetch)
 </script>
-
-<style scoped>
-.mutasi-table th,
-.mutasi-table td {
-  padding: 8px 12px;
-  white-space: nowrap;
-}
-</style>

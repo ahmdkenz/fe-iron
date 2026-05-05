@@ -99,81 +99,60 @@
         </div>
       </VCardText>
       <VDivider class="mt-2" />
-
       <VProgressLinear v-if="loading" indeterminate color="primary" />
-
-      <VTable density="compact" class="kinerja-table">
-        <thead>
-          <tr>
-            <th>AR Officer</th>
-            <th>Perusahaan</th>
-            <th class="text-center">Klien</th>
-            <th class="text-center">Invoice</th>
-            <th class="text-right">Total Tagihan</th>
-            <th class="text-right">Terkumpul</th>
-            <th class="text-right">Sisa</th>
-            <th class="text-center">Collection Rate</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="row in report.rows" :key="row.karyawan_id">
-            <td>
-              <div class="font-weight-medium">{{ row.nama_karyawan }}</div>
-            </td>
-            <td>
-              <VChip v-if="row.perusahaan" color="secondary" size="small" variant="tonal" label>
-                {{ row.perusahaan }}
-              </VChip>
-              <span v-else>-</span>
-            </td>
-            <td class="text-center">{{ row.jumlah_klien }}</td>
-            <td class="text-center">{{ row.jumlah_invoice }}</td>
-            <td class="text-right">{{ formatCurrency(row.total_tagihan) }}</td>
-            <td class="text-right text-success font-weight-medium">{{ formatCurrency(row.total_terkumpul) }}</td>
-            <td class="text-right" :class="row.total_sisa > 0 ? 'text-error' : 'text-success'">
-              {{ formatCurrency(row.total_sisa) }}
-            </td>
-            <td class="text-center">
-              <div class="d-flex align-center gap-2 justify-center">
-                <VProgressLinear
-                  :model-value="row.collection_rate"
-                  :color="collectionRateColor(row.collection_rate)"
-                  height="6"
-                  rounded
-                  style="max-width: 80px"
-                />
-                <span class="text-caption font-weight-bold" :class="`text-${collectionRateColor(row.collection_rate)}`">
-                  {{ row.collection_rate }}%
-                </span>
-              </div>
-            </td>
-          </tr>
-
-          <tr v-if="!loading && (!report.rows || report.rows.length === 0)">
-            <td colspan="8" class="text-center text-medium-emphasis py-6">
-              Tidak ada data kinerja AR
-            </td>
-          </tr>
-
-          <tr v-if="report.rows?.length" class="font-weight-bold bg-surface-variant">
-            <td colspan="4">Total</td>
-            <td class="text-right">{{ formatCurrency(report.summary?.total_tagihan ?? 0) }}</td>
-            <td class="text-right text-success">{{ formatCurrency(report.summary?.total_terkumpul ?? 0) }}</td>
-            <td class="text-right text-error">{{ formatCurrency(report.summary?.total_sisa ?? 0) }}</td>
-            <td class="text-center">
-              <span :class="`text-${collectionRateColor(report.summary?.collection_rate ?? 0)}`">
-                {{ report.summary?.collection_rate ?? 0 }}%
-              </span>
-            </td>
-          </tr>
-        </tbody>
-      </VTable>
+      <BaseTable
+        :headers="headers"
+        :items="paginatedRows"
+        :total="report.rows.length"
+        :loading="loading"
+        :per-page="perPage"
+        :page="page"
+        @update:options="onTableOptions"
+      >
+        <template #item.no="{ index }">
+          {{ (page - 1) * perPage + index + 1 }}
+        </template>
+        <template #item.nama_karyawan="{ item }">
+          <div class="font-weight-medium">{{ item.nama_karyawan }}</div>
+        </template>
+        <template #item.perusahaan="{ item }">
+          <VChip v-if="item.perusahaan" color="secondary" size="small" variant="tonal" label>
+            {{ item.perusahaan }}
+          </VChip>
+          <span v-else>-</span>
+        </template>
+        <template #item.total_tagihan="{ item }">
+          {{ formatCurrency(item.total_tagihan) }}
+        </template>
+        <template #item.total_terkumpul="{ item }">
+          <span class="text-success font-weight-medium">{{ formatCurrency(item.total_terkumpul) }}</span>
+        </template>
+        <template #item.total_sisa="{ item }">
+          <span :class="item.total_sisa > 0 ? 'text-error' : 'text-success'">
+            {{ formatCurrency(item.total_sisa) }}
+          </span>
+        </template>
+        <template #item.collection_rate="{ item }">
+          <div class="d-flex align-center gap-2 justify-center">
+            <VProgressLinear
+              :model-value="item.collection_rate"
+              :color="collectionRateColor(item.collection_rate)"
+              height="6"
+              rounded
+              style="max-width: 80px"
+            />
+            <span class="text-caption font-weight-bold" :class="`text-${collectionRateColor(item.collection_rate)}`">
+              {{ item.collection_rate }}%
+            </span>
+          </div>
+        </template>
+      </BaseTable>
     </VCard>
   </div>
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useFormatter } from '@/composables/useFormatter'
 import api from '@/utils/axios'
 
@@ -191,6 +170,30 @@ const filters = reactive({
   periode_akhir: lastDay,
 })
 
+const page    = ref(1)
+const perPage = ref(15)
+
+const paginatedRows = computed(() =>
+  report.rows.slice((page.value - 1) * perPage.value, page.value * perPage.value)
+)
+
+function onTableOptions({ page: p, itemsPerPage }) {
+  page.value    = p
+  perPage.value = itemsPerPage
+}
+
+const headers = [
+  { title: 'No',             key: 'no',               sortable: false, width: '50px' },
+  { title: 'AR Officer',     key: 'nama_karyawan',    sortable: false },
+  { title: 'Perusahaan',     key: 'perusahaan',       sortable: false },
+  { title: 'Klien',          key: 'jumlah_klien',     sortable: false, align: 'center' },
+  { title: 'Invoice',        key: 'jumlah_invoice',   sortable: false, align: 'center' },
+  { title: 'Total Tagihan',  key: 'total_tagihan',    sortable: false, align: 'end' },
+  { title: 'Terkumpul',      key: 'total_terkumpul',  sortable: false, align: 'end' },
+  { title: 'Sisa',           key: 'total_sisa',       sortable: false, align: 'end' },
+  { title: 'Collection Rate',key: 'collection_rate',  sortable: false, align: 'center' },
+]
+
 function collectionRateColor(rate) {
   if (rate >= 90) return 'success'
   if (rate >= 70) return 'warning'
@@ -198,6 +201,7 @@ function collectionRateColor(rate) {
 }
 
 async function doFetch() {
+  page.value    = 1
   loading.value = true
   try {
     const params = {}
@@ -213,11 +217,3 @@ async function doFetch() {
 
 onMounted(doFetch)
 </script>
-
-<style scoped>
-.kinerja-table th,
-.kinerja-table td {
-  padding: 8px 12px;
-  white-space: nowrap;
-}
-</style>

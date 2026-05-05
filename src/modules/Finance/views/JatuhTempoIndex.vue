@@ -1,11 +1,11 @@
 <template>
   <div>
     <PageHeader
-      title="Invoice Jatuh Tempo"
+      title="Tagihan Jatuh Tempo"
       subtitle="Daftar invoice yang akan dan sudah jatuh tempo"
       :breadcrumbs="[
         { title: 'Dashboard', to: { name: 'dashboard' } },
-        { title: 'Invoice Jatuh Tempo', disabled: true },
+        { title: 'Tagihan Jatuh Tempo', disabled: true },
       ]"
     />
 
@@ -98,88 +98,69 @@
         </div>
       </VCardText>
       <VDivider class="mt-2" />
-
       <VProgressLinear v-if="loading" indeterminate color="primary" />
-
-      <VTable density="compact" class="jatuh-tempo-table">
-        <thead>
-          <tr>
-            <th>No Invoice</th>
-            <th>Klien</th>
-            <th>Perusahaan</th>
-            <th>PIC AR</th>
-            <th class="text-center">Jatuh Tempo</th>
-            <th class="text-center">Status Hari</th>
-            <th class="text-center">Status</th>
-            <th class="text-right">Sisa Tagihan</th>
-            <th class="text-center">Aksi</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="row in report.rows" :key="row.invoice_id">
-            <td>
-              <RouterLink
-                :to="{ name: 'finance-invoice-show', params: { id: row.invoice_id } }"
-                class="text-primary text-decoration-none font-weight-medium"
-              >
-                {{ row.no_invoice }}
-              </RouterLink>
-            </td>
-            <td>
-              <div class="font-weight-medium">{{ row.nama_klien }}</div>
-              <div class="text-caption text-medium-emphasis">{{ row.kode_klien }}</div>
-            </td>
-            <td>
-              <VChip v-if="row.perusahaan" color="secondary" size="small" variant="tonal" label>
-                {{ row.perusahaan }}
-              </VChip>
-              <span v-else>-</span>
-            </td>
-            <td>{{ row.pic_ar ?? '-' }}</td>
-            <td class="text-center">
-              {{ row.tanggal_jatuh_tempo ? formatDate(row.tanggal_jatuh_tempo) : '-' }}
-            </td>
-            <td class="text-center">
-              <VChip
-                :color="selisihColor(row.selisih_hari)"
-                size="small"
-                label
-              >
-                {{ selisihLabel(row.selisih_hari) }}
-              </VChip>
-            </td>
-            <td class="text-center">
-              <VChip :color="statusColor(row.status)" size="small" label variant="tonal">
-                {{ row.status }}
-              </VChip>
-            </td>
-            <td class="text-right font-weight-bold text-error">
-              {{ formatCurrency(row.sisa_tagihan) }}
-            </td>
-            <td class="text-center">
-              <VBtn
-                icon size="small" variant="text" color="info"
-                :to="{ name: 'finance-invoice-show', params: { id: row.invoice_id } }"
-              >
-                <VIcon icon="ri-eye-line" size="18" />
-                <VTooltip activator="parent">Lihat Invoice</VTooltip>
-              </VBtn>
-            </td>
-          </tr>
-
-          <tr v-if="!loading && (!report.rows || report.rows.length === 0)">
-            <td colspan="9" class="text-center text-medium-emphasis py-6">
-              Tidak ada invoice jatuh tempo
-            </td>
-          </tr>
-        </tbody>
-      </VTable>
+      <BaseTable
+        :headers="headers"
+        :items="paginatedRows"
+        :total="report.rows.length"
+        :loading="loading"
+        :per-page="perPage"
+        :page="page"
+        @update:options="onTableOptions"
+      >
+        <template #item.no="{ index }">
+          {{ (page - 1) * perPage + index + 1 }}
+        </template>
+        <template #item.no_invoice="{ item }">
+          <RouterLink
+            :to="{ name: 'finance-invoice-show', params: { id: item.invoice_id } }"
+            class="text-primary text-decoration-none font-weight-medium"
+          >
+            {{ item.no_invoice }}
+          </RouterLink>
+        </template>
+        <template #item.nama_klien="{ item }">
+          <div class="font-weight-medium">{{ item.nama_klien }}</div>
+          <div class="text-caption text-medium-emphasis">{{ item.kode_klien }}</div>
+        </template>
+        <template #item.perusahaan="{ item }">
+          <VChip v-if="item.perusahaan" color="secondary" size="small" variant="tonal" label>
+            {{ item.perusahaan }}
+          </VChip>
+          <span v-else>-</span>
+        </template>
+        <template #item.tanggal_jatuh_tempo="{ item }">
+          {{ item.tanggal_jatuh_tempo ? formatDate(item.tanggal_jatuh_tempo) : '-' }}
+        </template>
+        <template #item.selisih_hari="{ item }">
+          <VChip :color="selisihColor(item.selisih_hari)" size="small" label>
+            {{ selisihLabel(item.selisih_hari) }}
+          </VChip>
+        </template>
+        <template #item.status="{ item }">
+          <VChip :color="statusColor(item.status)" size="small" label variant="tonal">
+            {{ item.status }}
+          </VChip>
+        </template>
+        <template #item.sisa_tagihan="{ item }">
+          <span class="font-weight-bold text-error">{{ formatCurrency(item.sisa_tagihan) }}</span>
+        </template>
+        <template #item.actions="{ item }">
+          <VBtn
+            icon size="small" variant="text" color="info"
+            :to="{ name: 'finance-invoice-show', params: { id: item.invoice_id } }"
+          >
+            <VIcon icon="ri-eye-line" size="18" />
+            <VTooltip activator="parent">Lihat Invoice</VTooltip>
+          </VBtn>
+        </template>
+      </BaseTable>
     </VCard>
   </div>
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useAuthStore } from '@/stores/auth.store'
 import { useCrud } from '@/composables/useCrud'
 import { useLazyFetchAll } from '@/composables/useLazyFetchAll'
@@ -201,12 +182,37 @@ const filters = reactive({
   karyawan_ar_id: null,
 })
 
+const page    = ref(1)
+const perPage = ref(15)
+
+const paginatedRows = computed(() =>
+  report.rows.slice((page.value - 1) * perPage.value, page.value * perPage.value)
+)
+
+function onTableOptions({ page: p, itemsPerPage }) {
+  page.value    = p
+  perPage.value = itemsPerPage
+}
+
 const daysOptions = [
   { label: '7 Hari',  value: 7  },
   { label: '14 Hari', value: 14 },
   { label: '30 Hari', value: 30 },
   { label: '60 Hari', value: 60 },
   { label: '90 Hari', value: 90 },
+]
+
+const headers = [
+  { title: 'No',          key: 'no',                   sortable: false, width: '50px' },
+  { title: 'No Invoice',  key: 'no_invoice',            sortable: false },
+  { title: 'Klien',       key: 'nama_klien',            sortable: false },
+  { title: 'Perusahaan',  key: 'perusahaan',            sortable: false },
+  { title: 'PIC AR',      key: 'pic_ar',                sortable: false },
+  { title: 'Jatuh Tempo', key: 'tanggal_jatuh_tempo',   sortable: false, align: 'center' },
+  { title: 'Status Hari', key: 'selisih_hari',          sortable: false, align: 'center' },
+  { title: 'Status',      key: 'status',                sortable: false, align: 'center' },
+  { title: 'Sisa Tagihan',key: 'sisa_tagihan',          sortable: false, align: 'end' },
+  { title: 'Aksi',        key: 'actions',               sortable: false, align: 'center', width: '70px' },
 ]
 
 function selisihColor(hari) {
@@ -230,6 +236,7 @@ function statusColor(status) {
 }
 
 async function doFetch() {
+  page.value    = 1
   loading.value = true
   try {
     const params = { filter_type: filters.filter_type }
@@ -252,11 +259,3 @@ onMounted(() => {
   doFetch()
 })
 </script>
-
-<style scoped>
-.jatuh-tempo-table th,
-.jatuh-tempo-table td {
-  padding: 8px 12px;
-  white-space: nowrap;
-}
-</style>

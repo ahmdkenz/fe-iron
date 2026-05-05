@@ -1,11 +1,11 @@
 <template>
   <div>
     <PageHeader
-      title="Aging Report"
+      title="Laporan Aging"
       subtitle="Laporan umur piutang belum terbayar"
       :breadcrumbs="[
         { title: 'Dashboard', to: { name: 'dashboard' } },
-        { title: 'Aging Report', disabled: true },
+        { title: 'Laporan Aging', disabled: true },
       ]"
     />
 
@@ -49,9 +49,7 @@
       >
         <VCard :color="bucket.color" variant="tonal">
           <VCardText class="pa-3">
-            <div class="text-caption font-weight-medium mb-1">
-              {{ bucket.label }}
-            </div>
+            <div class="text-caption font-weight-medium mb-1">{{ bucket.label }}</div>
             <div class="text-subtitle-1 font-weight-bold">
               {{ formatCurrency(report.summary?.[bucket.key] ?? 0) }}
             </div>
@@ -69,87 +67,62 @@
         </div>
       </VCardText>
       <VDivider class="mt-2" />
-
-      <VProgressLinear
-        v-if="loading"
-        indeterminate
-        color="primary"
-      />
-
-      <VTable density="compact" class="aging-table">
-        <thead>
-          <tr>
-            <th>Klien</th>
-            <th>Perusahaan</th>
-            <th
-              v-for="bucket in buckets"
-              :key="bucket.key"
-              class="text-right"
-            >
-              {{ bucket.label }}
-            </th>
-            <th class="text-right">Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="row in report.rows"
-            :key="row.klien_id"
-          >
-            <td>
-              <div class="font-weight-medium">{{ row.nama_klien }}</div>
-              <div class="text-caption text-medium-emphasis">{{ row.kode_klien }}</div>
-            </td>
-            <td>{{ row.perusahaan ?? '-' }}</td>
-            <td
-              v-for="bucket in buckets"
-              :key="bucket.key"
-              class="text-right"
-              :class="row[bucket.key] > 0 && bucket.key !== 'current' ? `text-${bucket.color}` : ''"
-            >
-              {{ row[bucket.key] > 0 ? formatCurrency(row[bucket.key]) : '-' }}
-            </td>
-            <td class="text-right font-weight-bold">
-              {{ formatCurrency(row.total) }}
-            </td>
-          </tr>
-
-          <tr
-            v-if="!loading && (!report.rows || report.rows.length === 0)"
-          >
-            <td
-              :colspan="2 + buckets.length + 1"
-              class="text-center text-medium-emphasis py-6"
-            >
-              Tidak ada data piutang
-            </td>
-          </tr>
-
-          <!-- Total baris -->
-          <tr
-            v-if="report.rows?.length"
-            class="font-weight-bold bg-surface-variant"
-          >
-            <td colspan="2">Total</td>
-            <td
-              v-for="bucket in buckets"
-              :key="bucket.key"
-              class="text-right"
-            >
-              {{ formatCurrency(report.summary?.[bucket.key] ?? 0) }}
-            </td>
-            <td class="text-right">
-              {{ formatCurrency(report.summary?.total ?? 0) }}
-            </td>
-          </tr>
-        </tbody>
-      </VTable>
+      <VProgressLinear v-if="loading" indeterminate color="primary" />
+      <BaseTable
+        :headers="headers"
+        :items="paginatedRows"
+        :total="report.rows.length"
+        :loading="loading"
+        :per-page="perPage"
+        :page="page"
+        @update:options="onTableOptions"
+      >
+        <template #item.no="{ index }">
+          {{ (page - 1) * perPage + index + 1 }}
+        </template>
+        <template #item.nama_klien="{ item }">
+          <div class="font-weight-medium">{{ item.nama_klien }}</div>
+          <div class="text-caption text-medium-emphasis">{{ item.kode_klien }}</div>
+        </template>
+        <template #item.perusahaan="{ item }">
+          <VChip v-if="item.perusahaan" color="secondary" size="small" variant="tonal" label>
+            {{ item.perusahaan }}
+          </VChip>
+          <span v-else>-</span>
+        </template>
+        <template #item.current="{ item }">
+          {{ item.current > 0 ? formatCurrency(item.current) : '-' }}
+        </template>
+        <template #item.hari_1_30="{ item }">
+          <span :class="item.hari_1_30 > 0 ? 'text-info' : ''">
+            {{ item.hari_1_30 > 0 ? formatCurrency(item.hari_1_30) : '-' }}
+          </span>
+        </template>
+        <template #item.hari_31_60="{ item }">
+          <span :class="item.hari_31_60 > 0 ? 'text-warning' : ''">
+            {{ item.hari_31_60 > 0 ? formatCurrency(item.hari_31_60) : '-' }}
+          </span>
+        </template>
+        <template #item.hari_61_90="{ item }">
+          <span :class="item.hari_61_90 > 0 ? 'text-deep-orange' : ''">
+            {{ item.hari_61_90 > 0 ? formatCurrency(item.hari_61_90) : '-' }}
+          </span>
+        </template>
+        <template #item.hari_91_plus="{ item }">
+          <span :class="item.hari_91_plus > 0 ? 'text-error' : ''">
+            {{ item.hari_91_plus > 0 ? formatCurrency(item.hari_91_plus) : '-' }}
+          </span>
+        </template>
+        <template #item.total="{ item }">
+          <span class="font-weight-bold">{{ formatCurrency(item.total) }}</span>
+        </template>
+      </BaseTable>
     </VCard>
   </div>
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useCrud } from '@/composables/useCrud'
 import { useLazyFetchAll } from '@/composables/useLazyFetchAll'
 import { useFormatter } from '@/composables/useFormatter'
@@ -167,6 +140,18 @@ const filters = reactive({
   klien_ar_id: null,
 })
 
+const page    = ref(1)
+const perPage = ref(15)
+
+const paginatedRows = computed(() =>
+  report.rows.slice((page.value - 1) * perPage.value, page.value * perPage.value)
+)
+
+function onTableOptions({ page: p, itemsPerPage }) {
+  page.value    = p
+  perPage.value = itemsPerPage
+}
+
 const buckets = [
   { key: 'current',      label: 'Belum Jatuh Tempo', color: 'success' },
   { key: 'hari_1_30',    label: '1–30 Hari',          color: 'info'    },
@@ -175,7 +160,20 @@ const buckets = [
   { key: 'hari_91_plus', label: '>90 Hari',             color: 'error'   },
 ]
 
+const headers = [
+  { title: 'No',               key: 'no',           sortable: false, width: '50px' },
+  { title: 'Klien',            key: 'nama_klien',   sortable: false },
+  { title: 'Perusahaan',       key: 'perusahaan',   sortable: false },
+  { title: 'Belum Jatuh Tempo',key: 'current',      sortable: false, align: 'end' },
+  { title: '1–30 Hari',        key: 'hari_1_30',    sortable: false, align: 'end' },
+  { title: '31–60 Hari',       key: 'hari_31_60',   sortable: false, align: 'end' },
+  { title: '61–90 Hari',       key: 'hari_61_90',   sortable: false, align: 'end' },
+  { title: '>90 Hari',         key: 'hari_91_plus', sortable: false, align: 'end' },
+  { title: 'Total',            key: 'total',        sortable: false, align: 'end' },
+]
+
 async function doFetch() {
+  page.value    = 1
   loading.value = true
   try {
     const params = {}
@@ -191,11 +189,3 @@ async function doFetch() {
 
 onMounted(doFetch)
 </script>
-
-<style scoped>
-.aging-table th,
-.aging-table td {
-  padding: 8px 12px;
-  white-space: nowrap;
-}
-</style>
