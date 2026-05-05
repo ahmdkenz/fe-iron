@@ -59,9 +59,8 @@
                 density="compact"
                 variant="outlined"
                 readonly
-                :hint="isEditing ? 'Kode tidak dapat diubah' : 'Otomatis terisi setelah Perusahaan & Brand dipilih'"
+                :hint="isEditing ? 'Kode tidak dapat diubah' : 'Otomatis terisi dari Nama Resto'"
                 persistent-hint
-                :loading="previewLoading"
               />
             </VCol>
             <VCol
@@ -347,11 +346,10 @@ const { ensureLoaded: ensurePerusahaanLoaded } = useLazyFetchAll(fetchPerusahaan
 const { ensureLoaded: ensureInvestorLoaded } = useLazyFetchAll(fetchInvestor)
 const { ensureLoaded: ensureKaryawanLoaded } = useLazyFetchAll(fetchKaryawan)
 
-const brandList      = ref([])
-const brandLoading   = ref(false)
-const kodePreview    = ref('')
-const kodeResto      = ref('')
-const previewLoading = ref(false)
+const brandList    = ref([])
+const brandLoading = ref(false)
+const kodeResto    = ref('')
+const kodePreview  = computed(() => form.nama_resto ? `OT-${form.nama_resto}` : '')
 
 const formRef = ref(null)
 const pageLoading = ref(!!id)
@@ -388,32 +386,13 @@ async function ensureBrandLoaded() {
   brandLoaded = true
 }
 
-async function refreshKodePreview() {
-  if (!form.perusahaan_id || !form.brand_id || isEditing.value) return
-  previewLoading.value = true
-  try {
-    const res = await api.get('/master/resto/preview-kode', {
-      params: { perusahaan_id: form.perusahaan_id, brand_id: form.brand_id },
-    })
-
-    kodePreview.value = res.data?.data?.kode ?? ''
-  } catch {
-    kodePreview.value = ''
-  } finally {
-    previewLoading.value = false
-  }
-}
-
 function onPerusahaanChange(val) {
   form.brand_id = null
-  kodePreview.value = ''
   brandLoaded = false
   fetchBrandsByPerusahaan(val)
 }
 
-function onBrandChange() {
-  refreshKodePreview()
-}
+function onBrandChange() {}
 
 async function handleSubmit() {
   errorMessage.value = ''
