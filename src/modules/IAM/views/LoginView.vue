@@ -23,7 +23,7 @@
           I.R.O.N
         </h1>
         <h2 class="brand-fullname text-white font-weight-medium mb-4">
-          <span class="text-primary">Integrated</span> Reporting<br>Operation Network
+          <span class="text-primary">Intelligent</span> Record of<br>Organization Number
         </h2>
         <div class="brand-divider mb-4" />
         <p
