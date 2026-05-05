@@ -23,7 +23,7 @@ const roleName = computed(() =>
 
 async function doLogout() {
   isMenuOpen.value = false
-  authStore.logout()
+  await authStore.logout()
   await router.replace({ name: 'login' })
 }
 </script>
