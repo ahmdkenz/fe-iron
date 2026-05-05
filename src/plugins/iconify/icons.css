@@ -1,4 +1,4 @@
-.ri-add-line, .ri-alert-line, .ri-arrow-down-line, .ri-arrow-down-s-fill, .ri-arrow-down-s-line, .ri-arrow-left-line, .ri-arrow-left-s-line, .ri-arrow-right-line, .ri-arrow-right-s-line, .ri-arrow-up-line, .ri-arrow-up-s-line, .ri-attachment-2, .ri-bank-card-line, .ri-bar-chart-box-line, .ri-bar-chart-grouped-line, .ri-bill-line, .ri-box-3-line, .ri-building-2-line, .ri-building-4-line, .ri-building-line, .ri-calculator-line, .ri-calendar-2-line, .ri-calendar-check-line, .ri-calendar-event-line, .ri-calendar-line, .ri-check-line, .ri-checkbox-circle-line, .ri-circle-fill, .ri-circle-line, .ri-close-circle-fill, .ri-close-circle-line, .ri-close-line, .ri-contacts-line, .ri-delete-bin-line, .ri-error-warning-line, .ri-exchange-line, .ri-eye-line, .ri-eye-off-line, .ri-file-chart-line, .ri-file-list-3-line, .ri-file-text-line, .ri-file-warning-line, .ri-folder-3-line, .ri-funds-line, .ri-heart-fill, .ri-history-line, .ri-home-smile-2-line, .ri-information-line, .ri-links-line, .ri-list-check-2, .ri-logout-box-r-line, .ri-macbook-line, .ri-map-pin-2-line, .ri-menu-line, .ri-money-cny-circle-line, .ri-money-dollar-circle-line, .ri-moon-clear-line, .ri-more-2-line, .ri-node-tree, .ri-pencil-line, .ri-price-tag-3-line, .ri-printer-line, .ri-record-circle-line, .ri-refresh-line, .ri-save-line, .ri-search-line, .ri-send-plane-2-line, .ri-send-plane-line, .ri-shield-check-line, .ri-shield-keyhole-line, .ri-shield-user-line, .ri-skip-back-mini-line, .ri-skip-forward-mini-line, .ri-split-cells-vertical, .ri-star-fill, .ri-star-half-line, .ri-star-line, .ri-store-2-line, .ri-store-3-line, .ri-subtract-line, .ri-sun-line, .ri-task-line, .ri-time-line, .ri-timer-line, .ri-translate-2, .ri-upload-2-line, .ri-user-3-line, .ri-user-add-line, .ri-user-search-line, .ri-user-settings-line, .ri-user-star-line, .ri-wallet-3-line {
+.ri-add-line, .ri-alert-line, .ri-arrow-down-line, .ri-arrow-down-s-fill, .ri-arrow-down-s-line, .ri-arrow-left-line, .ri-arrow-left-s-line, .ri-arrow-right-line, .ri-arrow-right-s-line, .ri-arrow-up-line, .ri-arrow-up-s-line, .ri-attachment-2, .ri-bank-card-line, .ri-bank-line, .ri-bar-chart-box-line, .ri-bar-chart-grouped-line, .ri-bill-line, .ri-box-3-line, .ri-building-2-line, .ri-building-4-line, .ri-building-line, .ri-calculator-line, .ri-calendar-2-line, .ri-calendar-check-line, .ri-calendar-event-fill, .ri-calendar-event-line, .ri-calendar-line, .ri-chat-1-line, .ri-check-line, .ri-checkbox-circle-line, .ri-circle-fill, .ri-circle-line, .ri-close-circle-fill, .ri-close-circle-line, .ri-close-line, .ri-contacts-line, .ri-delete-bin-line, .ri-download-2-line, .ri-draft-line, .ri-error-warning-line, .ri-exchange-funds-line, .ri-exchange-line, .ri-eye-line, .ri-eye-off-line, .ri-file-chart-line, .ri-file-list-3-line, .ri-file-text-line, .ri-file-warning-line, .ri-folder-3-line, .ri-funds-line, .ri-hashtag, .ri-heart-fill, .ri-history-line, .ri-home-smile-2-line, .ri-inbox-line, .ri-information-line, .ri-links-line, .ri-list-check-2, .ri-list-unordered, .ri-logout-box-r-line, .ri-macbook-line, .ri-map-pin-2-line, .ri-menu-line, .ri-money-cny-circle-line, .ri-money-dollar-circle-line, .ri-moon-clear-line, .ri-more-2-line, .ri-node-tree, .ri-pencil-line, .ri-pie-chart-2-line, .ri-price-tag-3-line, .ri-printer-line, .ri-record-circle-line, .ri-refresh-line, .ri-save-line, .ri-search-line, .ri-send-plane-2-line, .ri-send-plane-line, .ri-shield-check-line, .ri-shield-keyhole-line, .ri-shield-user-line, .ri-skip-back-mini-line, .ri-skip-forward-mini-line, .ri-split-cells-vertical, .ri-star-fill, .ri-star-half-line, .ri-star-line, .ri-sticky-note-line, .ri-store-2-line, .ri-store-3-line, .ri-subtract-line, .ri-sun-line, .ri-task-line, .ri-time-line, .ri-timer-line, .ri-translate-2, .ri-truck-line, .ri-upload-2-line, .ri-user-3-line, .ri-user-add-line, .ri-user-search-line, .ri-user-settings-line, .ri-user-star-line, .ri-wallet-3-line {
   display: inline-block;
   width: 1em;
   height: 1em;
@@ -63,6 +63,10 @@
   --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='black' d='M3.005 3h18a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1h-18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1m17 8h-16v8h16zm0-2V5h-16v4zm-6 6h4v2h-4z'/%3E%3C/svg%3E");
 }
 
+.ri-bank-line {
+  --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='black' d='M2 20h20v2H2zm2-8h2v7H4zm5 0h2v7H9zm4 0h2v7h-2zm5 0h2v7h-2zM2 7l10-5l10 5v4H2zm2 1.236V9h16v-.764l-8-4zM12 8a1 1 0 1 1 0-2a1 1 0 0 1 0 2'/%3E%3C/svg%3E");
+}
+
 .ri-bar-chart-box-line {
   --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='black' d='M3 3h18a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1m1 2v14h16V5zm3 8h2v4H7zm4-6h2v10h-2zm4 3h2v7h-2z'/%3E%3C/svg%3E");
 }
@@ -103,12 +107,20 @@
   --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='black' d='M9 1v2h6V1h2v2h4a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h4V1zm11 9H4v9h16zm-4.964 1.136l1.414 1.414l-4.95 4.95l-3.536-3.536L9.38 12.55l2.121 2.122zM7 5H4v3h16V5h-3v1h-2V5H9v1H7z'/%3E%3C/svg%3E");
 }
 
+.ri-calendar-event-fill {
+  --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='black' d='M17 3h4a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h4V1h2v2h6V1h2zM4 9v10h16V9zm2 4h5v4H6z'/%3E%3C/svg%3E");
+}
+
 .ri-calendar-event-line {
   --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='black' d='M9 1v2h6V1h2v2h4a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h4V1zm11 10H4v8h16zm-9 2v4H6v-4zM7 5H4v4h16V5h-3v2h-2V5H9v2H7z'/%3E%3C/svg%3E");
 }
 
 .ri-calendar-line {
   --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='black' d='M9 1v2h6V1h2v2h4a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h4V1zm11 10H4v8h16zM7 5H4v4h16V5h-3v2h-2V5H9v2H7z'/%3E%3C/svg%3E");
+}
+
+.ri-chat-1-line {
+  --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='black' d='M10 3h4a8 8 0 1 1 0 16v3.5c-5-2-12-5-12-11.5a8 8 0 0 1 8-8m2 14h2a6 6 0 0 0 0-12h-4a6 6 0 0 0-6 6c0 3.61 2.462 5.966 8 8.48z'/%3E%3C/svg%3E");
 }
 
 .ri-check-line {
@@ -147,8 +159,20 @@
   --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='black' d='M17 6h5v2h-2v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V8H2V6h5V3a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1zm1 2H6v12h12zm-9 3h2v6H9zm4 0h2v6h-2zM9 4v2h6V4z'/%3E%3C/svg%3E");
 }
 
+.ri-download-2-line {
+  --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='black' d='M13 10h5l-6 6l-6-6h5V3h2zm-9 9h16v-7h2v8a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-8h2z'/%3E%3C/svg%3E");
+}
+
+.ri-draft-line {
+  --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='black' d='M20 2a1 1 0 0 1 1 1v3.757l-2 2V4H5v16h14v-2.758l2-2V21a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm1.778 6.808l1.414 1.414L15.414 18l-1.416-.002l.002-1.412zM13 12v2H8v-2zm3-4v2H8V8z'/%3E%3C/svg%3E");
+}
+
 .ri-error-warning-line {
   --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='black' d='M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10s-4.477 10-10 10m0-2a8 8 0 1 0 0-16a8 8 0 0 0 0 16m-1-5h2v2h-2zm0-8h2v6h-2z'/%3E%3C/svg%3E");
+}
+
+.ri-exchange-funds-line {
+  --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='black' d='M19.379 15.106A8.001 8.001 0 0 0 8.035 5.056l-.993-1.737a10 10 0 0 1 9.962.023c4.49 2.593 6.21 8.143 4.118 12.77l1.342.775l-4.166 2.214l-.165-4.714zM4.629 8.9a8.001 8.001 0 0 0 11.345 10.05l.992 1.737a10 10 0 0 1-9.962-.024c-4.49-2.593-6.21-8.142-4.117-12.77L1.545 7.12L5.71 4.905l.165 4.714zm8.79 5.931l-2.829-2.828l-2.828 2.828l-1.415-1.414l4.243-4.243l2.828 2.829l2.829-2.829l1.414 1.415z'/%3E%3C/svg%3E");
 }
 
 .ri-exchange-line {
@@ -187,6 +211,10 @@
   --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='black' d='m4.41 14.526l3.402-3.402l2.829 2.829l3.157-3.157l-1.793-1.793h5v5l-1.793-1.793l-4.571 4.571l-2.829-2.828l-2.474 2.474a8 8 0 1 0-.927-1.9m-1.537 1.558l-.01-.01l.004-.004a10 10 0 0 1-.862-4.067c0-5.523 4.477-10 10-10s10 4.477 10 10s-4.477 10-10 10c-4.07 0-7.57-2.43-9.132-5.919'/%3E%3C/svg%3E");
 }
 
+.ri-hashtag {
+  --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='black' d='m7.784 14l.42-4H4V8h4.415l.525-5h2.011l-.525 5h3.989l.525-5h2.011l-.525 5H20v2h-3.784l-.42 4H20v2h-4.415l-.525 5h-2.011l.525-5H9.585l-.525 5H7.049l.525-5H4v-2zm2.011 0h3.99l.42-4h-3.99z'/%3E%3C/svg%3E");
+}
+
 .ri-heart-fill {
   --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='black' d='M12.001 4.529a6 6 0 0 1 8.242.228a6 6 0 0 1 .236 8.236l-8.48 8.492l-8.478-8.492a6 6 0 0 1 8.48-8.464'/%3E%3C/svg%3E");
 }
@@ -199,6 +227,10 @@
   --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='black' d='M19 19V9.799l-7-5.522l-7 5.522V19zm2 1a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.314a1 1 0 0 1 .38-.785l8-6.311a1 1 0 0 1 1.24 0l8 6.31a1 1 0 0 1 .38.786zM7 12h2a3 3 0 1 0 6 0h2a5 5 0 0 1-10 0'/%3E%3C/svg%3E");
 }
 
+.ri-inbox-line {
+  --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='black' d='M21 3a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM7.416 14H4v5h16v-5h-3.416a5.001 5.001 0 0 1-9.168 0M20 5H4v7h5a3 3 0 1 0 6 0h5z'/%3E%3C/svg%3E");
+}
+
 .ri-information-line {
   --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='black' d='M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10s-4.477 10-10 10m0-2a8 8 0 1 0 0-16a8 8 0 0 0 0 16M11 7h2v2h-2zm0 4h2v6h-2z'/%3E%3C/svg%3E");
 }
@@ -209,6 +241,10 @@
 
 .ri-list-check-2 {
   --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='black' d='M11 4h10v2H11zm0 4h6v2h-6zm0 6h10v2H11zm0 4h6v2h-6zM3 4h6v6H3zm2 2v2h2V6zm-2 8h6v6H3zm2 2v2h2v-2z'/%3E%3C/svg%3E");
+}
+
+.ri-list-unordered {
+  --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='black' d='M8 4h13v2H8zM4.5 6.5a1.5 1.5 0 1 1 0-3a1.5 1.5 0 0 1 0 3m0 7a1.5 1.5 0 1 1 0-3a1.5 1.5 0 0 1 0 3m0 6.9a1.5 1.5 0 1 1 0-3a1.5 1.5 0 0 1 0 3M8 11h13v2H8zm0 7h13v2H8z'/%3E%3C/svg%3E");
 }
 
 .ri-logout-box-r-line {
@@ -249,6 +285,10 @@
 
 .ri-pencil-line {
   --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='black' d='m15.728 9.576l-1.414-1.414L5 17.476v1.414h1.414zm1.414-1.414l1.414-1.414l-1.414-1.414l-1.414 1.414zm-9.9 12.728H3v-4.243L16.435 3.212a1 1 0 0 1 1.414 0l2.829 2.829a1 1 0 0 1 0 1.414z'/%3E%3C/svg%3E");
+}
+
+.ri-pie-chart-2-line {
+  --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='black' d='M12 .5C18.351.5 23.5 5.649 23.5 12q0 .505-.043 1h-1.506c-.502 5.053-4.766 9-9.951 9c-5.523 0-10-4.477-10-10c0-5.185 3.947-9.449 9-9.95V.542Q11.495.5 12 .5m-1 3.562A8.001 8.001 0 0 0 12 20a8 8 0 0 0 7.938-7H11zm2-1.51V11h8.448A9.5 9.5 0 0 0 13 2.552'/%3E%3C/svg%3E");
 }
 
 .ri-price-tag-3-line {
@@ -319,6 +359,10 @@
   --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='black' d='m12 18.26l-7.053 3.948l1.575-7.928L.588 8.792l8.027-.952L12 .5l3.385 7.34l8.027.952l-5.934 5.488l1.575 7.928zm0-2.292l4.247 2.377l-.948-4.773l3.573-3.305l-4.833-.573l-2.038-4.419l-2.039 4.42l-4.833.572l3.573 3.305l-.948 4.773z'/%3E%3C/svg%3E");
 }
 
+.ri-sticky-note-line {
+  --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='black' d='m21 15l-6 5.996L4.002 21A1 1 0 0 1 3 20.007V3.993C3 3.445 3.445 3 3.993 3h16.014c.548 0 .993.456.993 1.002zM19 5H5v14h8v-5a1 1 0 0 1 .883-.993L14 13l5-.001zm-.829 9.999L15 15v3.169z'/%3E%3C/svg%3E");
+}
+
 .ri-store-2-line {
   --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='black' d='M21 13.242V20h1v2H2v-2h1v-6.758A4.5 4.5 0 0 1 1 9.5c0-.827.224-1.624.633-2.303L4.345 2.5a1 1 0 0 1 .866-.5H18.79a1 1 0 0 1 .866.5l2.703 4.682c.418.694.642 1.49.642 2.318c0 1.56-.794 2.935-2 3.742m-2 .73a4.5 4.5 0 0 1-3.75-1.36A4.5 4.5 0 0 1 12 14.001a4.5 4.5 0 0 1-3.25-1.387A4.5 4.5 0 0 1 5 13.973V20h14zM5.789 4L3.356 8.213a2.5 2.5 0 1 0 4.466 2.216c.335-.837 1.52-.837 1.856 0a2.5 2.5 0 0 0 4.644 0c.335-.837 1.52-.837 1.856 0a2.5 2.5 0 1 0 4.457-2.232L18.21 4z'/%3E%3C/svg%3E");
 }
@@ -349,6 +393,10 @@
 
 .ri-translate-2 {
   --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='black' d='m18.5 10l4.4 11h-2.155l-1.201-3h-4.09l-1.199 3h-2.154L16.5 10zM10 2v2h6v2h-1.968a18.2 18.2 0 0 1-3.62 6.301a15 15 0 0 0 2.335 1.707l-.75 1.878A17 17 0 0 1 9 13.725a16.7 16.7 0 0 1-6.201 3.548l-.536-1.929a14.7 14.7 0 0 0 5.327-3.042A18 18 0 0 1 4.767 8h2.24A16 16 0 0 0 9 10.877a16.2 16.2 0 0 0 2.91-4.876L2 6V4h6V2zm7.5 10.885L16.253 16h2.492z'/%3E%3C/svg%3E");
+}
+
+.ri-truck-line {
+  --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='black' d='M8.965 18a3.5 3.5 0 0 1-6.93 0H1V6a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2h3l3 4.056V18h-2.035a3.501 3.501 0 0 1-6.93 0zM15 7H3v8.05a3.5 3.5 0 0 1 5.663.95h5.674c.168-.353.393-.674.663-.95zm2 6h4v-.285L18.992 10H17zm.5 6a1.5 1.5 0 1 0 0-3.001a1.5 1.5 0 0 0 0 3.001M7 17.5a1.5 1.5 0 1 0-3 0a1.5 1.5 0 0 0 3 0'/%3E%3C/svg%3E");
 }
 
 .ri-upload-2-line {
