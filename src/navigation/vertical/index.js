@@ -79,8 +79,9 @@ export default [
     icon: { icon: 'ri-task-line' },
     roles: ['DIREKTUR'],
   },
+  { heading: 'LAPORAN' },
   {
-    title: 'Aging Report',
+    title: 'Laporan Aging',
     to: { name: 'finance-aging-report' },
     icon: { icon: 'ri-bar-chart-grouped-line' },
     roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR'],
@@ -104,7 +105,7 @@ export default [
     roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR'],
   },
   {
-    title: 'Invoice Jatuh Tempo',
+    title: 'Tagihan Jatuh Tempo',
     to: { name: 'finance-jatuh-tempo' },
     icon: { icon: 'ri-time-line' },
     roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'],
