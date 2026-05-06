@@ -7,7 +7,7 @@ export default [
   {
     title: 'Export Data',
     to: { name: 'finance-export-data' },
-    icon: { icon: 'ri-download-cloud-2-line' },
+    icon: { icon: 'ri-download-2-line' },
     roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR'],
   },
   { heading: 'USER MANAGEMENT' },

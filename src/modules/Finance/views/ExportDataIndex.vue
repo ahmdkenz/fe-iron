@@ -61,121 +61,130 @@
         <div class="text-caption text-medium-emphasis mb-4">Sesuaikan rentang tanggal dan filter khusus per laporan</div>
 
         <!-- Global date range -->
-        <div class="mb-4 pa-3 rounded" style="background: rgba(var(--v-theme-primary), 0.06); border: 1px solid rgba(var(--v-theme-primary), 0.15)">
-          <div class="text-subtitle-2 font-weight-semibold mb-2">
-            <VIcon icon="ri-calendar-line" size="16" class="me-1" />
-            Periode Utama
-            <span class="text-caption text-medium-emphasis ms-1">(berlaku untuk Mutasi, Rekap Pembayaran, Kinerja AR, Riwayat Pembayaran)</span>
-          </div>
-          <div class="d-flex flex-wrap gap-3">
-            <VTextField
-              v-model="filters.dari"
-              label="Dari Tanggal"
-              type="date"
-              density="compact"
-              hide-details
-              style="max-width: 190px"
-            />
-            <VTextField
-              v-model="filters.sampai"
-              label="Sampai Tanggal"
-              type="date"
-              density="compact"
-              hide-details
-              style="max-width: 190px"
-            />
-          </div>
-        </div>
+        <VCard variant="tonal" color="primary" class="mb-3" rounded="lg">
+          <VCardText class="pa-3">
+            <div class="d-flex align-center gap-2 mb-1">
+              <VIcon icon="ri-calendar-line" size="16" color="primary" />
+              <span class="text-subtitle-2 font-weight-semibold">Periode Utama</span>
+            </div>
+            <div class="text-caption text-medium-emphasis mb-3">
+              Berlaku untuk: Mutasi Piutang, Rekap Pembayaran, Kinerja AR, Riwayat Pembayaran
+            </div>
+            <div class="d-flex flex-wrap gap-3">
+              <VTextField
+                v-model="filters.dari"
+                label="Dari Tanggal"
+                type="date"
+                density="compact"
+                hide-details
+                style="max-width: 190px"
+              />
+              <VTextField
+                v-model="filters.sampai"
+                label="Sampai Tanggal"
+                type="date"
+                density="compact"
+                hide-details
+                style="max-width: 190px"
+              />
+            </div>
+          </VCardText>
+        </VCard>
 
         <!-- Aging specific -->
-        <div v-if="isSelected('aging_report')" class="mb-3 pa-3 rounded" style="background: rgba(var(--v-theme-surface-variant), 0.5); border: 1px solid rgba(var(--v-border-color), 0.3)">
-          <div class="text-subtitle-2 font-weight-semibold mb-2">
-            <VAvatar color="primary" variant="tonal" size="20" class="me-1">
-              <VIcon icon="ri-bar-chart-grouped-line" size="12" />
-            </VAvatar>
-            Aging Report — Per Tanggal
-          </div>
-          <VTextField
-            v-model="agingFilter.as_of_date"
-            label="Per Tanggal"
-            type="date"
-            density="compact"
-            hide-details
-            style="max-width: 190px"
-          />
-          <div class="text-caption text-medium-emphasis mt-1">Kosongkan untuk menggunakan "Sampai Tanggal" di atas</div>
-        </div>
+        <VCard v-if="isSelected('aging_report')" variant="outlined" class="mb-3" rounded="lg">
+          <VCardText class="pa-3">
+            <div class="d-flex align-center gap-2 mb-3">
+              <VIcon icon="ri-bar-chart-grouped-line" size="16" color="primary" />
+              <span class="text-subtitle-2 font-weight-semibold">Aging Report — Per Tanggal</span>
+            </div>
+            <VTextField
+              v-model="agingFilter.as_of_date"
+              label="Per Tanggal"
+              type="date"
+              density="compact"
+              hide-details
+              style="max-width: 190px"
+            />
+            <div class="text-caption text-medium-emphasis mt-2">
+              Kosongkan untuk menggunakan "Sampai Tanggal" di atas
+            </div>
+          </VCardText>
+        </VCard>
 
         <!-- Rekap Per Klien specific -->
-        <div v-if="isSelected('rekap_klien')" class="mb-3 pa-3 rounded" style="background: rgba(var(--v-theme-surface-variant), 0.5); border: 1px solid rgba(var(--v-border-color), 0.3)">
-          <div class="text-subtitle-2 font-weight-semibold mb-2">
-            <VAvatar color="secondary" variant="tonal" size="20" class="me-1">
-              <VIcon icon="ri-pie-chart-2-line" size="12" />
-            </VAvatar>
-            Rekap Per Klien — Periode Bulan/Tahun
-          </div>
-          <div class="d-flex flex-wrap gap-3">
-            <VSelect
-              v-model="rekapKlienFilter.bulan"
-              placeholder="Semua Bulan"
-              clearable
-              hide-details
-              density="compact"
-              style="max-width: 170px"
-              :items="bulanOptions"
-              item-title="label"
-              item-value="value"
-            />
-            <VTextField
-              v-model="rekapKlienFilter.tahun"
-              placeholder="Tahun"
-              hide-details
-              density="compact"
-              style="max-width: 110px"
-              type="number"
-            />
-          </div>
-        </div>
+        <VCard v-if="isSelected('rekap_klien')" variant="outlined" class="mb-3" rounded="lg">
+          <VCardText class="pa-3">
+            <div class="d-flex align-center gap-2 mb-3">
+              <VIcon icon="ri-pie-chart-2-line" size="16" color="secondary" />
+              <span class="text-subtitle-2 font-weight-semibold">Rekap Per Klien — Periode Bulan/Tahun</span>
+            </div>
+            <div class="d-flex flex-wrap gap-3">
+              <VSelect
+                v-model="rekapKlienFilter.bulan"
+                placeholder="Semua Bulan"
+                clearable
+                hide-details
+                density="compact"
+                style="max-width: 170px"
+                :items="bulanOptions"
+                item-title="label"
+                item-value="value"
+              />
+              <VTextField
+                v-model="rekapKlienFilter.tahun"
+                placeholder="Tahun"
+                hide-details
+                density="compact"
+                style="max-width: 110px"
+                type="number"
+              />
+            </div>
+          </VCardText>
+        </VCard>
 
         <!-- Jatuh Tempo specific -->
-        <div v-if="isSelected('jatuh_tempo')" class="mb-3 pa-3 rounded" style="background: rgba(var(--v-theme-surface-variant), 0.5); border: 1px solid rgba(var(--v-border-color), 0.3)">
-          <div class="text-subtitle-2 font-weight-semibold mb-2">
-            <VAvatar color="warning" variant="tonal" size="20" class="me-1">
-              <VIcon icon="ri-time-line" size="12" />
-            </VAvatar>
-            Tagihan Jatuh Tempo — Tipe Filter
-          </div>
-          <div class="d-flex flex-wrap gap-3 align-center">
-            <VBtnToggle
-              v-model="jatuhTempoFilter.filter_type"
-              density="compact"
-              variant="outlined"
-              mandatory
-              color="warning"
-            >
-              <VBtn value="upcoming">Akan JT</VBtn>
-              <VBtn value="overdue">Sudah Lewat</VBtn>
-              <VBtn value="all">Semua</VBtn>
-            </VBtnToggle>
-            <VSelect
-              v-if="jatuhTempoFilter.filter_type === 'upcoming'"
-              v-model="jatuhTempoFilter.days"
-              label="Dalam"
-              density="compact"
-              hide-details
-              style="max-width: 130px"
-              :items="[
-                { label: '7 Hari',  value: 7  },
-                { label: '14 Hari', value: 14 },
-                { label: '30 Hari', value: 30 },
-                { label: '60 Hari', value: 60 },
-                { label: '90 Hari', value: 90 },
-              ]"
-              item-title="label"
-              item-value="value"
-            />
-          </div>
-        </div>
+        <VCard v-if="isSelected('jatuh_tempo')" variant="outlined" class="mb-3" rounded="lg">
+          <VCardText class="pa-3">
+            <div class="d-flex align-center gap-2 mb-3">
+              <VIcon icon="ri-time-line" size="16" color="deep-orange" />
+              <span class="text-subtitle-2 font-weight-semibold">Tagihan Jatuh Tempo — Tipe Filter</span>
+            </div>
+            <div class="d-flex flex-wrap gap-3 align-center">
+              <VSelect
+                v-model="jatuhTempoFilter.filter_type"
+                label="Tipe Filter"
+                density="compact"
+                hide-details
+                style="max-width: 200px"
+                :items="[
+                  { label: 'Akan Jatuh Tempo', value: 'upcoming' },
+                  { label: 'Sudah Lewat',       value: 'overdue'  },
+                  { label: 'Semua',             value: 'all'      },
+                ]"
+                item-title="label"
+                item-value="value"
+              />
+              <VSelect
+                v-if="jatuhTempoFilter.filter_type === 'upcoming'"
+                v-model="jatuhTempoFilter.days"
+                label="Dalam"
+                density="compact"
+                hide-details
+                style="max-width: 140px"
+                :items="[
+                  { label: '7 Hari',  value: 7  },
+                  { label: '14 Hari', value: 14 },
+                  { label: '30 Hari', value: 30 },
+                  { label: '60 Hari', value: 60 },
+                  { label: '90 Hari', value: 90 },
+                ]"
+                item-title="label"
+                item-value="value"
+              />
+            </div>
+          </VCardText>
+        </VCard>
       </VCardText>
     </VCard>
 
@@ -195,11 +204,11 @@
           </div>
         </div>
         <VBtn
-          color="success"
+          color="primary"
           size="large"
           :loading="exporting"
           :disabled="selectedKeys.length === 0"
-          prepend-icon="ri-file-excel-2-line"
+          prepend-icon="ri-download-2-line"
           @click="doExport"
         >
           Export Excel
@@ -231,9 +240,9 @@ const reportDefs = [
   { key: 'rekap_klien',       label: 'Rekap Per Klien',      icon: 'ri-pie-chart-2-line',        description: 'Ringkasan outstanding piutang per klien', color: 'secondary' },
   { key: 'riwayat_pembayaran',label: 'Riwayat Pembayaran',   icon: 'ri-money-cny-circle-line',   description: 'Daftar semua pembayaran AR',              color: 'success'   },
   { key: 'mutasi_piutang',    label: 'Mutasi Piutang',       icon: 'ri-exchange-funds-line',     description: 'Pergerakan piutang per klien',           color: 'info'      },
-  { key: 'jatuh_tempo',       label: 'Tagihan Jatuh Tempo',  icon: 'ri-time-line',               description: 'Invoice yang akan/sudah jatuh tempo',    color: 'warning'   },
+  { key: 'jatuh_tempo',       label: 'Tagihan Jatuh Tempo',  icon: 'ri-time-line',               description: 'Invoice yang akan/sudah jatuh tempo',    color: 'deep-orange' },
   { key: 'rekap_pembayaran',  label: 'Rekap Pembayaran',     icon: 'ri-bank-card-line',          description: 'Ringkasan pembayaran per metode & tanggal',color: 'error'    },
-  { key: 'kinerja_ar',        label: 'Kinerja AR',           icon: 'ri-user-star-line',          description: 'Performa penagihan per AR Officer',      color: 'purple'    },
+  { key: 'kinerja_ar',        label: 'Kinerja AR',           icon: 'ri-user-star-line',          description: 'Performa penagihan per AR Officer',      color: 'deep-purple' },
 ]
 
 const allSelected = computed(() => selectedKeys.value.length === reportDefs.length)
