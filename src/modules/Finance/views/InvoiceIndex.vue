@@ -310,6 +310,22 @@
               </VTooltip>
             </VBtn>
             <VBtn
+              v-if="item.can_print"
+              icon
+              size="small"
+              variant="tonal"
+              color="success"
+              @click="shareViaWhatsapp(item)"
+            >
+              <VIcon
+                icon="ri-whatsapp-line"
+                size="18"
+              />
+              <VTooltip activator="parent">
+                Kirim via WhatsApp
+              </VTooltip>
+            </VBtn>
+            <VBtn
               v-if="item.status === 'DRAFT'"
               icon
               size="small"
@@ -414,7 +430,7 @@ const headers = [
   { title: 'Total Tagihan',  key: 'total_tagihan',  sortable: false },
   { title: 'Sisa Tagihan',   key: 'sisa_tagihan',   sortable: false },
   { title: 'Status',         key: 'status',         sortable: false },
-  { title: 'Aksi',           key: 'actions',        sortable: false, align: 'center', width: '120px' },
+  { title: 'Aksi',           key: 'actions',        sortable: false, align: 'center', width: '160px' },
 ]
 
 const statusOptions = [
@@ -552,6 +568,28 @@ async function printInvoice(id) {
   } catch {
     await showError('Gagal membuka dokumen cetak')
   }
+}
+
+async function shareViaWhatsapp(inv) {
+  const rawPhone = inv.klien_ar?.no_wa ?? ''
+  if (!rawPhone) {
+    await showError('Nomor WhatsApp klien belum diisi. Silakan lengkapi data No. WhatsApp pada form Klien AR.')
+    return
+  }
+
+  const phone = rawPhone.startsWith('0')
+    ? '62' + rawPhone.slice(1)
+    : rawPhone.replace(/^\+/, '')
+
+  const total = new Intl.NumberFormat('id-ID').format(inv.total_tagihan)
+  const msg =
+    `Halo, berikut kami kirimkan Invoice *${inv.no_invoice}*.\n\n` +
+    `Klien: ${inv.klien_ar.nama_klien}\n` +
+    `Total Tagihan: Rp ${total}\n` +
+    `Periode: ${inv.periode_awal} s/d ${inv.periode_akhir}\n\n` +
+    `Silakan akses dan unduh invoice di:\n${inv.share_url}`
+
+  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank')
 }
 
 async function doDelete() {

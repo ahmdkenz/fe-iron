@@ -103,6 +103,18 @@
           />
           Cetak
         </VBtn>
+        <VBtn
+          v-if="invoice?.can_print"
+          color="success"
+          variant="tonal"
+          @click="shareViaWhatsapp"
+        >
+          <VIcon
+            icon="ri-whatsapp-line"
+            class="me-1"
+          />
+          Kirim WA
+        </VBtn>
       </div>
     </PageHeader>
 
@@ -1069,6 +1081,29 @@ async function printInvoice() {
   } catch {
     await showError('Gagal membuka dokumen cetak')
   }
+}
+
+async function shareViaWhatsapp() {
+  const rawPhone = invoice.value?.klien_ar?.no_wa ?? ''
+  if (!rawPhone) {
+    await showError('Nomor WhatsApp klien belum diisi. Silakan lengkapi data No. WhatsApp pada form Klien AR.')
+    return
+  }
+
+  const phone = rawPhone.startsWith('0')
+    ? '62' + rawPhone.slice(1)
+    : rawPhone.replace(/^\+/, '')
+
+  const inv = invoice.value
+  const total = new Intl.NumberFormat('id-ID').format(inv.total_tagihan)
+  const msg =
+    `Halo, berikut kami kirimkan Invoice *${inv.no_invoice}*.\n\n` +
+    `Klien: ${inv.klien_ar.nama_klien}\n` +
+    `Total Tagihan: Rp ${total}\n` +
+    `Periode: ${inv.periode_awal} s/d ${inv.periode_akhir}\n\n` +
+    `Silakan akses dan unduh invoice di:\n${inv.share_url}`
+
+  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank')
 }
 
 async function refreshPendingOpeningBalanceBadge() {
