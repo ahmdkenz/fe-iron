@@ -37,6 +37,15 @@
       ref="formRef"
       @submit.prevent
     >
+      <VAlert
+        v-if="isArEditMode"
+        type="info"
+        variant="tonal"
+        class="mb-4"
+      >
+        Sebagai AR, Anda hanya dapat mengubah <strong>No. WhatsApp</strong> klien.
+      </VAlert>
+
       <VCard class="mb-4">
         <VCardTitle class="pa-4 pb-2">
           <VIcon
@@ -76,6 +85,7 @@
                 variant="outlined"
                 :rules="[v => !!v || 'Nama klien wajib diisi']"
                 :error-messages="errors.nama_klien"
+                :readonly="isArEditMode"
               />
             </VCol>
             <VCol
@@ -88,6 +98,7 @@
                 density="compact"
                 variant="outlined"
                 :error-messages="errors.alias"
+                :readonly="isArEditMode"
               />
             </VCol>
             <VCol
@@ -104,6 +115,7 @@
                 item-value="value"
                 :rules="[v => !!v || 'Tipe klien wajib dipilih']"
                 :error-messages="errors.tipe_klien"
+                :readonly="isArEditMode"
               />
             </VCol>
 
@@ -133,6 +145,7 @@
                 density="compact"
                 variant="outlined"
                 :error-messages="errors.tipe_outlet"
+                :readonly="isArEditMode"
               />
             </VCol>
             <VCol
@@ -146,6 +159,7 @@
                 density="compact"
                 variant="outlined"
                 :error-messages="errors.stokis_area"
+                :readonly="isArEditMode"
               />
             </VCol>
             <VCol
@@ -158,6 +172,21 @@
                 density="compact"
                 variant="outlined"
                 :error-messages="errors.no_npwp"
+                :readonly="isArEditMode"
+              />
+            </VCol>
+            <VCol
+              cols="12"
+              md="6"
+            >
+              <VTextField
+                v-model="form.no_wa"
+                label="No. WhatsApp"
+                placeholder="Contoh: 08123456789"
+                density="compact"
+                variant="outlined"
+                :error-messages="errors.no_wa"
+                clearable
               />
             </VCol>
             <VCol
@@ -172,6 +201,7 @@
                 :items="statusOptions"
                 item-title="label"
                 item-value="value"
+                :readonly="isArEditMode"
               />
             </VCol>
           </VRow>
@@ -280,6 +310,7 @@
                 :error-messages="errors.resto_id"
                 :loading="restoLoading"
                 clearable
+                :readonly="isArEditMode"
                 @focus="ensureRestoLoaded()"
               >
                 <template #item="{ props: p, item }">
@@ -346,6 +377,7 @@ const { showError } = useSweetAlert()
 const id = route.params.id
 const isEditing = computed(() => !!id)
 const isArRole = computed(() => authStore.isArOnly)
+const isArEditMode = computed(() => isArRole.value && isEditing.value)
 
 const { create, update, saving, fetchOne } = useCrud('/finance/klien-ar')
 const { items: perusahaanList, loading: perusahaanLoading, fetchAll: fetchPerusahaan } = useCrud('/master/perusahaan')
@@ -390,6 +422,7 @@ const errors = reactive({
   tipe_outlet: [],
   stokis_area: [],
   no_npwp: [],
+  no_wa: [],
   perusahaan_id: [],
   karyawan_ar_id: [],
   resto_id: [],
@@ -403,6 +436,7 @@ const defaultForm = () => ({
   tipe_outlet: '',
   stokis_area: '',
   no_npwp: '',
+  no_wa: '',
   perusahaan_id: isArRole.value ? (authStore.user?.karyawan?.perusahaan_id ?? null) : null,
   karyawan_ar_id: isArRole.value ? (authStore.user?.karyawan?.id ?? null) : null,
   resto_id: null,
@@ -440,6 +474,19 @@ async function handleSubmit() {
 
   const { valid } = await formRef.value.validate()
   if (!valid) return
+
+  if (isArEditMode.value) {
+    try {
+      await api.patch(`/finance/klien-ar/${id}/wa`, { no_wa: form.no_wa || null })
+      setFlashAlert({ icon: 'success', title: 'Berhasil', text: 'No. WhatsApp berhasil diperbarui.' })
+      router.push({ name: 'finance-klien-ar' })
+    } catch (e) {
+      const msg = e.response?.data?.message ?? 'Terjadi kesalahan'
+      errorMessage.value = msg
+      await showError(msg)
+    }
+    return
+  }
 
   const payload = { ...form }
   const res = isEditing.value ? await update(id, payload) : await create(payload)
@@ -491,6 +538,7 @@ onMounted(async () => {
       tipe_outlet: data.tipe_outlet ?? '',
       stokis_area: data.stokis_area ?? '',
       no_npwp: data.no_npwp ?? '',
+      no_wa: data.no_wa ?? '',
       perusahaan_id: data.perusahaan_id ?? null,
       karyawan_ar_id: data.karyawan_ar_id ?? null,
       resto_id: data.resto_id ?? null,
