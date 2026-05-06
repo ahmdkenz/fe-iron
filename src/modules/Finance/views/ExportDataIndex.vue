@@ -332,15 +332,15 @@ function buildAgingSection(rd) {
   const rows    = rd.rows ?? []
   const summary = rd.summary ?? {}
   return {
-    title: 'AGING REPORT (LAPORAN UMUR PIUTANG)',
-    meta:  `Per Tanggal: ${fmtDate(agingFilter.as_of_date || filters.sampai)}  |  Total Klien: ${rows.length}`,
+    title: 'AGING REPORT — Laporan Umur Piutang',
+    meta:  `Per Tanggal: ${fmtDate(agingFilter.as_of_date || filters.sampai)}  ·  Total Klien: ${rows.length}`,
     headers: ['No', 'Kode Klien', 'Nama Klien', 'Perusahaan', 'Belum Jatuh Tempo', '1–30 Hari', '31–60 Hari', '61–90 Hari', '> 90 Hari', 'Total'],
     aligns:  ['c',  '',           '',            '',            'r',                  'r',          'r',           'r',           'r',         'r'],
     rows: rows.map((r, i) => [i+1, r.kode_klien??'', r.nama_klien??'', r.perusahaan??'-',
       n(r.current), n(r.hari_1_30), n(r.hari_31_60), n(r.hari_61_90), n(r.hari_91_plus), n(r.total)]),
     totalRow: ['', '', 'TOTAL', '', n(summary.current), n(summary.hari_1_30), n(summary.hari_31_60), n(summary.hari_61_90), n(summary.hari_91_plus),
       rows.reduce((s, r) => s + n(r.total), 0)],
-    numericCols: [4, 5, 6, 7, 8, 9],
+    currencyCols: [4, 5, 6, 7, 8, 9],
   }
 }
 
@@ -350,7 +350,7 @@ function buildRekapKlienSection(rows) {
     : 'Semua Bulan'
   return {
     title: 'REKAP PIUTANG PER KLIEN',
-    meta:  `Periode: ${bulanLabel} ${rekapKlienFilter.tahun ?? ''}  |  Total Klien: ${rows.length}`,
+    meta:  `Periode: ${bulanLabel} ${rekapKlienFilter.tahun ?? ''}  ·  Total Klien: ${rows.length}`,
     headers: ['No', 'Kode Klien', 'Nama Klien', 'Perusahaan', 'Jml Invoice', 'Total Tagihan', 'Total Terbayar', 'Sisa Piutang'],
     aligns:  ['c',  '',           '',            '',            'c',           'r',              'r',               'r'],
     rows: rows.map((r, i) => [i+1, r.kode_klien??'', r.nama_klien??'', r.perusahaan??'-',
@@ -359,20 +359,21 @@ function buildRekapKlienSection(rows) {
       rows.reduce((s, r) => s + n(r.total_tagihan), 0),
       rows.reduce((s, r) => s + n(r.total_pembayaran), 0),
       rows.reduce((s, r) => s + n(r.sisa_tagihan), 0)],
-    numericCols: [5, 6, 7],
+    numericCols: [4],
+    currencyCols: [5, 6, 7],
   }
 }
 
 function buildRiwayatPembayaranSection(rows) {
   return {
     title: 'RIWAYAT PEMBAYARAN AR',
-    meta:  `Periode: ${fmtDate(filters.dari)} s/d ${fmtDate(filters.sampai)}  |  Total Transaksi: ${rows.length}`,
+    meta:  `Periode: ${fmtDate(filters.dari)} s/d ${fmtDate(filters.sampai)}  ·  Total Transaksi: ${rows.length}`,
     headers: ['No', 'Tanggal', 'No Invoice', 'Klien', 'Perusahaan', 'Jumlah (Rp)', 'Metode', 'No Referensi', 'Dicatat Oleh'],
-    aligns:  ['c',  '',        '',            '',       '',            'r',           'c',       '',              ''],
+    aligns:  ['c',  'c',       '',            '',       '',            'r',           'c',       '',              ''],
     rows: rows.map((r, i) => [i+1, fmtDate(r.tanggal_pembayaran), r.no_invoice??'', r.klien??'',
       r.perusahaan??'-', n(r.jumlah_pembayaran), r.metode_pembayaran??'', r.no_referensi??'-', r.created_by_name??'']),
     totalRow: ['', '', '', 'TOTAL', '', rows.reduce((s, r) => s + n(r.jumlah_pembayaran), 0), '', '', ''],
-    numericCols: [5],
+    currencyCols: [5],
   }
 }
 
@@ -381,13 +382,13 @@ function buildMutasiPiutangSection(rd) {
   const summary = rd.summary ?? {}
   return {
     title: 'MUTASI PIUTANG',
-    meta:  `Periode: ${fmtDate(filters.dari)} s/d ${fmtDate(filters.sampai)}  |  Total Klien: ${rows.length}`,
+    meta:  `Periode: ${fmtDate(filters.dari)} s/d ${fmtDate(filters.sampai)}  ·  Total Klien: ${rows.length}`,
     headers: ['No', 'Kode Klien', 'Nama Klien', 'Perusahaan', 'Saldo Awal (Rp)', 'Invoice Masuk (Rp)', 'Pembayaran (Rp)', 'Saldo Akhir (Rp)'],
     aligns:  ['c',  '',           '',            '',            'r',               'r',                   'r',               'r'],
     rows: rows.map((r, i) => [i+1, r.kode_klien??'', r.nama_klien??'', r.perusahaan??'-',
       n(r.saldo_awal), n(r.invoice_masuk), n(r.pembayaran), n(r.saldo_akhir)]),
     totalRow: ['', '', 'TOTAL', '', n(summary.saldo_awal), n(summary.invoice_masuk), n(summary.pembayaran), n(summary.saldo_akhir)],
-    numericCols: [4, 5, 6, 7],
+    currencyCols: [4, 5, 6, 7],
   }
 }
 
@@ -403,13 +404,13 @@ function buildJatuhTempoSection(rd) {
   const ftLabel = { upcoming: 'Akan Jatuh Tempo', overdue: 'Sudah Lewat', all: 'Semua' }
   return {
     title: 'TAGIHAN JATUH TEMPO',
-    meta:  `Filter: ${ftLabel[jatuhTempoFilter.filter_type]}  |  Total Invoice: ${rows.length}  |  Total Sisa: Rp ${n(summary.total_sisa).toLocaleString('id-ID')}`,
+    meta:  `Filter: ${ftLabel[jatuhTempoFilter.filter_type]}  ·  Total Invoice: ${rows.length}  ·  Total Sisa: Rp ${n(summary.total_sisa).toLocaleString('id-ID')}`,
     headers: ['No', 'No Invoice', 'Kode Klien', 'Nama Klien', 'Perusahaan', 'PIC AR', 'Jatuh Tempo', 'Status Hari', 'Status', 'Sisa Tagihan (Rp)'],
     aligns:  ['c',  '',           '',            '',            '',            '',        'c',            'c',           'c',      'r'],
     rows: rows.map((r, i) => [i+1, r.no_invoice??'', r.kode_klien??'', r.nama_klien??'',
       r.perusahaan??'-', r.pic_ar??'-', fmtDate(r.tanggal_jatuh_tempo), selisihLabel(r.selisih_hari), r.status??'', n(r.sisa_tagihan)]),
     totalRow: null,
-    numericCols: [9],
+    currencyCols: [9],
   }
 }
 
@@ -418,12 +419,12 @@ function buildRekapPembayaranSection(rd) {
   const summary = rd.summary ?? {}
   return {
     title: 'REKAP PEMBAYARAN',
-    meta:  `Periode: ${fmtDate(filters.dari)} s/d ${fmtDate(filters.sampai)}  |  Total Transaksi: ${summary.jumlah_transaksi ?? 0}`,
+    meta:  `Periode: ${fmtDate(filters.dari)} s/d ${fmtDate(filters.sampai)}  ·  Total Transaksi: ${summary.jumlah_transaksi ?? 0}`,
     headers: ['No', 'Tanggal', 'Transfer (Rp)', 'Cash (Rp)', 'Giro (Rp)', 'Total (Rp)'],
-    aligns:  ['c',  '',         'r',             'r',          'r',          'r'],
+    aligns:  ['c',  'c',        'r',             'r',          'r',          'r'],
     rows: rows.map((r, i) => [i+1, fmtDate(r.tanggal), n(r.transfer), n(r.cash), n(r.giro), n(r.total)]),
     totalRow: ['', 'TOTAL', n(summary.transfer), n(summary.cash), n(summary.giro), n(summary.total)],
-    numericCols: [2, 3, 4, 5],
+    currencyCols: [2, 3, 4, 5],
   }
 }
 
@@ -432,7 +433,7 @@ function buildKinerjaArSection(rd) {
   const summary = rd.summary ?? {}
   return {
     title: 'KINERJA AR PER PIC',
-    meta:  `Periode: ${fmtDate(filters.dari)} s/d ${fmtDate(filters.sampai)}  |  Jumlah AR Officer: ${rows.length}  |  Collection Rate: ${summary.collection_rate ?? 0}%`,
+    meta:  `Periode: ${fmtDate(filters.dari)} s/d ${fmtDate(filters.sampai)}  ·  Jumlah AR Officer: ${rows.length}  ·  Collection Rate: ${summary.collection_rate ?? 0}%`,
     headers: ['No', 'AR Officer', 'Perusahaan', 'Jml Klien', 'Jml Invoice', 'Total Tagihan (Rp)', 'Terkumpul (Rp)', 'Sisa (Rp)', 'Collection Rate'],
     aligns:  ['c',  '',           '',            'c',          'c',           'r',                  'r',               'r',          'c'],
     rows: rows.map((r, i) => [i+1, r.nama_karyawan??'', r.perusahaan??'-',
@@ -442,7 +443,8 @@ function buildKinerjaArSection(rd) {
       n(summary.total_tagihan), n(summary.total_terkumpul),
       n(summary.total_tagihan) - n(summary.total_terkumpul),
       `${summary.collection_rate ?? 0}%`],
-    numericCols: [5, 6, 7],
+    numericCols: [3, 4],
+    currencyCols: [5, 6, 7],
   }
 }
 
@@ -452,50 +454,77 @@ function buildHtmlExcel(sections) {
   const exportDate = now.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })
 
   const css = `
-    body{font-family:Calibri,Arial,sans-serif;font-size:11pt;margin:24px;background:#fff}
-    .doc-title{font-size:18pt;font-weight:bold;color:#0D47A1;margin-bottom:2px}
-    .doc-sub{font-size:9pt;color:#666;margin-bottom:24px}
-    .main-tbl{border-collapse:collapse;width:100%;margin-bottom:6px}
-    .sec-title{background:#0D47A1;color:#fff;font-size:12pt;font-weight:bold;padding:10px 14px;letter-spacing:.4px}
-    .sec-meta{background:#E3F2FD;color:#1565C0;font-size:9pt;padding:5px 14px;font-style:italic;border-bottom:2px solid #1976D2}
-    .th{background:#1565C0;color:#fff;font-weight:bold;font-size:10pt;padding:8px 12px;border:1px solid #0D47A1;white-space:nowrap}
-    .th.r{text-align:right}.th.c{text-align:center}
-    .td{padding:6px 12px;border:1px solid #BBDEFB;font-size:10pt;vertical-align:middle}
-    .td.r{text-align:right}.td.c{text-align:center}
-    .even .td{background:#E8F4FD}.odd .td{background:#fff}
-    .total-row .td{background:#0D47A1!important;color:#fff!important;font-weight:bold;border:1px solid #083b79}
-    .spacer{height:28px}
+    body { font-family: Calibri, Arial, sans-serif; font-size: 10pt; margin: 0; background: #ffffff; }
+    .main-tbl { border-collapse: collapse; width: 100%; }
+
+    /* Document header */
+    .hdr-title { background: #0D47A1; color: #ffffff; font-size: 16pt; font-weight: bold;
+                 padding: 16px 22px 4px; letter-spacing: 0.3px; }
+    .hdr-sub   { background: #0D47A1; color: #90CAF9; font-size: 9pt;
+                 padding: 2px 22px 16px; }
+
+    /* Section header */
+    .sec-title { background: #1A237E; color: #ffffff; font-size: 11pt; font-weight: bold;
+                 padding: 9px 16px; border-left: 5px solid #FFC107; }
+    .sec-meta  { background: #E8EAF6; color: #283593; font-size: 8.5pt;
+                 padding: 4px 16px 4px 21px; font-style: italic;
+                 border-left: 5px solid #FFC107; border-bottom: 2px solid #5C6BC0; }
+
+    /* Column headers */
+    .th   { background: #283593; color: #ffffff; font-weight: bold; font-size: 9.5pt;
+            padding: 7px 12px; border: 1px solid #1A237E; white-space: nowrap; }
+    .th.r { text-align: right; }
+    .th.c { text-align: center; }
+
+    /* Data cells */
+    .td     { padding: 5px 12px; border: 1px solid #E8EAF6; font-size: 9.5pt;
+              vertical-align: middle; color: #212121; }
+    .td.r   { text-align: right; }
+    .td.c   { text-align: center; }
+    .td.cur { text-align: right; color: #1A237E; font-weight: 500; }
+
+    /* Alternating rows */
+    .row-e .td { background: #F3F4FD; }
+    .row-o .td { background: #ffffff; }
+
+    /* Total row — orange accent */
+    .tot .td     { background: #E65100 !important; color: #ffffff !important;
+                   font-weight: bold; border: 1px solid #BF360C !important; }
+    .tot .td.cur { color: #ffffff !important; }
+
+    /* Spacer */
+    .gap td { height: 22px; }
   `
 
   const buildSection = (s) => {
-    const colCount = s.headers.length
+    const colCount  = s.headers.length
+    const cCols     = s.currencyCols ?? []
+    const nCols     = (s.numericCols ?? []).filter(i => !cCols.includes(i))
+
     const thRow = s.headers.map((h, i) => {
-      const cls = s.aligns[i] === 'r' ? 'r' : s.aligns[i] === 'c' ? 'c' : ''
-      return `<th class="th${cls ? ' '+cls : ''}">${h}</th>`
+      const align = cCols.includes(i) || s.aligns[i] === 'r' ? 'r' : s.aligns[i] === 'c' ? 'c' : ''
+      return `<th class="th${align ? ' '+align : ''}">${h}</th>`
     }).join('')
 
-    const dataRows = s.rows.map((row, ri) => {
-      const cls = ri % 2 === 0 ? 'even' : 'odd'
-      const cells = row.map((cell, ci) => {
-        const align = s.aligns[ci] === 'r' ? ' r' : s.aligns[ci] === 'c' ? ' c' : ''
-        let val = cell
-        if (s.numericCols?.includes(ci) && typeof cell === 'number')
-          val = cell === 0 ? '-' : cell.toLocaleString('id-ID')
-        return `<td class="td${align}">${val}</td>`
-      }).join('')
-      return `<tr class="${cls}">${cells}</tr>`
-    }).join('')
-
-    let totalRowHtml = ''
-    if (s.totalRow) {
-      const cells = s.totalRow.map((cell, ci) => {
-        let val = cell
-        if (s.numericCols?.includes(ci) && typeof cell === 'number')
-          val = cell === 0 ? '-' : cell.toLocaleString('id-ID')
-        return `<td class="td">${val}</td>`
-      }).join('')
-      totalRowHtml = `<tr class="total-row">${cells}</tr>`
+    const renderCell = (cell, ci, extraClass = '') => {
+      const isCur = cCols.includes(ci)
+      const isNum = nCols.includes(ci)
+      let val = cell ?? ''
+      if (isCur && typeof cell === 'number')
+        val = cell === 0 ? '–' : 'Rp ' + cell.toLocaleString('id-ID')
+      else if (isNum && typeof cell === 'number')
+        val = cell.toLocaleString('id-ID')
+      const cls = isCur ? 'cur' : s.aligns[ci] === 'r' ? 'r' : s.aligns[ci] === 'c' ? 'c' : ''
+      return `<td class="td${cls ? ' '+cls : ''}${extraClass}">${val}</td>`
     }
+
+    const dataRows = s.rows.map((row, ri) =>
+      `<tr class="${ri % 2 === 0 ? 'row-e' : 'row-o'}">${row.map((c, ci) => renderCell(c, ci)).join('')}</tr>`
+    ).join('')
+
+    const totalRowHtml = s.totalRow
+      ? `<tr class="tot">${s.totalRow.map((c, ci) => renderCell(c, ci)).join('')}</tr>`
+      : ''
 
     return `
       <tr><td colspan="${colCount}" class="sec-title">${s.title}</td></tr>
@@ -503,7 +532,7 @@ function buildHtmlExcel(sections) {
       <tr>${thRow}</tr>
       ${dataRows}
       ${totalRowHtml}
-      <tr><td colspan="${colCount}" class="spacer"></td></tr>
+      <tr class="gap"><td colspan="${colCount}"></td></tr>
     `
   }
 
@@ -522,9 +551,10 @@ function buildHtmlExcel(sections) {
 <style>${css}</style>
 </head>
 <body>
-<div class="doc-title">LAPORAN ACCOUNT RECEIVABLE</div>
-<div class="doc-sub">Diekspor pada: ${exportDate} &nbsp;|&nbsp; Sistem: Project Iron</div>
 <table class="main-tbl">
+  <tr><td colspan="20" class="hdr-title">LAPORAN ACCOUNT RECEIVABLE</td></tr>
+  <tr><td colspan="20" class="hdr-sub">Diekspor pada: ${exportDate}&nbsp;&nbsp;&middot;&nbsp;&nbsp;Sistem: Project Iron</td></tr>
+  <tr class="gap"><td colspan="20"></td></tr>
   ${sections.map(buildSection).join('')}
 </table>
 </body>
