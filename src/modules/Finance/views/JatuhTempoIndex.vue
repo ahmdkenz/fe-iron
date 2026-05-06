@@ -11,46 +11,50 @@
 
     <!-- Filter -->
     <VCard class="mb-4">
-      <VCardText class="d-flex flex-wrap gap-3 align-center">
-        <VBtnToggle
-          v-model="filters.filter_type"
-          density="compact"
-          variant="outlined"
-          mandatory
-          @update:model-value="doFetch"
-        >
-          <VBtn value="upcoming">Akan Jatuh Tempo</VBtn>
-          <VBtn value="overdue">Sudah Lewat</VBtn>
-          <VBtn value="all">Semua</VBtn>
-        </VBtnToggle>
+      <VCardText>
+        <div class="d-flex flex-wrap gap-3 align-center">
+          <VBtnToggle
+            v-model="filters.filter_type"
+            variant="outlined"
+            mandatory
+            divided
+            @update:model-value="doFetch"
+          >
+            <VBtn value="upcoming" size="small" style="min-width: 130px">Akan Jatuh Tempo</VBtn>
+            <VBtn value="overdue"  size="small" style="min-width: 110px">Sudah Lewat</VBtn>
+            <VBtn value="all"      size="small" style="min-width: 80px">Semua</VBtn>
+          </VBtnToggle>
 
-        <VSelect
-          v-if="filters.filter_type === 'upcoming'"
-          v-model="filters.days"
-          label="Dalam"
-          density="compact"
-          hide-details
-          style="max-width: 140px"
-          :items="daysOptions"
-          item-title="label"
-          item-value="value"
-          @update:model-value="doFetch"
-        />
+          <Transition name="fade">
+            <VSelect
+              v-if="filters.filter_type === 'upcoming'"
+              v-model="filters.days"
+              label="Dalam"
+              density="compact"
+              hide-details
+              style="max-width: 140px"
+              :items="daysOptions"
+              item-title="label"
+              item-value="value"
+              @update:model-value="doFetch"
+            />
+          </Transition>
 
-        <VAutocomplete
-          v-model="filters.klien_ar_id"
-          placeholder="Semua Klien"
-          clearable
-          hide-details
-          density="compact"
-          style="max-width: 240px"
-          :items="klienList"
-          item-title="nama_klien"
-          item-value="id"
-          :loading="klienLoading"
-          @focus="ensureKlienLoaded()"
-          @update:model-value="doFetch"
-        />
+          <VAutocomplete
+            v-model="filters.klien_ar_id"
+            placeholder="Semua Klien"
+            clearable
+            hide-details
+            density="compact"
+            style="max-width: 240px"
+            :items="klienList"
+            item-title="nama_klien"
+            item-value="id"
+            :loading="klienLoading"
+            @focus="ensureKlienLoaded()"
+            @update:model-value="doFetch"
+          />
+        </div>
       </VCardText>
     </VCard>
 
@@ -259,3 +263,14 @@ onMounted(() => {
   doFetch()
 })
 </script>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>
