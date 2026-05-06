@@ -107,4 +107,10 @@ export default [
     component: () => import('@/modules/Finance/views/KinerjaArIndex.vue'),
     meta: { requiresAuth: true, roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR'] },
   },
+  {
+    path: '/finance/export-data',
+    name: 'finance-export-data',
+    component: () => import('@/modules/Finance/views/ExportDataIndex.vue'),
+    meta: { requiresAuth: true, roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR'] },
+  },
 ]

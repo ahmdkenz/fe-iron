@@ -4,6 +4,12 @@ export default [
     to: { name: 'dashboard' },
     icon: { icon: 'ri-home-smile-2-line' },
   },
+  {
+    title: 'Export Data',
+    to: { name: 'finance-export-data' },
+    icon: { icon: 'ri-download-cloud-2-line' },
+    roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR'],
+  },
   { heading: 'USER MANAGEMENT' },
   {
     title: 'Data User',
