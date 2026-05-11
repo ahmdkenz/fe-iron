@@ -77,7 +77,6 @@
                 variant="outlined"
                 hint="Contoh: ABC, XYZ"
                 persistent-hint
-                :rules="[v => !!v || 'Singkatan wajib diisi']"
                 :error-messages="errors.nama_singkatan_perusahaan"
                 @input="form.nama_singkatan_perusahaan = form.nama_singkatan_perusahaan.toUpperCase()"
               />

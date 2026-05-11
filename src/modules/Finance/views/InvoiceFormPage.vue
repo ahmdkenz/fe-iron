@@ -117,21 +117,6 @@
                   md="6"
                 >
                   <VTextField
-                    v-model="form.tanggal_jatuh_tempo"
-                    label="Tanggal Jatuh Tempo"
-                    density="compact"
-                    variant="outlined"
-                    type="date"
-                    prepend-inner-icon="ri-calendar-check-line"
-                    hint="Opsional"
-                    persistent-hint
-                  />
-                </VCol>
-                <VCol
-                  cols="12"
-                  md="6"
-                >
-                  <VTextField
                     v-model="form.no_surat_jalan"
                     label="No. Surat Jalan"
                     density="compact"
@@ -530,7 +515,6 @@ const selectedKlien    = ref(null)
 const form = reactive({
   no_invoice: '',
   tanggal_invoice: new Date().toISOString().slice(0, 10),
-  tanggal_jatuh_tempo: '',
   periode_awal: '',
   periode_akhir: '',
   klien_ar_id: null,
@@ -667,7 +651,6 @@ onMounted(async () => {
   Object.assign(form, {
     no_invoice:                  data.no_invoice,
     tanggal_invoice:             data.tanggal_invoice,
-    tanggal_jatuh_tempo:         data.tanggal_jatuh_tempo ?? '',
     periode_awal:                data.periode_awal,
     periode_akhir:               data.periode_akhir,
     klien_ar_id:                 data.klien_ar_id,

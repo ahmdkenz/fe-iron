@@ -244,28 +244,6 @@
         <template #item.tanggal_invoice="{ item }">
           {{ formatDate(item.tanggal_invoice) }}
         </template>
-        <template #item.tanggal_jatuh_tempo="{ item }">
-          <span
-            v-if="item.tanggal_jatuh_tempo"
-            :class="isOverdue(item) ? 'text-error font-weight-bold' : ''"
-          >
-            {{ formatDate(item.tanggal_jatuh_tempo) }}
-            <VChip
-              v-if="isOverdue(item)"
-              color="error"
-              size="x-small"
-              variant="tonal"
-              label
-              class="ms-1"
-            >
-              Overdue
-            </VChip>
-          </span>
-          <span
-            v-else
-            class="text-medium-emphasis"
-          >-</span>
-        </template>
         <template #item.total_tagihan="{ item }">
           {{ formatCurrency(item.total_tagihan) }}
         </template>
@@ -426,7 +404,6 @@ const headers = [
   { title: 'Klien',          key: 'klien_ar',       sortable: false },
   { title: 'Perusahaan',     key: 'perusahaan',     sortable: false },
   { title: 'Tanggal',        key: 'tanggal_invoice',    sortable: false },
-  { title: 'Jatuh Tempo',   key: 'tanggal_jatuh_tempo', sortable: false },
   { title: 'Total Tagihan',  key: 'total_tagihan',  sortable: false },
   { title: 'Sisa Tagihan',   key: 'sisa_tagihan',   sortable: false },
   { title: 'Status',         key: 'status',         sortable: false },
@@ -550,11 +527,6 @@ async function exportCsv() {
   } finally {
     exporting.value = false
   }
-}
-
-function isOverdue(item) {
-  if (!item.tanggal_jatuh_tempo || item.status === 'LUNAS') return false
-  return new Date(item.tanggal_jatuh_tempo) < new Date(new Date().toDateString())
 }
 
 function confirmDelete(inv) { selectedInvoice.value = inv; deleteError.value = ''; showDelete.value = true }
