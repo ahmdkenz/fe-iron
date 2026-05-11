@@ -56,27 +56,29 @@
             {{ item.kode_klien }}
           </VChip>
         </template>
-        <template #item.tipe_klien="{ item }">
-          <VChip
-            :color="tipeColor(item.tipe_klien)"
-            size="small"
-            variant="tonal"
-            label
-          >
-            {{ item.tipe_klien }}
-          </VChip>
+        <template #item.resto="{ item }">
+          <span v-if="item.resto">{{ item.resto.nama_resto }}</span>
+          <span
+            v-else
+            class="text-medium-emphasis"
+          >-</span>
         </template>
-        <template #item.perusahaan="{ item }">
-          <VChip
-            v-if="item.perusahaan"
-            color="secondary"
-            size="small"
-            variant="tonal"
-            label
-          >
-            {{ item.perusahaan.nama_singkatan_perusahaan }}
-          </VChip>
-          <span v-else>-</span>
+        <template #item.investor="{ item }">
+          <div v-if="item.resto?.investor">
+            <div class="text-body-2">
+              {{ item.resto.investor.pengelola || item.resto.investor.nama_investor }}
+            </div>
+            <div
+              v-if="item.resto.investor.pengelola"
+              class="text-caption text-medium-emphasis"
+            >
+              {{ item.resto.investor.nama_investor }}
+            </div>
+          </div>
+          <span
+            v-else
+            class="text-medium-emphasis"
+          >-</span>
         </template>
         <template #item.karyawan_ar="{ item }">
           {{ item.karyawan_ar?.nama_karyawan ?? '-' }}
@@ -194,39 +196,33 @@
           label="Alias"
           :value="selectedKlien.alias"
         />
-        <DetailRow label="Tipe Klien">
-          <VChip
-            :color="tipeColor(selectedKlien.tipe_klien)"
-            size="small"
-            variant="tonal"
-            label
-          >
-            {{ selectedKlien.tipe_klien }}
-          </VChip>
-        </DetailRow>
         <DetailRow
-          label="Tipe Outlet"
-          :value="selectedKlien.tipe_outlet"
+          label="Resto"
+          :value="selectedKlien.resto?.nama_resto"
         />
         <DetailRow
-          label="Area Stokis"
-          :value="selectedKlien.stokis_area"
+          label="Investor"
+          :value="selectedKlien.resto?.investor?.nama_investor"
+        />
+        <DetailRow
+          label="Pengelola"
+          :value="selectedKlien.resto?.investor?.pengelola"
+        />
+        <DetailRow
+          label="HP Pengelola"
+          :value="selectedKlien.resto?.investor?.no_hp_pengelola"
         />
         <DetailRow
           label="No. NPWP"
           :value="selectedKlien.no_npwp"
         />
         <DetailRow
-          label="Perusahaan"
-          :value="selectedKlien.perusahaan?.nama_perusahaan"
+          label="No. WhatsApp"
+          :value="selectedKlien.no_wa"
         />
         <DetailRow
-          label="Staff AR"
+          label="PIC AR"
           :value="selectedKlien.karyawan_ar?.nama_karyawan"
-        />
-        <DetailRow
-          label="Resto"
-          :value="selectedKlien.resto?.nama_resto"
         />
         <DetailRow label="Status">
           <VChip
@@ -296,22 +292,15 @@ const deleteError = ref('')
 const selectedKlien = ref(null)
 
 const headers = [
-  { title: 'No',          key: 'no',           sortable: false, width: '60px' },
-  { title: 'Kode',        key: 'kode_klien',   sortable: false, minWidth: '140px' },
-  { title: 'Nama Klien',  key: 'nama_klien',   sortable: false, minWidth: '200px' },
-  { title: 'Alias',       key: 'alias',        sortable: false, minWidth: '100px' },
-  { title: 'Tipe',        key: 'tipe_klien',   sortable: false, minWidth: '90px' },
-  { title: 'Penagih',     key: 'perusahaan',   sortable: false, minWidth: '120px' },
-  { title: 'Staff AR',    key: 'karyawan_ar',  sortable: false, minWidth: '160px' },
-  { title: 'Status',      key: 'status',       sortable: false, minWidth: '90px' },
-  { title: 'Aksi',        key: 'actions',      sortable: false, align: 'center', width: '120px' },
+  { title: 'No',             key: 'no',          sortable: false, width: '60px' },
+  { title: 'Kode',           key: 'kode_klien',  sortable: false, minWidth: '140px' },
+  { title: 'Nama Pengelola', key: 'nama_klien',  sortable: false, minWidth: '200px' },
+  { title: 'Resto',          key: 'resto',        sortable: false, minWidth: '160px' },
+  { title: 'Investor / Pengelola', key: 'investor', sortable: false, minWidth: '180px' },
+  { title: 'PIC AR',         key: 'karyawan_ar', sortable: false, minWidth: '160px' },
+  { title: 'Status',         key: 'status',      sortable: false, minWidth: '90px' },
+  { title: 'Aksi',           key: 'actions',     sortable: false, align: 'center', width: '120px' },
 ]
-
-function tipeColor(tipe) {
-  const map = { PT: 'primary', RESTO: 'info', STOKIS: 'warning', MITRA: 'success' }
-
-  return map[tipe] ?? 'secondary'
-}
 
 let debounceTimer = null
 function debouncedFetch() {

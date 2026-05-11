@@ -71,7 +71,7 @@
                 readonly
                 persistent-hint
                 :loading="kodePreviewLoading"
-                :hint="isEditing ? 'Kode klien existing dipertahankan' : 'Otomatis terisi berdasarkan tipe klien'"
+                :hint="isEditing ? 'Kode klien existing dipertahankan' : 'Otomatis terisi saat form dibuka'"
               />
             </VCol>
             <VCol
@@ -80,12 +80,14 @@
             >
               <VTextField
                 v-model="form.nama_klien"
-                label="Nama Klien"
+                label="Nama Pengelola (Billing)"
                 density="compact"
                 variant="outlined"
-                :rules="[v => !!v || 'Nama klien wajib diisi']"
+                :rules="[v => !!v || 'Nama pengelola wajib diisi']"
                 :error-messages="errors.nama_klien"
                 :readonly="isArEditMode"
+                :hint="!isEditing && selectedRestoInvestor ? 'Otomatis dari data pengelola investor' : ''"
+                persistent-hint
               />
             </VCol>
             <VCol
@@ -101,24 +103,6 @@
                 :readonly="isArEditMode"
               />
             </VCol>
-            <VCol
-              cols="12"
-              md="3"
-            >
-              <VSelect
-                v-model="form.tipe_klien"
-                label="Tipe Klien"
-                density="compact"
-                variant="outlined"
-                :items="tipeKlienOptions"
-                item-title="label"
-                item-value="value"
-                :rules="[v => !!v || 'Tipe klien wajib dipilih']"
-                :error-messages="errors.tipe_klien"
-                :readonly="isArEditMode"
-              />
-            </VCol>
-
           </VRow>
         </VCardText>
       </VCard>
@@ -135,40 +119,12 @@
         <VCardText>
           <VRow>
             <VCol
-              v-if="form.tipe_klien !== 'PT'"
-              cols="12"
-              md="6"
-            >
-              <VTextField
-                v-model="form.tipe_outlet"
-                label="Tipe Outlet"
-                density="compact"
-                variant="outlined"
-                :error-messages="errors.tipe_outlet"
-                :readonly="isArEditMode"
-              />
-            </VCol>
-            <VCol
-              v-if="form.tipe_klien !== 'PT'"
-              cols="12"
-              md="6"
-            >
-              <VTextField
-                v-model="form.stokis_area"
-                label="Area Stokis"
-                density="compact"
-                variant="outlined"
-                :error-messages="errors.stokis_area"
-                :readonly="isArEditMode"
-              />
-            </VCol>
-            <VCol
               cols="12"
               md="6"
             >
               <VTextField
                 v-model="form.no_npwp"
-                label="No. NPWP"
+                label="No. NPWP Pengelola"
                 density="compact"
                 variant="outlined"
                 :error-messages="errors.no_npwp"
@@ -181,7 +137,7 @@
             >
               <VTextField
                 v-model="form.no_wa"
-                label="No. WhatsApp"
+                label="No. WhatsApp Pengelola"
                 placeholder="Contoh: 08123456789"
                 density="compact"
                 variant="outlined"
@@ -219,44 +175,61 @@
         <VDivider />
         <VCardText>
           <VRow>
-            <VCol
-              cols="12"
-              md="6"
-            >
-              <VTextField
-                v-if="isArRole"
-                :model-value="displayPerusahaan"
-                label="Perusahaan (Penagih)"
-                density="compact"
-                variant="outlined"
-                :rules="[() => !!form.perusahaan_id || 'Perusahaan wajib dipilih']"
-                :error-messages="errors.perusahaan_id"
-                :loading="isEditing && perusahaanLoading"
-                readonly
-              />
+            <!-- Resto wajib — sumber data pengelola/investor -->
+            <VCol cols="12">
               <VAutocomplete
-                v-else
-                v-model="form.perusahaan_id"
-                label="Perusahaan (Penagih)"
+                v-model="form.resto_id"
+                label="Resto (Wajib)"
                 density="compact"
                 variant="outlined"
-                :items="perusahaanList"
-                item-title="nama_perusahaan"
+                :items="restoList"
+                item-title="nama_resto"
                 item-value="id"
-                :rules="[v => !!v || 'Perusahaan wajib dipilih']"
-                :error-messages="errors.perusahaan_id"
-                :loading="perusahaanLoading"
-                @focus="ensurePerusahaanLoaded()"
+                :rules="[v => !!v || 'Resto wajib dipilih']"
+                :error-messages="errors.resto_id"
+                :loading="restoLoading"
+                :readonly="isArEditMode"
+                @focus="ensureRestoLoaded()"
+                @update:model-value="onRestoChange"
               >
                 <template #item="{ props: p, item }">
                   <VListItem
                     v-bind="p"
-                    :title="item.raw.nama_perusahaan"
-                    :subtitle="item.raw.kode_perusahaan"
+                    :title="item.raw.nama_resto"
+                    :subtitle="item.raw.kode_resto + (item.raw.investor ? ' · ' + item.raw.investor.nama_investor : '')"
                   />
                 </template>
               </VAutocomplete>
             </VCol>
+
+            <!-- Info Investor/Pengelola (readonly, dari Resto yang dipilih) -->
+            <VCol
+              v-if="selectedRestoInvestor"
+              cols="12"
+            >
+              <VAlert
+                type="info"
+                variant="tonal"
+                density="compact"
+                class="mb-0"
+              >
+                <div class="text-caption font-weight-semibold mb-1">
+                  Info Investor & Pengelola
+                </div>
+                <div class="text-caption">
+                  <strong>Investor:</strong> {{ selectedRestoInvestor.nama_investor }}
+                </div>
+                <div
+                  v-if="selectedRestoInvestor.pengelola"
+                  class="text-caption"
+                >
+                  <strong>Pengelola:</strong> {{ selectedRestoInvestor.pengelola }}
+                  <span v-if="selectedRestoInvestor.no_hp_pengelola"> · {{ selectedRestoInvestor.no_hp_pengelola }}</span>
+                </div>
+              </VAlert>
+            </VCol>
+
+            <!-- PIC AR -->
             <VCol
               cols="12"
               md="6"
@@ -264,10 +237,10 @@
               <VTextField
                 v-if="isArRole"
                 :model-value="displayKaryawan"
-                label="Staff AR"
+                label="PIC AR (Staff Penagihan)"
                 density="compact"
                 variant="outlined"
-                :rules="[() => !!form.karyawan_ar_id || 'Staff AR wajib dipilih']"
+                :rules="[() => !!form.karyawan_ar_id || 'PIC AR wajib dipilih']"
                 :error-messages="errors.karyawan_ar_id"
                 :loading="isEditing && karyawanLoading"
                 readonly
@@ -275,13 +248,13 @@
               <VAutocomplete
                 v-else
                 v-model="form.karyawan_ar_id"
-                label="Staff AR"
+                label="PIC AR (Staff Penagihan)"
                 density="compact"
                 variant="outlined"
                 :items="karyawanList"
                 item-title="nama_karyawan"
                 item-value="id"
-                :rules="[v => !!v || 'Staff AR wajib dipilih']"
+                :rules="[v => !!v || 'PIC AR wajib dipilih']"
                 :error-messages="errors.karyawan_ar_id"
                 :loading="karyawanLoading"
                 @focus="ensureKaryawanLoaded()"
@@ -291,33 +264,6 @@
                     v-bind="p"
                     :title="item.raw.nama_karyawan"
                     :subtitle="item.raw.nik"
-                  />
-                </template>
-              </VAutocomplete>
-            </VCol>
-            <VCol
-              v-if="form.tipe_klien === 'RESTO'"
-              cols="12"
-            >
-              <VAutocomplete
-                v-model="form.resto_id"
-                label="Resto (Opsional)"
-                density="compact"
-                variant="outlined"
-                :items="restoList"
-                item-title="nama_resto"
-                item-value="id"
-                :error-messages="errors.resto_id"
-                :loading="restoLoading"
-                clearable
-                :readonly="isArEditMode"
-                @focus="ensureRestoLoaded()"
-              >
-                <template #item="{ props: p, item }">
-                  <VListItem
-                    v-bind="p"
-                    :title="item.raw.nama_resto"
-                    :subtitle="item.raw.kode_resto"
                   />
                 </template>
               </VAutocomplete>
@@ -360,7 +306,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useCrud } from '@/composables/useCrud.js'
 import { useLazyFetchAll } from '@/composables/useLazyFetchAll.js'
@@ -380,10 +326,8 @@ const isArRole = computed(() => authStore.isArOnly)
 const isArEditMode = computed(() => isArRole.value && isEditing.value)
 
 const { create, update, saving, fetchOne } = useCrud('/finance/klien-ar')
-const { items: perusahaanList, loading: perusahaanLoading, fetchAll: fetchPerusahaan } = useCrud('/master/perusahaan')
 const { items: karyawanList, loading: karyawanLoading, fetchAll: fetchKaryawan } = useCrud('/master/karyawan')
 const { items: restoList, loading: restoLoading, fetchAll: fetchResto } = useCrud('/master/resto')
-const { ensureLoaded: ensurePerusahaanLoaded } = useLazyFetchAll(fetchPerusahaan)
 const { ensureLoaded: ensureKaryawanLoaded } = useLazyFetchAll(fetchKaryawan)
 const { ensureLoaded: ensureRestoLoaded } = useLazyFetchAll(fetchResto)
 
@@ -392,20 +336,9 @@ const pageLoading = ref(!!id)
 const errorMessage = ref('')
 const kodePreviewLoading = ref(false)
 
-const tipeKlienOptions = [
-  { label: 'PT', value: 'PT' },
-  { label: 'Resto', value: 'RESTO' },
-  { label: 'Mitra', value: 'MITRA' },
-]
+const selectedRestoInvestor = ref(null)
 
 const statusOptions = BOOLEAN_STATUS_OPTIONS
-
-const displayPerusahaan = computed(() => {
-  if (isEditing.value)
-    return perusahaanList.value?.find(p => p.id === form.perusahaan_id)?.nama_perusahaan ?? ''
-
-  return authStore.user?.karyawan?.perusahaan?.nama_perusahaan ?? ''
-})
 
 const displayKaryawan = computed(() => {
   if (isEditing.value)
@@ -419,11 +352,8 @@ const errors = reactive({
   nama_klien: [],
   alias: [],
   tipe_klien: [],
-  tipe_outlet: [],
-  stokis_area: [],
   no_npwp: [],
   no_wa: [],
-  perusahaan_id: [],
   karyawan_ar_id: [],
   resto_id: [],
 })
@@ -432,12 +362,9 @@ const defaultForm = () => ({
   kode_klien: '',
   nama_klien: '',
   alias: '',
-  tipe_klien: 'PT',
-  tipe_outlet: '',
-  stokis_area: '',
+  tipe_klien: 'MITRA',
   no_npwp: '',
   no_wa: '',
-  perusahaan_id: isArRole.value ? (authStore.user?.karyawan?.perusahaan_id ?? null) : null,
   karyawan_ar_id: isArRole.value ? (authStore.user?.karyawan?.id ?? null) : null,
   resto_id: null,
   status: 1,
@@ -465,6 +392,21 @@ async function refreshKodeKlienPreview() {
     form.kode_klien = ''
   } finally {
     kodePreviewLoading.value = false
+  }
+}
+
+function onRestoChange(restoId) {
+  if (!restoId) {
+    selectedRestoInvestor.value = null
+    return
+  }
+
+  const selectedResto = restoList.value?.find(r => r.id === restoId)
+  selectedRestoInvestor.value = selectedResto?.investor ?? null
+
+  // Auto-suggest nama_klien dari pengelola investor jika belum diisi
+  if (selectedRestoInvestor.value?.pengelola && !form.nama_klien) {
+    form.nama_klien = selectedRestoInvestor.value.pengelola
   }
 }
 
@@ -522,7 +464,6 @@ onMounted(async () => {
   }
 
   await Promise.all([
-    ensurePerusahaanLoaded(),
     ensureKaryawanLoaded(),
     ensureRestoLoaded(),
   ])
@@ -531,33 +472,24 @@ onMounted(async () => {
 
   if (data) {
     Object.assign(form, {
-      kode_klien: data.kode_klien ?? '',
-      nama_klien: data.nama_klien ?? '',
-      alias: data.alias ?? '',
-      tipe_klien: data.tipe_klien ?? 'PT',
-      tipe_outlet: data.tipe_outlet ?? '',
-      stokis_area: data.stokis_area ?? '',
-      no_npwp: data.no_npwp ?? '',
-      no_wa: data.no_wa ?? '',
-      perusahaan_id: data.perusahaan_id ?? null,
+      kode_klien:     data.kode_klien ?? '',
+      nama_klien:     data.nama_klien ?? '',
+      alias:          data.alias ?? '',
+      tipe_klien:     data.tipe_klien ?? 'MITRA',
+      no_npwp:        data.no_npwp ?? '',
+      no_wa:          data.no_wa ?? '',
       karyawan_ar_id: data.karyawan_ar_id ?? null,
-      resto_id: data.resto_id ?? null,
-      status: normalizeBooleanStatus(data.status),
+      resto_id:       data.resto_id ?? null,
+      status:         normalizeBooleanStatus(data.status),
     })
+
+    // Restore investor info dari data yang sudah ada
+    if (data.resto?.investor) {
+      selectedRestoInvestor.value = data.resto.investor
+    }
   }
 
   pageLoading.value = false
 })
 
-watch(() => form.tipe_klien, async tipeKlien => {
-  if (tipeKlien !== 'RESTO')
-    form.resto_id = null
-
-  if (tipeKlien === 'PT') {
-    form.tipe_outlet = ''
-    form.stokis_area = ''
-  }
-
-  await refreshKodeKlienPreview()
-})
 </script>

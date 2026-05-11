@@ -177,12 +177,14 @@
                   md="6"
                 >
                   <VTextField
-                    :model-value="perusahaanPenagih"
-                    label="Perusahaan Penagih"
+                    :model-value="penerimaTagihan"
+                    label="Penerima Tagihan (Pengelola)"
                     density="compact"
                     variant="outlined"
-                    prepend-inner-icon="ri-bank-line"
+                    prepend-inner-icon="ri-user-star-line"
                     readonly
+                    :hint="penerimaTagihanHint"
+                    persistent-hint
                   />
                 </VCol>
 
@@ -524,10 +526,24 @@ const form = reactive({
   items: [],
 })
 
-const perusahaanPenagih = computed(() => {
-  if (isEditing.value) return invoice.value?.perusahaan?.nama_perusahaan ?? ''
+const penerimaTagihan = computed(() => {
+  const klienAr = isEditing.value ? invoice.value?.klien_ar : selectedKlien.value
+  const pengelola = klienAr?.resto?.investor?.pengelola
+  const perusahaan = isEditing.value
+    ? invoice.value?.perusahaan?.nama_perusahaan
+    : selectedKlien.value?.perusahaan?.nama_perusahaan
 
-  return selectedKlien.value?.perusahaan?.nama_perusahaan ?? ''
+  return pengelola || perusahaan || ''
+})
+
+const penerimaTagihanHint = computed(() => {
+  const klienAr = isEditing.value ? invoice.value?.klien_ar : selectedKlien.value
+  const restoNama = klienAr?.resto?.nama_resto
+  const investorNama = klienAr?.resto?.investor?.nama_investor
+
+  if (restoNama && investorNama) return `${restoNama} · ${investorNama}`
+
+  return ''
 })
 
 const subtotal = computed(() =>

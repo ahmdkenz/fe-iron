@@ -43,7 +43,7 @@
         >
           <VAutocomplete
             :model-value="localItem.barang_id"
-            label="Barang"
+            label="Barang (Opsional)"
             density="compact"
             variant="outlined"
             :items="barangList"
@@ -51,7 +51,8 @@
             item-value="id"
             :loading="barangLoading"
             clearable
-            hide-details
+            hide-details="auto"
+            hint="Pilih barang untuk auto-isi, atau kosongkan dan isi nama manual"
             @update:model-value="onBarangChange"
           >
             <template #item="{ props: p, item }">

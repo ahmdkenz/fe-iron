@@ -237,7 +237,7 @@
                       :value="invoice.klien_ar?.kode_klien"
                     />
                     <DetailRow
-                      label="Perusahaan"
+                      label="Entitas Penagih"
                       :value="invoice.perusahaan?.nama_perusahaan"
                     />
                     <DetailRow
