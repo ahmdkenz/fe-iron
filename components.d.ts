@@ -28,6 +28,8 @@ declare module 'vue' {
     KaryawanForm: typeof import('./src/modules/Master/components/KaryawanForm.vue')['default']
     KlienArForm: typeof import('./src/modules/Finance/components/KlienArForm.vue')['default']
     MoreBtn: typeof import('./src/@core/components/MoreBtn.vue')['default']
+    OpeningBalanceDetailItemRow: typeof import('./src/modules/Finance/components/OpeningBalanceDetailItemRow.vue')['default']
+    OpeningBalanceDetailTable: typeof import('./src/modules/Finance/components/OpeningBalanceDetailTable.vue')['default']
     PageHeader: typeof import('./src/components/shared/PageHeader.vue')['default']
     PembayaranForm: typeof import('./src/modules/Finance/components/PembayaranForm.vue')['default']
     PerusahaanForm: typeof import('./src/modules/Master/components/PerusahaanForm.vue')['default']

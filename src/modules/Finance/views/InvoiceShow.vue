@@ -255,6 +255,24 @@
             >
               <VCardTitle class="pa-4 pb-2 font-weight-bold text-primary d-flex align-center">
                 <VIcon
+                  icon="ri-file-list-2-line"
+                  class="me-2"
+                />
+                Rincian Invoice Asal
+              </VCardTitle>
+              <VDivider />
+              <OpeningBalanceDetailTable
+                :details="invoice.opening_balance_details ?? []"
+                readonly
+              />
+            </VCard>
+
+            <VCard
+              v-if="isOpeningBalance"
+              class="rounded-xl elevation-2 border"
+            >
+              <VCardTitle class="pa-4 pb-2 font-weight-bold text-primary d-flex align-center">
+                <VIcon
                   icon="ri-history-line"
                   class="me-2"
                 />
@@ -733,6 +751,7 @@ import api from '@/utils/axios'
 import ApprovalStatusBadge from '../components/ApprovalStatusBadge.vue'
 import InvoiceStatusBadge from '../components/InvoiceStatusBadge.vue'
 import PembayaranForm from '../components/PembayaranForm.vue'
+import OpeningBalanceDetailTable from '../components/OpeningBalanceDetailTable.vue'
 
 const route = useRoute()
 const authStore = useAuthStore()

@@ -271,6 +271,54 @@
                 />
               </div>
 
+              <div class="form-section">
+                <div class="form-section__header">
+                  <div class="d-flex align-center gap-2 flex-wrap">
+                    <div>
+                      <h4 class="text-subtitle-1 font-weight-bold mb-1">
+                        Rincian Invoice Asal
+                        <VChip
+                          size="x-small"
+                          color="secondary"
+                          variant="tonal"
+                          label
+                          class="ms-1"
+                        >
+                          Opsional
+                        </VChip>
+                      </h4>
+                      <p class="text-body-2 text-medium-emphasis mb-0">
+                        Daftarkan invoice-invoice asli yang membentuk saldo ini untuk keperluan audit dan aging per dokumen.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <VCard
+                  variant="outlined"
+                  rounded="lg"
+                  class="ob-detail-wrapper"
+                >
+                  <OpeningBalanceDetailTable
+                    :details="form.details"
+                    :saldo-awal="Number(form.saldo_awal) || 0"
+                    :barang-list="barangList"
+                    :barang-loading="barangLoading"
+                    @update:details="form.details = $event"
+                  />
+                </VCard>
+
+                <VAlert
+                  v-if="errors.details?.length"
+                  type="error"
+                  variant="tonal"
+                  density="compact"
+                  class="mt-2"
+                >
+                  {{ errors.details[0] }}
+                </VAlert>
+              </div>
+
               <VAlert
                 v-if="errorMessage"
                 type="error"
@@ -445,6 +493,7 @@ import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useCrud } from '@/composables/useCrud'
 import { setFlashAlert } from '@/utils/flashAlert'
 import api from '@/utils/axios'
+import OpeningBalanceDetailTable from '@/modules/Finance/components/OpeningBalanceDetailTable.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -453,6 +502,7 @@ const { showError, showLoading, closeAlert } = useSweetAlert()
 const id = computed(() => route.params.id)
 const isEditing = computed(() => !!id.value)
 const { items: klienList, loading: klienLoading, fetchAll: fetchKlien } = useCrud('/finance/klien-ar')
+const { items: barangList, loading: barangLoading, fetchAll: fetchBarang } = useCrud('/master/barang')
 const { fetchOne } = useCrud('/finance/invoices')
 
 const formRef = ref(null)
@@ -461,7 +511,7 @@ const errorMessage = ref('')
 const saving = ref(false)
 
 const errors = reactive({
-  klien_ar_id: [], tanggal: [], saldo_awal: [], periode_awal: [], periode_akhir: [], keterangan: [],
+  klien_ar_id: [], tanggal: [], saldo_awal: [], periode_awal: [], periode_akhir: [], keterangan: [], details: [],
 })
 
 const form = reactive({
@@ -471,6 +521,7 @@ const form = reactive({
   periode_awal: '',
   periode_akhir: '',
   keterangan: '',
+  details: [],
 })
 
 const pageTitle = computed(() => isEditing.value ? 'Edit Opening Balance' : 'Saldo Awal (Opening Balance)')
@@ -555,6 +606,7 @@ async function loadOpeningBalance() {
       periode_awal: data.periode_awal ?? '',
       periode_akhir: data.periode_akhir ?? '',
       keterangan: data.keterangan ?? '',
+      details: data.opening_balance_details ?? [],
     })
   } catch (err) {
     errorMessage.value = err.response?.data?.message ?? 'Gagal memuat opening balance'
@@ -569,6 +621,14 @@ async function handleSubmit() {
 
   errorMessage.value = ''
   Object.keys(errors).forEach(k => (errors[k] = []))
+
+  if (form.details.length > 0) {
+    const sum = form.details.reduce((acc, d) => acc + (Number(d.sisa_tagihan_asal) || 0), 0)
+    if (Math.abs(sum - Number(form.saldo_awal)) > 0.01) {
+      errors.details = [`Jumlah sisa tagihan rincian (${sum.toFixed(2)}) harus sama dengan saldo awal (${Number(form.saldo_awal).toFixed(2)})`]
+      return
+    }
+  }
   saving.value = true
   showLoading({
     title: isEditing.value ? 'Menyimpan Perubahan' : 'Mengajukan Opening Balance',
@@ -605,7 +665,7 @@ async function handleSubmit() {
 }
 
 onMounted(async () => {
-  await fetchKlien()
+  await Promise.all([fetchKlien(), fetchBarang()])
   await loadOpeningBalance()
 })
 </script>
@@ -811,6 +871,11 @@ onMounted(async () => {
 
 .opening-balance-tip {
   border: 1px solid rgba(var(--v-theme-info), 0.14);
+}
+
+.ob-detail-wrapper {
+  border-color: rgba(var(--v-border-color), var(--v-border-opacity));
+  overflow: hidden;
 }
 
 @media (max-width: 1279px) {
