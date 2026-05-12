@@ -281,9 +281,10 @@
               Panduan Import:
             </div>
             <ul class="ps-4">
-              <li>Download template, isi data sesuai format, lalu upload.</li>
+              <li>Download template Excel, isi data, lalu upload file (.xlsx atau .csv).</li>
               <li>Kolom <strong>nama_investor</strong> wajib diisi.</li>
-              <li>Kolom <strong>status</strong>: 1 = Aktif, 0 = Nonaktif.</li>
+              <li>Kolom <strong>status</strong>: 1 = Aktif, 0 = Nonaktif (default: 1).</li>
+              <li>Lihat sheet <strong>Petunjuk Pengisian</strong> di template untuk panduan lengkap.</li>
               <li>Maksimum 500 baris per file.</li>
             </ul>
           </VAlert>
@@ -291,17 +292,17 @@
           <VBtn
             variant="outlined"
             color="primary"
-            prepend-icon="ri-file-download-line"
+            prepend-icon="ri-file-excel-line"
             class="mb-4"
             @click="downloadTemplate"
           >
-            Download Template CSV
+            Download Template Excel
           </VBtn>
 
           <VFileInput
             v-model="importFile"
-            label="Pilih File CSV"
-            accept=".csv"
+            label="Pilih File (.xlsx atau .csv)"
+            accept=".xlsx,.xls,.csv"
             prepend-icon="ri-file-upload-line"
             variant="outlined"
             density="compact"
@@ -472,7 +473,7 @@ async function downloadTemplate() {
     const url  = URL.createObjectURL(res.data)
     const a    = document.createElement('a')
     a.href     = url
-    a.download = 'template-investor.csv'
+    a.download = 'template-investor.xlsx'
     a.click()
     URL.revokeObjectURL(url)
   } catch {
