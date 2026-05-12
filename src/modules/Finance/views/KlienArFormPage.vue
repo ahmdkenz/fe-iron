@@ -11,6 +11,17 @@
     >
       <VBtn
         variant="tonal"
+        color="info"
+        @click="showPanduan = true"
+      >
+        <VIcon
+          icon="ri-question-line"
+          class="me-1"
+        />
+        Panduan
+      </VBtn>
+      <VBtn
+        variant="tonal"
         color="secondary"
         :to="{ name: 'finance-klien-ar' }"
       >
@@ -87,7 +98,7 @@
                 :rules="[v => !!v || 'Nama pengelola wajib diisi']"
                 :error-messages="errors.nama_klien"
                 :readonly="isArEditMode"
-                :hint="!isEditing && selectedRestoInvestor ? 'Otomatis dari data pengelola investor' : ''"
+                :hint="isB2B ? 'Isi nama kontak keuangan/billing di PT' : (!isEditing && selectedRestoInvestor ? 'Otomatis dari data pengelola investor' : '')"
                 persistent-hint
               />
             </VCol>
@@ -172,16 +183,19 @@
             <VCol cols="12">
               <VAutocomplete
                 v-model="form.resto_id"
-                label="Resto (Wajib)"
+                :label="isB2B ? 'Resto (Opsional untuk B2B)' : 'Resto (Wajib)'"
                 density="compact"
                 variant="outlined"
                 :items="restoList"
                 item-title="nama_resto"
                 item-value="id"
-                :rules="[v => !!v || 'Resto wajib dipilih']"
+                clearable
+                :rules="[v => isB2B || !!v || 'Resto wajib dipilih untuk tipe B2C']"
                 :error-messages="errors.resto_id"
                 :loading="restoLoading"
                 :readonly="isArEditMode"
+                :persistent-hint="isB2B"
+                :hint="isB2B ? 'Untuk tipe PT/STOKIS, semua Resto di bawah PT ini ditagih ke klien AR ini.' : ''"
                 @focus="ensureRestoLoaded()"
                 @update:model-value="onRestoChange"
               >
@@ -293,6 +307,139 @@
         </VBtn>
       </div>
     </VForm>
+
+    <!-- Dialog Panduan Pengisian -->
+    <VDialog
+      v-model="showPanduan"
+      max-width="680"
+      scrollable
+    >
+      <VCard>
+        <VCardTitle class="pa-4 pb-2 d-flex align-center justify-space-between">
+          <div class="d-flex align-center gap-2">
+            <VIcon icon="ri-book-2-line" color="info" />
+            <span>Panduan Pengisian Klien AR</span>
+          </div>
+          <VBtn icon size="small" variant="text" @click="showPanduan = false">
+            <VIcon icon="ri-close-line" />
+          </VBtn>
+        </VCardTitle>
+        <VDivider />
+
+        <VCardText class="pa-0">
+          <VTabs v-model="panduanTab" color="primary" class="px-4 pt-2">
+            <VTab value="b2c">
+              <VIcon icon="ri-store-line" class="me-1" size="18" />
+              B2C (RESTO / MITRA)
+            </VTab>
+            <VTab value="b2b">
+              <VIcon icon="ri-building-4-line" class="me-1" size="18" />
+              B2B (PT / STOKIS)
+            </VTab>
+          </VTabs>
+          <VDivider />
+
+          <VTabsWindow v-model="panduanTab" class="pa-4">
+            <!-- Tab B2C -->
+            <VTabsWindowItem value="b2c">
+              <VAlert type="success" variant="tonal" density="compact" class="mb-4">
+                <strong>B2C</strong> — Penagihan ke pengelola outlet (Resto atau Mitra). Kode: <code>AR-B2C-xxx</code>
+              </VAlert>
+
+              <VTable density="compact" class="rounded border mb-4">
+                <thead>
+                  <tr>
+                    <th style="width:35%">Field</th>
+                    <th>Cara Mengisi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="font-weight-medium">Tipe Klien</td>
+                    <td>Pilih <strong>RESTO</strong> (outlet langsung) atau <strong>MITRA</strong> (distributor/partner)</td>
+                  </tr>
+                  <tr>
+                    <td class="font-weight-medium">Resto <span class="text-error">*</span></td>
+                    <td>Pilih outlet yang terkait — info investor &amp; pengelola muncul otomatis</td>
+                  </tr>
+                  <tr>
+                    <td class="font-weight-medium">Nama Pengelola (Billing)</td>
+                    <td>Otomatis terisi dari nama Pengelola investor; ubah jika berbeda</td>
+                  </tr>
+                  <tr>
+                    <td class="font-weight-medium">No. NPWP</td>
+                    <td>NPWP pengelola (opsional)</td>
+                  </tr>
+                  <tr>
+                    <td class="font-weight-medium">No. WhatsApp</td>
+                    <td>Nomor aktif pengelola untuk notifikasi (format: 08xx atau 62xx)</td>
+                  </tr>
+                  <tr>
+                    <td class="font-weight-medium">PIC AR</td>
+                    <td>Staff AR yang bertanggung jawab menagih klien ini</td>
+                  </tr>
+                </tbody>
+              </VTable>
+
+              <VAlert type="info" variant="tonal" density="compact" icon="ri-information-line">
+                Setiap B2C memiliki 1 Klien AR per pengelola/outlet. Invoice ditagih langsung ke pengelola resto tersebut.
+              </VAlert>
+            </VTabsWindowItem>
+
+            <!-- Tab B2B -->
+            <VTabsWindowItem value="b2b">
+              <VAlert type="primary" variant="tonal" density="compact" class="mb-4">
+                <strong>B2B</strong> — Penagihan langsung ke PT. Kode: <code>AR-B2B-xxx</code>
+              </VAlert>
+
+              <VTable density="compact" class="rounded border mb-4">
+                <thead>
+                  <tr>
+                    <th style="width:35%">Field</th>
+                    <th>Cara Mengisi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="font-weight-medium">Tipe Klien</td>
+                    <td>Pilih <strong>PT</strong> (perusahaan) atau <strong>STOKIS</strong> (grosir/distributor besar)</td>
+                  </tr>
+                  <tr>
+                    <td class="font-weight-medium">Resto</td>
+                    <td><em>Opsional</em> — isi salah satu Resto milik PT ini sebagai referensi jika diperlukan</td>
+                  </tr>
+                  <tr>
+                    <td class="font-weight-medium">Nama Pengelola (Billing)</td>
+                    <td>Isi <strong>manual</strong> — nama kontak keuangan/billing di PT tersebut</td>
+                  </tr>
+                  <tr>
+                    <td class="font-weight-medium">No. NPWP <span class="text-error">*</span></td>
+                    <td>NPWP perusahaan PT — penting untuk penerbitan faktur pajak</td>
+                  </tr>
+                  <tr>
+                    <td class="font-weight-medium">No. WhatsApp</td>
+                    <td>Nomor WA kontak keuangan/billing di PT</td>
+                  </tr>
+                  <tr>
+                    <td class="font-weight-medium">PIC AR</td>
+                    <td>Staff AR yang bertanggung jawab menagih ke PT ini</td>
+                  </tr>
+                </tbody>
+              </VTable>
+
+              <VAlert type="warning" variant="tonal" density="compact" icon="ri-building-4-line">
+                <strong>Pola B2B:</strong> 1 PT = 1 Klien AR. PT bisa punya beberapa Resto — masing-masing Resto menghasilkan invoice sendiri, tapi semua ditagih ke satu Klien AR PT ini.
+              </VAlert>
+            </VTabsWindowItem>
+          </VTabsWindow>
+        </VCardText>
+
+        <VDivider />
+        <VCardActions class="pa-3 justify-end">
+          <VBtn color="primary" variant="tonal" @click="showPanduan = false">Mengerti</VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
   </div>
 </template>
 
@@ -313,8 +460,9 @@ const authStore = useAuthStore()
 const { showError } = useSweetAlert()
 const id = route.params.id
 const isEditing = computed(() => !!id)
-const isArRole = computed(() => authStore.isArOnly)
+const isArRole    = computed(() => authStore.isArOnly)
 const isArEditMode = computed(() => isArRole.value && isEditing.value)
+const isB2B        = computed(() => ['PT', 'STOKIS'].includes(form.tipe_klien))
 
 const { create, update, saving, fetchOne } = useCrud('/finance/klien-ar')
 const { items: karyawanList, loading: karyawanLoading, fetchAll: fetchKaryawan } = useCrud('/master/karyawan')
@@ -322,10 +470,12 @@ const { items: restoList, loading: restoLoading, fetchAll: fetchResto } = useCru
 const { ensureLoaded: ensureKaryawanLoaded } = useLazyFetchAll(fetchKaryawan)
 const { ensureLoaded: ensureRestoLoaded } = useLazyFetchAll(fetchResto)
 
-const formRef = ref(null)
-const pageLoading = ref(!!id)
-const errorMessage = ref('')
+const formRef           = ref(null)
+const pageLoading       = ref(!!id)
+const errorMessage      = ref('')
 const kodePreviewLoading = ref(false)
+const showPanduan       = ref(false)
+const panduanTab        = ref('b2c')
 
 const selectedRestoInvestor = ref(null)
 

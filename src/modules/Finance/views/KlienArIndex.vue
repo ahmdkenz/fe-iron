@@ -135,6 +135,22 @@
               </VTooltip>
             </VBtn>
             <VBtn
+              icon
+              size="small"
+              variant="text"
+              :color="item.no_wa ? 'success' : 'default'"
+              :disabled="!item.no_wa"
+              @click="shareWhatsApp(item)"
+            >
+              <VIcon
+                icon="ri-whatsapp-line"
+                size="18"
+              />
+              <VTooltip activator="parent">
+                {{ item.no_wa ? 'Kirim via WhatsApp' : 'No. WA belum diisi' }}
+              </VTooltip>
+            </VBtn>
+            <VBtn
               v-if="!authStore.isDirectorOnly"
               icon
               size="small"
@@ -262,6 +278,18 @@
           label="Updated By"
           :value="selectedKlien.updated_by_name"
         />
+
+        <VDivider class="my-4" />
+        <VBtn
+          block
+          :color="selectedKlien.no_wa ? 'success' : 'default'"
+          :disabled="!selectedKlien.no_wa"
+          prepend-icon="ri-whatsapp-line"
+          variant="tonal"
+          @click="shareWhatsApp(selectedKlien)"
+        >
+          {{ selectedKlien.no_wa ? 'Kirim via WhatsApp' : 'No. WA belum diisi' }}
+        </VBtn>
       </div>
     </VNavigationDrawer>
 
@@ -348,6 +376,33 @@ function openCreate()      { router.push({ name: 'finance-klien-ar-create' }) }
 function openEdit(k)       { router.push({ name: 'finance-klien-ar-edit', params: { id: k.id } }) }
 function openDetail(k)     { selectedKlien.value = k;    showDetail.value = true }
 function confirmDelete(k)  { selectedKlien.value = k;    deleteError.value = ''; showDelete.value = true }
+
+function shareWhatsApp(klien) {
+  if (!klien.no_wa) return
+
+  const phone = klien.no_wa
+    .replace(/\D/g, '')
+    .replace(/^0/, '62')
+
+  const isB2C    = ['RESTO', 'MITRA'].includes(klien.tipe_klien)
+  const segment  = isB2C ? 'B2C' : 'B2B'
+
+  const lines = [
+    '*📋 Data Klien AR*',
+    '━━━━━━━━━━━━━━',
+    `🔖 Kode: ${klien.kode_klien}`,
+    `👤 Nama Billing: ${klien.nama_klien}`,
+    `🏷️ Tipe: ${klien.tipe_klien} (${segment})`,
+    klien.resto                          ? `🏪 Resto: ${klien.resto.nama_resto}`                            : null,
+    klien.resto?.investor                ? `👥 Investor: ${klien.resto.investor.nama_investor}`              : null,
+    klien.resto?.investor?.pengelola     ? `👤 Pengelola: ${klien.resto.investor.pengelola}`                 : null,
+    `📊 Status: ${klien.status ? 'Aktif' : 'Nonaktif'}`,
+    `👨‍💼 PIC AR: ${klien.karyawan_ar?.nama_karyawan ?? '-'}`,
+    '━━━━━━━━━━━━━━',
+  ].filter(Boolean).join('\n')
+
+  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(lines)}`, '_blank')
+}
 
 async function doDelete() {
   deleteError.value = ''
