@@ -46,20 +46,21 @@
         Sebagai AR, Anda hanya dapat mengubah <strong>No. WhatsApp</strong> klien.
       </VAlert>
 
+      <!-- Card 1: Informasi Klien -->
       <VCard class="mb-4">
         <VCardTitle class="pa-4 pb-2">
           <VIcon
             icon="ri-building-line"
             class="me-2"
           />
-          Identitas Klien
+          Informasi Klien
         </VCardTitle>
         <VDivider />
         <VCardText>
           <VRow>
             <VCol
               cols="12"
-              md="4"
+              md="3"
             >
               <VTextField
                 v-model="form.kode_klien"
@@ -71,12 +72,12 @@
                 readonly
                 persistent-hint
                 :loading="kodePreviewLoading"
-                :hint="isEditing ? 'Kode klien existing dipertahankan' : 'Otomatis terisi saat form dibuka'"
+                :hint="isEditing ? 'Dipertahankan' : 'Otomatis terisi'"
               />
             </VCol>
             <VCol
               cols="12"
-              md="8"
+              md="6"
             >
               <VTextField
                 v-model="form.nama_klien"
@@ -92,32 +93,19 @@
             </VCol>
             <VCol
               cols="12"
-              md="6"
+              md="3"
             >
-              <VTextField
-                v-model="form.alias"
-                label="Alias"
+              <VSelect
+                v-model="form.status"
+                label="Status"
                 density="compact"
                 variant="outlined"
-                :error-messages="errors.alias"
+                :items="statusOptions"
+                item-title="label"
+                item-value="value"
                 :readonly="isArEditMode"
               />
             </VCol>
-          </VRow>
-        </VCardText>
-      </VCard>
-
-      <VCard class="mb-4">
-        <VCardTitle class="pa-4 pb-2">
-          <VIcon
-            icon="ri-file-list-3-line"
-            class="me-2"
-          />
-          Klasifikasi &amp; Administrasi
-        </VCardTitle>
-        <VDivider />
-        <VCardText>
-          <VRow>
             <VCol
               cols="12"
               md="6"
@@ -145,25 +133,11 @@
                 clearable
               />
             </VCol>
-            <VCol
-              cols="12"
-              md="6"
-            >
-              <VSelect
-                v-model="form.status"
-                label="Status"
-                density="compact"
-                variant="outlined"
-                :items="statusOptions"
-                item-title="label"
-                item-value="value"
-                :readonly="isArEditMode"
-              />
-            </VCol>
           </VRow>
         </VCardText>
       </VCard>
 
+      <!-- Card 2: Relasi Internal -->
       <VCard class="mb-4">
         <VCardTitle class="pa-4 pb-2">
           <VIcon
@@ -175,7 +149,6 @@
         <VDivider />
         <VCardText>
           <VRow>
-            <!-- Resto wajib — sumber data pengelola/investor -->
             <VCol cols="12">
               <VAutocomplete
                 v-model="form.resto_id"
@@ -202,7 +175,6 @@
               </VAutocomplete>
             </VCol>
 
-            <!-- Info Investor/Pengelola (readonly, dari Resto yang dipilih) -->
             <VCol
               v-if="selectedRestoInvestor"
               cols="12"
@@ -229,7 +201,6 @@
               </VAlert>
             </VCol>
 
-            <!-- PIC AR -->
             <VCol
               cols="12"
               md="6"
@@ -350,7 +321,6 @@ const displayKaryawan = computed(() => {
 const errors = reactive({
   kode_klien: [],
   nama_klien: [],
-  alias: [],
   tipe_klien: [],
   no_npwp: [],
   no_wa: [],
@@ -361,7 +331,6 @@ const errors = reactive({
 const defaultForm = () => ({
   kode_klien: '',
   nama_klien: '',
-  alias: '',
   tipe_klien: 'MITRA',
   no_npwp: '',
   no_wa: '',
@@ -404,7 +373,6 @@ function onRestoChange(restoId) {
   const selectedResto = restoList.value?.find(r => r.id === restoId)
   selectedRestoInvestor.value = selectedResto?.investor ?? null
 
-  // Auto-suggest nama_klien dari pengelola investor jika belum diisi
   if (selectedRestoInvestor.value?.pengelola && !form.nama_klien) {
     form.nama_klien = selectedRestoInvestor.value.pengelola
   }
@@ -474,7 +442,6 @@ onMounted(async () => {
     Object.assign(form, {
       kode_klien:     data.kode_klien ?? '',
       nama_klien:     data.nama_klien ?? '',
-      alias:          data.alias ?? '',
       tipe_klien:     data.tipe_klien ?? 'MITRA',
       no_npwp:        data.no_npwp ?? '',
       no_wa:          data.no_wa ?? '',
@@ -483,7 +450,6 @@ onMounted(async () => {
       status:         normalizeBooleanStatus(data.status),
     })
 
-    // Restore investor info dari data yang sudah ada
     if (data.resto?.investor) {
       selectedRestoInvestor.value = data.resto.investor
     }
@@ -491,5 +457,4 @@ onMounted(async () => {
 
   pageLoading.value = false
 })
-
 </script>

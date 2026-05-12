@@ -193,10 +193,6 @@
         </div>
         <VDivider class="mb-4" />
         <DetailRow
-          label="Alias"
-          :value="selectedKlien.alias"
-        />
-        <DetailRow
           label="Resto"
           :value="selectedKlien.resto?.nama_resto"
         />
