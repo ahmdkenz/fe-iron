@@ -10,8 +10,7 @@
     >
       <div class="d-flex gap-2">
         <VBtn
-          variant="outlined"
-          color="success"
+          color="primary"
           prepend-icon="ri-download-line"
           :loading="exporting"
           @click="exportCsv"
@@ -20,8 +19,7 @@
         </VBtn>
         <VBtn
           v-if="!authStore.isArOnly && !authStore.isDirectorOnly"
-          variant="outlined"
-          color="warning"
+          color="primary"
           prepend-icon="ri-upload-line"
           @click="openImport"
         >

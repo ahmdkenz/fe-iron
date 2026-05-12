@@ -1,4 +1,4 @@
-.ri-add-line, .ri-alert-line, .ri-arrow-down-line, .ri-arrow-down-s-fill, .ri-arrow-down-s-line, .ri-arrow-left-line, .ri-arrow-left-s-line, .ri-arrow-right-line, .ri-arrow-right-s-line, .ri-arrow-up-line, .ri-arrow-up-s-line, .ri-attachment-2, .ri-bank-card-line, .ri-bank-line, .ri-bar-chart-box-line, .ri-bar-chart-grouped-line, .ri-bill-line, .ri-box-3-line, .ri-building-2-line, .ri-building-4-line, .ri-building-line, .ri-calculator-line, .ri-calendar-2-line, .ri-calendar-check-line, .ri-calendar-event-fill, .ri-calendar-event-line, .ri-calendar-line, .ri-chat-1-line, .ri-check-line, .ri-checkbox-circle-line, .ri-circle-fill, .ri-circle-line, .ri-close-circle-fill, .ri-close-circle-line, .ri-close-line, .ri-contacts-line, .ri-delete-bin-line, .ri-download-2-line, .ri-draft-line, .ri-error-warning-line, .ri-exchange-funds-line, .ri-exchange-line, .ri-eye-line, .ri-eye-off-line, .ri-file-chart-line, .ri-file-list-3-line, .ri-file-text-line, .ri-file-warning-line, .ri-folder-3-line, .ri-funds-line, .ri-hashtag, .ri-heart-fill, .ri-history-line, .ri-home-smile-2-line, .ri-inbox-line, .ri-information-line, .ri-links-line, .ri-list-check-2, .ri-list-unordered, .ri-logout-box-r-line, .ri-macbook-line, .ri-map-pin-2-line, .ri-menu-line, .ri-money-cny-circle-line, .ri-money-dollar-circle-line, .ri-moon-clear-line, .ri-more-2-line, .ri-node-tree, .ri-pencil-line, .ri-pie-chart-2-line, .ri-price-tag-3-line, .ri-printer-line, .ri-record-circle-line, .ri-refresh-line, .ri-save-line, .ri-search-line, .ri-send-plane-2-line, .ri-send-plane-line, .ri-shield-check-line, .ri-shield-keyhole-line, .ri-shield-user-line, .ri-skip-back-mini-line, .ri-skip-forward-mini-line, .ri-split-cells-vertical, .ri-star-fill, .ri-star-half-line, .ri-star-line, .ri-sticky-note-line, .ri-store-2-line, .ri-store-3-line, .ri-subtract-line, .ri-sun-line, .ri-task-line, .ri-time-line, .ri-timer-line, .ri-translate-2, .ri-truck-line, .ri-upload-2-line, .ri-user-3-line, .ri-user-add-line, .ri-user-search-line, .ri-user-settings-line, .ri-user-star-line, .ri-wallet-3-line, .ri-whatsapp-line {
+.ri-add-line, .ri-alert-line, .ri-arrow-down-line, .ri-arrow-down-s-fill, .ri-arrow-down-s-line, .ri-arrow-left-line, .ri-arrow-left-s-line, .ri-arrow-right-line, .ri-arrow-right-s-line, .ri-arrow-up-line, .ri-arrow-up-s-line, .ri-attachment-2, .ri-bank-card-line, .ri-bar-chart-box-line, .ri-bar-chart-grouped-line, .ri-bill-line, .ri-box-3-line, .ri-building-2-line, .ri-building-4-line, .ri-building-line, .ri-calculator-line, .ri-calendar-2-line, .ri-calendar-check-line, .ri-calendar-event-fill, .ri-calendar-event-line, .ri-calendar-line, .ri-chat-1-line, .ri-check-line, .ri-checkbox-circle-line, .ri-circle-fill, .ri-circle-line, .ri-close-circle-fill, .ri-close-circle-line, .ri-close-line, .ri-contacts-line, .ri-delete-bin-line, .ri-download-2-line, .ri-download-line, .ri-draft-line, .ri-error-warning-line, .ri-exchange-funds-line, .ri-exchange-line, .ri-eye-line, .ri-eye-off-line, .ri-file-chart-line, .ri-file-excel-line, .ri-file-list-2-line, .ri-file-list-3-line, .ri-file-text-line, .ri-file-upload-line, .ri-file-warning-line, .ri-folder-3-line, .ri-funds-line, .ri-hashtag, .ri-heart-fill, .ri-history-line, .ri-home-smile-2-line, .ri-inbox-line, .ri-information-line, .ri-links-line, .ri-list-check-2, .ri-list-unordered, .ri-logout-box-r-line, .ri-macbook-line, .ri-map-pin-2-line, .ri-menu-line, .ri-money-cny-circle-line, .ri-money-dollar-circle-line, .ri-moon-clear-line, .ri-more-2-line, .ri-node-tree, .ri-pencil-line, .ri-pie-chart-2-line, .ri-price-tag-3-line, .ri-printer-line, .ri-record-circle-line, .ri-refresh-line, .ri-save-line, .ri-search-line, .ri-send-plane-2-line, .ri-send-plane-line, .ri-shield-check-line, .ri-shield-keyhole-line, .ri-shield-user-line, .ri-skip-back-mini-line, .ri-skip-forward-mini-line, .ri-split-cells-vertical, .ri-star-fill, .ri-star-half-line, .ri-star-line, .ri-sticky-note-line, .ri-store-2-line, .ri-store-3-line, .ri-subtract-line, .ri-sun-line, .ri-task-line, .ri-time-line, .ri-timer-line, .ri-translate-2, .ri-truck-line, .ri-upload-2-line, .ri-upload-line, .ri-user-3-line, .ri-user-add-line, .ri-user-search-line, .ri-user-settings-line, .ri-user-star-line, .ri-wallet-3-line, .ri-whatsapp-line {
   display: inline-block;
   width: 1em;
   height: 1em;
@@ -61,10 +61,6 @@
 
 .ri-bank-card-line {
   --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='black' d='M3.005 3h18a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1h-18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1m17 8h-16v8h16zm0-2V5h-16v4zm-6 6h4v2h-4z'/%3E%3C/svg%3E");
-}
-
-.ri-bank-line {
-  --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='black' d='M2 20h20v2H2zm2-8h2v7H4zm5 0h2v7H9zm4 0h2v7h-2zm5 0h2v7h-2zM2 7l10-5l10 5v4H2zm2 1.236V9h16v-.764l-8-4zM12 8a1 1 0 1 1 0-2a1 1 0 0 1 0 2'/%3E%3C/svg%3E");
 }
 
 .ri-bar-chart-box-line {
@@ -163,6 +159,10 @@
   --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='black' d='M13 10h5l-6 6l-6-6h5V3h2zm-9 9h16v-7h2v8a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-8h2z'/%3E%3C/svg%3E");
 }
 
+.ri-download-line {
+  --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='black' d='M3 19h18v2H3zm10-5.828L19.071 7.1l1.414 1.414L12 17L3.515 8.515L4.929 7.1L11 13.173V2h2z'/%3E%3C/svg%3E");
+}
+
 .ri-draft-line {
   --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='black' d='M20 2a1 1 0 0 1 1 1v3.757l-2 2V4H5v16h14v-2.758l2-2V21a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm1.778 6.808l1.414 1.414L15.414 18l-1.416-.002l.002-1.412zM13 12v2H8v-2zm3-4v2H8V8z'/%3E%3C/svg%3E");
 }
@@ -191,12 +191,24 @@
   --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='black' d='M11 7h2v10h-2zm4 4h2v6h-2zm-8 2h2v4H7zm8-9H5v16h14V8h-4zM3 2.992C3 2.444 3.447 2 3.999 2H16l5 5v13.993A1 1 0 0 1 20.007 22H3.993A1 1 0 0 1 3 21.008z'/%3E%3C/svg%3E");
 }
 
+.ri-file-excel-line {
+  --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='black' d='m13.2 12l2.8 4h-2.4L12 13.714L10.4 16H8l2.8-4L8 8h2.4l1.6 2.286L13.6 8H15V4H5v16h14V8h-3zM3 2.992C3 2.444 3.447 2 3.999 2H16l5 5v13.993A1 1 0 0 1 20.007 22H3.993A1 1 0 0 1 3 21.008z'/%3E%3C/svg%3E");
+}
+
+.ri-file-list-2-line {
+  --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='black' d='M20 22H4a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1m-1-2V4H5v16zM8 7h8v2H8zm0 4h8v2H8zm0 4h5v2H8z'/%3E%3C/svg%3E");
+}
+
 .ri-file-list-3-line {
   --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='black' d='M19 22H5a3 3 0 0 1-3-3V3a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v12h4v4a3 3 0 0 1-3 3m-1-5v2a1 1 0 1 0 2 0v-2zm-2 3V4H4v15a1 1 0 0 0 1 1zM6 7h8v2H6zm0 4h8v2H6zm0 4h5v2H6z'/%3E%3C/svg%3E");
 }
 
 .ri-file-text-line {
   --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='black' d='M21 8v12.993A1 1 0 0 1 20.007 22H3.993A.993.993 0 0 1 3 21.008V2.992C3 2.455 3.449 2 4.002 2h10.995zm-2 1h-5V4H5v16h14zM8 7h3v2H8zm0 4h8v2H8zm0 4h8v2H8z'/%3E%3C/svg%3E");
+}
+
+.ri-file-upload-line {
+  --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='black' d='M15 4H5v16h14V8h-4zM3 2.992C3 2.444 3.447 2 3.999 2H16l5 5v13.993A1 1 0 0 1 20.007 22H3.993A1 1 0 0 1 3 21.008zM13 12v4h-2v-4H8l4-4l4 4z'/%3E%3C/svg%3E");
 }
 
 .ri-file-warning-line {
@@ -401,6 +413,10 @@
 
 .ri-upload-2-line {
   --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='black' d='M4 19h16v-7h2v8a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-8h2zm9-10v7h-2V9H6l6-6l6 6z'/%3E%3C/svg%3E");
+}
+
+.ri-upload-line {
+  --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='black' d='M3 19h18v2H3zM13 5.828V17h-2V5.828L4.929 11.9l-1.414-1.414L12 2l8.485 8.485l-1.414 1.415z'/%3E%3C/svg%3E");
 }
 
 .ri-user-3-line {
