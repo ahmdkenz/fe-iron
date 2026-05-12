@@ -30,7 +30,7 @@ export default [
     roles: ['ADMIN'],
   },
   {
-    title: 'Data Perusahaan',
+    title: 'Data Entitas',
     to: { name: 'master-perusahaan' },
     icon: { icon: 'ri-building-line' },
     roles: ['ADMIN'],

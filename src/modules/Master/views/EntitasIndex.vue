@@ -1,11 +1,11 @@
 <template>
   <div>
-    <PageHeader 
-      title="Manajemen Perusahaan" 
-      subtitle="Kelola data perusahaan"
+    <PageHeader
+      title="Manajemen Entitas"
+      subtitle="Kelola data entitas"
       :breadcrumbs="[
         { title: 'Dashboard', to: { name: 'dashboard' } },
-        { title: 'Perusahaan', disabled: true }
+        { title: 'Entitas', disabled: true }
       ]"
     >
       <VBtn
@@ -13,7 +13,7 @@
         prepend-icon="ri-add-line"
         @click="openCreate"
       >
-        Tambah Perusahaan
+        Tambah Entitas
       </VBtn>
     </PageHeader>
 
@@ -21,7 +21,7 @@
       <VCardText class="d-flex gap-4 pb-0">
         <VTextField
           v-model="params.search"
-          placeholder="Cari kode / nama perusahaan..."
+          placeholder="Cari kode / nama entitas..."
           clearable
           hide-details
           density="compact"
@@ -135,7 +135,7 @@
       temporary
     >
       <div class="d-flex align-center justify-space-between pa-4">
-        <span class="text-h6 font-weight-semibold">Detail Perusahaan</span>
+        <span class="text-h6 font-weight-semibold">Detail Entitas</span>
         <VBtn
           icon
           size="small"
@@ -147,7 +147,7 @@
       </div>
       <VDivider />
       <div
-        v-if="selectedPerusahaan"
+        v-if="selectedEntitas"
         class="pa-4"
       >
         <div class="mb-4 text-center">
@@ -156,10 +156,10 @@
             color="primary"
             class="mb-3"
           >
-            <span class="text-h5">{{ selectedPerusahaan.nama_singkatan_perusahaan?.charAt(0) }}</span>
+            <span class="text-h5">{{ selectedEntitas.nama_singkatan_perusahaan?.charAt(0) }}</span>
           </VAvatar>
           <div class="text-h6 font-weight-bold">
-            {{ selectedPerusahaan.nama_perusahaan }}
+            {{ selectedEntitas.nama_perusahaan }}
           </div>
           <VChip
             color="primary"
@@ -168,42 +168,42 @@
             label
             class="mt-1"
           >
-            {{ selectedPerusahaan.kode_perusahaan }}
+            {{ selectedEntitas.kode_perusahaan }}
           </VChip>
         </div>
         <VDivider class="mb-4" />
         <DetailRow
           label="Singkatan"
-          :value="selectedPerusahaan.nama_singkatan_perusahaan"
+          :value="selectedEntitas.nama_singkatan_perusahaan"
         />
         <DetailRow
           label="Keterangan"
-          :value="selectedPerusahaan.keterangan"
+          :value="selectedEntitas.keterangan"
         />
         <DetailRow label="Status">
           <VChip
-            :color="selectedPerusahaan.status ? 'success' : 'error'"
+            :color="selectedEntitas.status ? 'success' : 'error'"
             size="small"
             label
           >
-            {{ selectedPerusahaan.status ? 'Aktif' : 'Nonaktif' }}
+            {{ selectedEntitas.status ? 'Aktif' : 'Nonaktif' }}
           </VChip>
         </DetailRow>
         <DetailRow
           label="Created By"
-          :value="selectedPerusahaan.created_by_name"
+          :value="selectedEntitas.created_by_name"
         />
         <DetailRow
           label="Updated By"
-          :value="selectedPerusahaan.updated_by_name"
+          :value="selectedEntitas.updated_by_name"
         />
         <DetailRow
           label="Created At"
-          :value="selectedPerusahaan.created_at"
+          :value="selectedEntitas.created_at"
         />
         <DetailRow
           label="Updated At"
-          :value="selectedPerusahaan.updated_at"
+          :value="selectedEntitas.updated_at"
         />
       </div>
     </VNavigationDrawer>
@@ -212,11 +212,11 @@
     <BaseModal
       v-if="showDelete"
       v-model="showDelete"
-      title="Hapus Perusahaan"
+      title="Hapus Entitas"
       :loading="loading"
       @confirm="doDelete"
     >
-      <p>Apakah Anda yakin ingin menghapus perusahaan <strong>{{ selectedPerusahaan?.nama_perusahaan }}</strong>?</p>
+      <p>Apakah Anda yakin ingin menghapus entitas <strong>{{ selectedEntitas?.nama_perusahaan }}</strong>?</p>
       <VAlert
         v-if="deleteError"
         type="error"
@@ -242,12 +242,12 @@ const { items, loading, meta, params, fetchList, remove } = useCrud('/master/per
 const showDelete  = ref(false)
 const showDetail  = ref(false)
 const deleteError = ref('')
-const selectedPerusahaan = ref(null)
+const selectedEntitas = ref(null)
 
 const headers = [
   { title: 'No',         key: 'no',                        sortable: false, width: '60px' },
   { title: 'Kode',       key: 'kode_perusahaan',           sortable: false },
-  { title: 'Nama Perusahaan',   key: 'nama_perusahaan',    sortable: false },
+  { title: 'Nama Entitas',   key: 'nama_perusahaan',       sortable: false },
   { title: 'Singkatan',  key: 'nama_singkatan_perusahaan', sortable: false },
   { title: 'Keterangan', key: 'keterangan',                sortable: false },
   { title: 'Status',     key: 'status',                    sortable: false },
@@ -270,13 +270,13 @@ function onTableOptions({ page, itemsPerPage }) {
 
 function openCreate()            { router.push({ name: 'master-perusahaan-create' }) }
 function openEdit(p)             { router.push({ name: 'master-perusahaan-edit', params: { id: p.id } }) }
-function openDetail(p)           { selectedPerusahaan.value = p;     showDetail.value = true }
-function confirmDelete(p)        { selectedPerusahaan.value = p;     deleteError.value = ''; showDelete.value = true }
+function openDetail(p)           { selectedEntitas.value = p;     showDetail.value = true }
+function confirmDelete(p)        { selectedEntitas.value = p;     deleteError.value = ''; showDelete.value = true }
 
 async function doDelete() {
   deleteError.value = ''
 
-  const deleteId = selectedPerusahaan.value?.id
+  const deleteId = selectedEntitas.value?.id
   if (!deleteId) return
 
   showDelete.value = false
@@ -285,7 +285,7 @@ async function doDelete() {
   const res = await remove(deleteId)
   if (res.success) {
     fetchList()
-    await showSuccess('Perusahaan berhasil dihapus.')
+    await showSuccess('Entitas berhasil dihapus.')
   } else {
     deleteError.value = res.message || 'Gagal menghapus data'
     await showError(deleteError.value)

@@ -219,7 +219,7 @@ function onTableOptions({ page: p, itemsPerPage }) {
 const headers = [
   { title: 'No',           key: 'no',            sortable: false, width: '50px' },
   { title: 'Klien',        key: 'nama_klien',    sortable: false },
-  { title: 'Perusahaan',   key: 'perusahaan',    sortable: false },
+  { title: 'Entitas',      key: 'perusahaan',    sortable: false },
   { title: 'Saldo Awal',   key: 'saldo_awal',    sortable: false, align: 'end' },
   { title: 'Invoice Masuk',key: 'invoice_masuk', sortable: false, align: 'end' },
   { title: 'Pembayaran',   key: 'pembayaran',    sortable: false, align: 'end' },

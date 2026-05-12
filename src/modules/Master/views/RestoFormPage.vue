@@ -98,17 +98,17 @@
             >
               <VAutocomplete
                 v-model="form.perusahaan_id"
-                label="Perusahaan"
+                label="Entitas"
                 density="compact"
                 variant="outlined"
-                :items="perusahaanList"
+                :items="entitasList"
                 item-title="nama_perusahaan"
                 item-value="id"
                 :error-messages="errors.perusahaan_id"
-                :loading="perusahaanLoading"
+                :loading="entitasLoading"
                 clearable
-                @focus="ensurePerusahaanLoaded()"
-                @update:model-value="onPerusahaanChange"
+                @focus="ensureEntitasLoaded()"
+                @update:model-value="onEntitasChange"
               >
                 <template #item="{ props: p, item }">
                   <VListItem
@@ -339,10 +339,10 @@ const id = route.params.id
 const isEditing = computed(() => !!id)
 
 const { create, update, saving, fetchOne } = useCrud('/master/resto')
-const { items: perusahaanList, loading: perusahaanLoading, fetchAll: fetchPerusahaan } = useCrud('/master/perusahaan')
+const { items: entitasList, loading: entitasLoading, fetchAll: fetchEntitas } = useCrud('/master/perusahaan')
 const { items: investorList,   loading: investorLoading,   fetchAll: fetchInvestor   } = useCrud('/master/investor')
 const { items: karyawanList,   loading: karyawanLoading,   fetchAll: fetchKaryawan   } = useCrud('/master/karyawan')
-const { ensureLoaded: ensurePerusahaanLoaded } = useLazyFetchAll(fetchPerusahaan)
+const { ensureLoaded: ensureEntitasLoaded } = useLazyFetchAll(fetchEntitas)
 const { ensureLoaded: ensureInvestorLoaded } = useLazyFetchAll(fetchInvestor)
 const { ensureLoaded: ensureKaryawanLoaded } = useLazyFetchAll(fetchKaryawan)
 
@@ -367,10 +367,10 @@ const form = reactive({
   karyawan_id: null, area: '', kota: '', alamat: '', no_telp: '', tgl_aktif: '', keterangan: '', status: 1,
 })
 
-async function fetchBrandsByPerusahaan(perusahaanId) {
+async function fetchBrandsByEntitas(entitasId) {
   brandLoading.value = true
   try {
-    const params = perusahaanId ? { all: true, perusahaan_id: perusahaanId } : { all: true }
+    const params = entitasId ? { all: true, perusahaan_id: entitasId } : { all: true }
     const res = await api.get('/master/brand', { params })
 
     brandList.value = res.data?.data ?? []
@@ -382,14 +382,14 @@ async function fetchBrandsByPerusahaan(perusahaanId) {
 let brandLoaded = false
 async function ensureBrandLoaded() {
   if (brandLoaded || brandList.value.length > 0) return
-  await fetchBrandsByPerusahaan(form.perusahaan_id ?? null)
+  await fetchBrandsByEntitas(form.perusahaan_id ?? null)
   brandLoaded = true
 }
 
-function onPerusahaanChange(val) {
+function onEntitasChange(val) {
   form.brand_id = null
   brandLoaded = false
-  fetchBrandsByPerusahaan(val)
+  fetchBrandsByEntitas(val)
 }
 
 function onBrandChange() {}
@@ -425,7 +425,7 @@ onMounted(async () => {
   }
 
   await Promise.all([
-    ensurePerusahaanLoaded(),
+    ensureEntitasLoaded(),
     ensureInvestorLoaded(),
     ensureKaryawanLoaded(),
   ])
@@ -447,7 +447,7 @@ onMounted(async () => {
       keterangan: data.keterangan    ?? '',
       status: normalizeBooleanStatus(data.status),
     })
-    if (form.perusahaan_id) await fetchBrandsByPerusahaan(form.perusahaan_id)
+    if (form.perusahaan_id) await fetchBrandsByEntitas(form.perusahaan_id)
   }
   pageLoading.value = false
 })

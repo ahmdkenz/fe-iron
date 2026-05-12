@@ -1,12 +1,12 @@
 <template>
   <div>
-    <PageHeader 
-      :title="isEditing ? 'Edit Perusahaan' : 'Tambah Perusahaan'" 
-      subtitle="Kelola data perusahaan"
+    <PageHeader
+      :title="isEditing ? 'Edit Entitas' : 'Tambah Entitas'"
+      subtitle="Kelola data entitas"
       :breadcrumbs="[
         { title: 'Dashboard', to: { name: 'dashboard' } },
-        { title: 'Perusahaan', to: { name: 'master-perusahaan' } },
-        { title: isEditing ? 'Edit Perusahaan' : 'Tambah Perusahaan', disabled: true }
+        { title: 'Entitas', to: { name: 'master-perusahaan' } },
+        { title: isEditing ? 'Edit Entitas' : 'Tambah Entitas', disabled: true }
       ]"
     >
       <VBtn
@@ -44,7 +44,7 @@
             icon="ri-building-2-line"
             class="me-2"
           />
-          Identitas Perusahaan
+          Identitas Entitas
         </VCardTitle>
         <VDivider />
         <VCardText>
@@ -55,7 +55,7 @@
             >
               <VTextField
                 v-model="form.kode_perusahaan"
-                label="Kode Perusahaan"
+                label="Kode Entitas"
                 density="compact"
                 variant="outlined"
                 hint="Contoh: PT-ABC, CV-XYZ"
@@ -87,10 +87,10 @@
             >
               <VTextField
                 v-model="form.nama_perusahaan"
-                label="Nama Perusahaan"
+                label="Nama Entitas"
                 density="compact"
                 variant="outlined"
-                :rules="[v => !!v || 'Nama perusahaan wajib diisi']"
+                :rules="[v => !!v || 'Nama entitas wajib diisi']"
                 :error-messages="errors.nama_perusahaan"
               />
             </VCol>
@@ -283,7 +283,7 @@ async function handleSubmit() {
     setFlashAlert({
       icon: 'success',
       title: 'Berhasil',
-      text: isEditing.value ? 'Perubahan perusahaan berhasil disimpan.' : 'Perusahaan berhasil ditambahkan.',
+      text: isEditing.value ? 'Perubahan entitas berhasil disimpan.' : 'Entitas berhasil ditambahkan.',
     })
     router.push({ name: 'master-perusahaan' })
   } else {

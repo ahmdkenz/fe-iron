@@ -8,7 +8,7 @@ export default [
   {
     path: '/master/perusahaan',
     name: 'master-perusahaan',
-    component: () => import('@/modules/Master/views/PerusahaanIndex.vue'),
+    component: () => import('@/modules/Master/views/EntitasIndex.vue'),
     meta: { requiresAuth: true, roles: ['ADMIN'] },
   },
   {
@@ -50,13 +50,13 @@ export default [
   {
     path: '/master/perusahaan/create',
     name: 'master-perusahaan-create',
-    component: () => import('@/modules/Master/views/PerusahaanFormPage.vue'),
+    component: () => import('@/modules/Master/views/EntitasFormPage.vue'),
     meta: { requiresAuth: true, roles: ['ADMIN'] },
   },
   {
     path: '/master/perusahaan/:id/edit',
     name: 'master-perusahaan-edit',
-    component: () => import('@/modules/Master/views/PerusahaanFormPage.vue'),
+    component: () => import('@/modules/Master/views/EntitasFormPage.vue'),
     meta: { requiresAuth: true, roles: ['ADMIN'] },
   },
   {

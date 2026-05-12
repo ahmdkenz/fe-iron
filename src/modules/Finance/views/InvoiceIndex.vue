@@ -420,7 +420,7 @@ const headers = [
   { title: 'No',             key: 'no',             sortable: false, width: '60px' },
   { title: 'No Invoice',     key: 'no_invoice',     sortable: false },
   { title: 'Klien',          key: 'klien_ar',       sortable: false },
-  { title: 'Perusahaan',     key: 'perusahaan',     sortable: false },
+  { title: 'Entitas',        key: 'perusahaan',     sortable: false },
   { title: 'Tanggal',        key: 'tanggal_invoice',    sortable: false },
   { title: 'Total Tagihan',  key: 'total_tagihan',  sortable: false },
   { title: 'Sisa Tagihan',   key: 'sisa_tagihan',   sortable: false },

@@ -108,17 +108,17 @@
             >
               <VAutocomplete
                 v-model="form.perusahaan_id"
-                label="Perusahaan"
+                label="Entitas"
                 density="compact"
                 variant="outlined"
-                :items="perusahaanList"
+                :items="entitasList"
                 item-title="nama_perusahaan"
                 item-value="id"
-                :rules="[v => !!v || 'Perusahaan wajib dipilih']"
+                :rules="[v => !!v || 'Entitas wajib dipilih']"
                 :error-messages="errors.perusahaan_id"
-                :loading="perusahaanLoading"
+                :loading="entitasLoading"
                 clearable
-                @focus="ensurePerusahaanLoaded()"
+                @focus="ensureEntitasLoaded()"
               >
                 <template #item="{ props: p, item }">
                   <VListItem
@@ -233,9 +233,9 @@ const id = route.params.id
 const isEditing = computed(() => !!id)
 
 const { create, update, saving, fetchOne } = useCrud('/master/barang')
-const { items: perusahaanList, loading: perusahaanLoading, fetchAll: fetchPerusahaan } = useCrud('/master/perusahaan')
+const { items: entitasList, loading: entitasLoading, fetchAll: fetchEntitas } = useCrud('/master/perusahaan')
 const { items: brandList, loading: brandLoading, fetchAll: fetchBrands } = useCrud('/master/brand')
-const { ensureLoaded: ensurePerusahaanLoaded } = useLazyFetchAll(fetchPerusahaan)
+const { ensureLoaded: ensureEntitasLoaded } = useLazyFetchAll(fetchEntitas)
 const { ensureLoaded: ensureBrandsLoaded } = useLazyFetchAll(fetchBrands)
 
 const formRef = ref(null)
@@ -282,7 +282,7 @@ onMounted(async () => {
     return
   }
 
-  await Promise.all([ensurePerusahaanLoaded(), ensureBrandsLoaded()])
+  await Promise.all([ensureEntitasLoaded(), ensureBrandsLoaded()])
 
   const data = await fetchOne(id)
   if (data) {

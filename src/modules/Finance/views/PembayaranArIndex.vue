@@ -137,7 +137,7 @@ const headers = [
   { title: 'Tanggal',     key: 'tanggal_pembayaran', sortable: false },
   { title: 'No Invoice',  key: 'no_invoice',         sortable: false },
   { title: 'Klien',       key: 'klien',              sortable: false },
-  { title: 'Perusahaan',  key: 'perusahaan',         sortable: false },
+  { title: 'Entitas',     key: 'perusahaan',         sortable: false },
   { title: 'Jumlah',      key: 'jumlah_pembayaran',  sortable: false },
   { title: 'Metode',      key: 'metode_pembayaran',  sortable: false },
   { title: 'No Referensi',key: 'no_referensi',       sortable: false },

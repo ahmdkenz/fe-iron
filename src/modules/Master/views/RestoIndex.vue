@@ -232,7 +232,7 @@
           :value="selectedResto.investor?.nama_investor"
         />
         <DetailRow
-          label="Perusahaan"
+          label="Entitas"
           :value="selectedResto.perusahaan?.nama_perusahaan"
         />
         <DetailRow
@@ -472,7 +472,7 @@ const headers = [
   { title: 'Kode Resto',    key: 'kode_resto',      sortable: false },
   { title: 'Nama Resto',    key: 'nama_resto',      sortable: false },
   { title: 'Investor',      key: 'investor',        sortable: false },
-  { title: 'Perusahaan',    key: 'perusahaan',      sortable: false },
+  { title: 'Entitas',       key: 'perusahaan',      sortable: false },
   { title: 'Brand',         key: 'brand',           sortable: false },
   { title: 'PIC',           key: 'pic',             sortable: false },
   { title: 'Area',          key: 'area',            sortable: false },

@@ -198,7 +198,7 @@ function onTableOptions({ page: p, itemsPerPage }) {
 const headers = [
   { title: 'No',             key: 'no',               sortable: false, width: '50px' },
   { title: 'AR Officer',     key: 'nama_karyawan',    sortable: false },
-  { title: 'Perusahaan',     key: 'perusahaan',       sortable: false },
+  { title: 'Entitas',        key: 'perusahaan',       sortable: false },
   { title: 'Klien',          key: 'jumlah_klien',     sortable: false, align: 'center' },
   { title: 'Invoice',        key: 'jumlah_invoice',   sortable: false, align: 'center' },
   { title: 'Total Tagihan',  key: 'total_tagihan',    sortable: false, align: 'end' },

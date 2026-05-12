@@ -286,7 +286,7 @@ const headers = [
   { title: 'No', key: 'no', sortable: false, width: '60px' },
   { title: 'No Opening Balance', key: 'no_invoice', sortable: false },
   { title: 'Klien', key: 'klien_ar', sortable: false },
-  { title: 'Perusahaan', key: 'perusahaan', sortable: false },
+  { title: 'Entitas',    key: 'perusahaan', sortable: false },
   { title: 'Tanggal', key: 'tanggal_invoice', sortable: false },
   { title: 'Nominal', key: 'total_tagihan', sortable: false },
   { title: 'Pengaju', key: 'submitted_by_name', sortable: false },

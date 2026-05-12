@@ -157,7 +157,7 @@
                   >
                     <VTextField
                       :model-value="selectedCompanyName"
-                      label="Perusahaan Penagih"
+                      label="Entitas Penagih"
                       density="compact"
                       variant="outlined"
                       prepend-inner-icon="ri-building-4-line"
@@ -411,7 +411,7 @@
                 </div>
 
                 <div class="summary-list__item">
-                  <span class="summary-list__label">Perusahaan</span>
+                  <span class="summary-list__label">Entitas</span>
                   <strong class="summary-list__value">{{ selectedCompanyName || '-' }}</strong>
                 </div>
 

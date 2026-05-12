@@ -208,7 +208,7 @@
           :value="selectedBarang.spesifikasi"
         />
         <DetailRow
-          label="Perusahaan"
+          label="Entitas"
           :value="selectedBarang.perusahaan?.nama_perusahaan"
         />
         <DetailRow
@@ -294,7 +294,7 @@ const headers = [
   { title: 'Kode Barang',  key: 'kode_barang',     sortable: false },
   { title: 'Nama Barang',  key: 'nama_barang',     sortable: false },
   { title: 'Spesifikasi',  key: 'spesifikasi',     sortable: false },
-  { title: 'Perusahaan',   key: 'perusahaan',      sortable: false },
+  { title: 'Entitas',      key: 'perusahaan',      sortable: false },
   { title: 'Brand',        key: 'brand',           sortable: false },
   { title: 'Keterangan',   key: 'keterangan',      sortable: false },
   { title: 'Status',       key: 'status',          sortable: false },

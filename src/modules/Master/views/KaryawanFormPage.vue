@@ -78,17 +78,17 @@
             <VCol cols="12">
               <VAutocomplete
                 v-model="form.perusahaan_id"
-                label="Perusahaan"
+                label="Entitas"
                 density="compact"
                 variant="outlined"
-                :items="perusahaanList"
+                :items="entitasList"
                 item-title="nama_perusahaan"
                 item-value="id"
-                :rules="[v => !!v || 'Perusahaan wajib dipilih']"
+                :rules="[v => !!v || 'Entitas wajib dipilih']"
                 :error-messages="errors.perusahaan_id"
-                :loading="perusahaanLoading"
+                :loading="entitasLoading"
                 clearable
-                @focus="ensurePerusahaanLoaded()"
+                @focus="ensureEntitasLoaded()"
               >
                 <template #item="{ props: p, item }">
                   <VListItem
@@ -176,8 +176,8 @@ const id = route.params.id
 const isEditing = computed(() => !!id)
 
 const { create, update, saving, fetchOne } = useCrud('/master/karyawan')
-const { items: perusahaanList, loading: perusahaanLoading, fetchAll: fetchPerusahaan } = useCrud('/master/perusahaan')
-const { ensureLoaded: ensurePerusahaanLoaded } = useLazyFetchAll(fetchPerusahaan)
+const { items: entitasList, loading: entitasLoading, fetchAll: fetchEntitas } = useCrud('/master/perusahaan')
+const { ensureLoaded: ensureEntitasLoaded } = useLazyFetchAll(fetchEntitas)
 
 const formRef = ref(null)
 const pageLoading = ref(!!id)
@@ -218,7 +218,7 @@ onMounted(async () => {
     return
   }
 
-  await ensurePerusahaanLoaded()
+  await ensureEntitasLoaded()
 
   const data = await fetchOne(id)
   if (data) {

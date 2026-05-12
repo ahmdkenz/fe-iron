@@ -175,7 +175,7 @@
         </div>
         <VDivider class="mb-4" />
         <DetailRow
-          label="Perusahaan"
+          label="Entitas"
           :value="selectedKaryawan.perusahaan?.nama_perusahaan"
         />
         <DetailRow
@@ -254,7 +254,7 @@ const headers = [
   { title: 'No',           key: 'no',               sortable: false, width: '60px' },
   { title: 'NIK',          key: 'nik',               sortable: false },
   { title: 'Nama Karyawan', key: 'nama_karyawan',     sortable: false },
-  { title: 'Perusahaan',   key: 'perusahaan',        sortable: false },
+  { title: 'Entitas',      key: 'perusahaan',        sortable: false },
   { title: 'Keterangan',   key: 'keterangan',        sortable: false },
   { title: 'Status',       key: 'status',            sortable: false },
   { title: 'Created By',   key: 'created_by_name',   sortable: false },

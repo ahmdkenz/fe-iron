@@ -16,7 +16,7 @@
             density="compact"
             variant="outlined"
             readonly
-            :hint="isEditing ? 'Kode tidak dapat diubah' : 'Otomatis terisi setelah Perusahaan & Brand dipilih'"
+            :hint="isEditing ? 'Kode tidak dapat diubah' : 'Otomatis terisi setelah Entitas & Brand dipilih'"
             persistent-hint
             :loading="previewLoading"
           />
@@ -34,24 +34,24 @@
           />
         </VCol>
 
-        <!-- Perusahaan -->
+        <!-- Entitas -->
         <VCol
           cols="12"
           md="6"
         >
           <VAutocomplete
             v-model="form.perusahaan_id"
-            label="Perusahaan"
+            label="Entitas"
             density="compact"
             variant="outlined"
-            :items="perusahaanList"
+            :items="entitasList"
             item-title="nama_perusahaan"
             item-value="id"
-            :rules="[v => !!v || 'Perusahaan wajib dipilih']"
+            :rules="[v => !!v || 'Entitas wajib dipilih']"
             :error-messages="errors.perusahaan_id"
-            :loading="perusahaanLoading"
+            :loading="entitasLoading"
             clearable
-            @update:model-value="onPerusahaanChange"
+            @update:model-value="onEntitasChange"
           >
             <template #item="{ props: p, item }">
               <VListItem
@@ -263,7 +263,7 @@ const emit = defineEmits(['update:modelValue', 'saved'])
 
 const { create, update, saving } = useCrud('/master/resto')
 
-const { items: perusahaanList, loading: perusahaanLoading, fetchAll: fetchPerusahaan } = useCrud('/master/perusahaan')
+const { items: entitasList, loading: entitasLoading, fetchAll: fetchEntitas } = useCrud('/master/perusahaan')
 const { items: investorList,   loading: investorLoading,   fetchAll: fetchInvestor   } = useCrud('/master/investor')
 const { items: karyawanList,   loading: karyawanLoading,   fetchAll: fetchKaryawan   } = useCrud('/master/karyawan')
 
@@ -332,7 +332,7 @@ async function refreshKodePreview() {
   }
 }
 
-function onPerusahaanChange(val) {
+function onEntitasChange(val) {
   form.brand_id = null
   kodePreview.value = ''
   fetchBrands(val)
@@ -348,7 +348,7 @@ watch(() => props.modelValue, async val => {
     errorMessage.value = ''
     kodePreview.value  = ''
 
-    fetchPerusahaan()
+    fetchEntitas()
     fetchInvestor()
     fetchKaryawan()
 

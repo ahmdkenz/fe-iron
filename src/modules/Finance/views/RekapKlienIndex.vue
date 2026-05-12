@@ -193,7 +193,7 @@ const filters = reactive({ periode_bulan: null, periode_tahun: null })
 const headers = [
   { title: 'No',         key: 'no',               sortable: false, width: '50px' },
   { title: 'Klien',      key: 'nama_klien',        sortable: false },
-  { title: 'Perusahaan', key: 'perusahaan',        sortable: false },
+  { title: 'Entitas',    key: 'perusahaan',        sortable: false },
   { title: 'Jml Invoice',key: 'total_invoice',     sortable: false, align: 'center' },
   { title: 'Total Tagihan',   key: 'total_tagihan',   sortable: false },
   { title: 'Total Terbayar',  key: 'total_pembayaran',sortable: false },

@@ -224,7 +224,7 @@ const headers = [
   { title: 'No',          key: 'no',                   sortable: false, width: '50px' },
   { title: 'No Invoice',  key: 'no_invoice',            sortable: false },
   { title: 'Klien',       key: 'nama_klien',            sortable: false },
-  { title: 'Perusahaan',  key: 'perusahaan',            sortable: false },
+  { title: 'Entitas',     key: 'perusahaan',            sortable: false },
   { title: 'PIC AR',      key: 'pic_ar',                sortable: false },
   { title: 'Jatuh Tempo', key: 'tanggal_jatuh_tempo',   sortable: false, align: 'center' },
   { title: 'Status Hari', key: 'selisih_hari',          sortable: false, align: 'center' },

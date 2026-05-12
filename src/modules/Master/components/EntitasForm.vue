@@ -1,7 +1,7 @@
 <template>
   <BaseModal
     :model-value="modelValue"
-    :title="isEditing ? 'Edit Perusahaan' : 'Tambah Perusahaan'"
+    :title="isEditing ? 'Edit Entitas' : 'Tambah Entitas'"
     :loading="saving"
     @update:model-value="$emit('update:modelValue', $event)"
     @confirm="handleSubmit"
@@ -14,7 +14,7 @@
         >
           <VTextField
             v-model="form.kode_perusahaan"
-            label="Kode Perusahaan"
+            label="Kode Entitas"
             density="compact"
             variant="outlined"
             hint="Contoh: PT-ABC, CV-XYZ"
@@ -31,7 +31,7 @@
         >
           <VTextField
             v-model="form.nama_singkatan_perusahaan"
-            label="Singkatan Perusahaan"
+            label="Singkatan Entitas"
             density="compact"
             variant="outlined"
             hint="Contoh: ABC, XYZ"
@@ -43,10 +43,10 @@
         <VCol cols="12">
           <VTextField
             v-model="form.nama_perusahaan"
-            label="Nama Perusahaan"
+            label="Nama Entitas"
             density="compact"
             variant="outlined"
-            :rules="[v => !!v || 'Nama perusahaan wajib diisi']"
+            :rules="[v => !!v || 'Nama entitas wajib diisi']"
             :error-messages="errors.nama_perusahaan"
           />
         </VCol>
@@ -161,7 +161,7 @@ import { BOOLEAN_STATUS_OPTIONS, normalizeBooleanStatus } from '@/utils/status.j
 
 const props = defineProps({
   modelValue: Boolean,
-  perusahaanData: { type: Object, default: null },
+  entitasData: { type: Object, default: null },
 })
 
 const emit = defineEmits(['update:modelValue', 'saved'])
@@ -172,7 +172,7 @@ const formRef = ref(null)
 const errorMessage = ref('')
 const errors = reactive({ kode_perusahaan: [], nama_perusahaan: [], nama_singkatan_perusahaan: [], keterangan: [], alamat: [], kota: [], kode_pos: [], no_telp: [], email: [], no_npwp: [] })
 
-const isEditing = computed(() => !!props.perusahaanData)
+const isEditing = computed(() => !!props.entitasData)
 
 const statusOptions = BOOLEAN_STATUS_OPTIONS
 
@@ -196,18 +196,18 @@ watch(() => props.modelValue, val => {
   if (val) {
     Object.assign(errors, { kode_perusahaan: [], nama_perusahaan: [], nama_singkatan_perusahaan: [], keterangan: [], alamat: [], kota: [], kode_pos: [], no_telp: [], email: [], no_npwp: [] })
     errorMessage.value = ''
-    if (props.perusahaanData) {
-      form.kode_perusahaan           = props.perusahaanData.kode_perusahaan ?? ''
-      form.nama_perusahaan           = props.perusahaanData.nama_perusahaan ?? ''
-      form.nama_singkatan_perusahaan = props.perusahaanData.nama_singkatan_perusahaan ?? ''
-      form.keterangan                = props.perusahaanData.keterangan ?? ''
-      form.alamat                    = props.perusahaanData.alamat ?? ''
-      form.kota                      = props.perusahaanData.kota ?? ''
-      form.kode_pos                  = props.perusahaanData.kode_pos ?? ''
-      form.no_telp                   = props.perusahaanData.no_telp ?? ''
-      form.email                     = props.perusahaanData.email ?? ''
-      form.no_npwp                   = props.perusahaanData.no_npwp ?? ''
-      form.status                    = normalizeBooleanStatus(props.perusahaanData.status)
+    if (props.entitasData) {
+      form.kode_perusahaan           = props.entitasData.kode_perusahaan ?? ''
+      form.nama_perusahaan           = props.entitasData.nama_perusahaan ?? ''
+      form.nama_singkatan_perusahaan = props.entitasData.nama_singkatan_perusahaan ?? ''
+      form.keterangan                = props.entitasData.keterangan ?? ''
+      form.alamat                    = props.entitasData.alamat ?? ''
+      form.kota                      = props.entitasData.kota ?? ''
+      form.kode_pos                  = props.entitasData.kode_pos ?? ''
+      form.no_telp                   = props.entitasData.no_telp ?? ''
+      form.email                     = props.entitasData.email ?? ''
+      form.no_npwp                   = props.entitasData.no_npwp ?? ''
+      form.status                    = normalizeBooleanStatus(props.entitasData.status)
     } else {
       Object.assign(form, defaultForm())
     }
@@ -222,7 +222,7 @@ async function handleSubmit() {
   if (!valid) return
 
   const res = isEditing.value
-    ? await update(props.perusahaanData.id, form)
+    ? await update(props.entitasData.id, form)
     : await create(form)
 
   if (res.success) {

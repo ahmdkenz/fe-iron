@@ -38,15 +38,15 @@
         <VCol cols="12">
           <VAutocomplete
             v-model="form.perusahaan_id"
-            label="Perusahaan"
+            label="Entitas"
             density="compact"
             variant="outlined"
-            :items="perusahaanList"
+            :items="entitasList"
             item-title="nama_perusahaan"
             item-value="id"
-            :rules="[v => !!v || 'Perusahaan wajib dipilih']"
+            :rules="[v => !!v || 'Entitas wajib dipilih']"
             :error-messages="errors.perusahaan_id"
-            :loading="perusahaanLoading"
+            :loading="entitasLoading"
             clearable
           >
             <template #item="{ props: itemProps, item }">
@@ -106,7 +106,7 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue', 'saved'])
 
 const { create, update, saving } = useCrud('/master/karyawan')
-const { items: perusahaanList, loading: perusahaanLoading, fetchAll: fetchPerusahaan } = useCrud('/master/perusahaan')
+const { items: entitasList, loading: entitasLoading, fetchAll: fetchEntitas } = useCrud('/master/perusahaan')
 
 const formRef = ref(null)
 const errorMessage = ref('')
@@ -130,7 +130,7 @@ watch(() => props.modelValue, val => {
   if (val) {
     Object.assign(errors, { nik: [], nama_karyawan: [], perusahaan_id: [], keterangan: [] })
     errorMessage.value = ''
-    fetchPerusahaan()
+    fetchEntitas()
     if (props.karyawanData) {
       form.nik           = props.karyawanData.nik ?? ''
       form.nama_karyawan = props.karyawanData.nama_karyawan ?? ''
