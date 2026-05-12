@@ -98,13 +98,28 @@
                 :error-messages="errors.npwp"
               />
             </VCol>
-            <VCol cols="12">
+            <VCol
+              cols="12"
+              md="6"
+            >
               <VTextField
-                v-model="form.alamat"
-                label="Alamat"
+                v-model="form.kode_cabang"
+                label="Kode Cabang"
                 density="compact"
                 variant="outlined"
-                :error-messages="errors.alamat"
+                :error-messages="errors.kode_cabang"
+              />
+            </VCol>
+            <VCol
+              cols="12"
+              md="6"
+            >
+              <VTextField
+                v-model="form.id_cabang"
+                label="ID Cabang"
+                density="compact"
+                variant="outlined"
+                :error-messages="errors.id_cabang"
               />
             </VCol>
           </VRow>
@@ -145,18 +160,6 @@
                 density="compact"
                 variant="outlined"
                 :error-messages="errors.no_hp_pengelola"
-              />
-            </VCol>
-            <VCol
-              cols="12"
-              md="6"
-            >
-              <VTextField
-                v-model="form.keterangan"
-                label="Keterangan"
-                density="compact"
-                variant="outlined"
-                :error-messages="errors.keterangan"
               />
             </VCol>
             <VCol
@@ -230,14 +233,14 @@ const errorMessage = ref('')
 
 const errors = reactive({
   nama_investor: [], ktp: [], npwp: [], no_hp: [],
-  pengelola: [], no_hp_pengelola: [], alamat: [], keterangan: [],
+  pengelola: [], no_hp_pengelola: [], kode_cabang: [], id_cabang: [],
 })
 
 const statusOptions = BOOLEAN_STATUS_OPTIONS
 
 const form = reactive({
   nama_investor: '', ktp: '', npwp: '', no_hp: '',
-  pengelola: '', no_hp_pengelola: '', alamat: '', keterangan: '', status: 1,
+  pengelola: '', no_hp_pengelola: '', kode_cabang: '', id_cabang: '', status: 1,
 })
 
 async function handleSubmit() {
@@ -273,8 +276,8 @@ onMounted(async () => {
     form.no_hp           = data.no_hp           ?? ''
     form.pengelola       = data.pengelola       ?? ''
     form.no_hp_pengelola = data.no_hp_pengelola ?? ''
-    form.alamat          = data.alamat          ?? ''
-    form.keterangan      = data.keterangan      ?? ''
+    form.kode_cabang     = data.kode_cabang     ?? ''
+    form.id_cabang       = data.id_cabang       ?? ''
     form.status          = normalizeBooleanStatus(data.status)
   }
   pageLoading.value = false

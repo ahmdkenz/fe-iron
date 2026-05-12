@@ -139,6 +139,45 @@
           </VAutocomplete>
         </VCol>
 
+        <!-- Supervisor -->
+        <VCol cols="12">
+          <VTextField
+            v-model="form.supervisor"
+            label="Supervisor"
+            density="compact"
+            variant="outlined"
+            :error-messages="errors.supervisor"
+          />
+        </VCol>
+
+        <!-- No. HP Supervisor -->
+        <VCol
+          cols="12"
+          md="6"
+        >
+          <VTextField
+            v-model="form.no_hp_supervisor"
+            label="No. HP Supervisor (No SPV)"
+            density="compact"
+            variant="outlined"
+            :error-messages="errors.no_hp_supervisor"
+          />
+        </VCol>
+
+        <!-- STOKIS -->
+        <VCol
+          cols="12"
+          md="6"
+        >
+          <VTextField
+            v-model="form.stokis"
+            label="STOKIS"
+            density="compact"
+            variant="outlined"
+            :error-messages="errors.stokis"
+          />
+        </VCol>
+
         <!-- Area -->
         <VCol
           cols="12"
@@ -279,8 +318,8 @@ const isEditing    = computed(() => !!props.restoData)
 
 const errors = reactive({
   nama_resto: [], perusahaan_id: [], brand_id: [], investor_id: [],
-  karyawan_id: [], area: [], kota: [], alamat: [], no_telp: [],
-  tgl_aktif: [], keterangan: [],
+  karyawan_id: [], supervisor: [], no_hp_supervisor: [], stokis: [],
+  area: [], kota: [], alamat: [], no_telp: [], tgl_aktif: [], keterangan: [],
 })
 
 const statusOptions = BOOLEAN_STATUS_OPTIONS
@@ -291,6 +330,9 @@ const defaultForm = () => ({
   brand_id: null,
   investor_id: null,
   karyawan_id: null,
+  supervisor: '',
+  no_hp_supervisor: '',
+  stokis: '',
   area: '',
   kota: '',
   alamat: '',
@@ -359,6 +401,9 @@ watch(() => props.modelValue, async val => {
         brand_id: props.restoData.brand_id      ?? null,
         investor_id: props.restoData.investor_id   ?? null,
         karyawan_id: props.restoData.karyawan_id   ?? null,
+        supervisor: props.restoData.supervisor     ?? '',
+        no_hp_supervisor: props.restoData.no_hp_supervisor ?? '',
+        stokis: props.restoData.stokis         ?? '',
         area: props.restoData.area          ?? '',
         kota: props.restoData.kota          ?? '',
         alamat: props.restoData.alamat        ?? '',

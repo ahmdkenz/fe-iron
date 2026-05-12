@@ -90,22 +90,28 @@
             item-value="value"
           />
         </VCol>
-        <VCol cols="12">
+        <VCol
+          cols="12"
+          md="6"
+        >
           <VTextField
-            v-model="form.alamat"
-            label="Alamat"
+            v-model="form.kode_cabang"
+            label="Kode Cabang"
             density="compact"
             variant="outlined"
-            :error-messages="errors.alamat"
+            :error-messages="errors.kode_cabang"
           />
         </VCol>
-        <VCol cols="12">
+        <VCol
+          cols="12"
+          md="6"
+        >
           <VTextField
-            v-model="form.keterangan"
-            label="Keterangan"
+            v-model="form.id_cabang"
+            label="ID Cabang"
             density="compact"
             variant="outlined"
-            :error-messages="errors.keterangan"
+            :error-messages="errors.id_cabang"
           />
         </VCol>
       </VRow>
@@ -141,7 +147,7 @@ const errorMessage = ref('')
 
 const errors = reactive({
   nama_investor: [], ktp: [], npwp: [], no_hp: [],
-  pengelola: [], no_hp_pengelola: [], alamat: [], keterangan: [],
+  pengelola: [], no_hp_pengelola: [], kode_cabang: [], id_cabang: [],
 })
 
 const isEditing = computed(() => !!props.investorData)
@@ -155,8 +161,8 @@ const defaultForm = () => ({
   no_hp: '',
   pengelola: '',
   no_hp_pengelola: '',
-  alamat: '',
-  keterangan: '',
+  kode_cabang: '',
+  id_cabang: '',
   status: 1,
 })
 
@@ -166,7 +172,7 @@ watch(() => props.modelValue, val => {
   if (val) {
     Object.assign(errors, {
       nama_investor: [], ktp: [], npwp: [], no_hp: [],
-      pengelola: [], no_hp_pengelola: [], alamat: [], keterangan: [],
+      pengelola: [], no_hp_pengelola: [], kode_cabang: [], id_cabang: [],
     })
     errorMessage.value = ''
 
@@ -178,8 +184,8 @@ watch(() => props.modelValue, val => {
         no_hp: props.investorData.no_hp           ?? '',
         pengelola: props.investorData.pengelola       ?? '',
         no_hp_pengelola: props.investorData.no_hp_pengelola ?? '',
-        alamat: props.investorData.alamat          ?? '',
-        keterangan: props.investorData.keterangan      ?? '',
+        kode_cabang: props.investorData.kode_cabang    ?? '',
+        id_cabang: props.investorData.id_cabang      ?? '',
         status: normalizeBooleanStatus(props.investorData.status),
       })
     } else {

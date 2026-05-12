@@ -15,7 +15,7 @@
           :loading="exporting"
           @click="exportCsv"
         >
-          Export Excel
+          Export
         </VBtn>
         <VBtn
           v-if="!authStore.isArOnly && !authStore.isDirectorOnly"
@@ -23,7 +23,7 @@
           prepend-icon="ri-upload-line"
           @click="openImport"
         >
-          Import CSV
+          Import
         </VBtn>
         <VBtn
           v-if="!authStore.isArOnly && !authStore.isDirectorOnly"
@@ -64,8 +64,11 @@
         <template #item.no="{ index }">
           {{ (meta.current_page - 1) * meta.per_page + index + 1 }}
         </template>
-        <template #item.keterangan="{ item }">
-          {{ item.keterangan ?? '-' }}
+        <template #item.kode_cabang="{ item }">
+          {{ item.kode_cabang ?? '-' }}
+        </template>
+        <template #item.id_cabang="{ item }">
+          {{ item.id_cabang ?? '-' }}
         </template>
         <template #item.status="{ item }">
           <VChip
@@ -196,12 +199,12 @@
           :value="selectedInvestor.no_hp_pengelola"
         />
         <DetailRow
-          label="Alamat"
-          :value="selectedInvestor.alamat"
+          label="Kode Cabang"
+          :value="selectedInvestor.kode_cabang"
         />
         <DetailRow
-          label="Keterangan"
-          :value="selectedInvestor.keterangan"
+          label="ID Cabang"
+          :value="selectedInvestor.id_cabang"
         />
         <DetailRow label="Status">
           <VChip
@@ -283,7 +286,6 @@
               <li>Kolom <strong>nama_investor</strong> wajib diisi.</li>
               <li>Kolom <strong>status</strong>: 1 = Aktif, 0 = Nonaktif (default: 1).</li>
               <li>Lihat sheet <strong>Petunjuk Pengisian</strong> di template untuk panduan lengkap.</li>
-              <li>Maksimum 500 baris per file.</li>
             </ul>
           </VAlert>
 
@@ -408,8 +410,8 @@ const headers = [
   { title: 'No. HP',           key: 'no_hp',            sortable: false },
   { title: 'Nama Pengelola',   key: 'pengelola',        sortable: false },
   { title: 'No. HP Pengelola', key: 'no_hp_pengelola',  sortable: false },
-  { title: 'Alamat',           key: 'alamat',           sortable: false },
-  { title: 'Keterangan',       key: 'keterangan',       sortable: false },
+  { title: 'Kode Cabang',      key: 'kode_cabang',      sortable: false },
+  { title: 'ID Cabang',        key: 'id_cabang',        sortable: false },
   { title: 'Status',           key: 'status',           sortable: false },
   { title: 'Created By',       key: 'created_by_name',  sortable: false },
   { title: 'Updated By',       key: 'updated_by_name',  sortable: false },

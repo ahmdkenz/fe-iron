@@ -194,6 +194,55 @@
         </VCardText>
       </VCard>
 
+      <!-- Supervisor & STOKIS -->
+      <VCard class="mb-4">
+        <VCardTitle class="pa-4 pb-2">
+          <VIcon
+            icon="ri-user-2-line"
+            class="me-2"
+          />
+          Supervisor &amp; STOKIS
+        </VCardTitle>
+        <VDivider />
+        <VCardText>
+          <VRow>
+            <VCol cols="12">
+              <VTextField
+                v-model="form.supervisor"
+                label="Supervisor"
+                density="compact"
+                variant="outlined"
+                :error-messages="errors.supervisor"
+              />
+            </VCol>
+            <VCol
+              cols="12"
+              md="6"
+            >
+              <VTextField
+                v-model="form.no_hp_supervisor"
+                label="No. HP Supervisor (No SPV)"
+                density="compact"
+                variant="outlined"
+                :error-messages="errors.no_hp_supervisor"
+              />
+            </VCol>
+            <VCol
+              cols="12"
+              md="6"
+            >
+              <VTextField
+                v-model="form.stokis"
+                label="STOKIS"
+                density="compact"
+                variant="outlined"
+                :error-messages="errors.stokis"
+              />
+            </VCol>
+          </VRow>
+        </VCardText>
+      </VCard>
+
       <!-- Lokasi & Kontak -->
       <VCard class="mb-4">
         <VCardTitle class="pa-4 pb-2">
@@ -357,14 +406,16 @@ const errorMessage = ref('')
 
 const errors = reactive({
   nama_resto: [], perusahaan_id: [], brand_id: [], investor_id: [],
-  karyawan_id: [], area: [], kota: [], alamat: [], no_telp: [], tgl_aktif: [], keterangan: [],
+  karyawan_id: [], supervisor: [], no_hp_supervisor: [], stokis: [],
+  area: [], kota: [], alamat: [], no_telp: [], tgl_aktif: [], keterangan: [],
 })
 
 const statusOptions = BOOLEAN_STATUS_OPTIONS
 
 const form = reactive({
   nama_resto: '', perusahaan_id: null, brand_id: null, investor_id: null,
-  karyawan_id: null, area: '', kota: '', alamat: '', no_telp: '', tgl_aktif: '', keterangan: '', status: 1,
+  karyawan_id: null, supervisor: '', no_hp_supervisor: '', stokis: '',
+  area: '', kota: '', alamat: '', no_telp: '', tgl_aktif: '', keterangan: '', status: 1,
 })
 
 async function fetchBrandsByEntitas(entitasId) {
@@ -439,6 +490,9 @@ onMounted(async () => {
       brand_id: data.brand_id      ?? null,
       investor_id: data.investor_id   ?? null,
       karyawan_id: data.karyawan_id   ?? null,
+      supervisor: data.supervisor    ?? '',
+      no_hp_supervisor: data.no_hp_supervisor ?? '',
+      stokis: data.stokis        ?? '',
       area: data.area          ?? '',
       kota: data.kota          ?? '',
       alamat: data.alamat        ?? '',

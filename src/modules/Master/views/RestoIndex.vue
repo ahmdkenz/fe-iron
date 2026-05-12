@@ -15,7 +15,7 @@
           :loading="exporting"
           @click="exportCsv"
         >
-          Export Excel
+          Export
         </VBtn>
         <VBtn
           v-if="!authStore.isArOnly && !authStore.isDirectorOnly"
@@ -23,7 +23,7 @@
           prepend-icon="ri-upload-line"
           @click="openImport"
         >
-          Import CSV
+          Import
         </VBtn>
         <VBtn
           v-if="!authStore.isArOnly && !authStore.isDirectorOnly"
@@ -106,6 +106,15 @@
         </template>
         <template #item.tgl_aktif="{ item }">
           {{ item.tgl_aktif ? formatDate(item.tgl_aktif) : '-' }}
+        </template>
+        <template #item.supervisor="{ item }">
+          {{ item.supervisor ?? '-' }}
+        </template>
+        <template #item.no_hp_supervisor="{ item }">
+          {{ item.no_hp_supervisor ?? '-' }}
+        </template>
+        <template #item.stokis="{ item }">
+          {{ item.stokis ?? '-' }}
         </template>
         <template #item.keterangan="{ item }">
           {{ item.keterangan ?? '-' }}
@@ -244,6 +253,18 @@
           :value="selectedResto.pic?.nama_karyawan"
         />
         <DetailRow
+          label="Supervisor"
+          :value="selectedResto.supervisor"
+        />
+        <DetailRow
+          label="No. HP SPV"
+          :value="selectedResto.no_hp_supervisor"
+        />
+        <DetailRow
+          label="STOKIS"
+          :value="selectedResto.stokis"
+        />
+        <DetailRow
           label="Area"
           :value="selectedResto.area"
         />
@@ -348,7 +369,6 @@
               <li>Kolom <strong>nama_investor</strong>, <strong>nama_perusahaan</strong>, <strong>nama_brand</strong>, <strong>nama_pic</strong> harus <strong>persis sama</strong> dengan data di sistem.</li>
               <li>Kolom <strong>tgl_aktif</strong> format: DD-MM-YYYY. Contoh: 15-01-2026.</li>
               <li>Lihat sheet <strong>Petunjuk Pengisian</strong> di template untuk panduan lengkap.</li>
-              <li>Maksimum 500 baris per file.</li>
             </ul>
           </VAlert>
 
@@ -475,6 +495,9 @@ const headers = [
   { title: 'Entitas',       key: 'perusahaan',      sortable: false },
   { title: 'Brand',         key: 'brand',           sortable: false },
   { title: 'PIC',           key: 'pic',             sortable: false },
+  { title: 'Supervisor',    key: 'supervisor',      sortable: false },
+  { title: 'No. HP SPV',   key: 'no_hp_supervisor', sortable: false },
+  { title: 'STOKIS',       key: 'stokis',          sortable: false },
   { title: 'Area',          key: 'area',            sortable: false },
   { title: 'Kota',          key: 'kota',            sortable: false },
   { title: 'Alamat',        key: 'alamat',          sortable: false },
