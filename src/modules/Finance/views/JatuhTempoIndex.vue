@@ -14,6 +14,19 @@
       <VCardText>
         <div class="d-flex flex-wrap gap-3 align-center">
           <VBtnToggle
+            v-model="segment"
+            variant="outlined"
+            mandatory
+            divided
+            density="compact"
+            @update:model-value="doFetch"
+          >
+            <VBtn value="ALL" size="small" style="min-width: 80px">Semua</VBtn>
+            <VBtn value="B2C" size="small" style="min-width: 70px">B2C</VBtn>
+            <VBtn value="B2B" size="small" style="min-width: 70px">B2B</VBtn>
+          </VBtnToggle>
+
+          <VBtnToggle
             v-model="filters.filter_type"
             variant="outlined"
             mandatory
@@ -178,6 +191,7 @@ const { ensureLoaded: ensureKlienLoaded } = useLazyFetchAll(fetchKlien)
 
 const loading = ref(false)
 const report  = reactive({ as_of_date: null, summary: null, rows: [] })
+const segment = ref('ALL')
 
 const filters = reactive({
   filter_type:    'upcoming',
@@ -245,8 +259,9 @@ async function doFetch() {
   try {
     const params = { filter_type: filters.filter_type }
     if (filters.filter_type === 'upcoming') params.days = filters.days
-    if (filters.klien_ar_id) params.klien_ar_id = filters.klien_ar_id
-    if (filters.karyawan_ar_id) params.karyawan_ar_id = filters.karyawan_ar_id
+    if (filters.klien_ar_id)     params.klien_ar_id     = filters.klien_ar_id
+    if (filters.karyawan_ar_id)  params.karyawan_ar_id  = filters.karyawan_ar_id
+    if (segment.value !== 'ALL') params.segment         = segment.value
 
     const { data } = await api.get('/finance/jatuh-tempo', { params })
     Object.assign(report, data.data)

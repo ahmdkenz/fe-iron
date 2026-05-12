@@ -108,7 +108,27 @@
             </VCol>
             <VCol
               cols="12"
-              md="6"
+              md="3"
+            >
+              <VSelect
+                v-model="form.tipe_klien"
+                label="Tipe Klien"
+                density="compact"
+                variant="outlined"
+                :items="tipeKlienOptions"
+                item-title="label"
+                item-value="value"
+                :rules="[v => !!v || 'Tipe klien wajib dipilih']"
+                :error-messages="errors.tipe_klien"
+                :readonly="isArEditMode || isEditing"
+                :hint="isEditing ? 'Tidak dapat diubah setelah dibuat' : ''"
+                persistent-hint
+                @update:model-value="refreshKodeKlienPreview"
+              />
+            </VCol>
+            <VCol
+              cols="12"
+              md="9"
             >
               <VTextField
                 v-model="form.no_npwp"
@@ -310,6 +330,13 @@ const kodePreviewLoading = ref(false)
 const selectedRestoInvestor = ref(null)
 
 const statusOptions = BOOLEAN_STATUS_OPTIONS
+
+const tipeKlienOptions = [
+  { label: 'RESTO (B2C)',   value: 'RESTO'  },
+  { label: 'MITRA (B2C)',   value: 'MITRA'  },
+  { label: 'PT (B2B)',      value: 'PT'     },
+  { label: 'STOKIS (B2B)', value: 'STOKIS' },
+]
 
 const displayKaryawan = computed(() => {
   if (isEditing.value)

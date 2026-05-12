@@ -89,12 +89,13 @@ export default [
     component: () => import('@/modules/Finance/views/MutasiPiutangIndex.vue'),
     meta: { requiresAuth: true, roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR'] },
   },
-  {
-    path: '/finance/jatuh-tempo',
-    name: 'finance-jatuh-tempo',
-    component: () => import('@/modules/Finance/views/JatuhTempoIndex.vue'),
-    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'] },
-  },
+  // NEXT UPDATE: Route jatuh-tempo disembunyikan sementara (kolom tanggal_jatuh_tempo dihapus dari DB)
+  // {
+  //   path: '/finance/jatuh-tempo',
+  //   name: 'finance-jatuh-tempo',
+  //   component: () => import('@/modules/Finance/views/JatuhTempoIndex.vue'),
+  //   meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'] },
+  // },
   {
     path: '/finance/rekap-pembayaran',
     name: 'finance-rekap-pembayaran',

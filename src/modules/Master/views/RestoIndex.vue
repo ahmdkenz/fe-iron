@@ -11,11 +11,11 @@
       <div class="d-flex gap-2">
         <VBtn
           color="primary"
-          prepend-icon="ri-download-line"
+          prepend-icon="ri-file-excel-line"
           :loading="exporting"
           @click="exportCsv"
         >
-          Export CSV
+          Export Excel
         </VBtn>
         <VBtn
           v-if="!authStore.isArOnly && !authStore.isDirectorOnly"
@@ -533,7 +533,7 @@ async function exportCsv() {
     const url  = URL.createObjectURL(res.data)
     const a    = document.createElement('a')
     a.href     = url
-    a.download = `resto-${new Date().toISOString().slice(0, 10)}.csv`
+    a.download = `resto-${new Date().toISOString().slice(0, 10)}.xlsx`
     a.click()
     URL.revokeObjectURL(url)
   } catch {

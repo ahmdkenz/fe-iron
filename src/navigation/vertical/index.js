@@ -110,12 +110,13 @@ export default [
     icon: { icon: 'ri-exchange-funds-line' },
     roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR'],
   },
-  {
-    title: 'Tagihan Jatuh Tempo',
-    to: { name: 'finance-jatuh-tempo' },
-    icon: { icon: 'ri-time-line' },
-    roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'],
-  },
+  // NEXT UPDATE: Tagihan Jatuh Tempo disembunyikan sementara (kolom tanggal_jatuh_tempo dihapus dari DB)
+  // {
+  //   title: 'Tagihan Jatuh Tempo',
+  //   to: { name: 'finance-jatuh-tempo' },
+  //   icon: { icon: 'ri-time-line' },
+  //   roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'],
+  // },
   {
     title: 'Rekap Pembayaran',
     to: { name: 'finance-rekap-pembayaran' },

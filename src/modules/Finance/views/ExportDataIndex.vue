@@ -240,7 +240,8 @@ const reportDefs = [
   { key: 'rekap_klien',       label: 'Rekap Per Klien',      icon: 'ri-pie-chart-2-line',        description: 'Ringkasan outstanding piutang per klien', color: 'secondary' },
   { key: 'riwayat_pembayaran',label: 'Riwayat Pembayaran',   icon: 'ri-money-cny-circle-line',   description: 'Daftar semua pembayaran AR',              color: 'success'   },
   { key: 'mutasi_piutang',    label: 'Mutasi Piutang',       icon: 'ri-exchange-funds-line',     description: 'Pergerakan piutang per klien',           color: 'info'      },
-  { key: 'jatuh_tempo',       label: 'Tagihan Jatuh Tempo',  icon: 'ri-time-line',               description: 'Invoice yang akan/sudah jatuh tempo',    color: 'deep-orange' },
+  // NEXT UPDATE: Jatuh Tempo disembunyikan sementara (kolom tanggal_jatuh_tempo dihapus dari DB)
+  // { key: 'jatuh_tempo',       label: 'Tagihan Jatuh Tempo',  icon: 'ri-time-line',               description: 'Invoice yang akan/sudah jatuh tempo',    color: 'deep-orange' },
   { key: 'rekap_pembayaran',  label: 'Rekap Pembayaran',     icon: 'ri-bank-card-line',          description: 'Ringkasan pembayaran per metode & tanggal',color: 'error'    },
   { key: 'kinerja_ar',        label: 'Kinerja AR',           icon: 'ri-user-star-line',          description: 'Performa penagihan per AR Officer',      color: 'deep-purple' },
 ]
@@ -583,7 +584,7 @@ async function doExport() {
       rekap_klien:        async () => buildRekapKlienSection(await fetchRekapKlien()),
       riwayat_pembayaran: async () => buildRiwayatPembayaranSection(await fetchRiwayatPembayaran()),
       mutasi_piutang:     async () => buildMutasiPiutangSection(await fetchMutasiPiutang()),
-      jatuh_tempo:        async () => buildJatuhTempoSection(await fetchJatuhTempo()),
+      // NEXT UPDATE: jatuh_tempo:  async () => buildJatuhTempoSection(await fetchJatuhTempo()),
       rekap_pembayaran:   async () => buildRekapPembayaranSection(await fetchRekapPembayaran()),
       kinerja_ar:         async () => buildKinerjaArSection(await fetchKinerjaAr()),
     }

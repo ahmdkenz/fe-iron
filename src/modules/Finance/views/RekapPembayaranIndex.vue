@@ -12,6 +12,18 @@
     <!-- Filter -->
     <VCard class="mb-4">
       <VCardText class="d-flex flex-wrap gap-3">
+        <VBtnToggle
+          v-model="segment"
+          variant="outlined"
+          mandatory
+          divided
+          density="compact"
+          @update:model-value="doFetch"
+        >
+          <VBtn value="ALL" size="small" style="min-width: 80px">Semua</VBtn>
+          <VBtn value="B2C" size="small" style="min-width: 70px">B2C</VBtn>
+          <VBtn value="B2B" size="small" style="min-width: 70px">B2B</VBtn>
+        </VBtnToggle>
         <VTextField
           v-model="filters.tanggal_dari"
           label="Dari Tanggal"
@@ -161,6 +173,7 @@ const { ensureLoaded: ensureKlienLoaded } = useLazyFetchAll(fetchKlien)
 
 const loading = ref(false)
 const report  = reactive({ tanggal_dari: null, tanggal_sampai: null, summary: null, rows: [] })
+const segment = ref('ALL')
 
 const now      = new Date()
 const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10)
@@ -209,6 +222,7 @@ async function doFetch() {
     if (filters.tanggal_sampai)    params.tanggal_sampai    = filters.tanggal_sampai
     if (filters.metode_pembayaran) params.metode_pembayaran = filters.metode_pembayaran
     if (filters.klien_ar_id)       params.klien_ar_id       = filters.klien_ar_id
+    if (segment.value !== 'ALL')   params.segment           = segment.value
 
     const { data } = await api.get('/finance/rekap-pembayaran', { params })
     Object.assign(report, data.data)

@@ -12,6 +12,18 @@
     <!-- Filter -->
     <VCard class="mb-4">
       <VCardText class="d-flex flex-wrap gap-3">
+        <VBtnToggle
+          v-model="segment"
+          variant="outlined"
+          mandatory
+          divided
+          density="compact"
+          @update:model-value="doFetch"
+        >
+          <VBtn value="ALL" size="small" style="min-width: 80px">Semua</VBtn>
+          <VBtn value="B2C" size="small" style="min-width: 70px">B2C</VBtn>
+          <VBtn value="B2B" size="small" style="min-width: 70px">B2B</VBtn>
+        </VBtnToggle>
         <VTextField
           v-model="filters.as_of_date"
           label="Per Tanggal"
@@ -134,6 +146,7 @@ const { ensureLoaded: ensureKlienLoaded } = useLazyFetchAll(fetchKlien)
 
 const loading = ref(false)
 const report  = reactive({ as_of_date: null, summary: null, rows: [] })
+const segment = ref('ALL')
 
 const filters = reactive({
   as_of_date:  new Date().toISOString().slice(0, 10),
@@ -177,8 +190,9 @@ async function doFetch() {
   loading.value = true
   try {
     const params = {}
-    if (filters.as_of_date)  params.as_of_date  = filters.as_of_date
-    if (filters.klien_ar_id) params.klien_ar_id = filters.klien_ar_id
+    if (filters.as_of_date)      params.as_of_date  = filters.as_of_date
+    if (filters.klien_ar_id)     params.klien_ar_id = filters.klien_ar_id
+    if (segment.value !== 'ALL') params.segment     = segment.value
 
     const { data } = await api.get('/finance/aging-report', { params })
     Object.assign(report, data.data)

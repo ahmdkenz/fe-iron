@@ -143,6 +143,18 @@
     <!-- Filter & Table -->
     <VCard>
       <VCardText class="d-flex flex-wrap gap-3 pb-0">
+        <VBtnToggle
+          v-model="segment"
+          variant="outlined"
+          mandatory
+          divided
+          density="compact"
+          @update:model-value="onSegmentChange"
+        >
+          <VBtn value="ALL" size="small" style="min-width: 80px">Semua</VBtn>
+          <VBtn value="B2C" size="small" style="min-width: 70px">B2C</VBtn>
+          <VBtn value="B2B" size="small" style="min-width: 70px">B2B</VBtn>
+        </VBtnToggle>
         <VTextField
           v-model="params.search"
           placeholder="Cari no. invoice / klien..."
@@ -397,6 +409,12 @@ const showDelete    = ref(false)
 const deleteError   = ref('')
 const selectedInvoice = ref(null)
 const exporting     = ref(false)
+const segment       = ref('ALL')
+
+function onSegmentChange(val) {
+  params.segment = val === 'ALL' ? undefined : val
+  doFetch()
+}
 
 const headers = [
   { title: 'No',             key: 'no',             sortable: false, width: '60px' },
@@ -473,6 +491,7 @@ async function loadSummary() {
         periode_bulan: params.periode_bulan,
         periode_tahun: params.periode_tahun,
         klien_ar_id: params.klien_ar_id,
+        ...(segment.value !== 'ALL' && { segment: segment.value }),
         ...(!canSeeAll && { karyawan_id: params.karyawan_id }),
       },
       signal: controller.signal,
@@ -512,10 +531,11 @@ async function exportCsv() {
   exporting.value = true
   try {
     const query = new URLSearchParams()
-    if (params.status)        query.set('status', params.status)
-    if (params.klien_ar_id)   query.set('klien_ar_id', params.klien_ar_id)
-    if (params.periode_bulan) query.set('periode_bulan', params.periode_bulan)
-    if (params.periode_tahun) query.set('periode_tahun', params.periode_tahun)
+    if (params.status)             query.set('status', params.status)
+    if (params.klien_ar_id)        query.set('klien_ar_id', params.klien_ar_id)
+    if (params.periode_bulan)      query.set('periode_bulan', params.periode_bulan)
+    if (params.periode_tahun)      query.set('periode_tahun', params.periode_tahun)
+    if (segment.value !== 'ALL')   query.set('segment', segment.value)
 
     const res = await api.get(`/finance/invoices/export?${query}`, { responseType: 'blob' })
     const url  = URL.createObjectURL(res.data)

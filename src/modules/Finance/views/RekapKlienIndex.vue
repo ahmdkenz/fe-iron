@@ -12,6 +12,18 @@
     <!-- Filter -->
     <VCard class="mb-4">
       <VCardText class="d-flex flex-wrap gap-3">
+        <VBtnToggle
+          v-model="segment"
+          variant="outlined"
+          mandatory
+          divided
+          density="compact"
+          @update:model-value="doFetch"
+        >
+          <VBtn value="ALL" size="small" style="min-width: 80px">Semua</VBtn>
+          <VBtn value="B2C" size="small" style="min-width: 70px">B2C</VBtn>
+          <VBtn value="B2B" size="small" style="min-width: 70px">B2B</VBtn>
+        </VBtnToggle>
         <VSelect
           v-model="filters.periode_bulan"
           placeholder="Semua Bulan"
@@ -174,6 +186,7 @@ const { formatCurrency } = useFormatter()
 
 const loading = ref(false)
 const rows    = ref([])
+const segment = ref('ALL')
 
 const filters = reactive({ periode_bulan: null, periode_tahun: null })
 
@@ -211,8 +224,9 @@ async function doFetch() {
   loading.value = true
   try {
     const params = {}
-    if (filters.periode_bulan) params.periode_bulan = filters.periode_bulan
-    if (filters.periode_tahun) params.periode_tahun = filters.periode_tahun
+    if (filters.periode_bulan)   params.periode_bulan = filters.periode_bulan
+    if (filters.periode_tahun)   params.periode_tahun = filters.periode_tahun
+    if (segment.value !== 'ALL') params.segment       = segment.value
 
     const { data } = await api.get('/finance/invoices/rekap-klien', { params })
     rows.value = data.data ?? []

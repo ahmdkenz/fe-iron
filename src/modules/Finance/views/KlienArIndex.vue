@@ -20,6 +20,18 @@
 
     <VCard>
       <VCardText class="d-flex flex-wrap align-center gap-4 pb-0">
+        <VBtnToggle
+          v-model="segment"
+          variant="outlined"
+          mandatory
+          divided
+          density="compact"
+          @update:model-value="onSegmentChange"
+        >
+          <VBtn value="ALL" size="small" style="min-width: 80px">Semua</VBtn>
+          <VBtn value="B2C" size="small" style="min-width: 70px">B2C</VBtn>
+          <VBtn value="B2B" size="small" style="min-width: 70px">B2B</VBtn>
+        </VBtnToggle>
         <VTextField
           v-model="params.search"
           placeholder="Cari kode / nama klien..."
@@ -55,6 +67,19 @@
           >
             {{ item.kode_klien }}
           </VChip>
+        </template>
+        <template #item.segment="{ item }">
+          <VChip
+            :color="['RESTO','MITRA'].includes(item.tipe_klien) ? 'success' : 'info'"
+            size="small"
+            variant="tonal"
+            label
+          >
+            {{ ['RESTO','MITRA'].includes(item.tipe_klien) ? 'B2C' : 'B2B' }}
+          </VChip>
+          <div class="text-caption text-medium-emphasis mt-1">
+            {{ item.tipe_klien }}
+          </div>
         </template>
         <template #item.resto="{ item }">
           <span v-if="item.resto">{{ item.resto.nama_resto }}</span>
@@ -282,6 +307,14 @@ if (!canSeeAll) {
   params.karyawan_ar_id = authStore.user?.karyawan?.id
 }
 
+const segment = ref('ALL')
+
+function onSegmentChange(val) {
+  params.segment = val === 'ALL' ? undefined : val
+  params.page    = 1
+  fetchList()
+}
+
 const showDelete = ref(false)
 const showDetail = ref(false)
 const deleteError = ref('')
@@ -290,6 +323,7 @@ const selectedKlien = ref(null)
 const headers = [
   { title: 'No',             key: 'no',          sortable: false, width: '60px' },
   { title: 'Kode',           key: 'kode_klien',  sortable: false, minWidth: '140px' },
+  { title: 'Segment',        key: 'segment',     sortable: false, minWidth: '100px' },
   { title: 'Nama Pengelola', key: 'nama_klien',  sortable: false, minWidth: '200px' },
   { title: 'Resto',          key: 'resto',        sortable: false, minWidth: '160px' },
   { title: 'Investor / Pengelola', key: 'investor', sortable: false, minWidth: '180px' },
