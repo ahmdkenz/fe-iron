@@ -153,22 +153,6 @@
               </VTooltip>
             </VBtn>
             <VBtn
-              icon
-              size="small"
-              variant="text"
-              :color="item.no_wa ? 'success' : 'default'"
-              :disabled="!item.no_wa"
-              @click="shareWhatsApp(item)"
-            >
-              <VIcon
-                icon="ri-whatsapp-line"
-                size="18"
-              />
-              <VTooltip activator="parent">
-                {{ item.no_wa ? 'Kirim via WhatsApp' : 'No. WA belum diisi' }}
-              </VTooltip>
-            </VBtn>
-            <VBtn
               v-if="!authStore.isDirectorOnly"
               icon
               size="small"
@@ -297,17 +281,6 @@
           :value="selectedKlien.updated_by_name"
         />
 
-        <VDivider class="my-4" />
-        <VBtn
-          block
-          :color="selectedKlien.no_wa ? 'success' : 'default'"
-          :disabled="!selectedKlien.no_wa"
-          prepend-icon="ri-whatsapp-line"
-          variant="tonal"
-          @click="shareWhatsApp(selectedKlien)"
-        >
-          {{ selectedKlien.no_wa ? 'Kirim via WhatsApp' : 'No. WA belum diisi' }}
-        </VBtn>
       </div>
     </VNavigationDrawer>
 

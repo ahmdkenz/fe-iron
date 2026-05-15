@@ -8,11 +8,10 @@
         { title: 'Opening Balance', disabled: true },
       ]"
     >
-      <div class="d-flex gap-2 flex-wrap">
+      <div class="d-flex gap-2">
         <VBtn
           v-if="authStore.canViewOpeningBalance"
-          color="success"
-          variant="tonal"
+          color="primary"
           prepend-icon="ri-file-excel-line"
           :loading="isExporting"
           @click="exportExcel"
@@ -21,8 +20,7 @@
         </VBtn>
         <VBtn
           v-if="authStore.canOperateOpeningBalance"
-          color="info"
-          variant="tonal"
+          color="primary"
           prepend-icon="ri-upload-line"
           @click="openImport"
         >

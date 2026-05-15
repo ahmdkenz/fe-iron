@@ -10,13 +10,20 @@
     >
       <div class="d-flex gap-2">
         <VBtn
-          color="secondary"
-          variant="tonal"
-          prepend-icon="ri-download-2-line"
-          :loading="exporting"
-          @click="exportCsv"
+          color="primary"
+          prepend-icon="ri-file-excel-line"
+          :loading="exportingExcel"
+          @click="exportExcel"
         >
-          Export CSV
+          Export
+        </VBtn>
+        <VBtn
+          v-if="!authStore.isDirectorOnly"
+          color="primary"
+          prepend-icon="ri-upload-line"
+          @click="openImport"
+        >
+          Import
         </VBtn>
         <VBtn
           color="primary"
@@ -373,6 +380,134 @@
         {{ deleteError }}
       </VAlert>
     </BaseModal>
+    <!-- Import Modal -->
+    <VDialog
+      v-model="showImport"
+      max-width="600"
+      persistent
+    >
+      <VCard>
+        <VCardTitle class="d-flex align-center justify-space-between pa-4">
+          <span>Import Invoice AR</span>
+          <VBtn
+            icon
+            size="small"
+            variant="text"
+            @click="closeImport"
+          >
+            <VIcon icon="ri-close-line" />
+          </VBtn>
+        </VCardTitle>
+        <VDivider />
+        <VCardText class="pt-4">
+          <VAlert
+            type="info"
+            variant="tonal"
+            class="mb-4"
+          >
+            <div class="mb-2 font-weight-medium">
+              Panduan Import:
+            </div>
+            <ul class="ps-4">
+              <li>Download template Excel, isi data, lalu upload file (.xlsx atau .csv).</li>
+              <li>Template memiliki 2 sheet: <strong>Invoice</strong> (header) dan <strong>Item Invoice</strong> (rincian).</li>
+              <li>Kolom <strong>nama_klien</strong> wajib sesuai persis dengan data klien di sistem.</li>
+              <li>Gunakan <strong>no_urut</strong> untuk menghubungkan invoice dengan item-itemnya.</li>
+              <li>Format tanggal: <strong>YYYY-MM-DD</strong> (contoh: 2025-06-01).</li>
+              <li>Import CSV hanya memproses Sheet "Invoice" tanpa item rincian.</li>
+              <li>Lihat sheet <strong>Petunjuk Pengisian</strong> di template untuk panduan lengkap.</li>
+            </ul>
+          </VAlert>
+
+          <VBtn
+            variant="outlined"
+            color="primary"
+            prepend-icon="ri-file-excel-line"
+            class="mb-4"
+            @click="downloadTemplate"
+          >
+            Download Template Excel
+          </VBtn>
+
+          <VFileInput
+            v-model="importFile"
+            label="Pilih File (.xlsx atau .csv)"
+            accept=".xlsx,.xls,.csv"
+            prepend-icon="ri-file-upload-line"
+            variant="outlined"
+            density="compact"
+            :clearable="true"
+            hide-details="auto"
+            @update:model-value="importResult = null"
+          />
+
+          <div
+            v-if="importResult"
+            class="mt-4"
+          >
+            <VAlert
+              :type="importResult.failed > 0 ? 'warning' : 'success'"
+              variant="tonal"
+              class="mb-3"
+            >
+              Import selesai:
+              <strong>{{ importResult.inserted }}</strong> ditambahkan,
+              <strong>{{ importResult.failed }}</strong> gagal
+              (total {{ importResult.total }} baris).
+            </VAlert>
+
+            <div
+              v-if="importResult.errors?.length"
+              class="mt-2"
+            >
+              <div class="text-subtitle-2 mb-2">
+                Detail Error:
+              </div>
+              <VTable
+                density="compact"
+                class="border rounded"
+              >
+                <thead>
+                  <tr>
+                    <th>Sheet</th>
+                    <th>Baris</th>
+                    <th>Pesan</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="(err, i) in importResult.errors"
+                    :key="i"
+                  >
+                    <td>{{ err.sheet }}</td>
+                    <td>{{ err.row }}</td>
+                    <td>{{ err.message }}</td>
+                  </tr>
+                </tbody>
+              </VTable>
+            </div>
+          </div>
+        </VCardText>
+        <VDivider />
+        <VCardActions class="pa-4 gap-2 justify-end">
+          <VBtn
+            variant="outlined"
+            @click="closeImport"
+          >
+            Tutup
+          </VBtn>
+          <VBtn
+            color="warning"
+            :loading="importing"
+            :disabled="!importFile"
+            prepend-icon="ri-upload-line"
+            @click="doImport"
+          >
+            Import
+          </VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
   </div>
 </template>
 
@@ -408,8 +543,12 @@ const summary       = reactive({ total_invoice: null, total_tagihan: null, total
 const showDelete    = ref(false)
 const deleteError   = ref('')
 const selectedInvoice = ref(null)
-const exporting     = ref(false)
-const segment       = ref('ALL')
+const exportingExcel  = ref(false)
+const showImport      = ref(false)
+const importing       = ref(false)
+const importFile      = ref(null)
+const importResult    = ref(null)
+const segment         = ref('ALL')
 
 function onSegmentChange(val) {
   params.segment = val === 'ALL' ? undefined : val
@@ -527,8 +666,8 @@ function onTableOptions({ page, itemsPerPage }) {
   loadList()
 }
 
-async function exportCsv() {
-  exporting.value = true
+async function exportExcel() {
+  exportingExcel.value = true
   try {
     const query = new URLSearchParams()
     if (params.status)             query.set('status', params.status)
@@ -537,15 +676,68 @@ async function exportCsv() {
     if (params.periode_tahun)      query.set('periode_tahun', params.periode_tahun)
     if (segment.value !== 'ALL')   query.set('segment', segment.value)
 
-    const res = await api.get(`/finance/invoices/export?${query}`, { responseType: 'blob' })
+    const res = await api.get(`/finance/invoices/export-excel?${query}`, { responseType: 'blob' })
     const url  = URL.createObjectURL(res.data)
     const a    = document.createElement('a')
     a.href     = url
-    a.download = `invoice-ar-${new Date().toISOString().slice(0, 10)}.csv`
+    a.download = `invoice-ar-${new Date().toISOString().slice(0, 10)}.xlsx`
     a.click()
     URL.revokeObjectURL(url)
+  } catch {
+    await showError('Gagal mengunduh data Excel.')
   } finally {
-    exporting.value = false
+    exportingExcel.value = false
+  }
+}
+
+function openImport() {
+  importFile.value   = null
+  importResult.value = null
+  showImport.value   = true
+}
+
+function closeImport() {
+  showImport.value = false
+  if (importResult.value?.inserted > 0) {
+    loadList()
+    loadSummary()
+  }
+}
+
+async function downloadTemplate() {
+  try {
+    const res  = await api.get('/finance/invoices/import-template', { responseType: 'blob' })
+    const url  = URL.createObjectURL(res.data)
+    const a    = document.createElement('a')
+    a.href     = url
+    a.download = 'template-invoice-ar.xlsx'
+    a.click()
+    URL.revokeObjectURL(url)
+  } catch {
+    await showError('Gagal mengunduh template.')
+  }
+}
+
+async function doImport() {
+  if (!importFile.value) return
+  importing.value    = true
+  importResult.value = null
+
+  try {
+    const formData = new FormData()
+    formData.append('file', importFile.value)
+
+    const res = await api.post('/finance/invoices/import', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+
+    importResult.value = res.data.data
+    importFile.value   = null
+  } catch (err) {
+    const message = err?.response?.data?.message || 'Gagal mengimport data.'
+    await showError(message)
+  } finally {
+    importing.value = false
   }
 }
 
