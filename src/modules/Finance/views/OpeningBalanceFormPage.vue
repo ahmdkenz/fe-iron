@@ -132,7 +132,7 @@
                       label="Klien AR"
                       density="compact"
                       variant="outlined"
-                      :items="klienList"
+                      :items="sortedKlienList"
                       item-title="nama_klien"
                       item-value="id"
                       :rules="[v => !!v || 'Klien wajib dipilih']"
@@ -140,13 +140,49 @@
                       :loading="klienLoading"
                       prepend-inner-icon="ri-user-star-line"
                       clearable
+                      :custom-filter="klienFilter"
+                      placeholder="Cari nama klien, kode, atau PIC AR..."
+                      hint="Ketik nama PIC AR untuk menyaring semua klien miliknya"
+                      persistent-hint
                     >
                       <template #item="{ props: p, item }">
                         <VListItem
                           v-bind="p"
                           :title="item.raw.nama_klien"
-                          :subtitle="[item.raw.kode_klien, item.raw.tipe_klien].filter(Boolean).join(' - ')"
-                        />
+                        >
+                          <template #subtitle>
+                            <div class="d-flex align-center flex-wrap gap-1 mt-1">
+                              <VChip
+                                size="x-small"
+                                color="primary"
+                                variant="tonal"
+                                label
+                              >
+                                {{ item.raw.kode_klien }}
+                              </VChip>
+                              <VChip
+                                size="x-small"
+                                :color="klienTipeColor(item.raw.tipe_klien)"
+                                variant="tonal"
+                                label
+                              >
+                                {{ item.raw.tipe_klien }}
+                              </VChip>
+                              <span
+                                v-if="item.raw.karyawan_ar?.nama_karyawan"
+                                class="text-caption text-medium-emphasis"
+                              >
+                                PIC: {{ item.raw.karyawan_ar.nama_karyawan }}
+                              </span>
+                            </div>
+                            <div
+                              v-if="item.raw.resto?.nama_resto"
+                              class="text-caption text-medium-emphasis mt-1"
+                            >
+                              {{ item.raw.resto.nama_resto }}
+                            </div>
+                          </template>
+                        </VListItem>
                       </template>
                     </VAutocomplete>
                   </VCol>
@@ -544,6 +580,35 @@ const heroSubtitle = computed(() =>
   isEditing.value
     ? 'Sesuaikan kembali data opening balance yang ditolak, lalu simpan revisinya sebelum diajukan ulang.'
     : 'Seluruh field dan proses tetap sama, hanya tampilannya dibuat lebih jelas agar lebih nyaman saat diisi.')
+
+const sortedKlienList = computed(() =>
+  [...klienList.value].sort((a, b) => {
+    const picA = a.karyawan_ar?.nama_karyawan ?? ''
+    const picB = b.karyawan_ar?.nama_karyawan ?? ''
+    if (picA !== picB) return picA.localeCompare(picB, 'id')
+
+    return (a.nama_klien ?? '').localeCompare(b.nama_klien ?? '', 'id')
+  }),
+)
+
+function klienFilter(value, query, item) {
+  if (!query) return true
+  const q = query.toLowerCase()
+  const raw = item?.raw
+  if (!raw) return false
+
+  return (
+    (raw.nama_klien ?? '').toLowerCase().includes(q)
+    || (raw.kode_klien ?? '').toLowerCase().includes(q)
+    || (raw.tipe_klien ?? '').toLowerCase().includes(q)
+    || (raw.karyawan_ar?.nama_karyawan ?? '').toLowerCase().includes(q)
+    || (raw.resto?.nama_resto ?? '').toLowerCase().includes(q)
+  )
+}
+
+function klienTipeColor(tipe) {
+  return { RESTO: 'success', MITRA: 'warning', PT: 'info', STOKIS: 'secondary' }[tipe] ?? 'default'
+}
 
 const selectedKlien = computed(() =>
   klienList.value.find(item => item.id === form.klien_ar_id) ?? null)
