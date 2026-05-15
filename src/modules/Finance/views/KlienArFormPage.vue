@@ -186,7 +186,7 @@
                 :label="isB2B ? 'Resto (Opsional untuk B2B)' : 'Resto (Wajib)'"
                 density="compact"
                 variant="outlined"
-                :items="restoList"
+                :items="filteredRestoList"
                 item-title="nama_resto"
                 item-value="id"
                 clearable
@@ -444,7 +444,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useCrud } from '@/composables/useCrud.js'
 import { useLazyFetchAll } from '@/composables/useLazyFetchAll.js'
@@ -463,6 +463,22 @@ const isEditing = computed(() => !!id)
 const isArRole    = computed(() => authStore.isArOnly)
 const isArEditMode = computed(() => isArRole.value && isEditing.value)
 const isB2B        = computed(() => ['PT', 'STOKIS'].includes(form.tipe_klien))
+
+const filteredRestoList = computed(() => {
+  if (isArRole.value) {
+    const myKaryawanId = authStore.user?.karyawan?.id
+    if (!myKaryawanId) return restoList.value
+    const assigned = restoList.value?.filter(r => r.karyawan_id === myKaryawanId) ?? []
+    return assigned.length > 0 ? assigned : restoList.value
+  }
+
+  if (form.karyawan_ar_id) {
+    const assigned = restoList.value?.filter(r => r.karyawan_id === form.karyawan_ar_id) ?? []
+    return assigned.length > 0 ? assigned : restoList.value
+  }
+
+  return restoList.value
+})
 
 const { create, update, saving, fetchOne } = useCrud('/finance/klien-ar')
 const { items: karyawanList, loading: karyawanLoading, fetchAll: fetchKaryawan } = useCrud('/master/karyawan')
@@ -541,6 +557,13 @@ async function refreshKodeKlienPreview() {
   }
 }
 
+watch(() => form.karyawan_ar_id, (newId, oldId) => {
+  if (!isArRole.value && newId !== oldId && !isEditing.value) {
+    form.resto_id = null
+    selectedRestoInvestor.value = null
+  }
+})
+
 function onRestoChange(restoId) {
   if (!restoId) {
     selectedRestoInvestor.value = null
@@ -601,8 +624,13 @@ onMounted(async () => {
   resetErrors()
   errorMessage.value = ''
 
+  const restoLoadOpts = { force: true }
+
   if (!isEditing.value) {
-    await refreshKodeKlienPreview()
+    await Promise.all([
+      refreshKodeKlienPreview(),
+      ensureRestoLoaded(restoLoadOpts),
+    ])
     pageLoading.value = false
 
     return
@@ -610,7 +638,7 @@ onMounted(async () => {
 
   await Promise.all([
     ensureKaryawanLoaded(),
-    ensureRestoLoaded(),
+    ensureRestoLoaded(restoLoadOpts),
   ])
 
   const data = await fetchOne(id)

@@ -36,7 +36,7 @@
       </div>
     </PageHeader>
 
-    <VCard>
+    <VCard ref="tableCard">
       <VCardText class="d-flex gap-4 pb-0">
         <VTextField
           v-model="params.search"
@@ -393,6 +393,9 @@ const authStore = useAuthStore()
 const { showSuccess, showError } = useSweetAlert()
 const { items, loading, meta, params, fetchList, remove } = useCrud('/master/investor')
 
+const tableCard        = ref(null)
+let prevItemsPerPage   = null
+
 const showDelete       = ref(false)
 const showDetail       = ref(false)
 const deleteError      = ref('')
@@ -425,9 +428,16 @@ function debouncedFetch() {
 }
 
 function onTableOptions({ page, itemsPerPage }) {
+  const perPageChanged = prevItemsPerPage !== null && prevItemsPerPage !== itemsPerPage
   params.page = page
   params['per_page'] = itemsPerPage
+  prevItemsPerPage = itemsPerPage
   fetchList()
+  if (perPageChanged) {
+    nextTick(() => tableCard.value?.$el?.scrollIntoView({ behavior: 'smooth' }))
+  } else {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 }
 
 function openCreate()     { router.push({ name: 'master-investor-create' }) }
