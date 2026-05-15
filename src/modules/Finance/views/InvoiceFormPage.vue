@@ -166,7 +166,11 @@
                       <VListItem
                         v-bind="p"
                         :title="item.raw.nama_klien"
-                        :subtitle="`${item.raw.kode_klien} · ${item.raw.tipe_klien}`"
+                        :subtitle="[
+                          `${item.raw.kode_klien} · ${item.raw.tipe_klien}`,
+                          item.raw.resto?.investor?.pengelola || item.raw.perusahaan?.nama_perusahaan || '',
+                        ].filter(Boolean).join(' · ')"
+                        lines="two"
                       />
                     </template>
                   </VAutocomplete>
@@ -499,10 +503,25 @@ const id        = route.params.id
 const isEditing = computed(() => !!id)
 
 const { create, fetchOne, update, saving } = useCrud('/finance/invoices')
-const { items: klienList, loading: klienLoading, fetchAll: fetchKlien } = useCrud('/finance/klien-ar')
 const { items: barangList, loading: barangLoading, fetchAll: fetchBarang } = useCrud('/master/barang')
-const { ensureLoaded: ensureKlienLoaded } = useLazyFetchAll(fetchKlien)
 const { ensureLoaded: ensureBarangLoaded } = useLazyFetchAll(fetchBarang)
+
+const klienList    = ref([])
+const klienLoading = ref(false)
+
+async function fetchKlienAll() {
+  klienLoading.value = true
+  try {
+    const { data } = await api.get('/finance/klien-ar/all')
+    klienList.value = data.data ?? []
+  } catch {
+    klienList.value = []
+  } finally {
+    klienLoading.value = false
+  }
+}
+
+const { ensureLoaded: ensureKlienLoaded } = useLazyFetchAll(fetchKlienAll)
 const { formatCurrency } = useFormatter()
 
 const formRef          = ref(null)

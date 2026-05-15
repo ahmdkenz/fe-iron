@@ -8,14 +8,32 @@
         { title: 'Klien AR', disabled: true }
       ]"
     >
-      <VBtn
-        v-if="!authStore.isDirectorOnly"
-        color="primary"
-        prepend-icon="ri-add-line"
-        @click="openCreate"
-      >
-        Tambah Klien
-      </VBtn>
+      <div class="d-flex gap-2">
+        <VBtn
+          color="primary"
+          prepend-icon="ri-file-excel-line"
+          :loading="exporting"
+          @click="exportExcel"
+        >
+          Export
+        </VBtn>
+        <VBtn
+          v-if="!authStore.isDirectorOnly && !authStore.isArOnly"
+          color="primary"
+          prepend-icon="ri-upload-line"
+          @click="openImport"
+        >
+          Import
+        </VBtn>
+        <VBtn
+          v-if="!authStore.isDirectorOnly"
+          color="primary"
+          prepend-icon="ri-add-line"
+          @click="openCreate"
+        >
+          Tambah Klien
+        </VBtn>
+      </div>
     </PageHeader>
 
     <VCard>
@@ -293,6 +311,134 @@
       </div>
     </VNavigationDrawer>
 
+    <!-- Import Modal -->
+    <VDialog
+      v-model="showImport"
+      max-width="560"
+      persistent
+    >
+      <VCard>
+        <VCardTitle class="d-flex align-center justify-space-between pa-4">
+          <span>Import Data Klien AR</span>
+          <VBtn
+            icon
+            size="small"
+            variant="text"
+            @click="closeImport"
+          >
+            <VIcon icon="ri-close-line" />
+          </VBtn>
+        </VCardTitle>
+        <VDivider />
+        <VCardText class="pt-4">
+          <VAlert
+            type="info"
+            variant="tonal"
+            class="mb-4"
+          >
+            <div class="mb-2 font-weight-medium">
+              Panduan Import:
+            </div>
+            <ul class="ps-4">
+              <li>Download template Excel, isi data, lalu upload file (.xlsx atau .csv).</li>
+              <li>Kolom <strong>nama_klien</strong> dan <strong>tipe_klien</strong> wajib diisi.</li>
+              <li>Kolom <strong>tipe_klien</strong>: isi persis <strong>RESTO / MITRA / PT / STOKIS</strong>.</li>
+              <li>Untuk tipe RESTO/MITRA, kolom <strong>nama_resto</strong> wajib diisi sesuai data di sistem.</li>
+              <li>Kolom <strong>nama_karyawan_ar</strong> wajib diisi sesuai nama karyawan di sistem.</li>
+              <li>Kolom <strong>status</strong>: 1 = Aktif, 0 = Nonaktif (default: 1).</li>
+              <li>Lihat sheet <strong>Petunjuk Pengisian</strong> di template untuk panduan lengkap.</li>
+            </ul>
+          </VAlert>
+
+          <VBtn
+            variant="outlined"
+            color="primary"
+            prepend-icon="ri-file-excel-line"
+            class="mb-4"
+            @click="downloadTemplate"
+          >
+            Download Template Excel
+          </VBtn>
+
+          <VFileInput
+            v-model="importFile"
+            label="Pilih File (.xlsx atau .csv)"
+            accept=".xlsx,.xls,.csv"
+            prepend-icon="ri-file-upload-line"
+            variant="outlined"
+            density="compact"
+            :clearable="true"
+            hide-details="auto"
+            @update:model-value="importResult = null"
+          />
+
+          <div
+            v-if="importResult"
+            class="mt-4"
+          >
+            <VAlert
+              :type="importResult.failed > 0 ? 'warning' : 'success'"
+              variant="tonal"
+              class="mb-3"
+            >
+              Import selesai:
+              <strong>{{ importResult.inserted }}</strong> ditambahkan,
+              <strong>{{ importResult.updated }}</strong> diperbarui,
+              <strong>{{ importResult.failed }}</strong> gagal
+              (total {{ importResult.total }} baris).
+            </VAlert>
+
+            <div
+              v-if="importResult.errors?.length"
+              class="mt-2"
+            >
+              <div class="text-subtitle-2 mb-2">
+                Detail Error:
+              </div>
+              <VTable
+                density="compact"
+                class="border rounded"
+              >
+                <thead>
+                  <tr>
+                    <th>Baris</th>
+                    <th>Pesan</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="err in importResult.errors"
+                    :key="err.row"
+                  >
+                    <td>{{ err.row }}</td>
+                    <td>{{ err.message }}</td>
+                  </tr>
+                </tbody>
+              </VTable>
+            </div>
+          </div>
+        </VCardText>
+        <VDivider />
+        <VCardActions class="pa-4 gap-2 justify-end">
+          <VBtn
+            variant="outlined"
+            @click="closeImport"
+          >
+            Tutup
+          </VBtn>
+          <VBtn
+            color="warning"
+            :loading="importing"
+            :disabled="!importFile"
+            prepend-icon="ri-upload-line"
+            @click="doImport"
+          >
+            Import
+          </VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
+
     <!-- Confirm Delete -->
     <BaseModal
       v-if="showDelete"
@@ -324,6 +470,7 @@ import { useRouter } from 'vue-router'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useAuthStore } from '@/stores/auth.store'
 import { useCrud } from '@/composables/useCrud'
+import api from '@/utils/axios'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -343,10 +490,16 @@ function onSegmentChange(val) {
   fetchList()
 }
 
-const showDelete = ref(false)
-const showDetail = ref(false)
+const showDelete  = ref(false)
+const showDetail  = ref(false)
 const deleteError = ref('')
 const selectedKlien = ref(null)
+
+const exporting    = ref(false)
+const showImport   = ref(false)
+const importing    = ref(false)
+const importFile   = ref(null)
+const importResult = ref(null)
 
 const headers = [
   { title: 'No',             key: 'no',          sortable: false, width: '60px' },
@@ -376,6 +529,76 @@ function openCreate()      { router.push({ name: 'finance-klien-ar-create' }) }
 function openEdit(k)       { router.push({ name: 'finance-klien-ar-edit', params: { id: k.id } }) }
 function openDetail(k)     { selectedKlien.value = k;    showDetail.value = true }
 function confirmDelete(k)  { selectedKlien.value = k;    deleteError.value = ''; showDelete.value = true }
+
+function openImport() {
+  importFile.value   = null
+  importResult.value = null
+  showImport.value   = true
+}
+
+function closeImport() {
+  showImport.value = false
+  if ((importResult.value?.inserted > 0) || (importResult.value?.updated > 0)) fetchList()
+}
+
+async function exportExcel() {
+  exporting.value = true
+  try {
+    const query = new URLSearchParams()
+    if (params.search) query.set('search', params.search)
+    if (params.status !== undefined && params.status !== '') query.set('status', params.status)
+    if (segment.value && segment.value !== 'ALL') query.set('segment', segment.value)
+
+    const res  = await api.get(`/finance/klien-ar/export?${query}`, { responseType: 'blob' })
+    const url  = URL.createObjectURL(res.data)
+    const a    = document.createElement('a')
+    a.href     = url
+    a.download = `klien-ar-${new Date().toISOString().slice(0, 10)}.xlsx`
+    a.click()
+    URL.revokeObjectURL(url)
+  } catch {
+    await showError('Gagal mengunduh data.')
+  } finally {
+    exporting.value = false
+  }
+}
+
+async function downloadTemplate() {
+  try {
+    const res  = await api.get('/finance/klien-ar/import-template', { responseType: 'blob' })
+    const url  = URL.createObjectURL(res.data)
+    const a    = document.createElement('a')
+    a.href     = url
+    a.download = 'template-klien-ar.xlsx'
+    a.click()
+    URL.revokeObjectURL(url)
+  } catch {
+    await showError('Gagal mengunduh template.')
+  }
+}
+
+async function doImport() {
+  if (!importFile.value) return
+  importing.value    = true
+  importResult.value = null
+
+  try {
+    const formData = new FormData()
+    formData.append('file', importFile.value)
+
+    const res = await api.post('/finance/klien-ar/import', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+
+    importResult.value = res.data.data
+    importFile.value   = null
+  } catch (err) {
+    const message = err?.response?.data?.message || 'Gagal mengimport data.'
+    await showError(message)
+  } finally {
+    importing.value = false
+  }
+}
 
 function shareWhatsApp(klien) {
   if (!klien.no_wa) return
