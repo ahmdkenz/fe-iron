@@ -456,11 +456,23 @@ if (!canSeeAll) {
 }
 
 const segment = ref('ALL')
+const showAllItems = ref(false)
+
+// Fetches with all=true when "All" is selected so backend returns every record.
+// Meta per_page is forced to -1 afterward to keep the "All" indicator in the table.
+async function doFetchList() {
+  if (showAllItems.value) {
+    await fetchList({ all: true })
+    meta.per_page = -1
+  } else {
+    fetchList()
+  }
+}
 
 function onSegmentChange(val) {
   params.segment = val === 'ALL' ? undefined : val
   params.page    = 1
-  fetchList()
+  doFetchList()
 }
 
 const showDelete  = ref(false)
@@ -489,13 +501,18 @@ const headers = [
 let debounceTimer = null
 function debouncedFetch() {
   clearTimeout(debounceTimer)
-  debounceTimer = setTimeout(() => { params.page = 1; fetchList() }, 400)
+  debounceTimer = setTimeout(() => { params.page = 1; doFetchList() }, 400)
 }
 
 function onTableOptions({ page, itemsPerPage }) {
   params.page = page
-  params['per_page'] = itemsPerPage
-  fetchList()
+  if (itemsPerPage === -1) {
+    showAllItems.value = true
+  } else {
+    showAllItems.value = false
+    params['per_page'] = itemsPerPage
+  }
+  doFetchList()
 }
 
 function openCreate()      { router.push({ name: 'finance-klien-ar-create' }) }
@@ -511,7 +528,7 @@ function openImport() {
 
 function closeImport() {
   showImport.value = false
-  if ((importResult.value?.inserted > 0) || (importResult.value?.updated > 0)) fetchList()
+  if ((importResult.value?.inserted > 0) || (importResult.value?.updated > 0)) doFetchList()
 }
 
 async function exportExcel() {
@@ -611,7 +628,7 @@ async function doDelete() {
 
   const res = await remove(deleteId)
   if (res.success) {
-    fetchList()
+    doFetchList()
     await showSuccess('Klien AR berhasil dihapus.')
   } else {
     deleteError.value = res.message || 'Gagal menghapus data'
