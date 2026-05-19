@@ -7,7 +7,26 @@
         { title: 'Dashboard', to: { name: 'dashboard' } },
         { title: 'Rekening Koran', disabled: true },
       ]"
-    />
+    >
+      <div v-if="report.rows.length > 0" class="d-flex gap-2">
+        <VBtn
+          color="primary"
+          prepend-icon="ri-file-excel-2-line"
+          :loading="exporting.excel"
+          @click="doExport('excel')"
+        >
+          Export Excel
+        </VBtn>
+        <VBtn
+          color="primary"
+          prepend-icon="ri-file-pdf-2-line"
+          :loading="exporting.pdf"
+          @click="doExport('pdf')"
+        >
+          Export PDF
+        </VBtn>
+      </div>
+    </PageHeader>
 
     <!-- Filter -->
     <VCard class="mb-4">
@@ -44,29 +63,6 @@
           style="max-width: 180px"
           @update:model-value="doFetch"
         />
-        <VSpacer />
-        <VBtn
-          v-if="report.rows.length > 0"
-          variant="outlined"
-          color="success"
-          size="small"
-          prepend-icon="ri-file-excel-2-line"
-          :loading="exporting.excel"
-          @click="doExport('excel')"
-        >
-          Excel
-        </VBtn>
-        <VBtn
-          v-if="report.rows.length > 0"
-          variant="outlined"
-          color="error"
-          size="small"
-          prepend-icon="ri-file-pdf-2-line"
-          :loading="exporting.pdf"
-          @click="doExport('pdf')"
-        >
-          PDF
-        </VBtn>
       </VCardText>
     </VCard>
 
@@ -82,68 +78,88 @@
     <template v-else>
       <!-- Summary Cards -->
       <VRow class="mb-4">
+        <!-- Saldo Awal -->
         <VCol cols="12" sm="6" md="3">
-          <VCard>
-            <VCardText>
-              <div class="d-flex align-center gap-3">
-                <VAvatar color="secondary" variant="tonal" size="44">
-                  <VIcon icon="ri-wallet-3-line" />
+          <VCard class="stat-card">
+            <VCardText class="pa-4">
+              <div class="d-flex align-center justify-space-between mb-3">
+                <span class="text-overline text-medium-emphasis font-weight-bold">Saldo Awal</span>
+                <VAvatar color="secondary" size="40" rounded="lg">
+                  <VIcon icon="ri-wallet-3-line" size="20" class="text-white" />
                 </VAvatar>
-                <div>
-                  <div class="text-caption text-medium-emphasis">Saldo Awal</div>
-                  <div class="text-h6 font-weight-bold">{{ formatCurrency(report.saldo_awal ?? 0) }}</div>
-                </div>
               </div>
+              <div class="text-h5 font-weight-bold mb-1">
+                {{ formatCurrency(report.saldo_awal ?? 0) }}
+              </div>
+              <div class="stat-bar" style="background: rgb(var(--v-theme-secondary));" />
             </VCardText>
           </VCard>
         </VCol>
+
+        <!-- Total Debit -->
         <VCol cols="12" sm="6" md="3">
-          <VCard>
-            <VCardText>
-              <div class="d-flex align-center gap-3">
-                <VAvatar color="warning" variant="tonal" size="44">
-                  <VIcon icon="ri-bill-line" />
+          <VCard class="stat-card">
+            <VCardText class="pa-4">
+              <div class="d-flex align-center justify-space-between mb-3">
+                <span class="text-overline text-medium-emphasis font-weight-bold">Total Debit</span>
+                <VAvatar color="warning" size="40" rounded="lg">
+                  <VIcon icon="ri-bill-line" size="20" class="text-white" />
                 </VAvatar>
-                <div>
-                  <div class="text-caption text-medium-emphasis">Total Debit</div>
-                  <div class="text-h6 font-weight-bold text-warning">{{ formatCurrency(report.total_debit ?? 0) }}</div>
-                </div>
               </div>
+              <div class="text-h5 font-weight-bold text-warning mb-1">
+                {{ formatCurrency(report.total_debit ?? 0) }}
+              </div>
+              <div class="stat-bar" style="background: rgb(var(--v-theme-warning));" />
             </VCardText>
           </VCard>
         </VCol>
+
+        <!-- Total Kredit -->
         <VCol cols="12" sm="6" md="3">
-          <VCard>
-            <VCardText>
-              <div class="d-flex align-center gap-3">
-                <VAvatar color="success" variant="tonal" size="44">
-                  <VIcon icon="ri-money-cny-circle-line" />
+          <VCard class="stat-card">
+            <VCardText class="pa-4">
+              <div class="d-flex align-center justify-space-between mb-3">
+                <span class="text-overline text-medium-emphasis font-weight-bold">Total Kredit</span>
+                <VAvatar color="success" size="40" rounded="lg">
+                  <VIcon icon="ri-money-cny-circle-line" size="20" class="text-white" />
                 </VAvatar>
-                <div>
-                  <div class="text-caption text-medium-emphasis">Total Kredit</div>
-                  <div class="text-h6 font-weight-bold text-success">{{ formatCurrency(report.total_kredit ?? 0) }}</div>
-                </div>
               </div>
+              <div class="text-h5 font-weight-bold text-success mb-1">
+                {{ formatCurrency(report.total_kredit ?? 0) }}
+              </div>
+              <div class="stat-bar" style="background: rgb(var(--v-theme-success));" />
             </VCardText>
           </VCard>
         </VCol>
+
+        <!-- Saldo Akhir -->
         <VCol cols="12" sm="6" md="3">
-          <VCard>
-            <VCardText>
-              <div class="d-flex align-center gap-3">
-                <VAvatar :color="(report.saldo_akhir ?? 0) > 0 ? 'error' : 'success'" variant="tonal" size="44">
-                  <VIcon icon="ri-scale-line" />
+          <VCard class="stat-card">
+            <VCardText class="pa-4">
+              <div class="d-flex align-center justify-space-between mb-3">
+                <span class="text-overline text-medium-emphasis font-weight-bold">Saldo Akhir</span>
+                <VAvatar
+                  :color="(report.saldo_akhir ?? 0) > 0 ? 'error' : 'success'"
+                  size="40"
+                  rounded="lg"
+                >
+                  <VIcon
+                    :icon="(report.saldo_akhir ?? 0) > 0 ? 'ri-error-warning-line' : 'ri-check-double-line'"
+                    size="20"
+                    class="text-white"
+                  />
                 </VAvatar>
-                <div>
-                  <div class="text-caption text-medium-emphasis">Saldo Akhir</div>
-                  <div
-                    class="text-h6 font-weight-bold"
-                    :class="(report.saldo_akhir ?? 0) > 0 ? 'text-error' : 'text-success'"
-                  >
-                    {{ formatCurrency(report.saldo_akhir ?? 0) }}
-                  </div>
-                </div>
               </div>
+              <div
+                class="text-h5 font-weight-bold mb-1"
+                :class="(report.saldo_akhir ?? 0) > 0 ? 'text-error' : 'text-success'"
+              >
+                {{ formatCurrency(report.saldo_akhir ?? 0) }}
+              </div>
+              <div
+                class="stat-bar"
+                :style="{ background: `rgb(var(--v-theme-${(report.saldo_akhir ?? 0) > 0 ? 'error' : 'success'}))` }"
+              />
             </VCardText>
           </VCard>
         </VCol>
@@ -323,3 +339,17 @@ async function doExport(type) {
   }
 }
 </script>
+
+<style scoped>
+.stat-card {
+  transition: box-shadow 0.2s;
+}
+.stat-card:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12) !important;
+}
+.stat-bar {
+  height: 3px;
+  border-radius: 2px;
+  opacity: 0.6;
+}
+</style>

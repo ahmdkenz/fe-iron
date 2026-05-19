@@ -16,7 +16,7 @@
           Upload Rekening Koran Bank
         </VBtn>
         <span class="text-caption text-medium-emphasis">
-          Dukung format file: BCA (.csv), Mandiri / BNI / BRI (.xlsx)
+          Dukung format file: BCA (.csv), Mandiri / BNI / BRI / CIMB / BSI (.xlsx)
         </span>
       </VCardText>
     </VCard>
@@ -112,7 +112,7 @@
             </div>
             <div v-else class="text-body-2 text-medium-emphasis text-center">
               <div>Klik atau drag & drop file di sini</div>
-              <div class="text-caption mt-1">BCA: .csv &nbsp;|&nbsp; Mandiri/BNI/BRI: .xlsx atau .xls</div>
+              <div class="text-caption mt-1">BCA: .csv &nbsp;|&nbsp; Mandiri/BNI/BRI/CIMB/BSI: .xlsx atau .xls</div>
             </div>
             <input
               ref="fileInput"
@@ -158,7 +158,7 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from 'vue'
+import { markRaw, onMounted, reactive, ref } from 'vue'
 import { useFormatter } from '@/composables/useFormatter'
 import api from '@/utils/axios'
 
@@ -187,9 +187,14 @@ const bankOptions = [
   { label: 'Bank Mandiri', value: 'MANDIRI' },
   { label: 'BNI', value: 'BNI' },
   { label: 'BRI', value: 'BRI' },
+  { label: 'CIMB NIAGA', value: 'CIMB' },
+  { label: 'BSI', value: 'BSI' },
 ]
 
-const bankColor = (type) => ({ BCA: 'info', MANDIRI: 'warning', BNI: 'error', BRI: 'primary' }[type] ?? 'secondary')
+const bankColor = (type) => ({
+  BCA: 'info', MANDIRI: 'warning', BNI: 'error', BRI: 'primary',
+  CIMB: 'deep-purple', BSI: 'green',
+}[type] ?? 'secondary')
 
 const headers = [
   { title: 'No',           key: 'no',          sortable: false, width: '50px' },
@@ -222,12 +227,12 @@ async function fetchList() {
 }
 
 function onFileChange(e) {
-  form.file = e.target.files[0] ?? null
+  form.file = markRaw(e.target.files[0] ?? null)
 }
 
 function onDrop(e) {
   isDragging.value = false
-  form.file = e.dataTransfer.files[0] ?? null
+  form.file = markRaw(e.dataTransfer.files[0] ?? null)
 }
 
 function closeDialog() {

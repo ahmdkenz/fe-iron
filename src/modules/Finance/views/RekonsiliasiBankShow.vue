@@ -188,7 +188,10 @@ function onTableOptions({ page: p, itemsPerPage }) {
   perPage.value = itemsPerPage
 }
 
-const bankColor = (type) => ({ BCA: 'info', MANDIRI: 'warning', BNI: 'error', BRI: 'primary' }[type] ?? 'secondary')
+const bankColor = (type) => ({
+  BCA: 'info', MANDIRI: 'warning', BNI: 'error', BRI: 'primary',
+  CIMB: 'deep-purple', BSI: 'green',
+}[type] ?? 'secondary')
 const statusColor = (s) => ({ MATCHED: 'success', POSSIBLE: 'warning', UNMATCHED: 'error', DIABAIKAN: 'grey' }[s] ?? 'grey')
 
 const headers = [
