@@ -16,7 +16,7 @@
           Upload Rekening Koran Bank
         </VBtn>
         <span class="text-caption text-medium-emphasis">
-          Dukung format file: BCA (.csv), Mandiri / BNI / BRI / CIMB / BSI (.xlsx)
+          Dukung format file: BCA (.csv), Mandiri / CIMB / BSI (.xlsx)
         </span>
       </VCardText>
     </VCard>
@@ -97,6 +97,25 @@
             :rules="[v => !!v || 'Bank wajib dipilih']"
           />
 
+          <!-- Download Template -->
+          <div v-if="form.bank_type" class="d-flex align-center gap-2">
+            <VIcon icon="ri-information-line" size="16" class="text-info" />
+            <span class="text-caption text-medium-emphasis">
+              Belum punya file format yang sesuai?
+            </span>
+            <VBtn
+              variant="text"
+              color="info"
+              size="x-small"
+              density="compact"
+              :loading="downloadingTemplate"
+              prepend-icon="ri-download-line"
+              @click="doDownloadTemplate"
+            >
+              Download Template {{ form.bank_type }}
+            </VBtn>
+          </div>
+
           <!-- Dropzone -->
           <div
             class="dropzone"
@@ -112,7 +131,7 @@
             </div>
             <div v-else class="text-body-2 text-medium-emphasis text-center">
               <div>Klik atau drag & drop file di sini</div>
-              <div class="text-caption mt-1">BCA: .csv &nbsp;|&nbsp; Mandiri/BNI/BRI/CIMB/BSI: .xlsx atau .xls</div>
+              <div class="text-caption mt-1">BCA: .csv &nbsp;|&nbsp; Mandiri/CIMB/BSI: .xlsx atau .xls</div>
             </div>
             <input
               ref="fileInput"
@@ -178,22 +197,20 @@ const fileInput   = ref(null)
 
 const form = reactive({ bank_type: null, file: null })
 
-const deleteDialog = ref(false)
-const deleteTarget = ref(null)
-const deleting     = ref(false)
+const deleteDialog       = ref(false)
+const deleteTarget       = ref(null)
+const deleting           = ref(false)
+const downloadingTemplate = ref(false)
 
 const bankOptions = [
   { label: 'BCA', value: 'BCA' },
   { label: 'Bank Mandiri', value: 'MANDIRI' },
-  { label: 'BNI', value: 'BNI' },
-  { label: 'BRI', value: 'BRI' },
   { label: 'CIMB NIAGA', value: 'CIMB' },
   { label: 'BSI', value: 'BSI' },
 ]
 
 const bankColor = (type) => ({
-  BCA: 'info', MANDIRI: 'warning', BNI: 'error', BRI: 'primary',
-  CIMB: 'deep-purple', BSI: 'green',
+  BCA: 'info', MANDIRI: 'warning', CIMB: 'deep-purple', BSI: 'green',
 }[type] ?? 'secondary')
 
 const headers = [
@@ -257,6 +274,27 @@ async function doUpload() {
     uploadError.value = err?.response?.data?.message ?? 'Upload gagal. Pastikan format file sesuai.'
   } finally {
     uploading.value = false
+  }
+}
+
+async function doDownloadTemplate() {
+  if (!form.bank_type) return
+  downloadingTemplate.value = true
+  try {
+    const response = await api.get(`/finance/rekonsiliasi-bank/template/${form.bank_type}`, {
+      responseType: 'blob',
+    })
+    const ext      = 'xlsx'
+    const url      = URL.createObjectURL(new Blob([response.data]))
+    const link     = document.createElement('a')
+    link.href      = url
+    link.download  = `template-rekening-koran-${form.bank_type.toLowerCase()}.${ext}`
+    link.click()
+    URL.revokeObjectURL(url)
+  } catch {
+    // diam — error tidak kritis
+  } finally {
+    downloadingTemplate.value = false
   }
 }
 
