@@ -85,6 +85,19 @@ export default [
     icon: { icon: 'ri-task-line' },
     roles: ['DIREKTUR'],
   },
+  { heading: 'REKONSILIASI' },
+  {
+    title: 'Rekonsiliasi Bank',
+    to: { name: 'finance-rekonsiliasi-bank' },
+    icon: { icon: 'ri-bank-line' },
+    roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR'],
+  },
+  {
+    title: 'Rekening Koran',
+    to: { name: 'finance-rekening-koran' },
+    icon: { icon: 'ri-file-paper-2-line' },
+    roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR'],
+  },
   { heading: 'LAPORAN' },
   {
     title: 'Laporan Aging',

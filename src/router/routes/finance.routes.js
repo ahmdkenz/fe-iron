@@ -89,6 +89,12 @@ export default [
     component: () => import('@/modules/Finance/views/MutasiPiutangIndex.vue'),
     meta: { requiresAuth: true, roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR'] },
   },
+  {
+    path: '/finance/rekening-koran',
+    name: 'finance-rekening-koran',
+    component: () => import('@/modules/Finance/views/RekeningKoranIndex.vue'),
+    meta: { requiresAuth: true, roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR'] },
+  },
   // NEXT UPDATE: Route jatuh-tempo disembunyikan sementara (kolom tanggal_jatuh_tempo dihapus dari DB)
   // {
   //   path: '/finance/jatuh-tempo',
@@ -112,6 +118,18 @@ export default [
     path: '/finance/export-data',
     name: 'finance-export-data',
     component: () => import('@/modules/Finance/views/ExportDataIndex.vue'),
+    meta: { requiresAuth: true, roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR'] },
+  },
+  {
+    path: '/finance/rekonsiliasi-bank',
+    name: 'finance-rekonsiliasi-bank',
+    component: () => import('@/modules/Finance/views/RekonsiliasiBankIndex.vue'),
+    meta: { requiresAuth: true, roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR'] },
+  },
+  {
+    path: '/finance/rekonsiliasi-bank/:id',
+    name: 'finance-rekonsiliasi-bank-show',
+    component: () => import('@/modules/Finance/views/RekonsiliasiBankShow.vue'),
     meta: { requiresAuth: true, roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR'] },
   },
 ]
