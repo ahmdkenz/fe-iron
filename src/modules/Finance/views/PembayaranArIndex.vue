@@ -13,6 +13,18 @@
     <VCard class="mb-4">
       <VCardText class="d-flex flex-wrap gap-3 align-center">
         <!-- Filter -->
+        <VBtnToggle
+          v-model="segment"
+          variant="outlined"
+          mandatory
+          divided
+          density="compact"
+          @update:model-value="onSegmentChange"
+        >
+          <VBtn value="ALL" size="small" style="min-width: 80px">Semua</VBtn>
+          <VBtn value="B2C" size="small" style="min-width: 70px">B2C</VBtn>
+          <VBtn value="B2B" size="small" style="min-width: 70px">B2B</VBtn>
+        </VBtnToggle>
         <VAutocomplete
           v-model="params.klien_ar_id"
           placeholder="Semua Klien"
@@ -62,7 +74,7 @@
 
         <div class="text-body-2 text-medium-emphasis">
           Total:
-          <strong class="text-success text-body-1 ms-1">{{ formatCurrency(totalPembayaran) }}</strong>
+          <strong class="text-success text-body-1 ms-1">{{ formatCurrency(meta.total_jumlah ?? 0) }}</strong>
         </div>
       </VCardText>
     </VCard>
@@ -114,7 +126,7 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { useAuthStore } from '@/stores/auth.store'
 import { useCrud } from '@/composables/useCrud'
 import { useLazyFetchAll } from '@/composables/useLazyFetchAll'
@@ -126,11 +138,14 @@ const { items, loading, meta, params, fetchList } = useCrud('/finance/pembayaran
 const { items: klienList, loading: klienLoading, fetchAll: fetchKlien } = useCrud('/finance/klien-ar')
 const { ensureLoaded: ensureKlienLoaded } = useLazyFetchAll(fetchKlien)
 
+const segment = ref('ALL')
+
 params.klien_ar_id       = null
 params.metode_pembayaran = null
 params.tanggal_dari      = null
 params.tanggal_sampai    = null
 params.karyawan_id       = null
+params.segment           = null
 
 const headers = [
   { title: 'No',          key: 'no',                sortable: false, width: '50px' },
@@ -154,9 +169,10 @@ function metodeColor(metode) {
   return { TRANSFER: 'info', CASH: 'success', GIRO: 'warning' }[metode] ?? 'default'
 }
 
-const totalPembayaran = computed(() =>
-  items.value.reduce((s, p) => s + (p.jumlah_pembayaran ?? 0), 0)
-)
+function onSegmentChange(val) {
+  params.segment = val !== 'ALL' ? val : null
+  doFetch()
+}
 
 let controller = null
 
