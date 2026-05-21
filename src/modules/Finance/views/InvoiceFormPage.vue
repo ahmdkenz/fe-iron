@@ -599,6 +599,7 @@ function addItem() {
 
   form.items.push({
     barang_id: null,
+    kode_barang: '',
     nama_barang: '',
     qty: 1,
     satuan: 'pcs',
@@ -669,6 +670,7 @@ onMounted(async () => {
     items: (data.items ?? []).map(it => ({
       id:           it.id,
       barang_id:    it.barang_id,
+      kode_barang:  it.barang?.kode_barang ?? it.kode_barang ?? '',
       nama_barang:  it.nama_barang,
       qty:          it.qty,
       satuan:       it.satuan,

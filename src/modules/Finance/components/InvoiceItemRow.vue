@@ -36,14 +36,30 @@
 
     <VCardText class="pa-3">
       <VRow dense>
-        <!-- Baris 1: Barang + Nama Barang -->
+        <!-- Baris 1: Kode Barang (readonly) + Nama Barang (select) -->
+        <VCol
+          cols="12"
+          sm="6"
+        >
+          <VTextField
+            :model-value="localItem.kode_barang"
+            label="Kode Barang"
+            density="compact"
+            variant="outlined"
+            prepend-inner-icon="ri-barcode-line"
+            readonly
+            hide-details="auto"
+            placeholder="Otomatis dari pilihan nama barang"
+          />
+        </VCol>
+
         <VCol
           cols="12"
           sm="6"
         >
           <VAutocomplete
             :model-value="localItem.barang_id"
-            label="Barang (Opsional)"
+            label="Nama Barang"
             density="compact"
             variant="outlined"
             :items="barangList"
@@ -52,7 +68,7 @@
             :loading="barangLoading"
             clearable
             hide-details="auto"
-            hint="Pilih barang untuk auto-isi, atau kosongkan dan isi nama manual"
+            :rules="[v => !!v || 'Nama barang wajib dipilih']"
             @update:model-value="onBarangChange"
           >
             <template #item="{ props: p, item }">
@@ -63,21 +79,6 @@
               />
             </template>
           </VAutocomplete>
-        </VCol>
-
-        <VCol
-          cols="12"
-          sm="6"
-        >
-          <VTextField
-            :model-value="localItem.nama_barang"
-            label="Nama Barang"
-            density="compact"
-            variant="outlined"
-            :rules="[v => !!v || 'Nama barang wajib diisi']"
-            hide-details="auto"
-            @update:model-value="value => updateField('nama_barang', value)"
-          />
         </VCol>
 
         <!-- Baris 2: Qty + Satuan + Harga + Subtotal -->
@@ -144,6 +145,19 @@
             hide-details
           />
         </VCol>
+
+        <!-- Baris 3: Keterangan -->
+        <VCol cols="12">
+          <VTextField
+            :model-value="localItem.keterangan"
+            label="Keterangan"
+            density="compact"
+            variant="outlined"
+            prepend-inner-icon="ri-chat-1-line"
+            hide-details
+            @update:model-value="value => updateField('keterangan', value)"
+          />
+        </VCol>
       </VRow>
     </VCardText>
   </VCard>
@@ -154,6 +168,7 @@ import { reactive, watch } from 'vue'
 
 const createDefaultItem = () => ({
   barang_id: null,
+  kode_barang: '',
   nama_barang: '',
   qty: 1,
   satuan: 'pcs',
@@ -167,6 +182,7 @@ const props = defineProps({
     type: Object,
     default: () => ({
       barang_id: null,
+      kode_barang: '',
       nama_barang: '',
       qty: 1,
       satuan: 'pcs',
@@ -195,8 +211,20 @@ watch(() => props.item, value => {
   syncLocalItem(value)
 })
 
+// Resolve kode_barang when barangList loads after item is already set
+watch(() => props.barangList, list => {
+  if (localItem.barang_id && !localItem.kode_barang && list.length > 0) {
+    const found = list.find(b => b.id === localItem.barang_id)
+    if (found) localItem.kode_barang = found.kode_barang ?? ''
+  }
+})
+
 function syncLocalItem(item = {}) {
   Object.assign(localItem, createDefaultItem(), item)
+  if (localItem.barang_id && !localItem.kode_barang && props.barangList.length > 0) {
+    const found = props.barangList.find(b => b.id === localItem.barang_id)
+    if (found) localItem.kode_barang = found.kode_barang ?? ''
+  }
 }
 
 function emitItem() {
@@ -218,9 +246,13 @@ function onBarangChange(id) {
 
   const found = props.barangList.find(barang => barang.id === id)
   if (found) {
-    localItem.nama_barang = found.nama_barang
-    localItem.satuan = found.satuan ?? localItem.satuan
+    localItem.kode_barang  = found.kode_barang ?? ''
+    localItem.nama_barang  = found.nama_barang
+    localItem.satuan       = found.satuan ?? localItem.satuan
     localItem.harga_satuan = normalizeNumber(found.harga_beli ?? found.harga_jual ?? 0)
+  } else {
+    localItem.kode_barang = ''
+    localItem.nama_barang = ''
   }
 
   recalculate()
