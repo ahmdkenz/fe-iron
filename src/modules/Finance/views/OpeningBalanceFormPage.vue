@@ -127,6 +127,18 @@
 
                 <VRow>
                   <VCol cols="12">
+                    <VTextField
+                      v-model="form.no_invoice"
+                      label="No. Opening Balance"
+                      density="compact"
+                      variant="outlined"
+                      prepend-inner-icon="ri-hashtag"
+                      :rules="[v => !!v || 'No. Opening Balance wajib diisi']"
+                      :error-messages="errors.no_invoice"
+                    />
+                  </VCol>
+
+                  <VCol cols="12">
                     <VAutocomplete
                       v-model="form.klien_ar_id"
                       label="Klien AR"
@@ -547,10 +559,11 @@ const errorMessage = ref('')
 const saving = ref(false)
 
 const errors = reactive({
-  klien_ar_id: [], tanggal: [], saldo_awal: [], periode_awal: [], periode_akhir: [], keterangan: [], details: [],
+  no_invoice: [], klien_ar_id: [], tanggal: [], saldo_awal: [], periode_awal: [], periode_akhir: [], keterangan: [], details: [],
 })
 
 const form = reactive({
+  no_invoice: '',
   klien_ar_id: null,
   tanggal: new Date().toISOString().slice(0, 10),
   saldo_awal: null,
@@ -643,6 +656,7 @@ const periodLabel = computed(() => {
 })
 
 const checklistItems = computed(() => [
+  { label: 'No. Opening Balance', done: !!form.no_invoice },
   { label: 'Klien AR', done: !!form.klien_ar_id },
   { label: 'Tanggal', done: !!form.tanggal },
   { label: 'Periode', done: !!form.periode_awal && !!form.periode_akhir },
@@ -665,6 +679,7 @@ async function loadOpeningBalance() {
     }
 
     Object.assign(form, {
+      no_invoice: data.no_invoice ?? '',
       klien_ar_id: data.klien_ar_id ?? null,
       tanggal: data.tanggal_invoice ?? new Date().toISOString().slice(0, 10),
       saldo_awal: data.subtotal ?? null,
