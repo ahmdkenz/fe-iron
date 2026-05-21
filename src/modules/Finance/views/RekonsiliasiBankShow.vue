@@ -87,7 +87,7 @@
       <VProgressLinear v-if="loading" indeterminate color="primary" />
       <BaseTable
         :headers="headers"
-        :items="filteredRows"
+        :items="paginatedRows"
         :total="filteredRows.length"
         :loading="loading"
         :per-page="perPage"
@@ -113,6 +113,14 @@
             {{ item.status_cocok }}
           </VChip>
         </template>
+        <!-- No Referensi dari transaksi bank -->
+        <template #item.no_referensi="{ item }">
+          <span v-if="item.no_referensi" class="text-caption font-weight-medium text-primary">
+            {{ item.no_referensi }}
+          </span>
+          <span v-else class="text-disabled">-</span>
+        </template>
+
         <template #item.pembayaran="{ item }">
           <div v-if="item.pembayaran" class="text-caption">
             <div class="font-weight-medium">{{ item.pembayaran.no_referensi || '-' }}</div>
@@ -389,7 +397,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useFormatter } from '@/composables/useFormatter'
 import api from '@/utils/axios'
@@ -444,6 +452,14 @@ const filteredRows = computed(() => {
   return report.details.filter(d => d.status_cocok === filterStatus.value)
 })
 
+const paginatedRows = computed(() => {
+  if (perPage.value === -1) return filteredRows.value
+  const start = (page.value - 1) * perPage.value
+  return filteredRows.value.slice(start, start + perPage.value)
+})
+
+watch(filterStatus, () => { page.value = 1 })
+
 function onTableOptions({ page: p, itemsPerPage }) {
   page.value    = p
   perPage.value = itemsPerPage
@@ -454,18 +470,19 @@ const statusColor = (s) => ({ MATCHED: 'success', POSSIBLE: 'warning', UNMATCHED
 const statusInvoiceColor = (s) => ({ LUNAS: 'success', SEBAGIAN: 'warning', TERKIRIM: 'info', DRAFT: 'grey' }[s] ?? 'grey')
 
 const headers = [
-  { title: 'No',             key: 'no',          sortable: false, width: '50px' },
-  { title: 'Tanggal',        key: 'tanggal',     sortable: false, width: '110px' },
-  { title: 'Keterangan',     key: 'keterangan',  sortable: false },
-  { title: 'Debit',          key: 'debit',       sortable: false, align: 'end' },
-  { title: 'Kredit',         key: 'kredit',      sortable: false, align: 'end' },
-  { title: 'Saldo',          key: 'saldo',       sortable: false, align: 'end' },
-  { title: 'Status',         key: 'status_cocok',sortable: false, width: '110px' },
-  { title: 'Cocok Dengan',   key: 'pembayaran',  sortable: false },
-  { title: 'Selisih',        key: 'selisih_bank',sortable: false, width: '90px', align: 'center' },
-  { title: 'Dicocokkan Oleh',key: 'matched_by',  sortable: false, width: '130px' },
-  { title: 'Kelebihan',      key: 'kelebihan',   sortable: false, width: '120px' },
-  { title: 'Aksi',           key: 'aksi',        sortable: false, width: '160px' },
+  { title: 'No',             key: 'no',            sortable: false, width: '50px' },
+  { title: 'Tanggal',        key: 'tanggal',       sortable: false, width: '110px' },
+  { title: 'Keterangan',     key: 'keterangan',    sortable: false },
+  { title: 'No Ref Bank',    key: 'no_referensi',  sortable: false, width: '140px' },
+  { title: 'Debit',          key: 'debit',         sortable: false, align: 'end' },
+  { title: 'Kredit',         key: 'kredit',        sortable: false, align: 'end' },
+  { title: 'Saldo',          key: 'saldo',         sortable: false, align: 'end' },
+  { title: 'Status',         key: 'status_cocok',  sortable: false, width: '110px' },
+  { title: 'Cocok Dengan',   key: 'pembayaran',    sortable: false },
+  { title: 'Selisih',        key: 'selisih_bank',  sortable: false, width: '90px', align: 'center' },
+  { title: 'Dicocokkan Oleh',key: 'matched_by',    sortable: false, width: '130px' },
+  { title: 'Kelebihan',      key: 'kelebihan',     sortable: false, width: '120px' },
+  { title: 'Aksi',           key: 'aksi',          sortable: false, width: '160px' },
 ]
 
 async function fetchDetail() {

@@ -50,11 +50,26 @@
             :rules="[
               v => !!v || 'Jumlah wajib diisi',
               v => v > 0 || 'Jumlah harus lebih dari 0',
-              v => v <= sisaTagihan || `Jumlah melebihi sisa tagihan (${formatCurrency(sisaTagihan)})`,
             ]"
             :error-messages="errors.jumlah_pembayaran"
             prefix="Rp"
           />
+        </VCol>
+
+        <!-- Warning kelebihan bayar -->
+        <VCol
+          v-if="isKelebihan"
+          cols="12"
+        >
+          <VAlert
+            type="warning"
+            variant="tonal"
+            density="compact"
+          >
+            Kelebihan bayar sebesar
+            <strong>{{ formatCurrency(form.jumlah_pembayaran - sisaTagihan) }}</strong>
+            akan dicatat dan dapat dialokasikan ke invoice lain melalui Rekonsiliasi Bank.
+          </VAlert>
         </VCol>
 
         <!-- Metode Pembayaran -->
@@ -114,7 +129,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch } from 'vue'
+import { ref, reactive, watch, computed } from 'vue'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useFormatter } from '@/composables/useFormatter.js'
 import api from '@/utils/axios.js'
@@ -128,6 +143,8 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue', 'saved'])
 
 const { formatCurrency } = useFormatter()
+
+const isKelebihan = computed(() => form.jumlah_pembayaran > props.sisaTagihan)
 const { showSuccess, showError, showLoading, closeAlert } = useSweetAlert()
 const saving = ref(false)
 
