@@ -347,6 +347,7 @@
             <thead>
               <tr>
                 <th>No</th>
+                <th>Kode Barang</th>
                 <th>Nama Barang / Jasa</th>
                 <th class="text-right">
                   Qty
@@ -367,15 +368,10 @@
                 :key="j"
               >
                 <td>{{ j + 1 }}</td>
-                <td>
-                  <div>{{ item.nama_barang }}</div>
-                  <div
-                    v-if="item.barang?.kode_barang"
-                    class="text-caption text-medium-emphasis"
-                  >
-                    {{ item.barang.kode_barang }}
-                  </div>
+                <td class="text-medium-emphasis">
+                  {{ item.barang?.kode_barang || '-' }}
                 </td>
+                <td>{{ item.nama_barang }}</td>
                 <td class="text-right">
                   {{ item.qty }}
                 </td>
@@ -394,7 +390,7 @@
             <tfoot>
               <tr class="ob-items-total-row">
                 <td
-                  colspan="5"
+                  colspan="6"
                   class="text-right font-weight-bold text-caption"
                 >
                   Total
@@ -481,6 +477,7 @@ const createRow = () => ({
 
 const createItem = () => ({
   barang_id: null,
+  kode_barang: '',
   nama_barang: '',
   qty: 1,
   satuan: 'pcs',

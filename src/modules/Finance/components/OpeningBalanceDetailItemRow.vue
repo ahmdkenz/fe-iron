@@ -1,14 +1,30 @@
 <template>
   <div class="ob-item-row">
     <VRow dense align="center">
-      <!-- Baris 1: Barang + Nama Barang -->
+      <!-- Baris 1: Kode Barang + Barang -->
       <VCol
         cols="12"
-        sm="5"
+        sm="3"
+      >
+        <VTextField
+          :model-value="localItem.kode_barang"
+          label="Kode Barang"
+          density="compact"
+          variant="outlined"
+          readonly
+          hide-details
+          placeholder="-"
+          :bg-color="localItem.kode_barang ? undefined : 'surface'"
+        />
+      </VCol>
+
+      <VCol
+        cols="12"
+        sm="7"
       >
         <VAutocomplete
           :model-value="localItem.barang_id"
-          label="Barang (Opsional)"
+          label="Barang / Jasa"
           density="compact"
           variant="outlined"
           :items="barangList"
@@ -27,21 +43,6 @@
             />
           </template>
         </VAutocomplete>
-      </VCol>
-
-      <VCol
-        cols="12"
-        sm="5"
-      >
-        <VTextField
-          :model-value="localItem.nama_barang"
-          label="Nama Barang / Jasa"
-          density="compact"
-          variant="outlined"
-          :rules="[v => !!v || 'Nama barang wajib diisi']"
-          hide-details="auto"
-          @update:model-value="v => updateField('nama_barang', v)"
-        />
       </VCol>
 
       <VCol
@@ -151,6 +152,7 @@ import { reactive, watch } from 'vue'
 
 const createDefault = () => ({
   barang_id: null,
+  kode_barang: '',
   nama_barang: '',
   qty: 1,
   satuan: 'pcs',
@@ -164,6 +166,7 @@ const props = defineProps({
     type: Object,
     default: () => ({
       barang_id: null,
+      kode_barang: '',
       nama_barang: '',
       qty: 1,
       satuan: 'pcs',
@@ -190,7 +193,12 @@ const localItem = reactive(createDefault())
 // Gunakan immediate:true agar sync terjadi saat mount tanpa perlu memanggil fungsi manual
 watch(
   () => props.item,
-  val => { Object.assign(localItem, createDefault(), val ?? {}) },
+  val => {
+    Object.assign(localItem, createDefault(), val ?? {})
+    if (!localItem.kode_barang && val?.barang?.kode_barang) {
+      localItem.kode_barang = val.barang.kode_barang
+    }
+  },
   { immediate: true },
 )
 
@@ -212,8 +220,11 @@ function onBarangChange(id) {
   localItem.barang_id = id ?? null
   const found = props.barangList.find(b => b.id === id)
   if (found) {
+    localItem.kode_barang = found.kode_barang || ''
     localItem.nama_barang = found.nama_barang
     if (found.satuan) localItem.satuan = found.satuan
+  } else {
+    localItem.kode_barang = ''
   }
   recalculate()
 }
