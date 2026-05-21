@@ -90,11 +90,8 @@
                     label="No. Invoice"
                     density="compact"
                     variant="outlined"
-                    readonly
-                    :hint="isEditing ? '' : 'Otomatis terisi setelah klien dipilih'"
-                    :persistent-hint="!isEditing"
-                    :loading="!isEditing && noInvoiceLoading"
                     prepend-inner-icon="ri-hashtag"
+                    :rules="[v => !!v || 'No. Invoice wajib diisi']"
                   />
                 </VCol>
                 <VCol
@@ -109,7 +106,6 @@
                     type="date"
                     prepend-inner-icon="ri-calendar-line"
                     :rules="[v => !!v || 'Tanggal wajib diisi']"
-                    @update:model-value="onTanggalChange"
                   />
                 </VCol>
                 <VCol
@@ -529,7 +525,6 @@ const errorMessage     = ref('')
 const itemsError       = ref('')
 const loadingData      = ref(!!id)
 const invoice          = ref(null)
-const noInvoiceLoading = ref(false)
 const carryoverLoading = ref(false)
 const selectedKlien    = ref(null)
 
@@ -573,36 +568,15 @@ const totalTagihan = computed(() =>
   subtotal.value + (form.tagihan_periode_sebelumnya ?? 0),
 )
 
-function onTanggalChange() {
-  if (!isEditing.value) refreshNoInvoice()
-}
-
 async function onKlienChange(klienId) {
   if (isEditing.value) return
 
   selectedKlien.value = klienList.value.find(k => k.id === klienId) ?? null
-  form.no_invoice = ''
   form.tagihan_periode_sebelumnya = 0
 
   if (!klienId) return
 
-  await Promise.all([refreshNoInvoice(), loadCarryover(klienId)])
-}
-
-async function refreshNoInvoice() {
-  if (!form.klien_ar_id || !form.tanggal_invoice) return
-  noInvoiceLoading.value = true
-  try {
-    const { data } = await api.get('/finance/invoices/preview-no', {
-      params: { klien_ar_id: form.klien_ar_id, tanggal: form.tanggal_invoice },
-    })
-
-    form.no_invoice = data.data?.no_invoice ?? ''
-  } catch {
-    form.no_invoice = ''
-  } finally {
-    noInvoiceLoading.value = false
-  }
+  await loadCarryover(klienId)
 }
 
 async function loadCarryover(klienId) {
