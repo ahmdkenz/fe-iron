@@ -247,18 +247,6 @@
         <template #item.klien_ar="{ item }">
           {{ item.klien_ar?.nama_klien ?? '-' }}
         </template>
-        <template #item.perusahaan="{ item }">
-          <VChip
-            v-if="item.perusahaan"
-            color="secondary"
-            size="small"
-            variant="tonal"
-            label
-          >
-            {{ item.perusahaan.nama_singkatan_perusahaan }}
-          </VChip>
-          <span v-else>-</span>
-        </template>
         <template #item.tanggal_invoice="{ item }">
           {{ formatDate(item.tanggal_invoice) }}
         </template>
@@ -601,7 +589,6 @@ const headers = [
   { title: 'No', key: 'no', sortable: false, width: '60px' },
   { title: 'No Opening Balance', key: 'no_invoice', sortable: false },
   { title: 'Klien', key: 'klien_ar', sortable: false },
-  { title: 'Entitas',    key: 'perusahaan', sortable: false },
   { title: 'Tanggal', key: 'tanggal_invoice', sortable: false },
   { title: 'Periode', key: 'periode', sortable: false },
   { title: 'Saldo Awal', key: 'total_tagihan', sortable: false },

@@ -150,12 +150,6 @@
           <div class="font-weight-medium">{{ item.nama_klien }}</div>
           <div class="text-caption text-medium-emphasis">{{ item.kode_klien }}</div>
         </template>
-        <template #item.perusahaan="{ item }">
-          <VChip v-if="item.perusahaan" color="secondary" size="small" variant="tonal" label>
-            {{ item.perusahaan }}
-          </VChip>
-          <span v-else>-</span>
-        </template>
         <template #item.saldo_awal="{ item }">
           {{ formatCurrency(item.saldo_awal) }}
         </template>
@@ -219,7 +213,6 @@ function onTableOptions({ page: p, itemsPerPage }) {
 const headers = [
   { title: 'No',           key: 'no',            sortable: false, width: '50px' },
   { title: 'Klien',        key: 'nama_klien',    sortable: false },
-  { title: 'Entitas',      key: 'perusahaan',    sortable: false },
   { title: 'Saldo Awal',   key: 'saldo_awal',    sortable: false, align: 'end' },
   { title: 'Invoice Masuk',key: 'invoice_masuk', sortable: false, align: 'end' },
   { title: 'Pembayaran',   key: 'pembayaran',    sortable: false, align: 'end' },

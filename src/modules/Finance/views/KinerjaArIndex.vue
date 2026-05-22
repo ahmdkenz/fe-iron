@@ -127,12 +127,6 @@
         <template #item.nama_karyawan="{ item }">
           <div class="font-weight-medium">{{ item.nama_karyawan }}</div>
         </template>
-        <template #item.perusahaan="{ item }">
-          <VChip v-if="item.perusahaan" color="secondary" size="small" variant="tonal" label>
-            {{ item.perusahaan }}
-          </VChip>
-          <span v-else>-</span>
-        </template>
         <template #item.total_tagihan="{ item }">
           {{ formatCurrency(item.total_tagihan) }}
         </template>
@@ -198,7 +192,6 @@ function onTableOptions({ page: p, itemsPerPage }) {
 const headers = [
   { title: 'No',             key: 'no',               sortable: false, width: '50px' },
   { title: 'AR Officer',     key: 'nama_karyawan',    sortable: false },
-  { title: 'Entitas',        key: 'perusahaan',       sortable: false },
   { title: 'Klien',          key: 'jumlah_klien',     sortable: false, align: 'center' },
   { title: 'Invoice',        key: 'jumlah_invoice',   sortable: false, align: 'center' },
   { title: 'Total Tagihan',  key: 'total_tagihan',    sortable: false, align: 'end' },

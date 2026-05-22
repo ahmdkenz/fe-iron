@@ -335,13 +335,13 @@ function buildAgingSection(rd) {
   return {
     title: 'AGING REPORT — Laporan Umur Piutang',
     meta:  `Per Tanggal: ${fmtDate(agingFilter.as_of_date || filters.sampai)}  ·  Total Klien: ${rows.length}`,
-    headers: ['No', 'Kode Klien', 'Nama Klien', 'Entitas', 'Belum Jatuh Tempo', '1–30 Hari', '31–60 Hari', '61–90 Hari', '> 90 Hari', 'Total'],
-    aligns:  ['c',  '',           '',            '',            'r',                  'r',          'r',           'r',           'r',         'r'],
-    rows: rows.map((r, i) => [i+1, r.kode_klien??'', r.nama_klien??'', r.perusahaan??'-',
+    headers: ['No', 'Kode Klien', 'Nama Klien', 'Belum Jatuh Tempo', '1–30 Hari', '31–60 Hari', '61–90 Hari', '> 90 Hari', 'Total'],
+    aligns:  ['c',  '',           '',            'r',                  'r',          'r',           'r',           'r',         'r'],
+    rows: rows.map((r, i) => [i+1, r.kode_klien??'', r.nama_klien??'',
       n(r.current), n(r.hari_1_30), n(r.hari_31_60), n(r.hari_61_90), n(r.hari_91_plus), n(r.total)]),
-    totalRow: ['', '', 'TOTAL', '', n(summary.current), n(summary.hari_1_30), n(summary.hari_31_60), n(summary.hari_61_90), n(summary.hari_91_plus),
+    totalRow: ['', '', 'TOTAL', n(summary.current), n(summary.hari_1_30), n(summary.hari_31_60), n(summary.hari_61_90), n(summary.hari_91_plus),
       rows.reduce((s, r) => s + n(r.total), 0)],
-    currencyCols: [4, 5, 6, 7, 8, 9],
+    currencyCols: [3, 4, 5, 6, 7, 8],
   }
 }
 
@@ -352,16 +352,16 @@ function buildRekapKlienSection(rows) {
   return {
     title: 'REKAP PIUTANG PER KLIEN',
     meta:  `Periode: ${bulanLabel} ${rekapKlienFilter.tahun ?? ''}  ·  Total Klien: ${rows.length}`,
-    headers: ['No', 'Kode Klien', 'Nama Klien', 'Entitas', 'Jml Invoice', 'Total Tagihan', 'Total Terbayar', 'Sisa Piutang'],
-    aligns:  ['c',  '',           '',            '',            'c',           'r',              'r',               'r'],
-    rows: rows.map((r, i) => [i+1, r.kode_klien??'', r.nama_klien??'', r.perusahaan??'-',
+    headers: ['No', 'Kode Klien', 'Nama Klien', 'Jml Invoice', 'Total Tagihan', 'Total Terbayar', 'Sisa Piutang'],
+    aligns:  ['c',  '',           '',            'c',           'r',              'r',               'r'],
+    rows: rows.map((r, i) => [i+1, r.kode_klien??'', r.nama_klien??'',
       r.total_invoice??0, n(r.total_tagihan), n(r.total_pembayaran), n(r.sisa_tagihan)]),
-    totalRow: ['', '', 'TOTAL', '', '',
+    totalRow: ['', '', 'TOTAL', '',
       rows.reduce((s, r) => s + n(r.total_tagihan), 0),
       rows.reduce((s, r) => s + n(r.total_pembayaran), 0),
       rows.reduce((s, r) => s + n(r.sisa_tagihan), 0)],
-    numericCols: [4],
-    currencyCols: [5, 6, 7],
+    numericCols: [3],
+    currencyCols: [4, 5, 6],
   }
 }
 
@@ -369,12 +369,12 @@ function buildRiwayatPembayaranSection(rows) {
   return {
     title: 'RIWAYAT PEMBAYARAN AR',
     meta:  `Periode: ${fmtDate(filters.dari)} s/d ${fmtDate(filters.sampai)}  ·  Total Transaksi: ${rows.length}`,
-    headers: ['No', 'Tanggal', 'No Invoice', 'Klien', 'Entitas', 'Jumlah (Rp)', 'Metode', 'No Referensi', 'Dicatat Oleh'],
-    aligns:  ['c',  'c',       '',            '',       '',            'r',           'c',       '',              ''],
+    headers: ['No', 'Tanggal', 'No Invoice', 'Klien', 'Jumlah (Rp)', 'Metode', 'No Referensi', 'Dicatat Oleh'],
+    aligns:  ['c',  'c',       '',            '',       'r',           'c',       '',              ''],
     rows: rows.map((r, i) => [i+1, fmtDate(r.tanggal_pembayaran), r.no_invoice??'', r.klien??'',
-      r.perusahaan??'-', n(r.jumlah_pembayaran), r.metode_pembayaran??'', r.no_referensi??'-', r.created_by_name??'']),
-    totalRow: ['', '', '', 'TOTAL', '', rows.reduce((s, r) => s + n(r.jumlah_pembayaran), 0), '', '', ''],
-    currencyCols: [5],
+      n(r.jumlah_pembayaran), r.metode_pembayaran??'', r.no_referensi??'-', r.created_by_name??'']),
+    totalRow: ['', '', '', 'TOTAL', rows.reduce((s, r) => s + n(r.jumlah_pembayaran), 0), '', '', ''],
+    currencyCols: [4],
   }
 }
 
@@ -384,12 +384,12 @@ function buildMutasiPiutangSection(rd) {
   return {
     title: 'MUTASI PIUTANG',
     meta:  `Periode: ${fmtDate(filters.dari)} s/d ${fmtDate(filters.sampai)}  ·  Total Klien: ${rows.length}`,
-    headers: ['No', 'Kode Klien', 'Nama Klien', 'Entitas', 'Saldo Awal (Rp)', 'Invoice Masuk (Rp)', 'Pembayaran (Rp)', 'Saldo Akhir (Rp)'],
-    aligns:  ['c',  '',           '',            '',            'r',               'r',                   'r',               'r'],
-    rows: rows.map((r, i) => [i+1, r.kode_klien??'', r.nama_klien??'', r.perusahaan??'-',
+    headers: ['No', 'Kode Klien', 'Nama Klien', 'Saldo Awal (Rp)', 'Invoice Masuk (Rp)', 'Pembayaran (Rp)', 'Saldo Akhir (Rp)'],
+    aligns:  ['c',  '',           '',            'r',               'r',                   'r',               'r'],
+    rows: rows.map((r, i) => [i+1, r.kode_klien??'', r.nama_klien??'',
       n(r.saldo_awal), n(r.invoice_masuk), n(r.pembayaran), n(r.saldo_akhir)]),
-    totalRow: ['', '', 'TOTAL', '', n(summary.saldo_awal), n(summary.invoice_masuk), n(summary.pembayaran), n(summary.saldo_akhir)],
-    currencyCols: [4, 5, 6, 7],
+    totalRow: ['', '', 'TOTAL', n(summary.saldo_awal), n(summary.invoice_masuk), n(summary.pembayaran), n(summary.saldo_akhir)],
+    currencyCols: [3, 4, 5, 6],
   }
 }
 
@@ -406,12 +406,12 @@ function buildJatuhTempoSection(rd) {
   return {
     title: 'TAGIHAN JATUH TEMPO',
     meta:  `Filter: ${ftLabel[jatuhTempoFilter.filter_type]}  ·  Total Invoice: ${rows.length}  ·  Total Sisa: Rp ${n(summary.total_sisa).toLocaleString('id-ID')}`,
-    headers: ['No', 'No Invoice', 'Kode Klien', 'Nama Klien', 'Entitas', 'PIC AR', 'Jatuh Tempo', 'Status Hari', 'Status', 'Sisa Tagihan (Rp)'],
-    aligns:  ['c',  '',           '',            '',            '',            '',        'c',            'c',           'c',      'r'],
+    headers: ['No', 'No Invoice', 'Kode Klien', 'Nama Klien', 'PIC AR', 'Jatuh Tempo', 'Status Hari', 'Status', 'Sisa Tagihan (Rp)'],
+    aligns:  ['c',  '',           '',            '',            '',        'c',            'c',           'c',      'r'],
     rows: rows.map((r, i) => [i+1, r.no_invoice??'', r.kode_klien??'', r.nama_klien??'',
-      r.perusahaan??'-', r.pic_ar??'-', fmtDate(r.tanggal_jatuh_tempo), selisihLabel(r.selisih_hari), r.status??'', n(r.sisa_tagihan)]),
+      r.pic_ar??'-', fmtDate(r.tanggal_jatuh_tempo), selisihLabel(r.selisih_hari), r.status??'', n(r.sisa_tagihan)]),
     totalRow: null,
-    currencyCols: [9],
+    currencyCols: [8],
   }
 }
 
@@ -435,17 +435,17 @@ function buildKinerjaArSection(rd) {
   return {
     title: 'KINERJA AR PER PIC',
     meta:  `Periode: ${fmtDate(filters.dari)} s/d ${fmtDate(filters.sampai)}  ·  Jumlah AR Officer: ${rows.length}  ·  Collection Rate: ${summary.collection_rate ?? 0}%`,
-    headers: ['No', 'AR Officer', 'Entitas', 'Jml Klien', 'Jml Invoice', 'Total Tagihan (Rp)', 'Terkumpul (Rp)', 'Sisa (Rp)', 'Collection Rate'],
-    aligns:  ['c',  '',           '',            'c',          'c',           'r',                  'r',               'r',          'c'],
-    rows: rows.map((r, i) => [i+1, r.nama_karyawan??'', r.perusahaan??'-',
+    headers: ['No', 'AR Officer', 'Jml Klien', 'Jml Invoice', 'Total Tagihan (Rp)', 'Terkumpul (Rp)', 'Sisa (Rp)', 'Collection Rate'],
+    aligns:  ['c',  '',           'c',          'c',           'r',                  'r',               'r',          'c'],
+    rows: rows.map((r, i) => [i+1, r.nama_karyawan??'',
       r.jumlah_klien??0, r.jumlah_invoice??0,
       n(r.total_tagihan), n(r.total_terkumpul), n(r.total_sisa), `${r.collection_rate ?? 0}%`]),
-    totalRow: ['', 'TOTAL', '', '', '',
+    totalRow: ['', 'TOTAL', '', '',
       n(summary.total_tagihan), n(summary.total_terkumpul),
       n(summary.total_tagihan) - n(summary.total_terkumpul),
       `${summary.collection_rate ?? 0}%`],
-    numericCols: [3, 4],
-    currencyCols: [5, 6, 7],
+    numericCols: [2, 3],
+    currencyCols: [4, 5, 6],
   }
 }
 

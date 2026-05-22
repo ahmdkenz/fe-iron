@@ -201,7 +201,6 @@ const headers = [
   { title: 'No. Referensi',      key: 'no_referensi',        sortable: false },
   { title: 'PIC / Diinput oleh', key: 'pic_nama',            sortable: false },
   { title: 'No Invoice / Klien', key: 'no_invoice',          sortable: false },
-  { title: 'Entitas',            key: 'perusahaan',          sortable: false },
   { title: 'Tgl Bayar',          key: 'tanggal_pembayaran',  sortable: false },
   { title: 'Jumlah',             key: 'jumlah_pembayaran',   sortable: false },
   { title: 'Metode',             key: 'metode_pembayaran',   sortable: false },

@@ -138,12 +138,6 @@
             <div class="text-caption text-medium-emphasis">{{ item.kode_klien }}</div>
           </div>
         </template>
-        <template #item.perusahaan="{ item }">
-          <VChip v-if="item.perusahaan" color="secondary" size="small" variant="tonal" label>
-            {{ item.perusahaan }}
-          </VChip>
-          <span v-else>-</span>
-        </template>
         <template #item.total_tagihan="{ item }">
           {{ formatCurrency(item.total_tagihan) }}
         </template>
@@ -193,7 +187,6 @@ const filters = reactive({ periode_bulan: null, periode_tahun: null })
 const headers = [
   { title: 'No',         key: 'no',               sortable: false, width: '50px' },
   { title: 'Klien',      key: 'nama_klien',        sortable: false },
-  { title: 'Entitas',    key: 'perusahaan',        sortable: false },
   { title: 'Jml Invoice',key: 'total_invoice',     sortable: false, align: 'center' },
   { title: 'Total Tagihan',   key: 'total_tagihan',   sortable: false },
   { title: 'Total Terbayar',  key: 'total_pembayaran',sortable: false },

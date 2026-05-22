@@ -101,12 +101,6 @@
             {{ item.no_invoice }}
           </RouterLink>
         </template>
-        <template #item.perusahaan="{ item }">
-          <VChip v-if="item.perusahaan" color="secondary" size="small" variant="tonal" label>
-            {{ item.perusahaan }}
-          </VChip>
-          <span v-else>-</span>
-        </template>
         <template #item.tanggal_pembayaran="{ item }">
           {{ formatDate(item.tanggal_pembayaran) }}
         </template>
@@ -152,7 +146,6 @@ const headers = [
   { title: 'Tanggal',     key: 'tanggal_pembayaran', sortable: false },
   { title: 'No Invoice',  key: 'no_invoice',         sortable: false },
   { title: 'Klien',       key: 'klien',              sortable: false },
-  { title: 'Entitas',     key: 'perusahaan',         sortable: false },
   { title: 'Jumlah',      key: 'jumlah_pembayaran',  sortable: false },
   { title: 'Metode',      key: 'metode_pembayaran',  sortable: false },
   { title: 'No Referensi',key: 'no_referensi',       sortable: false },
