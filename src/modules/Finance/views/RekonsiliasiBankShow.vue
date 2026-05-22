@@ -138,7 +138,7 @@
               size="x-small"
               variant="tonal"
             >
-              {{ item.selisih_bank === 0 ? 'Pas' : formatCurrency(Math.abs(item.selisih_bank)) }}
+              {{ formatCurrency(Math.abs(item.selisih_bank)) }}
             </VChip>
           </template>
           <span v-else class="text-disabled">-</span>

@@ -91,17 +91,27 @@
         </VCol>
 
         <!-- No Referensi -->
-        <VCol
-          cols="12"
-          md="6"
-        >
+        <VCol cols="12" md="6">
           <VTextField
             v-model="form.no_referensi"
             label="No. Referensi"
             density="compact"
             variant="outlined"
             :error-messages="errors.no_referensi"
+            :loading="checkingRef"
+            @blur="cekDuplikatReferensi"
           />
+        </VCol>
+
+        <!-- Warning duplikat referensi -->
+        <VCol v-if="duplikatInfo" cols="12">
+          <VAlert type="warning" variant="tonal" density="compact">
+            <strong>Peringatan:</strong> Nomor referensi ini sudah digunakan oleh
+            <strong>{{ duplikatInfo.pic ?? 'PIC tidak diketahui' }}</strong>
+            pada <strong>{{ duplikatInfo.tanggal_pembayaran }}</strong>
+            untuk invoice <strong>{{ duplikatInfo.no_invoice }}</strong>
+            sebesar <strong>{{ formatCurrency(duplikatInfo.jumlah_pembayaran) }}</strong>.
+          </VAlert>
         </VCol>
 
         <!-- Keterangan -->
@@ -133,6 +143,9 @@ import { ref, reactive, watch, computed } from 'vue'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useFormatter } from '@/composables/useFormatter.js'
 import api from '@/utils/axios.js'
+
+const checkingRef  = ref(false)
+const duplikatInfo = ref(null)
 
 const props = defineProps({
   modelValue: Boolean,
@@ -176,9 +189,26 @@ watch(() => props.modelValue, val => {
   if (val) {
     Object.keys(errors).forEach(k => (errors[k] = []))
     errorMessage.value = ''
+    duplikatInfo.value = null
     Object.assign(form, defaultForm())
   }
 })
+
+async function cekDuplikatReferensi() {
+  const noRef = form.no_referensi?.trim()
+  duplikatInfo.value = null
+  if (!noRef) return
+
+  checkingRef.value = true
+  try {
+    const res = await api.get('/finance/pembayaran/cek-referensi', { params: { no_referensi: noRef } })
+    duplikatInfo.value = res.data?.data ?? null
+  } catch {
+    // abaikan error cek referensi — validasi tetap dilakukan saat submit
+  } finally {
+    checkingRef.value = false
+  }
+}
 
 async function handleSubmit() {
   const { valid } = await formRef.value.validate()

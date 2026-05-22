@@ -90,13 +90,19 @@ export default [
     title: 'Rekonsiliasi Bank',
     to: { name: 'finance-rekonsiliasi-bank' },
     icon: { icon: 'ri-bank-line' },
-    roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR'],
+    roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR', 'AR'],
   },
   {
     title: 'Rekening Koran',
     to: { name: 'finance-rekening-koran' },
     icon: { icon: 'ri-file-paper-2-line' },
     roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR'],
+  },
+  {
+    title: 'Jurnal per PIC',
+    to: { name: 'finance-jurnal-pic' },
+    icon: { icon: 'ri-book-2-line' },
+    roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR', 'AR'],
   },
   { heading: 'LAPORAN' },
   {
