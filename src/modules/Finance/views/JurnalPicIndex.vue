@@ -115,7 +115,6 @@
 
         <template #item.pic_nama="{ item }">
           <div class="font-weight-medium">{{ item.pic_nama ?? '—' }}</div>
-          <div class="text-caption text-medium-emphasis">{{ item.input_oleh }}</div>
         </template>
 
         <template #item.no_invoice="{ item }">

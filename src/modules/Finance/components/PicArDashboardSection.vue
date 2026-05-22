@@ -65,6 +65,44 @@
       </VCol>
     </VRow>
 
+    <!-- KPI Cards -->
+    <VRow class="mb-4">
+      <VCol
+        v-for="kpi in kpiCards"
+        :key="kpi.title"
+        cols="12"
+        sm="6"
+        lg="3"
+      >
+        <VCard
+          elevation="2"
+          class="rounded-xl"
+        >
+          <VCardText class="bg-surface">
+            <div class="d-flex align-center justify-space-between mb-3">
+              <span class="text-caption text-uppercase font-weight-bold text-medium-emphasis">
+                {{ kpi.title }}
+              </span>
+              <VIcon
+                :icon="kpi.icon"
+                size="18"
+                :color="kpi.color"
+              />
+            </div>
+            <div
+              class="text-h5 font-weight-bold mb-1"
+              :class="`text-${kpi.color}`"
+            >
+              {{ kpi.value }}
+            </div>
+            <div class="text-caption text-medium-emphasis">
+              {{ kpi.caption }}
+            </div>
+          </VCardText>
+        </VCard>
+      </VCol>
+    </VRow>
+
     <VRow>
       <VCol
         cols="12"
@@ -129,6 +167,36 @@
             >
               Belum ada invoice untuk ditampilkan.
             </div>
+          </VCardText>
+        </VCard>
+      </VCol>
+    </VRow>
+
+    <!-- Aging Overview Bar Chart -->
+    <VRow class="mb-4">
+      <VCol cols="12">
+        <VCard
+          elevation="2"
+          class="rounded-xl"
+        >
+          <VCardItem class="pb-0">
+            <VCardTitle class="d-flex align-center text-h6 font-weight-bold">
+              <VIcon
+                icon="ri-time-line"
+                class="me-2 text-warning"
+              />
+              Aging Piutang
+            </VCardTitle>
+            <VCardSubtitle>Distribusi outstanding berdasarkan umur (hari)</VCardSubtitle>
+          </VCardItem>
+          <VCardText class="pt-4">
+            <DeferredApexChart
+              type="bar"
+              height="200"
+              :delay="400"
+              :options="agingChartOptions"
+              :series="agingChartSeries"
+            />
           </VCardText>
         </VCard>
       </VCol>
@@ -251,9 +319,10 @@ const compactNumberFormatter = new Intl.NumberFormat('id-ID', {
   maximumFractionDigits: 1,
 })
 
-const loading = ref(false)
-const error = ref('')
-const dashboard = shallowRef(createEmptyDashboard())
+const loading    = ref(false)
+const error      = ref('')
+const dashboard  = shallowRef(createEmptyDashboard())
+const kpi        = shallowRef(createEmptyKpi())
 
 const picArName = computed(
   () => dashboard.value.picAr?.nama
@@ -317,6 +386,109 @@ const summaryCards = computed(() => [
     textClass: 'text-error',
   },
 ])
+
+const kpiCards = computed(() => {
+  const collectionRate = kpi.value.collectionRate ?? 0
+  const dso            = kpi.value.dso ?? 0
+  const overduePerc    = kpi.value.overduePercentage ?? 0
+  const overdueCount   = kpi.value.overdueCount ?? 0
+
+  return [
+    {
+      title:   'DSO',
+      value:   loading.value ? '...' : `${dso} hari`,
+      caption: 'Rata-rata hari piutang beredar',
+      icon:    'ri-calendar-check-line',
+      color:   dso > 30 ? 'error' : dso > 15 ? 'warning' : 'success',
+    },
+    {
+      title:   'Collection Rate',
+      value:   loading.value ? '...' : `${collectionRate}%`,
+      caption: 'Persentase piutang yang sudah terkumpul',
+      icon:    'ri-percent-line',
+      color:   collectionRate >= 90 ? 'success' : collectionRate >= 70 ? 'warning' : 'error',
+    },
+    {
+      title:   'Invoice Overdue',
+      value:   loading.value ? '...' : `${overduePerc}%`,
+      caption: `${overdueCount} invoice belum lunas > 30 hari`,
+      icon:    'ri-alarm-warning-line',
+      color:   overduePerc > 20 ? 'error' : overduePerc > 10 ? 'warning' : 'success',
+    },
+    {
+      title:   'Sisa Piutang',
+      value:   loading.value ? '...' : formatCurrency(dashboard.value.summary?.totalSisa ?? 0),
+      caption: 'Total outstanding yang masih berjalan',
+      icon:    'ri-coins-line',
+      color:   'primary',
+    },
+  ]
+})
+
+const agingChartSeries = computed(() => {
+  const s = kpi.value.agingSummary
+  return [{
+    name: 'Sisa Piutang',
+    data: [
+      s.current      ?? 0,
+      s.hari_1_30    ?? 0,
+      s.hari_31_60   ?? 0,
+      s.hari_61_90   ?? 0,
+      s.hari_91_plus ?? 0,
+    ],
+  }]
+})
+
+const agingChartOptions = computed(() => {
+  const currentTheme = theme.current.value.colors
+
+  return {
+    chart: {
+      type: 'bar',
+      fontFamily: 'inherit',
+      toolbar: { show: false },
+    },
+    plotOptions: {
+      bar: {
+        horizontal: true,
+        borderRadius: 6,
+        dataLabels: { position: 'top' },
+      },
+    },
+    colors: [
+      currentTheme.success,
+      currentTheme.info,
+      currentTheme.warning,
+      currentTheme.error,
+      '#8B0000',
+    ],
+    fill: { type: 'solid' },
+    dataLabels: {
+      enabled: true,
+      formatter: val => formatCompactNumber(val),
+      style: { colors: [currentTheme['on-surface']] },
+      offsetX: 4,
+    },
+    xaxis: {
+      categories: ['Belum Jatuh Tempo', '1–30 Hari', '31–60 Hari', '61–90 Hari', '>90 Hari'],
+      labels: {
+        style: { colors: currentTheme['on-surface'] },
+        formatter: val => formatCompactNumber(val),
+      },
+    },
+    yaxis: {
+      labels: { style: { colors: currentTheme['on-surface'] } },
+    },
+    grid: {
+      borderColor: 'rgba(var(--v-theme-on-surface), 0.08)',
+    },
+    tooltip: {
+      theme: theme.global.name.value,
+      y: { formatter: value => formatCurrency(value) },
+    },
+    legend: { show: false },
+  }
+})
 
 const revenueChartSeries = computed(() => [
   {
@@ -454,16 +626,46 @@ const donutChartOptions = computed(() => {
 
 async function loadDashboard() {
   loading.value = true
-  error.value = ''
+  error.value   = ''
 
   try {
-    const { data } = await api.get('/finance/dashboard/pic-ar')
+    const [dashRes, kpiRes] = await Promise.all([
+      api.get('/finance/dashboard/pic-ar'),
+      api.get('/finance/dashboard/kpi'),
+    ])
 
-    dashboard.value = normalizeDashboard(data.data)
+    dashboard.value = normalizeDashboard(dashRes.data.data)
+    kpi.value       = normalizeKpi(kpiRes.data.data)
   } catch (err) {
     error.value = err.response?.data?.message ?? 'Gagal memuat dashboard AR'
   } finally {
     loading.value = false
+  }
+}
+
+function createEmptyKpi() {
+  return {
+    dso: 0,
+    collectionRate: 0,
+    overdueCount: 0,
+    overduePercentage: 0,
+    agingSummary: { current: 0, hari_1_30: 0, hari_31_60: 0, hari_61_90: 0, hari_91_plus: 0 },
+  }
+}
+
+function normalizeKpi(payload = {}) {
+  return {
+    dso:               Number(payload.dso ?? 0),
+    collectionRate:    Number(payload.collection_rate ?? 0),
+    overdueCount:      Number(payload.overdue_count ?? 0),
+    overduePercentage: Number(payload.overdue_percentage ?? 0),
+    agingSummary:      {
+      current:      Number(payload.aging_summary?.current ?? 0),
+      hari_1_30:    Number(payload.aging_summary?.hari_1_30 ?? 0),
+      hari_31_60:   Number(payload.aging_summary?.hari_31_60 ?? 0),
+      hari_61_90:   Number(payload.aging_summary?.hari_61_90 ?? 0),
+      hari_91_plus: Number(payload.aging_summary?.hari_91_plus ?? 0),
+    },
   }
 }
 

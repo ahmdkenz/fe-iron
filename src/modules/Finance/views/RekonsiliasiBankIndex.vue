@@ -160,6 +160,36 @@
       </VCard>
     </VDialog>
 
+    <!-- Dialog Konfirmasi Duplikat Upload -->
+    <VDialog v-model="conflictDialog" max-width="440" persistent>
+      <VCard>
+        <VCardTitle class="pa-4 text-warning">Rekening Koran Sudah Diupload</VCardTitle>
+        <VDivider />
+        <VCardText v-if="conflictData" class="pt-4">
+          <p>
+            File <strong>{{ conflictData.nama_file }}</strong> untuk
+            <strong>{{ form.bank_type }}</strong> periode
+            <strong>{{ conflictData.periode_awal }} – {{ conflictData.periode_akhir }}</strong>
+            sudah diupload sebelumnya oleh <strong>{{ conflictData.uploaded_by }}</strong>.
+          </p>
+          <p class="mt-2 text-body-2">
+            {{ conflictData.total_transaksi }} transaksi
+            ({{ conflictData.jumlah_matched }} matched,
+            {{ conflictData.jumlah_unmatched }} unmatched).
+          </p>
+          <VAlert type="warning" density="compact" variant="tonal" class="mt-3">
+            Jika diganti, semua hasil matching manual akan hilang permanen.
+          </VAlert>
+        </VCardText>
+        <VCardActions class="justify-end pa-4 gap-2">
+          <VBtn variant="text" @click="conflictDialog = false">Batal</VBtn>
+          <VBtn color="warning" :loading="uploading" @click="doUpload(true)">
+            Ganti dengan File Baru
+          </VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
+
     <!-- Dialog Konfirmasi Hapus -->
     <VDialog v-model="deleteDialog" max-width="380">
       <VCard>
@@ -197,10 +227,13 @@ const fileInput   = ref(null)
 
 const form = reactive({ bank_type: null, file: null })
 
-const deleteDialog       = ref(false)
-const deleteTarget       = ref(null)
-const deleting           = ref(false)
+const deleteDialog        = ref(false)
+const deleteTarget        = ref(null)
+const deleting            = ref(false)
 const downloadingTemplate = ref(false)
+
+const conflictDialog = ref(false)
+const conflictData   = ref(null)
 
 const bankOptions = [
   { label: 'BCA', value: 'BCA' },
@@ -260,18 +293,25 @@ function closeDialog() {
   if (fileInput.value) fileInput.value.value = ''
 }
 
-async function doUpload() {
+async function doUpload(force = false) {
   uploadError.value = ''
   uploading.value   = true
   try {
     const fd = new FormData()
     fd.append('bank_type', form.bank_type)
     fd.append('file', form.file)
+    if (force) fd.append('force', '1')
     await api.post('/finance/rekonsiliasi-bank/upload', fd)
     closeDialog()
+    conflictDialog.value = false
     fetchList()
   } catch (err) {
-    uploadError.value = err?.response?.data?.message ?? 'Upload gagal. Pastikan format file sesuai.'
+    if (err?.response?.status === 409) {
+      conflictData.value   = err.response.data?.errors?.existing ?? null
+      conflictDialog.value = true
+    } else {
+      uploadError.value = err?.response?.data?.message ?? 'Upload gagal. Pastikan format file sesuai.'
+    }
   } finally {
     uploading.value = false
   }

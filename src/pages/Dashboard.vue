@@ -2,55 +2,25 @@
   <PicArDashboardSection v-if="authStore.isArOnly" />
 
   <div v-else>
-    <!-- Modern Page Header with our custom 3D breadcrumb logic included in PageHeader if needed -->
     <PageHeader
       title="Overview Dashboard"
       subtitle="Ringkasan aktivitas bisnis dan finansial perusahaan"
     />
 
-    <!-- Top Statistical Cards -->
+    <VAlert
+      v-if="error"
+      type="error"
+      variant="tonal"
+      class="mb-4"
+    >
+      {{ error }}
+    </VAlert>
+
+    <!-- Summary Cards -->
     <VRow class="mb-4">
       <VCol
-        cols="12"
-        sm="6"
-        lg="3"
-      >
-        <VCard
-          elevation="2"
-          class="rounded-xl stat-card"
-        >
-          <VCardText class="d-flex align-center justify-space-between text-white bg-primary-gradient fill-height">
-            <div>
-              <div class="text-subtitle-2 text-uppercase font-weight-medium mb-1 opacity-80">
-                Total Pendapatan
-              </div>
-              <div class="text-h4 font-weight-bold">
-                Rp 4.25M
-              </div>
-              <div class="text-caption mt-2 d-flex align-center">
-                <VIcon
-                  icon="ri-arrow-up-line"
-                  size="14"
-                  class="me-1"
-                />
-                <span>+12.5% bulan ini</span>
-              </div>
-            </div>
-            <VAvatar
-              size="54"
-              color="rgba(255,255,255,0.2)"
-              class="rounded-lg"
-            >
-              <VIcon
-                icon="ri-funds-line"
-                size="30"
-              />
-            </VAvatar>
-          </VCardText>
-        </VCard>
-      </VCol>
-
-      <VCol
+        v-for="card in summaryCards"
+        :key="card.title"
         cols="12"
         sm="6"
         lg="3"
@@ -62,110 +32,23 @@
           <VCardText class="d-flex align-center justify-space-between fill-height bg-surface">
             <div>
               <div class="text-subtitle-2 text-medium-emphasis text-uppercase font-weight-medium mb-1">
-                Piutang AR (Unpaid)
+                {{ card.title }}
               </div>
-              <div class="text-h4 font-weight-bold text-error">
-                Rp 850Jt
-              </div>
-              <div class="text-caption mt-2 d-flex align-center text-error">
-                <VIcon
-                  icon="ri-arrow-up-line"
-                  size="14"
-                  class="me-1"
-                />
-                <span>+4.2% dari target</span>
+              <div
+                class="text-h4 font-weight-bold"
+                :class="card.textClass"
+              >
+                {{ card.value }}
               </div>
             </div>
             <VAvatar
-              size="54"
-              color="error"
+              :color="card.color"
               variant="tonal"
+              size="54"
               class="rounded-lg"
             >
               <VIcon
-                icon="ri-file-warning-line"
-                size="30"
-              />
-            </VAvatar>
-          </VCardText>
-        </VCard>
-      </VCol>
-
-      <VCol
-        cols="12"
-        sm="6"
-        lg="3"
-      >
-        <VCard
-          elevation="2"
-          class="rounded-xl stat-card"
-        >
-          <VCardText class="d-flex align-center justify-space-between fill-height bg-surface">
-            <div>
-              <div class="text-subtitle-2 text-medium-emphasis text-uppercase font-weight-medium mb-1">
-                Total Klien B2B
-              </div>
-              <div class="text-h4 font-weight-bold text-primary">
-                124
-              </div>
-              <div class="text-caption mt-2 d-flex align-center text-success">
-                <VIcon
-                  icon="ri-arrow-up-line"
-                  size="14"
-                  class="me-1"
-                />
-                <span>+8 klien baru</span>
-              </div>
-            </div>
-            <VAvatar
-              size="54"
-              color="info"
-              variant="tonal"
-              class="rounded-lg"
-            >
-              <VIcon
-                icon="ri-building-4-line"
-                size="30"
-              />
-            </VAvatar>
-          </VCardText>
-        </VCard>
-      </VCol>
-
-      <VCol
-        cols="12"
-        sm="6"
-        lg="3"
-      >
-        <VCard
-          elevation="2"
-          class="rounded-xl stat-card"
-        >
-          <VCardText class="d-flex align-center justify-space-between fill-height bg-surface">
-            <div>
-              <div class="text-subtitle-2 text-medium-emphasis text-uppercase font-weight-medium mb-1">
-                Resto Aktif
-              </div>
-              <div class="text-h4 font-weight-bold text-success">
-                48
-              </div>
-              <div class="text-caption mt-2 d-flex align-center text-success">
-                <VIcon
-                  icon="ri-check-line"
-                  size="14"
-                  class="me-1"
-                />
-                <span>100% beroperasi</span>
-              </div>
-            </div>
-            <VAvatar
-              size="54"
-              color="success"
-              variant="tonal"
-              class="rounded-lg"
-            >
-              <VIcon
-                icon="ri-store-2-line"
+                :icon="card.icon"
                 size="30"
               />
             </VAvatar>
@@ -192,7 +75,7 @@
               />
               Tren Invoicing & Pembayaran AR
             </VCardTitle>
-            <VCardSubtitle>Catatan 6 bulan terakhir</VCardSubtitle>
+            <VCardSubtitle>6 bulan terakhir (semua PIC)</VCardSubtitle>
           </VCardItem>
           <VCardText class="pt-4">
             <DeferredApexChart
@@ -222,6 +105,7 @@
           </VCardItem>
           <VCardText class="d-flex align-center justify-center pt-8">
             <DeferredApexChart
+              v-if="statusChartHasData"
               type="donut"
               width="100%"
               height="300"
@@ -229,12 +113,18 @@
               :options="donutChartOptions"
               :series="donutChartSeries"
             />
+            <div
+              v-else
+              class="text-center text-medium-emphasis py-16"
+            >
+              Belum ada data invoice.
+            </div>
           </VCardText>
         </VCard>
       </VCol>
     </VRow>
 
-    <VRow class="mb-4">
+    <VRow class="mb-4 mt-0">
       <VCol cols="12">
         <VCard
           elevation="2"
@@ -246,67 +136,39 @@
                 icon="ri-history-line"
                 class="me-2 text-primary"
               />
-              Aktivitas Invoicing Terkini
+              5 Invoice Terbaru
             </VCardTitle>
           </VCardItem>
           <VCardText class="px-0">
             <VTable class="text-no-wrap">
               <thead>
                 <tr>
-                  <th class="text-uppercase font-weight-bold text-caption">
-                    No. Invoice
-                  </th>
-                  <th class="text-uppercase font-weight-bold text-caption">
-                    Klien
-                  </th>
-                  <th class="text-uppercase font-weight-bold text-caption">
-                    Tanggal
-                  </th>
-                  <th class="text-uppercase font-weight-bold text-caption text-right">
-                    Nominal
-                  </th>
-                  <th class="text-uppercase font-weight-bold text-caption text-center">
-                    Status
-                  </th>
+                  <th class="text-uppercase font-weight-bold text-caption">No. Invoice</th>
+                  <th class="text-uppercase font-weight-bold text-caption">Klien</th>
+                  <th class="text-uppercase font-weight-bold text-caption">Tanggal</th>
+                  <th class="text-uppercase font-weight-bold text-caption text-right">Total Tagihan</th>
+                  <th class="text-uppercase font-weight-bold text-caption text-center">Status</th>
                 </tr>
               </thead>
               <tbody>
+                <tr v-if="loading">
+                  <td colspan="5" class="text-center py-8 text-medium-emphasis">Memuat data...</td>
+                </tr>
+                <tr v-else-if="recentInvoices.length === 0">
+                  <td colspan="5" class="text-center py-8 text-medium-emphasis">Belum ada data invoice.</td>
+                </tr>
                 <tr
                   v-for="invoice in recentInvoices"
+                  v-else
                   :key="invoice.id"
                   class="table-row-hover"
                 >
-                  <td class="font-weight-medium text-primary">
-                    {{ invoice.noInvoice }}
-                  </td>
-                  <td>
-                    <div class="d-flex align-center">
-                      <VAvatar
-                        size="32"
-                        color="surface-variant"
-                        variant="tonal"
-                        class="me-2 rounded"
-                      >
-                        <span class="text-caption font-weight-bold">{{ invoice.klien.charAt(0) }}</span>
-                      </VAvatar>
-                      {{ invoice.klien }}
-                    </div>
-                  </td>
-                  <td class="text-body-2">
-                    {{ invoice.date }}
-                  </td>
-                  <td class="text-right font-weight-medium">
-                    Rp {{ invoice.amount.toLocaleString('id-ID') }}
-                  </td>
+                  <td class="font-weight-medium text-primary">{{ invoice.noInvoice }}</td>
+                  <td>{{ invoice.klien }}</td>
+                  <td class="text-body-2">{{ invoice.tanggalInvoice }}</td>
+                  <td class="text-right font-weight-medium">{{ formatCurrency(invoice.totalTagihan) }}</td>
                   <td class="text-center">
-                    <VChip
-                      :color="invoice.statusColor"
-                      size="small"
-                      label
-                      class="font-weight-medium"
-                    >
-                      {{ invoice.status }}
-                    </VChip>
+                    <InvoiceStatusBadge :status="invoice.status" />
                   </td>
                 </tr>
               </tbody>
@@ -319,151 +181,121 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref, shallowRef } from 'vue'
 import { useTheme } from 'vuetify'
 import { useAuthStore } from '@/stores/auth.store'
 import DeferredApexChart from '@/components/shared/DeferredApexChart.vue'
 import PicArDashboardSection from '@/modules/Finance/components/PicArDashboardSection.vue'
+import InvoiceStatusBadge from '@/modules/Finance/components/InvoiceStatusBadge.vue'
+import { useFormatter } from '@/composables/useFormatter'
+import api from '@/utils/axios'
 
 const authStore = useAuthStore()
-const theme = useTheme()
+const theme     = useTheme()
+const { formatCurrency } = useFormatter()
 
-/* --- Dummy Data --- */
-// Series data for Area Chart
-const revenueChartSeries = ref([
-  {
-    name: 'Total Ditagihkan',
-    data: [310, 420, 280, 510, 420, 690],
-  },
-  {
-    name: 'Total Dibayar',
-    data: [210, 320, 180, 410, 390, 520],
-  },
+const compactFormatter = new Intl.NumberFormat('id-ID', {
+  notation: 'compact',
+  compactDisplay: 'short',
+  maximumFractionDigits: 1,
+})
+
+const loading   = ref(false)
+const error     = ref('')
+const dashboard = shallowRef({ summary: {}, statusBreakdown: [], monthlyTrend: { labels: [], invoiceTotals: [], paymentTotals: [] }, recentInvoices: [] })
+
+const summaryCards = computed(() => {
+  const s = dashboard.value.summary
+  return [
+    { title: 'Total Klien', value: loading.value ? '...' : (s.totalKlien ?? 0), icon: 'ri-building-4-line', color: 'primary', textClass: 'text-primary' },
+    { title: 'Total Invoice', value: loading.value ? '...' : (s.totalInvoice ?? 0), icon: 'ri-file-list-3-line', color: 'info', textClass: 'text-info' },
+    { title: 'Total Tagihan', value: loading.value ? '...' : formatCurrency(s.totalTagihan ?? 0), icon: 'ri-bill-line', color: 'warning', textClass: 'text-warning' },
+    { title: 'Sisa Piutang', value: loading.value ? '...' : formatCurrency(s.totalSisa ?? 0), icon: 'ri-error-warning-line', color: 'error', textClass: 'text-error' },
+  ]
+})
+
+const recentInvoices = computed(() => dashboard.value.recentInvoices ?? [])
+
+const revenueChartSeries = computed(() => [
+  { name: 'Total Ditagihkan', data: dashboard.value.monthlyTrend?.invoiceTotals ?? [] },
+  { name: 'Total Dibayar',    data: dashboard.value.monthlyTrend?.paymentTotals ?? [] },
 ])
 
-// Vue ApexCharts Options for Area
 const revenueChartOptions = computed(() => {
-  const currentTheme = theme.current.value.colors
-  
+  const c = theme.current.value.colors
   return {
-    chart: {
-      type: 'area',
-      fontFamily: 'inherit',
-      toolbar: { show: false },
-      sparkline: { enabled: false },
-      dropShadow: {
-        enabled: true,
-        top: 2,
-        left: 0,
-        blur: 4,
-        color: '#000',
-        opacity: 0.1,
-      },
-    },
-    colors: [currentTheme.primary, currentTheme.success],
+    chart: { type: 'area', fontFamily: 'inherit', toolbar: { show: false } },
+    colors: [c.primary, c.success],
     dataLabels: { enabled: false },
-    stroke: {
-      curve: 'smooth',
-      width: 3,
-    },
-    fill: {
-      type: 'gradient',
-      gradient: {
-        shadeIntensity: 1,
-        opacityFrom: 0.4,
-        opacityTo: 0.05,
-        stops: [0, 90, 100],
-      },
-    },
+    stroke: { curve: 'smooth', width: 3 },
+    fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.05, stops: [0, 90, 100] } },
     xaxis: {
-      categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+      categories: dashboard.value.monthlyTrend?.labels ?? [],
       axisBorder: { show: false },
       axisTicks: { show: false },
-      labels: {
-        style: { colors: currentTheme['on-surface'], fontSize: '12px' },
-      },
+      labels: { style: { colors: c['on-surface'], fontSize: '12px' } },
     },
-    yaxis: {
-      labels: {
-        style: { colors: currentTheme['on-surface'] },
-        formatter: val => "Rp " + val + " Jt",
-      },
-    },
-    grid: {
-      borderColor: 'rgba(var(--v-theme-on-surface), 0.1)',
-      strokeDashArray: 4,
-      xaxis: { lines: { show: true } },
-      yaxis: { lines: { show: true } },
-    },
-    legend: {
-      position: 'top',
-      horizontalAlign: 'right',
-      labels: { colors: currentTheme['on-surface'] },
-    },
-    tooltip: {
-      theme: theme.global.name.value,
-    },
+    yaxis: { labels: { style: { colors: c['on-surface'] }, formatter: val => compactFormatter.format(val) } },
+    grid: { borderColor: 'rgba(var(--v-theme-on-surface), 0.1)', strokeDashArray: 4 },
+    legend: { position: 'top', horizontalAlign: 'right', labels: { colors: c['on-surface'] } },
+    tooltip: { theme: theme.global.name.value, y: { formatter: value => formatCurrency(value) } },
   }
 })
 
-// Series data for Donut Chart
-const donutChartSeries = ref([45, 25, 30]) // Example percentages
+const statusBreakdown   = computed(() => dashboard.value.statusBreakdown ?? [])
+const donutChartSeries  = computed(() => statusBreakdown.value.map(i => i.count))
+const statusChartHasData = computed(() => donutChartSeries.value.some(v => v > 0))
 
 const donutChartOptions = computed(() => {
-  const currentTheme = theme.current.value.colors
-  
+  const c = theme.current.value.colors
   return {
-    chart: {
-      type: 'donut',
-      fontFamily: 'inherit',
-    },
-    labels: ['Paid', 'Unpaid', 'Overdue'],
-    colors: [currentTheme.success, currentTheme.warning, currentTheme.error],
-    plotOptions: {
-      pie: {
-        donut: {
-          size: '70%',
-          labels: {
-            show: true,
-            name: { show: true },
-            value: {
-              show: true,
-              formatter: val => val + "%",
-              color: currentTheme['on-surface'],
-            },
-            total: {
-              show: true,
-              showAlways: true,
-              label: 'Total',
-              color: currentTheme['on-surface'],
-              formatter: function (w) {
-                return w.globals.seriesTotals.reduce((a, b) => {
-                  return a + b
-                }, 0) + "%"
-              },
-            },
-          },
-        },
-      },
-    },
+    chart: { type: 'donut', fontFamily: 'inherit' },
+    labels: statusBreakdown.value.map(i => i.label),
+    colors: [c.info, c.warning, c.primary, c.success],
+    plotOptions: { pie: { donut: { size: '70%', labels: { show: true, total: { show: true, showAlways: true, label: 'Total', color: c['on-surface'], formatter: w => w.globals.seriesTotals.reduce((a, b) => a + b, 0) } } } } },
     dataLabels: { enabled: false },
     stroke: { show: false },
-    legend: {
-      position: 'bottom',
-      labels: { colors: currentTheme['on-surface'] },
-    },
-    tooltip: { theme: theme.global.name.value },
+    legend: { position: 'bottom', labels: { colors: c['on-surface'] } },
+    tooltip: { theme: theme.global.name.value, y: { formatter: v => `${v} invoice` } },
   }
 })
 
-// Recent Invoices Dummy
-const recentInvoices = ref([
-  { id: 1, noInvoice: 'INV/2026/04/001', klien: 'PT Maju Bersama', date: '15 Apr 2026', amount: 45000000, status: 'Paid', statusColor: 'success' },
-  { id: 2, noInvoice: 'INV/2026/04/002', klien: 'Resto Rasa Nusantara', date: '16 Apr 2026', amount: 12500000, status: 'Unpaid', statusColor: 'warning' },
-  { id: 3, noInvoice: 'INV/2026/04/003', klien: 'Budi Investama', date: '17 Apr 2026', amount: 68000000, status: 'Overdue', statusColor: 'error' },
-  { id: 4, noInvoice: 'INV/2026/04/004', klien: 'Kopi Kenangan Senja', date: '18 Apr 2026', amount: 9200000, status: 'Draft', statusColor: 'info' },
-  { id: 5, noInvoice: 'INV/2026/04/005', klien: 'PT Sinergi Pangan', date: '19 Apr 2026', amount: 34500000, status: 'Paid', statusColor: 'success' },
-])
+async function loadDashboard() {
+  loading.value = true
+  error.value   = ''
+  try {
+    const { data } = await api.get('/finance/dashboard/global')
+    const p = data.data
+    dashboard.value = {
+      summary: {
+        totalKlien:      Number(p.summary?.total_klien ?? 0),
+        totalInvoice:    Number(p.summary?.total_invoice ?? 0),
+        totalTagihan:    Number(p.summary?.total_tagihan ?? 0),
+        totalPembayaran: Number(p.summary?.total_pembayaran ?? 0),
+        totalSisa:       Number(p.summary?.total_sisa ?? 0),
+      },
+      statusBreakdown: (p.status_breakdown ?? []).map(i => ({
+        status: i.status, label: i.label,
+        count: Number(i.count ?? 0),
+      })),
+      monthlyTrend: {
+        labels:         p.monthly_trend?.labels ?? [],
+        invoiceTotals:  (p.monthly_trend?.invoice_totals ?? []).map(Number),
+        paymentTotals:  (p.monthly_trend?.payment_totals ?? []).map(Number),
+      },
+      recentInvoices: (p.recent_invoices ?? []).map(i => ({
+        id: i.id, noInvoice: i.no_invoice, tanggalInvoice: i.tanggal_invoice,
+        klien: i.klien, totalTagihan: Number(i.total_tagihan ?? 0), status: i.status,
+      })),
+    }
+  } catch (err) {
+    error.value = err.response?.data?.message ?? 'Gagal memuat dashboard'
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(loadDashboard)
 </script>
 
 <style scoped>

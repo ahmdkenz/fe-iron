@@ -124,6 +124,25 @@
             :error-messages="errors.keterangan"
           />
         </VCol>
+
+        <!-- Bukti Pembayaran -->
+        <VCol cols="12">
+          <VFileInput
+            v-model="form.bukti_pembayaran"
+            label="Bukti Pembayaran (Opsional)"
+            density="compact"
+            variant="outlined"
+            accept="application/pdf,image/jpeg,image/jpg,image/png"
+            prepend-icon=""
+            prepend-inner-icon="ri-attachment-line"
+            :rules="[
+              v => !v || !v.length || v[0].size <= 10 * 1024 * 1024 || 'Ukuran file maksimal 10 MB',
+            ]"
+            :error-messages="errors.bukti_pembayaran"
+            hint="PDF, JPG, atau PNG — maks 10 MB"
+            persistent-hint
+          />
+        </VCol>
       </VRow>
 
       <VAlert
@@ -172,7 +191,7 @@ const metodeOptions = [
 
 const errors = reactive({
   tanggal_pembayaran: [], jumlah_pembayaran: [], metode_pembayaran: [],
-  no_referensi: [], keterangan: [],
+  no_referensi: [], keterangan: [], bukti_pembayaran: [],
 })
 
 const defaultForm = () => ({
@@ -181,6 +200,7 @@ const defaultForm = () => ({
   metode_pembayaran: 'TRANSFER',
   no_referensi: '',
   keterangan: '',
+  bukti_pembayaran: [],
 })
 
 const form = reactive(defaultForm())
@@ -223,7 +243,17 @@ async function handleSubmit() {
   })
 
   try {
-    await api.post(`/finance/invoices/${props.invoiceId}/pembayaran`, { ...form })
+    const payload = new FormData()
+    payload.append('tanggal_pembayaran', form.tanggal_pembayaran)
+    payload.append('jumlah_pembayaran', form.jumlah_pembayaran)
+    payload.append('metode_pembayaran', form.metode_pembayaran)
+    if (form.no_referensi) payload.append('no_referensi', form.no_referensi)
+    if (form.keterangan)   payload.append('keterangan', form.keterangan)
+    if (form.bukti_pembayaran?.length) payload.append('bukti_pembayaran', form.bukti_pembayaran[0])
+
+    await api.post(`/finance/invoices/${props.invoiceId}/pembayaran`, payload, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
     emit('saved')
     await showSuccess('Pembayaran berhasil dicatat.')
   } catch (err) {
