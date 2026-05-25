@@ -548,10 +548,11 @@ async function doManualMatch() {
     const row = report.details.find(d => d.id === selectedItem.value.id)
     if (row) {
       const wasUnmatched = row.status_cocok === 'UNMATCHED'
-      row.status_cocok  = updated.status_cocok
-      row.pembayaran    = updated.pembayaran
-      row.matched_by    = updated.matched_by
-      row.selisih_bank  = updated.selisih_bank ?? 0
+      row.status_cocok    = updated.status_cocok
+      row.pembayaran      = updated.pembayaran
+      row.matched_by      = updated.matched_by
+      row.selisih_bank    = updated.selisih_bank ?? 0
+      row.kelebihan_bayar = updated.kelebihan_bayar ?? null
       report.jumlah_matched++
       if (wasUnmatched) report.jumlah_unmatched = Math.max(0, report.jumlah_unmatched - 1)
     }
