@@ -265,18 +265,19 @@
         <template #item.actions="{ item }">
           <div class="d-flex gap-1">
             <VBtn
+              v-if="item.can_record_payment"
               icon
               size="small"
-              variant="text"
-              color="info"
-              :to="{ name: 'finance-invoice-show', params: { id: item.id } }"
+              variant="tonal"
+              color="success"
+              @click="openCatatBayar(item)"
             >
               <VIcon
-                icon="ri-eye-line"
+                icon="ri-money-cny-circle-line"
                 size="18"
               />
               <VTooltip activator="parent">
-                Detail
+                Catat Bayar
               </VTooltip>
             </VBtn>
             <VBtn
@@ -308,6 +309,21 @@
               />
               <VTooltip activator="parent">
                 Kirim via WhatsApp
+              </VTooltip>
+            </VBtn>
+            <VBtn
+              icon
+              size="small"
+              variant="text"
+              color="info"
+              :to="{ name: 'finance-invoice-show', params: { id: item.id } }"
+            >
+              <VIcon
+                icon="ri-eye-line"
+                size="18"
+              />
+              <VTooltip activator="parent">
+                Detail
               </VTooltip>
             </VBtn>
             <VBtn
@@ -368,6 +384,14 @@
         {{ deleteError }}
       </VAlert>
     </BaseModal>
+    <!-- Catat Bayar Modal -->
+    <PembayaranForm
+      v-if="selectedForPayment"
+      v-model="showPembayaran"
+      :invoice-id="selectedForPayment.id"
+      :sisa-tagihan="selectedForPayment.sisa_tagihan"
+      @saved="onPembayaranSaved"
+    />
     <!-- Import Modal -->
     <VDialog
       v-model="showImport"
@@ -508,6 +532,7 @@ import { useFormatter } from '@/composables/useFormatter.js'
 import { useAuthStore } from '@/stores/auth.store'
 import api from '@/utils/axios.js'
 import InvoiceStatusBadge from '../components/InvoiceStatusBadge.vue'
+import PembayaranForm from '../components/PembayaranForm.vue'
 
 const { showSuccess, showError } = useSweetAlert()
 const authStore = useAuthStore()
@@ -528,9 +553,11 @@ if (!canSeeAll) {
 }
 
 const summary       = reactive({ total_invoice: null, total_tagihan: null, total_pembayaran: null, total_sisa: null })
-const showDelete    = ref(false)
-const deleteError   = ref('')
-const selectedInvoice = ref(null)
+const showDelete         = ref(false)
+const deleteError        = ref('')
+const selectedInvoice    = ref(null)
+const showPembayaran     = ref(false)
+const selectedForPayment = ref(null)
 const exportingExcel  = ref(false)
 const showImport      = ref(false)
 const importing       = ref(false)
@@ -729,6 +756,16 @@ async function doImport() {
 }
 
 function confirmDelete(inv) { selectedInvoice.value = inv; deleteError.value = ''; showDelete.value = true }
+
+function openCatatBayar(item) {
+  selectedForPayment.value = item
+  showPembayaran.value     = true
+}
+
+function onPembayaranSaved() {
+  loadList()
+  loadSummary()
+}
 
 async function printInvoice(id) {
   try {

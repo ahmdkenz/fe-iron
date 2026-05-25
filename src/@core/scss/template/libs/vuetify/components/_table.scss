@@ -1,20 +1,29 @@
-// 👉 Datatable
-
+// 👉 Datatable (VDataTableServer / VDataTable)
 .v-data-table {
   table {
     tbody {
       tr {
-        &.v-data-table-group-header-row {
-          td {
-            background: none;
-          }
+        // Reset group header rows
+        &.v-data-table-group-header-row td {
+          background: none !important;
+        }
+
+        // Zebra striping — odd rows get alternate background
+        &:nth-child(odd):not(.v-data-table-group-header-row) td {
+          background-color: rgb(var(--v-table-odd-row-bg));
+        }
+
+        // Row hover highlight
+        &:hover:not(.v-data-table-group-header-row) td {
+          background-color: rgba(var(--v-theme-primary), 0.07) !important;
+          transition: background-color 0.15s ease;
         }
       }
     }
   }
 }
 
-// 👉 Table
+// 👉 Table (VTable)
 .v-table {
   .v-table__wrapper {
     border-radius: 0;
@@ -24,12 +33,34 @@
         tr {
           th {
             background: rgb(var(--v-table-header-color)) !important;
-            border-block-end: none !important;
+            border-block-end: 2px solid rgba(var(--v-border-color), 0.18) !important;
             color: rgba(var(--v-theme-on-surface), var(--v-high-emphasis-opacity)) !important;
             font-size: 0.8125rem;
-            letter-spacing: 0.2px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
             line-height: 24px;
             text-transform: uppercase;
+          }
+        }
+      }
+
+      tbody {
+        tr {
+          border-block-end: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
+
+          // Zebra striping
+          &:nth-child(odd) td {
+            background-color: rgb(var(--v-table-odd-row-bg));
+          }
+
+          // Row hover highlight
+          &:hover td {
+            background-color: rgba(var(--v-theme-primary), 0.07) !important;
+            transition: background-color 0.15s ease;
+          }
+
+          &:last-child {
+            border-block-end: none;
           }
         }
       }

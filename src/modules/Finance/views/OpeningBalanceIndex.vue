@@ -273,6 +273,38 @@
         <template #item.actions="{ item }">
           <div class="d-flex gap-1">
             <VBtn
+              v-if="item.can_record_payment"
+              icon
+              size="small"
+              variant="tonal"
+              color="success"
+              @click="openCatatBayar(item)"
+            >
+              <VIcon
+                icon="ri-money-cny-circle-line"
+                size="18"
+              />
+              <VTooltip activator="parent">
+                Catat Bayar
+              </VTooltip>
+            </VBtn>
+            <VBtn
+              v-if="item.can_print"
+              icon
+              size="small"
+              variant="text"
+              color="secondary"
+              @click="printInvoice(item.id)"
+            >
+              <VIcon
+                icon="ri-printer-line"
+                size="18"
+              />
+              <VTooltip activator="parent">
+                Cetak
+              </VTooltip>
+            </VBtn>
+            <VBtn
               icon
               size="small"
               variant="text"
@@ -303,27 +335,19 @@
                 Edit
               </VTooltip>
             </VBtn>
-            <VBtn
-              v-if="item.can_print"
-              icon
-              size="small"
-              variant="text"
-              color="secondary"
-              @click="printInvoice(item.id)"
-            >
-              <VIcon
-                icon="ri-printer-line"
-                size="18"
-              />
-              <VTooltip activator="parent">
-                Cetak
-              </VTooltip>
-            </VBtn>
           </div>
         </template>
       </BaseTable>
     </VCard>
 
+    <!-- Catat Bayar Modal -->
+    <PembayaranForm
+      v-if="selectedForPayment"
+      v-model="showPembayaran"
+      :invoice-id="selectedForPayment.id"
+      :sisa-tagihan="selectedForPayment.sisa_tagihan"
+      @saved="onPembayaranSaved"
+    />
     <!-- Import Dialog -->
     <VDialog
       v-model="showImport"
@@ -481,8 +505,23 @@ import { useFormatter } from '@/composables/useFormatter'
 import api from '@/utils/axios'
 import ApprovalStatusBadge from '../components/ApprovalStatusBadge.vue'
 import InvoiceStatusBadge from '../components/InvoiceStatusBadge.vue'
+import PembayaranForm from '../components/PembayaranForm.vue'
 
 const authStore = useAuthStore()
+
+// ── Catat Bayar state ──────────────────────────────────────────────────────
+const showPembayaran     = ref(false)
+const selectedForPayment = ref(null)
+
+function openCatatBayar(item) {
+  selectedForPayment.value = item
+  showPembayaran.value     = true
+}
+
+function onPembayaranSaved() {
+  loadList()
+  loadSummary()
+}
 
 // ── Export / Import state ──────────────────────────────────────────────────
 const isExporting  = ref(false)

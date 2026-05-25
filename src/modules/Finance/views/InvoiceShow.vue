@@ -68,17 +68,6 @@
           Reject
         </VBtn>
         <VBtn
-          v-if="canRecordPayment"
-          color="success"
-          @click="showPembayaran = true"
-        >
-          <VIcon
-            icon="ri-money-cny-circle-line"
-            class="me-1"
-          />
-          Catat Bayar
-        </VBtn>
-        <VBtn
           v-if="canChangeStatus"
           color="info"
           variant="tonal"
@@ -400,16 +389,6 @@
                   />
                   Riwayat Pembayaran
                 </span>
-                <VBtn
-                  v-if="canRecordPayment"
-                  size="small"
-                  color="success"
-                  variant="tonal"
-                  prepend-icon="ri-add-line"
-                  @click="showPembayaran = true"
-                >
-                  Catat Bayar
-                </VBtn>
               </VCardTitle>
               <VDivider />
               <VAlert
@@ -603,13 +582,6 @@
       </VRow>
     </template>
 
-    <PembayaranForm
-      v-model="showPembayaran"
-      :invoice-id="id"
-      :sisa-tagihan="invoice?.sisa_tagihan ?? 0"
-      @saved="onPembayaranSaved"
-    />
-
     <BaseModal
       v-model="showUbahStatus"
       title="Ubah Status Invoice"
@@ -750,7 +722,6 @@ import { useFinanceNotificationStore } from '@/stores/finance-notification.store
 import api from '@/utils/axios'
 import ApprovalStatusBadge from '../components/ApprovalStatusBadge.vue'
 import InvoiceStatusBadge from '../components/InvoiceStatusBadge.vue'
-import PembayaranForm from '../components/PembayaranForm.vue'
 import OpeningBalanceDetailTable from '../components/OpeningBalanceDetailTable.vue'
 
 const route = useRoute()
@@ -763,7 +734,6 @@ const { fetchOne, loading, error } = useCrud('/finance/invoices')
 const { formatCurrency, formatDate, formatDateTime } = useFormatter()
 
 const invoice = shallowRef(null)
-const showPembayaran = ref(false)
 const showUbahStatus = ref(false)
 const showDeletePembayaran = ref(false)
 const showApproveModal = ref(false)
@@ -789,9 +759,6 @@ const statusTransitions = {
 
 const isOpeningBalance = computed(() => invoice.value?.is_opening_balance === true)
 const documentLabel = computed(() => isOpeningBalance.value ? 'Opening Balance' : 'Invoice')
-
-const canRecordPayment = computed(() =>
-  !!invoice.value && invoice.value.can_record_payment && invoice.value.status !== 'LUNAS')
 
 const canManagePayments = computed(() => !!invoice.value && invoice.value.can_record_payment)
 
@@ -945,12 +912,6 @@ async function loadInvoice() {
 
   if (!data)
     pageErrorMessage.value = error.value ?? 'Data invoice tidak ditemukan'
-}
-
-async function onPembayaranSaved() {
-  showPembayaran.value = false
-  actionMessage.value = 'Pembayaran berhasil disimpan'
-  await loadInvoice()
 }
 
 async function doUbahStatus() {
