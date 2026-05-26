@@ -297,6 +297,99 @@
         </VCard>
       </VCol>
     </VRow>
+
+    <!-- Pembayaran Terbaru -->
+    <VRow class="mb-4">
+      <VCol cols="12">
+        <VCard elevation="2" class="rounded-xl">
+          <VCardItem>
+            <VCardTitle class="d-flex align-center justify-space-between text-h6 font-weight-bold">
+              <div class="d-flex align-center">
+                <VIcon icon="ri-money-cny-circle-line" class="me-2 text-success" />
+                5 Pembayaran Terbaru
+              </div>
+              <VChip
+                v-if="rekonSummary.total_belum_cocok > 0"
+                color="warning"
+                size="small"
+                variant="tonal"
+                label
+              >
+                {{ rekonSummary.total_belum_cocok }} belum direkonsiliasi
+              </VChip>
+            </VCardTitle>
+          </VCardItem>
+          <VCardText class="px-0">
+            <VTable class="text-no-wrap">
+              <thead>
+                <tr>
+                  <th class="text-uppercase font-weight-bold text-caption">No. Referensi</th>
+                  <th class="text-uppercase font-weight-bold text-caption">Invoice / Klien</th>
+                  <th class="text-uppercase font-weight-bold text-caption">Tgl Bayar</th>
+                  <th class="text-uppercase font-weight-bold text-caption text-right">Jumlah</th>
+                  <th class="text-uppercase font-weight-bold text-caption text-center">Metode</th>
+                  <th class="text-uppercase font-weight-bold text-caption text-center">Status Rekon</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-if="loadingPayments">
+                  <td colspan="6" class="text-center py-8 text-medium-emphasis">
+                    Memuat data pembayaran...
+                  </td>
+                </tr>
+                <tr v-else-if="recentPayments.length === 0">
+                  <td colspan="6" class="text-center py-8 text-medium-emphasis">
+                    Belum ada pembayaran tercatat.
+                  </td>
+                </tr>
+                <tr
+                  v-for="pay in recentPayments"
+                  v-else
+                  :key="pay.id"
+                  class="table-row-hover"
+                >
+                  <td class="font-weight-medium text-mono">{{ pay.no_referensi ?? '—' }}</td>
+                  <td>
+                    <div class="d-flex flex-column py-2">
+                      <span class="font-weight-medium">{{ pay.no_invoice ?? '—' }}</span>
+                      <span class="text-caption text-medium-emphasis">{{ pay.klien ?? '' }}</span>
+                    </div>
+                  </td>
+                  <td class="text-body-2">{{ formatDate(pay.tanggal_pembayaran) }}</td>
+                  <td class="text-right font-weight-medium text-success">
+                    {{ formatCurrency(pay.jumlah_pembayaran) }}
+                  </td>
+                  <td class="text-center">
+                    <VChip
+                      :color="metodeColorMap[pay.metode_pembayaran] ?? 'default'"
+                      size="x-small"
+                      variant="tonal"
+                      label
+                    >
+                      {{ pay.metode_pembayaran }}
+                    </VChip>
+                  </td>
+                  <td class="text-center">
+                    <VChip
+                      v-if="pay.status_rekonsiliasi"
+                      :color="rekonColorMap[pay.status_rekonsiliasi] ?? 'default'"
+                      size="x-small"
+                      variant="tonal"
+                      label
+                    >
+                      {{ pay.status_rekonsiliasi }}
+                    </VChip>
+                    <VChip v-else size="x-small" variant="tonal" color="warning" label>
+                      Belum Diproses
+                    </VChip>
+                  </td>
+                </tr>
+              </tbody>
+            </VTable>
+          </VCardText>
+        </VCard>
+      </VCol>
+    </VRow>
   </div>
 </template>
 
@@ -319,10 +412,16 @@ const compactNumberFormatter = new Intl.NumberFormat('id-ID', {
   maximumFractionDigits: 1,
 })
 
-const loading    = ref(false)
-const error      = ref('')
-const dashboard  = shallowRef(createEmptyDashboard())
-const kpi        = shallowRef(createEmptyKpi())
+const loading         = ref(false)
+const error           = ref('')
+const dashboard       = shallowRef(createEmptyDashboard())
+const kpi             = shallowRef(createEmptyKpi())
+const loadingPayments = ref(false)
+const recentPayments  = ref([])
+const rekonSummary    = ref({ total_belum_cocok: 0, total_matched: 0, total_transaksi: 0 })
+
+const metodeColorMap = { TRANSFER: 'info', CASH: 'success', GIRO: 'warning' }
+const rekonColorMap  = { MATCHED: 'success', POSSIBLE: 'warning', UNMATCHED: 'error', DIABAIKAN: 'secondary' }
 
 const picArName = computed(
   () => dashboard.value.picAr?.nama
@@ -388,10 +487,11 @@ const summaryCards = computed(() => [
 ])
 
 const kpiCards = computed(() => {
-  const collectionRate = kpi.value.collectionRate ?? 0
-  const dso            = kpi.value.dso ?? 0
-  const overduePerc    = kpi.value.overduePercentage ?? 0
-  const overdueCount   = kpi.value.overdueCount ?? 0
+  const collectionRate  = kpi.value.collectionRate ?? 0
+  const dso             = kpi.value.dso ?? 0
+  const overduePerc     = kpi.value.overduePercentage ?? 0
+  const overdueCount    = kpi.value.overdueCount ?? 0
+  const belumRekon      = rekonSummary.value.total_belum_cocok ?? 0
 
   return [
     {
@@ -416,11 +516,11 @@ const kpiCards = computed(() => {
       color:   overduePerc > 20 ? 'error' : overduePerc > 10 ? 'warning' : 'success',
     },
     {
-      title:   'Sisa Piutang',
-      value:   loading.value ? '...' : formatCurrency(dashboard.value.summary?.totalSisa ?? 0),
-      caption: 'Total outstanding yang masih berjalan',
-      icon:    'ri-coins-line',
-      color:   'primary',
+      title:   'Belum Direkonsiliasi',
+      value:   loadingPayments.value ? '...' : `${belumRekon} transaksi`,
+      caption: belumRekon > 0 ? 'Perlu ditindaklanjuti' : 'Semua sudah diproses',
+      icon:    'ri-bank-line',
+      color:   belumRekon > 0 ? 'warning' : 'success',
     },
   ]
 })
@@ -643,6 +743,19 @@ async function loadDashboard() {
   }
 }
 
+async function loadRecentPayments() {
+  loadingPayments.value = true
+  try {
+    const { data } = await api.get('/finance/jurnal-pic', { params: { per_page: 5, page: 1 } })
+    recentPayments.value = data.data ?? []
+    if (data.summary) Object.assign(rekonSummary.value, data.summary)
+  } catch {
+    // non-critical, silent fail
+  } finally {
+    loadingPayments.value = false
+  }
+}
+
 function createEmptyKpi() {
   return {
     dso: 0,
@@ -740,7 +853,10 @@ function normalizeDashboard(payload = {}) {
   }
 }
 
-onMounted(loadDashboard)
+onMounted(() => {
+  loadDashboard()
+  loadRecentPayments()
+})
 </script>
 
 <style scoped>

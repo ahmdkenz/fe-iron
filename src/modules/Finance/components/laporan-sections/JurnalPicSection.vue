@@ -28,6 +28,21 @@
           @focus="canSeeAll && ensureKaryawanLoaded()"
           @update:model-value="doFetch"
         />
+        <!-- Filter Klien AR -->
+        <VAutocomplete
+          v-model="params.klien_ar_id"
+          placeholder="Semua Klien"
+          hide-details
+          clearable
+          density="compact"
+          style="max-width: 220px"
+          :items="klienArList"
+          item-title="nama_klien"
+          item-value="id"
+          :loading="klienArLoading"
+          @focus="ensureKlienArLoaded()"
+          @update:model-value="doFetch"
+        />
         <VSelect
           v-model="params.metode_pembayaran"
           placeholder="Semua Metode"
@@ -80,6 +95,14 @@
         >
           Excel
         </VBtn>
+        <VBtn
+          color="secondary"
+          prepend-icon="ri-printer-line"
+          size="small"
+          @click="doPrint"
+        >
+          Print / PDF
+        </VBtn>
       </VCardText>
     </VCard>
 
@@ -106,6 +129,9 @@
           <VCardText class="pa-3">
             <div class="text-caption font-weight-medium mb-1">Sudah Matched</div>
             <div class="text-subtitle-1 font-weight-bold">{{ summary.total_matched }} transaksi</div>
+            <div class="text-caption mt-1 font-weight-medium">
+              {{ matchedRate }}% dari total
+            </div>
           </VCardText>
         </VCard>
       </VCol>
@@ -114,6 +140,9 @@
           <VCardText class="pa-3">
             <div class="text-caption font-weight-medium mb-1">Belum Direkonsiliasi</div>
             <div class="text-subtitle-1 font-weight-bold">{{ summary.total_belum_cocok }} transaksi</div>
+            <div class="text-caption mt-1 font-weight-medium">
+              {{ summary.total_belum_cocok > 0 ? (100 - matchedRate) + '% perlu tindak lanjut' : 'Semua sudah diproses' }}
+            </div>
           </VCardText>
         </VCard>
       </VCol>
@@ -128,6 +157,7 @@
         :loading="loading"
         :per-page="meta.per_page"
         :page="meta.current_page"
+        :row-props="getRowProps"
         @update:options="onTableOptions"
       >
         <template #item.no="{ index }">
@@ -150,6 +180,15 @@
             {{ item.no_invoice }}
           </RouterLink>
           <div class="text-caption text-medium-emphasis">{{ item.klien }}</div>
+        </template>
+        <template #item.sisa_piutang="{ item }">
+          <span :class="item.sisa_piutang > 0 ? 'text-error' : 'text-success'" class="font-weight-medium">
+            {{ formatCurrency(item.sisa_piutang ?? 0) }}
+          </span>
+        </template>
+        <template #item.invoice_status="{ item }">
+          <InvoiceStatusBadge v-if="item.invoice_status" :status="item.invoice_status" />
+          <span v-else class="text-medium-emphasis">—</span>
         </template>
         <template #item.tanggal_pembayaran="{ item }">
           {{ formatDate(item.tanggal_pembayaran) }}
@@ -174,7 +213,7 @@
           >
             {{ item.status_rekonsiliasi }}
           </VChip>
-          <VChip v-else size="small" variant="tonal" color="default" label>
+          <VChip v-else size="small" variant="tonal" color="warning" label>
             Belum Diproses
           </VChip>
         </template>
@@ -190,6 +229,7 @@ import { useAuthStore } from '@/stores/auth.store'
 import { useCrud } from '@/composables/useCrud'
 import { useLazyFetchAll } from '@/composables/useLazyFetchAll'
 import { useFormatter } from '@/composables/useFormatter'
+import InvoiceStatusBadge from '@/modules/Finance/components/InvoiceStatusBadge.vue'
 import api from '@/utils/axios'
 
 const authStore = useAuthStore()
@@ -201,7 +241,10 @@ const canSeeAll = computed(() =>
 )
 
 const { items: karyawanList, loading: karyawanLoading, fetchAll: fetchKaryawan } = useCrud('/master/karyawan')
+const { items: klienArList,  loading: klienArLoading,  fetchAll: fetchKlienAr }  = useCrud('/finance/klien-ar')
+
 const { ensureLoaded: ensureKaryawanLoaded } = useLazyFetchAll(fetchKaryawan)
+const { ensureLoaded: ensureKlienArLoaded }  = useLazyFetchAll(fetchKlienAr)
 
 const picItems = computed(() => {
   if (!canSeeAll.value && authStore.user?.karyawan) {
@@ -221,10 +264,16 @@ const params = reactive({
   per_page:             20,
   no_referensi:         null,
   karyawan_id:          null,
+  klien_ar_id:          null,
   metode_pembayaran:    null,
   tanggal_dari:         null,
   tanggal_sampai:       null,
   status_rekonsiliasi:  null,
+})
+
+const matchedRate = computed(() => {
+  if (!summary.total_transaksi) return 0
+  return Math.round((summary.total_matched / summary.total_transaksi) * 100)
 })
 
 function buildParams(includePagination = true) {
@@ -235,6 +284,7 @@ function buildParams(includePagination = true) {
   }
   if (params.no_referensi)        p.no_referensi        = params.no_referensi
   if (params.karyawan_id)         p.karyawan_id         = params.karyawan_id
+  if (params.klien_ar_id)         p.klien_ar_id         = params.klien_ar_id
   if (params.metode_pembayaran)   p.metode_pembayaran   = params.metode_pembayaran
   if (params.tanggal_dari)        p.tanggal_dari        = params.tanggal_dari
   if (params.tanggal_sampai)      p.tanggal_sampai      = params.tanggal_sampai
@@ -248,7 +298,9 @@ const headers = [
   { title: 'PIC / Diinput oleh',  key: 'pic_nama',            sortable: false },
   { title: 'No Invoice / Klien',  key: 'no_invoice',          sortable: false },
   { title: 'Tgl Bayar',           key: 'tanggal_pembayaran',  sortable: false },
-  { title: 'Jumlah',              key: 'jumlah_pembayaran',   sortable: false },
+  { title: 'Jumlah Bayar',        key: 'jumlah_pembayaran',   sortable: false },
+  { title: 'Sisa Piutang',        key: 'sisa_piutang',        sortable: false },
+  { title: 'Status Invoice',      key: 'invoice_status',      sortable: false },
   { title: 'Metode',              key: 'metode_pembayaran',   sortable: false },
   { title: 'Status Rekonsiliasi', key: 'status_rekonsiliasi', sortable: false },
 ]
@@ -272,6 +324,12 @@ function metodeColor(metode) {
 
 function statusRekonColor(status) {
   return { MATCHED: 'success', POSSIBLE: 'warning', UNMATCHED: 'error', DIABAIKAN: 'secondary' }[status] ?? 'default'
+}
+
+function getRowProps({ item }) {
+  if (item.status_rekonsiliasi === 'UNMATCHED') return { class: 'jurnal-row--unmatched' }
+  if (!item.status_rekonsiliasi) return { class: 'jurnal-row--belum' }
+  return {}
 }
 
 let controller = null
@@ -325,11 +383,14 @@ async function doExport() {
   }
 }
 
+function doPrint() {
+  window.print()
+}
+
 onMounted(() => {
   if (!canSeeAll.value && authStore.user?.karyawan_id) {
     params.karyawan_id = authStore.user.karyawan_id
   }
-  // Support drill-down from KinerjaAr: pre-fill karyawan filter from query param
   if (canSeeAll.value && route.query.karyawan_id) {
     params.karyawan_id = Number(route.query.karyawan_id)
   }
@@ -337,3 +398,12 @@ onMounted(() => {
 })
 onBeforeUnmount(() => controller?.abort())
 </script>
+
+<style scoped>
+.jurnal-row--unmatched :deep(td) {
+  background-color: rgba(var(--v-theme-error), 0.06) !important;
+}
+.jurnal-row--belum :deep(td) {
+  background-color: rgba(var(--v-theme-warning), 0.06) !important;
+}
+</style>

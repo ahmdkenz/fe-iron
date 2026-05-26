@@ -12,7 +12,6 @@
     <!-- Filter -->
     <VCard class="mb-4">
       <VCardText class="d-flex flex-wrap gap-3 align-center">
-        <!-- Cari nomor referensi -->
         <VTextField
           v-model="params.no_referensi"
           placeholder="Cari No. Referensi..."
@@ -24,7 +23,6 @@
           @update:model-value="doFetch"
         />
 
-        <!-- Filter PIC -->
         <VAutocomplete
           v-model="params.karyawan_id"
           placeholder="Semua PIC"
@@ -41,7 +39,21 @@
           @update:model-value="doFetch"
         />
 
-        <!-- Filter Metode -->
+        <VAutocomplete
+          v-model="params.klien_ar_id"
+          placeholder="Semua Klien"
+          hide-details
+          clearable
+          density="compact"
+          style="max-width: 220px"
+          :items="klienArList"
+          item-title="nama_klien"
+          item-value="id"
+          :loading="klienArLoading"
+          @focus="ensureKlienArLoaded()"
+          @update:model-value="doFetch"
+        />
+
         <VSelect
           v-model="params.metode_pembayaran"
           placeholder="Semua Metode"
@@ -55,7 +67,6 @@
           @update:model-value="doFetch"
         />
 
-        <!-- Filter Status Rekonsiliasi -->
         <VSelect
           v-model="params.status_rekonsiliasi"
           placeholder="Status Rekonsiliasi"
@@ -69,7 +80,6 @@
           @update:model-value="doFetch"
         />
 
-        <!-- Periode -->
         <VTextField
           v-model="params.tanggal_dari"
           label="Dari"
@@ -88,6 +98,18 @@
           style="max-width: 160px"
           @update:model-value="doFetch"
         />
+
+        <VSpacer />
+
+        <VBtn
+          color="success"
+          prepend-icon="ri-file-excel-2-line"
+          size="small"
+          :loading="exporting"
+          @click="doExport"
+        >
+          Excel
+        </VBtn>
       </VCardText>
     </VCard>
 
@@ -100,27 +122,43 @@
         :loading="loading"
         :per-page="meta.per_page"
         :page="meta.current_page"
+        :row-props="getRowProps"
         @update:options="onTableOptions"
+        @click:row="(_, { item }) => openDetail(item)"
       >
         <template #item.no="{ index }">
           {{ (meta.current_page - 1) * meta.per_page + index + 1 }}
         </template>
 
         <template #item.no_referensi="{ item }">
-          <span v-if="item.no_referensi" class="font-weight-medium text-mono">
-            {{ item.no_referensi }}
-          </span>
-          <span v-else class="text-medium-emphasis">—</span>
+          <div class="d-flex align-center gap-1">
+            <span v-if="item.no_referensi" class="font-weight-medium text-mono">
+              {{ item.no_referensi }}
+            </span>
+            <span v-else class="text-medium-emphasis">—</span>
+            <!-- Badge multi-invoice -->
+            <VTooltip v-if="multiRefMap[item.no_referensi] > 1" text="1 referensi untuk beberapa invoice">
+              <template #activator="{ props }">
+                <VChip v-bind="props" size="x-small" color="purple" variant="tonal" label>
+                  ×{{ multiRefMap[item.no_referensi] }}
+                </VChip>
+              </template>
+            </VTooltip>
+          </div>
         </template>
 
         <template #item.pic_nama="{ item }">
           <div class="font-weight-medium">{{ item.pic_nama ?? '—' }}</div>
+          <div v-if="item.input_oleh && item.input_oleh !== item.pic_nama" class="text-caption text-medium-emphasis">
+            Input: {{ item.input_oleh }}
+          </div>
         </template>
 
         <template #item.no_invoice="{ item }">
           <RouterLink
             :to="{ name: 'finance-invoice-show', params: { id: item.invoice_id } }"
             class="text-primary text-decoration-none font-weight-medium"
+            @click.stop
           >
             {{ item.no_invoice }}
           </RouterLink>
@@ -135,6 +173,17 @@
           <span class="text-success font-weight-medium">
             {{ formatCurrency(item.jumlah_pembayaran) }}
           </span>
+        </template>
+
+        <template #item.sisa_piutang="{ item }">
+          <span :class="item.sisa_piutang > 0 ? 'text-error' : 'text-success'" class="font-weight-medium">
+            {{ formatCurrency(item.sisa_piutang ?? 0) }}
+          </span>
+        </template>
+
+        <template #item.invoice_status="{ item }">
+          <InvoiceStatusBadge v-if="item.invoice_status" :status="item.invoice_status" />
+          <span v-else class="text-medium-emphasis">—</span>
         </template>
 
         <template #item.metode_pembayaran="{ item }">
@@ -153,21 +202,169 @@
           >
             {{ item.status_rekonsiliasi }}
           </VChip>
-          <VChip v-else size="small" variant="tonal" color="default" label>
+          <VChip v-else size="small" variant="tonal" color="warning" label>
             Belum Diproses
           </VChip>
         </template>
       </BaseTable>
     </VCard>
+
+    <!-- Detail Dialog -->
+    <VDialog v-model="detailDialog" max-width="620" scrollable>
+      <VCard v-if="selectedItem">
+        <VCardTitle class="d-flex align-center justify-space-between pt-4 px-6">
+          <div class="d-flex align-center gap-2">
+            <span class="text-h6 font-weight-bold">Detail Pembayaran</span>
+            <VChip
+              v-if="multiInvoices.length > 1"
+              color="purple"
+              size="small"
+              variant="tonal"
+              prepend-icon="ri-file-list-3-line"
+            >
+              {{ multiInvoices.length }} Invoice
+            </VChip>
+          </div>
+          <VBtn icon="ri-close-line" variant="text" size="small" @click="detailDialog = false" />
+        </VCardTitle>
+
+        <VDivider />
+
+        <VCardText class="pa-6">
+          <!-- Status Banner -->
+          <VAlert
+            :color="statusRekonColor(selectedItem.status_rekonsiliasi) || 'warning'"
+            variant="tonal"
+            density="compact"
+            class="mb-4"
+            :icon="selectedItem.status_rekonsiliasi === 'MATCHED' ? 'ri-checkbox-circle-line' : 'ri-time-line'"
+          >
+            <span class="font-weight-medium">
+              Rekonsiliasi: {{ selectedItem.status_rekonsiliasi ?? 'Belum Diproses' }}
+            </span>
+          </VAlert>
+
+          <!-- Info Bayar -->
+          <VRow dense>
+            <VCol cols="6">
+              <div class="text-caption text-medium-emphasis mb-1">No. Referensi</div>
+              <div class="font-weight-medium text-mono">{{ selectedItem.no_referensi ?? '—' }}</div>
+            </VCol>
+            <VCol cols="6">
+              <div class="text-caption text-medium-emphasis mb-1">Tanggal Bayar</div>
+              <div class="font-weight-medium">{{ formatDate(selectedItem.tanggal_pembayaran) }}</div>
+            </VCol>
+            <VCol cols="6" class="mt-3">
+              <div class="text-caption text-medium-emphasis mb-1">Jumlah Bayar</div>
+              <div class="text-success font-weight-bold text-subtitle-1">
+                {{ formatCurrency(selectedItem.jumlah_pembayaran) }}
+              </div>
+            </VCol>
+            <VCol cols="6" class="mt-3">
+              <div class="text-caption text-medium-emphasis mb-1">Metode</div>
+              <VChip :color="metodeColor(selectedItem.metode_pembayaran)" size="small" variant="tonal" label>
+                {{ selectedItem.metode_pembayaran }}
+              </VChip>
+            </VCol>
+            <VCol cols="6" class="mt-3">
+              <div class="text-caption text-medium-emphasis mb-1">PIC AR</div>
+              <div class="font-weight-medium">{{ selectedItem.pic_nama ?? '—' }}</div>
+            </VCol>
+            <VCol cols="6" class="mt-3">
+              <div class="text-caption text-medium-emphasis mb-1">Diinput oleh</div>
+              <div>{{ selectedItem.input_oleh ?? '—' }}</div>
+            </VCol>
+          </VRow>
+
+          <VDivider class="my-4" />
+
+          <!-- Multi-Invoice Section -->
+          <template v-if="loadingMulti">
+            <div class="d-flex align-center gap-2 py-2 text-medium-emphasis">
+              <VProgressCircular size="16" width="2" indeterminate />
+              <span class="text-caption">Memuat invoice terkait...</span>
+            </div>
+          </template>
+
+          <template v-else-if="multiInvoices.length > 0">
+            <div class="text-caption text-medium-emphasis mb-2 font-weight-medium text-uppercase">
+              Invoice yang Dibayar <span class="text-purple">({{ multiInvoices.length }})</span>
+            </div>
+            <VTable density="compact" class="rounded border mb-2">
+              <thead>
+                <tr>
+                  <th class="text-caption">No. Invoice</th>
+                  <th class="text-caption">Klien</th>
+                  <th class="text-caption text-right">Total Tagihan</th>
+                  <th class="text-caption text-right">Dibayar</th>
+                  <th class="text-caption text-right">Sisa</th>
+                  <th class="text-caption text-center">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="pay in multiInvoices" :key="pay.id">
+                  <td class="text-mono">
+                    <RouterLink
+                      :to="{ name: 'finance-invoice-show', params: { id: pay.invoice_id } }"
+                      class="text-primary text-decoration-none font-weight-medium"
+                      @click="detailDialog = false"
+                    >
+                      {{ pay.no_invoice }}
+                    </RouterLink>
+                  </td>
+                  <td class="text-caption">{{ pay.klien }}</td>
+                  <td class="text-right text-caption">{{ formatCurrency(pay.total_tagihan) }}</td>
+                  <td class="text-right text-caption text-success font-weight-medium">
+                    {{ formatCurrency(pay.jumlah_pembayaran) }}
+                  </td>
+                  <td class="text-right text-caption" :class="pay.sisa_piutang > 0 ? 'text-error' : 'text-success'">
+                    {{ formatCurrency(pay.sisa_piutang) }}
+                  </td>
+                  <td class="text-center">
+                    <InvoiceStatusBadge v-if="pay.invoice_status" :status="pay.invoice_status" />
+                  </td>
+                </tr>
+              </tbody>
+            </VTable>
+          </template>
+
+          <!-- Info Rekonsiliasi Bank -->
+          <template v-if="selectedItem.no_ref_bank || selectedItem.tgl_rekonsiliasi">
+            <VDivider class="my-4" />
+            <div class="text-caption text-medium-emphasis mb-2 font-weight-medium text-uppercase">
+              Info Rekonsiliasi Bank
+            </div>
+            <VRow dense>
+              <VCol cols="6">
+                <div class="text-caption text-medium-emphasis mb-1">No. Ref Bank</div>
+                <div class="text-mono">{{ selectedItem.no_ref_bank ?? '—' }}</div>
+              </VCol>
+              <VCol cols="6">
+                <div class="text-caption text-medium-emphasis mb-1">Tgl Rekonsiliasi</div>
+                <div>{{ formatDate(selectedItem.tgl_rekonsiliasi) ?? '—' }}</div>
+              </VCol>
+            </VRow>
+          </template>
+
+          <template v-if="selectedItem.keterangan">
+            <VDivider class="my-4" />
+            <div class="text-caption text-medium-emphasis mb-1">Keterangan</div>
+            <div class="text-body-2">{{ selectedItem.keterangan }}</div>
+          </template>
+        </VCardText>
+      </VCard>
+    </VDialog>
   </div>
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useAuthStore } from '@/stores/auth.store'
 import { useCrud } from '@/composables/useCrud'
 import { useLazyFetchAll } from '@/composables/useLazyFetchAll'
 import { useFormatter } from '@/composables/useFormatter'
+import InvoiceStatusBadge from '@/modules/Finance/components/InvoiceStatusBadge.vue'
+import api from '@/utils/axios'
 
 const authStore = useAuthStore()
 const { formatCurrency, formatDate } = useFormatter()
@@ -178,10 +375,11 @@ const canSeeAll = computed(() =>
 
 const { items, loading, meta, params, fetchList } = useCrud('/finance/jurnal-pic')
 const { items: karyawanList, loading: karyawanLoading, fetchAll: fetchKaryawan } = useCrud('/master/karyawan')
-const { ensureLoaded: ensureKaryawanLoaded } = useLazyFetchAll(fetchKaryawan)
+const { items: klienArList,  loading: klienArLoading,  fetchAll: fetchKlienAr }  = useCrud('/finance/klien-ar')
 
-// Jika user terkunci ke PIC sendiri, tampilkan hanya dirinya (dari authStore)
-// tanpa perlu load seluruh daftar karyawan
+const { ensureLoaded: ensureKaryawanLoaded } = useLazyFetchAll(fetchKaryawan)
+const { ensureLoaded: ensureKlienArLoaded }  = useLazyFetchAll(fetchKlienAr)
+
 const picItems = computed(() => {
   if (!canSeeAll.value && authStore.user?.karyawan) {
     return [authStore.user.karyawan]
@@ -191,20 +389,61 @@ const picItems = computed(() => {
 
 params.no_referensi        = null
 params.karyawan_id         = null
+params.klien_ar_id         = null
 params.metode_pembayaran   = null
 params.tanggal_dari        = null
 params.tanggal_sampai      = null
 params.status_rekonsiliasi = null
 
+// Hitung berapa kali tiap no_referensi muncul di halaman ini (deteksi multi-invoice)
+const multiRefMap = computed(() => {
+  const map = {}
+  for (const item of items.value) {
+    if (item.no_referensi) {
+      map[item.no_referensi] = (map[item.no_referensi] ?? 0) + 1
+    }
+  }
+  return map
+})
+
+// State detail modal
+const detailDialog   = ref(false)
+const selectedItem   = ref(null)
+const multiInvoices  = ref([])
+const loadingMulti   = ref(false)
+const exporting      = ref(false)
+
+async function openDetail(item) {
+  selectedItem.value  = item
+  multiInvoices.value = []
+  detailDialog.value  = true
+
+  if (!item.no_referensi) return
+
+  loadingMulti.value = true
+  try {
+    const { data } = await api.get('/finance/jurnal-pic/by-referensi', {
+      params: { no_referensi: item.no_referensi },
+    })
+    multiInvoices.value = data.data ?? []
+  } catch {
+    multiInvoices.value = [item]
+  } finally {
+    loadingMulti.value = false
+  }
+}
+
 const headers = [
-  { title: 'No',                 key: 'no',                  sortable: false, width: '50px' },
-  { title: 'No. Referensi',      key: 'no_referensi',        sortable: false },
-  { title: 'PIC / Diinput oleh', key: 'pic_nama',            sortable: false },
-  { title: 'No Invoice / Klien', key: 'no_invoice',          sortable: false },
-  { title: 'Tgl Bayar',          key: 'tanggal_pembayaran',  sortable: false },
-  { title: 'Jumlah',             key: 'jumlah_pembayaran',   sortable: false },
-  { title: 'Metode',             key: 'metode_pembayaran',   sortable: false },
-  { title: 'Status Rekonsiliasi',key: 'status_rekonsiliasi', sortable: false },
+  { title: 'No',                  key: 'no',                  sortable: false, width: '50px' },
+  { title: 'No. Referensi',       key: 'no_referensi',        sortable: false },
+  { title: 'PIC / Diinput oleh',  key: 'pic_nama',            sortable: false },
+  { title: 'No Invoice / Klien',  key: 'no_invoice',          sortable: false },
+  { title: 'Tgl Bayar',           key: 'tanggal_pembayaran',  sortable: false },
+  { title: 'Jumlah Bayar',        key: 'jumlah_pembayaran',   sortable: false },
+  { title: 'Sisa Piutang',        key: 'sisa_piutang',        sortable: false },
+  { title: 'Status Invoice',      key: 'invoice_status',      sortable: false },
+  { title: 'Metode',              key: 'metode_pembayaran',   sortable: false },
+  { title: 'Status Rekonsiliasi', key: 'status_rekonsiliasi', sortable: false },
 ]
 
 const metodeOptions = [
@@ -233,6 +472,12 @@ function statusRekonColor(status) {
   }[status] ?? 'default'
 }
 
+function getRowProps({ item }) {
+  if (item.status_rekonsiliasi === 'UNMATCHED') return { class: 'jurnal-row--unmatched cursor-pointer' }
+  if (!item.status_rekonsiliasi) return { class: 'jurnal-row--belum cursor-pointer' }
+  return { class: 'cursor-pointer' }
+}
+
 let controller = null
 
 function doFetch() {
@@ -248,6 +493,35 @@ function onTableOptions({ page, itemsPerPage }) {
   fetchList()
 }
 
+async function doExport() {
+  exporting.value = true
+  try {
+    const p = {}
+    if (params.no_referensi)        p.no_referensi        = params.no_referensi
+    if (params.karyawan_id)         p.karyawan_id         = params.karyawan_id
+    if (params.klien_ar_id)         p.klien_ar_id         = params.klien_ar_id
+    if (params.metode_pembayaran)   p.metode_pembayaran   = params.metode_pembayaran
+    if (params.tanggal_dari)        p.tanggal_dari        = params.tanggal_dari
+    if (params.tanggal_sampai)      p.tanggal_sampai      = params.tanggal_sampai
+    if (params.status_rekonsiliasi) p.status_rekonsiliasi = params.status_rekonsiliasi
+
+    const response = await api.get('/finance/jurnal-pic/export-excel', {
+      params: p,
+      responseType: 'blob',
+    })
+    const url  = URL.createObjectURL(new Blob([response.data], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    }))
+    const link    = document.createElement('a')
+    link.href     = url
+    link.download = `jurnal-pic-ar-${new Date().toISOString().slice(0, 10)}.xlsx`
+    link.click()
+    URL.revokeObjectURL(url)
+  } finally {
+    exporting.value = false
+  }
+}
+
 onMounted(() => {
   if (!canSeeAll.value && authStore.user?.karyawan_id) {
     params.karyawan_id = authStore.user.karyawan_id
@@ -256,3 +530,15 @@ onMounted(() => {
 })
 onBeforeUnmount(() => controller?.abort())
 </script>
+
+<style scoped>
+.jurnal-row--unmatched :deep(td) {
+  background-color: rgba(var(--v-theme-error), 0.06) !important;
+}
+.jurnal-row--belum :deep(td) {
+  background-color: rgba(var(--v-theme-warning), 0.06) !important;
+}
+.cursor-pointer {
+  cursor: pointer;
+}
+</style>
