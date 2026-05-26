@@ -188,7 +188,7 @@
             </template>
             <template v-else-if="item.status_cocok === 'MATCHED'">
               <VBtn size="x-small" variant="outlined" color="error" :loading="unmatchLoading === item.id" @click="openUnmatchDialog(item)">
-                <VIcon start size="14">ri-link-unlink-m</VIcon>Batalkan
+                <VIcon start size="14">ri-link-unlink</VIcon>Batalkan
               </VBtn>
             </template>
           </div>
