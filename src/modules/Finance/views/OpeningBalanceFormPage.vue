@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="opening-balance-page">
     <PageHeader
       :title="pageTitle"
@@ -120,7 +120,7 @@
                       Klien dan Nilai Saldo
                     </h4>
                     <p class="text-body-2 text-medium-emphasis mb-0">
-                      Tentukan klien AR yang diajukan beserta nominal saldo awal piutangnya.
+                      Tentukan Client yang diajukan beserta nominal saldo awal piutangnya.
                     </p>
                   </div>
                 </div>
@@ -141,7 +141,7 @@
                   <VCol cols="12">
                     <VAutocomplete
                       v-model="form.klien_ar_id"
-                      label="Klien AR"
+                      label="Client"
                       density="compact"
                       variant="outlined"
                       :items="sortedKlienList"
@@ -456,7 +456,7 @@
                 </div>
 
                 <div class="summary-list__item">
-                  <span class="summary-list__label">Klien AR</span>
+                  <span class="summary-list__label">Client</span>
                   <strong class="summary-list__value">{{ selectedKlien?.nama_klien ?? '-' }}</strong>
                   <span class="summary-list__hint">{{ selectedKlienMeta }}</span>
                 </div>
@@ -581,7 +581,7 @@ const pageTitle = computed(() => isEditing.value ? 'Edit Opening Balance' : 'Sal
 const pageSubtitle = computed(() =>
   isEditing.value
     ? 'Perbarui data opening balance yang ditolak sebelum diajukan ulang'
-    : 'Ajukan saldo piutang awal untuk klien AR')
+    : 'Ajukan saldo piutang awal untuk Client')
 
 const breadcrumbLabel = computed(() => isEditing.value ? 'Edit Opening Balance' : 'Buat Opening Balance')
 
@@ -665,7 +665,7 @@ const periodLabel = computed(() => {
 
 const checklistItems = computed(() => [
   { label: 'No. Opening Balance', done: !!form.no_invoice },
-  { label: 'Klien AR', done: !!form.klien_ar_id },
+  { label: 'Client', done: !!form.klien_ar_id },
   { label: 'Tanggal', done: !!form.tanggal },
   { label: 'Periode', done: !!form.periode_awal && !!form.periode_akhir },
   { label: 'Saldo awal', done: Number(form.saldo_awal) > 0 },

@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div>
     <PageHeader 
       title="Invoice AR" 
@@ -782,7 +782,7 @@ async function printInvoice(id) {
 async function shareViaWhatsapp(inv) {
   const rawPhone = inv.klien_ar?.no_wa ?? ''
   if (!rawPhone) {
-    await showError('Nomor WhatsApp klien belum diisi. Silakan lengkapi data No. WhatsApp pada form Klien AR.')
+    await showError('Nomor WhatsApp klien belum diisi. Silakan lengkapi data No. WhatsApp pada form Client.')
     return
   }
 

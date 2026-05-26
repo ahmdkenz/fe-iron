@@ -1,4 +1,4 @@
-export default [
+﻿export default [
   {
     title: 'Dashboard',
     to: { name: 'dashboard' },
@@ -62,7 +62,7 @@ export default [
   },
   { heading: 'ACCOUNT RECEIVABLE' },
   {
-    title: 'Klien AR',
+    title: 'Client',
     to: { name: 'finance-klien-ar' },
     icon: { icon: 'ri-building-4-line' },
     roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR', 'AR'],

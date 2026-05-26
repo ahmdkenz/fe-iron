@@ -1,12 +1,12 @@
-<template>
+﻿<template>
   <div>
     <PageHeader
-      :title="isEditing ? 'Edit Klien AR' : 'Tambah Klien AR'"
+      :title="isEditing ? 'Edit Client' : 'Tambah Client'"
       subtitle="Kelola data klien Account Receivable"
       :breadcrumbs="[
         { title: 'Dashboard', to: { name: 'dashboard' } },
-        { title: 'Klien AR', to: { name: 'finance-klien-ar' } },
-        { title: isEditing ? 'Edit Klien AR' : 'Tambah Klien AR', disabled: true },
+        { title: 'Client', to: { name: 'finance-klien-ar' } },
+        { title: isEditing ? 'Edit Client' : 'Tambah Client', disabled: true },
       ]"
     >
       <VBtn
@@ -195,7 +195,7 @@
                 :loading="restoLoading"
                 :readonly="isArEditMode"
                 :persistent-hint="isB2B"
-                :hint="isB2B ? 'Untuk tipe PT/STOKIS, semua Resto di bawah PT ini ditagih ke klien AR ini.' : ''"
+                :hint="isB2B ? 'Untuk tipe PT/STOKIS, semua Resto di bawah PT ini ditagih ke Client ini.' : ''"
                 @focus="ensureRestoLoaded()"
                 @update:model-value="onRestoChange"
               >
@@ -318,7 +318,7 @@
         <VCardTitle class="pa-4 pb-2 d-flex align-center justify-space-between">
           <div class="d-flex align-center gap-2">
             <VIcon icon="ri-book-2-line" color="info" />
-            <span>Panduan Pengisian Klien AR</span>
+            <span>Panduan Pengisian Client</span>
           </div>
           <VBtn icon size="small" variant="text" @click="showPanduan = false">
             <VIcon icon="ri-close-line" />
@@ -382,7 +382,7 @@
               </VTable>
 
               <VAlert type="info" variant="tonal" density="compact" icon="ri-information-line">
-                Setiap B2C memiliki 1 Klien AR per pengelola/outlet. Invoice ditagih langsung ke pengelola resto tersebut.
+                Setiap B2C memiliki 1 Client per pengelola/outlet. Invoice ditagih langsung ke pengelola resto tersebut.
               </VAlert>
             </VTabsWindowItem>
 
@@ -428,7 +428,7 @@
               </VTable>
 
               <VAlert type="warning" variant="tonal" density="compact" icon="ri-building-4-line">
-                <strong>Pola B2B:</strong> 1 PT = 1 Klien AR. PT bisa punya beberapa Resto — masing-masing Resto menghasilkan invoice sendiri, tapi semua ditagih ke satu Klien AR PT ini.
+                <strong>Pola B2B:</strong> 1 PT = 1 Client. PT bisa punya beberapa Resto — masing-masing Resto menghasilkan invoice sendiri, tapi semua ditagih ke satu Client PT ini.
               </VAlert>
             </VTabsWindowItem>
           </VTabsWindow>
@@ -605,7 +605,7 @@ async function handleSubmit() {
     setFlashAlert({
       icon: 'success',
       title: 'Berhasil',
-      text: isEditing.value ? 'Perubahan klien AR berhasil disimpan.' : 'Klien AR berhasil ditambahkan.',
+      text: isEditing.value ? 'Perubahan Client berhasil disimpan.' : 'Client berhasil ditambahkan.',
     })
     router.push({ name: 'finance-klien-ar' })
   } else if (res.errors) {

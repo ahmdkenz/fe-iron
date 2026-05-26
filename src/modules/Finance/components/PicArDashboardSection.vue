@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div>
     <PageHeader
       title="Dashboard AR"
@@ -439,7 +439,7 @@ const summaryCards = computed(() => [
   {
     title: 'Total Klien',
     value: loading.value ? '...' : summary.value.totalKlien ?? 0,
-    caption: 'Klien AR aktif yang Anda handle',
+    caption: 'Client aktif yang Anda handle',
     icon: 'ri-building-4-line',
     color: 'primary',
     textClass: 'text-primary',

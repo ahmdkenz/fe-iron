@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div>
     <PageHeader
       :title="isEditing ? 'Edit Invoice AR' : 'Buat Invoice AR'"
@@ -166,7 +166,7 @@
                 >
                   <VAutocomplete
                     v-model="form.klien_ar_id"
-                    label="Klien AR"
+                    label="Client"
                     density="compact"
                     variant="outlined"
                     :items="klienList"

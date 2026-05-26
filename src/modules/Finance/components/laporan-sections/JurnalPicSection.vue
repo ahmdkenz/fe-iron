@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div>
     <!-- Filter -->
     <VCard class="mb-4">
@@ -28,7 +28,7 @@
           @focus="canSeeAll && ensureKaryawanLoaded()"
           @update:model-value="doFetch"
         />
-        <!-- Filter Klien AR -->
+        <!-- Filter Client -->
         <VAutocomplete
           v-model="params.klien_ar_id"
           placeholder="Semua Klien"

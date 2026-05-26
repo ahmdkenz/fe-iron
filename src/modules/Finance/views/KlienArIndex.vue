@@ -1,11 +1,11 @@
-<template>
+﻿<template>
   <div>
     <PageHeader 
-      title="Klien AR" 
+      title="Client" 
       subtitle="Kelola data klien Account Receivable"
       :breadcrumbs="[
         { title: 'Dashboard', to: { name: 'dashboard' } },
-        { title: 'Klien AR', disabled: true }
+        { title: 'Client', disabled: true }
       ]"
     >
       <div class="d-flex gap-2">
@@ -198,7 +198,7 @@
       temporary
     >
       <div class="d-flex align-center justify-space-between pa-4">
-        <span class="text-h6 font-weight-semibold">Detail Klien AR</span>
+        <span class="text-h6 font-weight-semibold">Detail Client</span>
         <VBtn
           icon
           size="small"
@@ -292,7 +292,7 @@
     >
       <VCard>
         <VCardTitle class="d-flex align-center justify-space-between pa-4">
-          <span>Import Data Klien AR</span>
+          <span>Import Data Client</span>
           <VBtn
             icon
             size="small"
@@ -416,7 +416,7 @@
     <BaseModal
       v-if="showDelete"
       v-model="showDelete"
-      title="Hapus Klien AR"
+      title="Hapus Client"
       :loading="loading"
       @confirm="doDelete"
     >
@@ -601,7 +601,7 @@ function shareWhatsApp(klien) {
   const segment  = isB2C ? 'B2C' : 'B2B'
 
   const lines = [
-    '*📋 Data Klien AR*',
+    '*📋 Data Client*',
     '━━━━━━━━━━━━━━',
     `🔖 Kode: ${klien.kode_klien}`,
     `👤 Nama Billing: ${klien.nama_klien}`,
@@ -629,7 +629,7 @@ async function doDelete() {
   const res = await remove(deleteId)
   if (res.success) {
     doFetchList()
-    await showSuccess('Klien AR berhasil dihapus.')
+    await showSuccess('Client berhasil dihapus.')
   } else {
     deleteError.value = res.message || 'Gagal menghapus data'
     await showError(deleteError.value)

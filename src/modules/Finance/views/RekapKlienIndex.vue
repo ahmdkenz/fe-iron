@@ -1,8 +1,8 @@
-<template>
+﻿<template>
   <div>
     <PageHeader
       title="Rekap Piutang per Klien"
-      subtitle="Ringkasan outstanding per klien AR"
+      subtitle="Ringkasan outstanding per Client"
       :breadcrumbs="[
         { title: 'Dashboard', to: { name: 'dashboard' } },
         { title: 'Rekap per Klien', disabled: true },
