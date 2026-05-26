@@ -21,6 +21,7 @@ declare module 'vue' {
     DeferredApexChart: typeof import('./src/components/shared/DeferredApexChart.vue')['default']
     DetailRow: typeof import('./src/components/shared/DetailRow.vue')['default']
     DialogCloseBtn: typeof import('./src/@core/components/DialogCloseBtn.vue')['default']
+    DirectorDashboardSection: typeof import('./src/modules/Finance/components/DirectorDashboardSection.vue')['default']
     DropZone: typeof import('./src/@core/components/DropZone.vue')['default']
     EntitasForm: typeof import('./src/modules/Master/components/EntitasForm.vue')['default']
     I18n: typeof import('./src/@core/components/I18n.vue')['default']
@@ -32,6 +33,7 @@ declare module 'vue' {
     KaryawanForm: typeof import('./src/modules/Master/components/KaryawanForm.vue')['default']
     KinerjaArSection: typeof import('./src/modules/Finance/components/laporan-sections/KinerjaArSection.vue')['default']
     KlienArForm: typeof import('./src/modules/Finance/components/KlienArForm.vue')['default']
+    ManagerDashboardSection: typeof import('./src/modules/Finance/components/ManagerDashboardSection.vue')['default']
     MoreBtn: typeof import('./src/@core/components/MoreBtn.vue')['default']
     MutasiPiutangSection: typeof import('./src/modules/Finance/components/laporan-sections/MutasiPiutangSection.vue')['default']
     OpeningBalanceDetailItemRow: typeof import('./src/modules/Finance/components/OpeningBalanceDetailItemRow.vue')['default']
@@ -48,6 +50,7 @@ declare module 'vue' {
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     ScrollToTop: typeof import('./src/@core/components/ScrollToTop.vue')['default']
+    SupervisorDashboardSection: typeof import('./src/modules/Finance/components/SupervisorDashboardSection.vue')['default']
     ThemeSwitcher: typeof import('./src/@core/components/ThemeSwitcher.vue')['default']
     UserForm: typeof import('./src/modules/IAM/components/UserForm.vue')['default']
   }
