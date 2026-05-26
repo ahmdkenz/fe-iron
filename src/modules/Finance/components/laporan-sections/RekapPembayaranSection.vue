@@ -141,20 +141,26 @@
         <template #item.tanggal="{ item }">
           <span class="font-weight-medium">{{ formatDate(item.tanggal) }}</span>
         </template>
-        <template #item.transfer="{ item }">
-          <span v-if="item.transfer > 0" class="text-info">{{ formatCurrency(item.transfer) }}</span>
-          <span v-else class="text-medium-emphasis">-</span>
+        <template #item.invoice="{ item }">
+          <span class="text-caption font-weight-medium">{{ item.invoice ?? '-' }}</span>
         </template>
-        <template #item.cash="{ item }">
-          <span v-if="item.cash > 0" class="text-success">{{ formatCurrency(item.cash) }}</span>
-          <span v-else class="text-medium-emphasis">-</span>
+        <template #item.ref_payment="{ item }">
+          <span class="text-caption">{{ item.ref_payment ?? '-' }}</span>
         </template>
-        <template #item.giro="{ item }">
-          <span v-if="item.giro > 0" class="text-warning">{{ formatCurrency(item.giro) }}</span>
-          <span v-else class="text-medium-emphasis">-</span>
+        <template #item.metode="{ item }">
+          <VChip size="x-small" :color="metodeColor(item.metode)" variant="tonal">
+            {{ item.metode }}
+          </VChip>
         </template>
-        <template #item.total="{ item }">
-          <span class="font-weight-bold">{{ formatCurrency(item.total) }}</span>
+        <template #item.nominal="{ item }">
+          <span class="font-weight-bold">{{ formatCurrency(item.nominal) }}</span>
+        </template>
+        <template #item.pic_ar="{ item }">
+          <span class="text-caption">{{ item.pic_ar || '-' }}</span>
+        </template>
+        <template #item.is_rekon="{ item }">
+          <VIcon v-if="item.is_rekon" icon="ri-checkbox-circle-line" color="success" size="20" />
+          <span v-else class="text-medium-emphasis text-caption">-</span>
         </template>
       </BaseTable>
     </VCard>
@@ -201,12 +207,15 @@ function onTableOptions({ page: p, itemsPerPage }) {
 }
 
 const headers = [
-  { title: 'No',       key: 'no',       sortable: false, width: '50px' },
-  { title: 'Tanggal',  key: 'tanggal',  sortable: false },
-  { title: 'Transfer', key: 'transfer', sortable: false, align: 'end' },
-  { title: 'Cash',     key: 'cash',     sortable: false, align: 'end' },
-  { title: 'Giro',     key: 'giro',     sortable: false, align: 'end' },
-  { title: 'Total',    key: 'total',    sortable: false, align: 'end' },
+  { title: 'No',          key: 'no',          sortable: false, width: '50px' },
+  { title: 'Tanggal',     key: 'tanggal',     sortable: false },
+  { title: 'Client',      key: 'client',      sortable: false },
+  { title: 'Invoice',     key: 'invoice',     sortable: false },
+  { title: 'Ref Payment', key: 'ref_payment', sortable: false },
+  { title: 'Metode',      key: 'metode',      sortable: false },
+  { title: 'Nominal',     key: 'nominal',     sortable: false, align: 'end' },
+  { title: 'PIC AR',      key: 'pic_ar',      sortable: false },
+  { title: 'Rekon',       key: 'is_rekon',    sortable: false, align: 'center' },
 ]
 
 const metodeOptions = [
@@ -214,6 +223,10 @@ const metodeOptions = [
   { label: 'Cash',     value: 'CASH'     },
   { label: 'Giro',     value: 'GIRO'     },
 ]
+
+function metodeColor(metode) {
+  return { TRANSFER: 'info', CASH: 'success', GIRO: 'warning' }[metode] ?? 'default'
+}
 
 function buildParams() {
   const p = {}
