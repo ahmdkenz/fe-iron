@@ -228,6 +228,9 @@
                       prepend-inner-icon="ri-money-dollar-circle-line"
                       :rules="[v => v > 0 || 'Saldo harus lebih dari 0']"
                       :error-messages="errors.saldo_awal"
+                      :readonly="form.details.length > 0"
+                      :hint="form.details.length > 0 ? 'Dihitung otomatis dari total sisa tagihan rincian' : ''"
+                      persistent-hint
                     />
                   </VCol>
                 </VRow>
@@ -534,7 +537,7 @@
 
 <script setup>
 /* eslint-disable camelcase */
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useFormatter } from '@/composables/useFormatter'
 import { useSweetAlert } from '@/composables/useSweetAlert'
@@ -645,6 +648,11 @@ const formattedSaldoAwal = computed(() => {
 
   return formatCurrency(form.saldo_awal)
 })
+
+watch(() => form.details, newDetails => {
+  if (newDetails.length > 0)
+    form.saldo_awal = newDetails.reduce((sum, d) => sum + (Number(d.sisa_tagihan_asal) || 0), 0)
+}, { deep: true })
 
 const formattedTanggal = computed(() => form.tanggal ? formatDate(form.tanggal) : '-')
 
