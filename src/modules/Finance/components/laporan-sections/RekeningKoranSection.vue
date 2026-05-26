@@ -36,26 +36,16 @@
           @update:model-value="doFetch"
         />
         <VSpacer />
-        <div v-if="report.rows.length > 0" class="d-flex gap-2">
-          <VBtn
-            color="primary"
-            prepend-icon="ri-file-excel-2-line"
-            size="small"
-            :loading="exporting.excel"
-            @click="doExport('excel')"
-          >
-            Excel
-          </VBtn>
-          <VBtn
-            color="primary"
-            prepend-icon="ri-file-pdf-2-line"
-            size="small"
-            :loading="exporting.pdf"
-            @click="doExport('pdf')"
-          >
-            PDF
-          </VBtn>
-        </div>
+        <VBtn
+          v-if="report.rows.length > 0"
+          color="primary"
+          prepend-icon="ri-download-2-line"
+          size="small"
+          :loading="exporting"
+          @click="doExport"
+        >
+          Export
+        </VBtn>
       </VCardText>
     </VCard>
 
@@ -224,7 +214,7 @@ const { items: klienList, loading: klienLoading, fetchAll: fetchKlien } = useCru
 const { ensureLoaded: ensureKlienLoaded } = useLazyFetchAll(fetchKlien)
 
 const loading  = ref(false)
-const exporting = reactive({ excel: false, pdf: false })
+const exporting = ref(false)
 const report   = reactive({
   klien: null,
   periode_awal: null,
@@ -296,25 +286,43 @@ async function doFetch() {
   }
 }
 
-async function doExport(type) {
-  exporting[type] = true
+function buildTimestamp() {
+  const n = new Date()
+  return (
+    String(n.getDate()).padStart(2, '0') +
+    String(n.getMonth() + 1).padStart(2, '0') +
+    String(n.getFullYear()) +
+    String(n.getHours()).padStart(2, '0') +
+    String(n.getMinutes()).padStart(2, '0') +
+    String(n.getSeconds()).padStart(2, '0')
+  )
+}
+
+function getKlienLabel() {
+  if (filters.klien_ar_id) {
+    const found = klienList.value.find(k => k.id === filters.klien_ar_id)
+    if (found) return found.nama_klien
+  }
+  return 'SEMUA'
+}
+
+async function doExport() {
+  exporting.value = true
   try {
-    const endpoint = type === 'excel'
-      ? '/finance/rekening-koran/export-excel'
-      : '/finance/rekening-koran/export-pdf'
-    const mimeType = type === 'excel'
-      ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-      : 'application/pdf'
-    const ext = type === 'excel' ? 'xlsx' : 'pdf'
-    const response = await api.get(endpoint, { params: buildParams(), responseType: 'blob' })
-    const url  = URL.createObjectURL(new Blob([response.data], { type: mimeType }))
+    const response = await api.get('/finance/rekening-koran/export-excel', {
+      params:       buildParams(),
+      responseType: 'blob',
+    })
+    const url  = URL.createObjectURL(new Blob([response.data], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    }))
     const link = document.createElement('a')
     link.href  = url
-    link.download = `rekening-koran-${filters.klien_ar_id}-${filters.periode_awal}-${filters.periode_akhir}.${ext}`
+    link.download = `REK KORAN - ${getKlienLabel()} - ${buildTimestamp()}.xlsx`
     link.click()
     URL.revokeObjectURL(url)
   } finally {
-    exporting[type] = false
+    exporting.value = false
   }
 }
 

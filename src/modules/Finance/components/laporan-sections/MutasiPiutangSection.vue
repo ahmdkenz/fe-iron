@@ -49,13 +49,13 @@
         />
         <VSpacer />
         <VBtn
-          color="success"
-          prepend-icon="ri-file-excel-2-line"
+          color="primary"
+          prepend-icon="ri-download-2-line"
           size="small"
           :loading="exporting"
           @click="doExport"
         >
-          Excel
+          Export
         </VBtn>
       </VCardText>
     </VCard>
@@ -179,9 +179,11 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { useCrud } from '@/composables/useCrud'
 import { useLazyFetchAll } from '@/composables/useLazyFetchAll'
 import { useFormatter } from '@/composables/useFormatter'
+import { useAuthStore } from '@/stores/auth.store'
 import api from '@/utils/axios'
 
 const { formatCurrency } = useFormatter()
+const authStore = useAuthStore()
 const { items: klienList, loading: klienLoading, fetchAll: fetchKlien } = useCrud('/finance/klien-ar')
 const { ensureLoaded: ensureKlienLoaded } = useLazyFetchAll(fetchKlien)
 
@@ -253,12 +255,24 @@ async function doExport() {
     }))
     const link    = document.createElement('a')
     link.href     = url
-    link.download = `mutasi-piutang-${new Date().toISOString().slice(0, 10)}.xlsx`
+    link.download = `MUTASI PIUTANG - ${authStore.user?.karyawan?.nama_karyawan ?? 'SEMUA'} - ${buildTimestamp()}.xlsx`
     link.click()
     URL.revokeObjectURL(url)
   } finally {
     exporting.value = false
   }
+}
+
+function buildTimestamp() {
+  const n = new Date()
+  return (
+    String(n.getDate()).padStart(2, '0') +
+    String(n.getMonth() + 1).padStart(2, '0') +
+    String(n.getFullYear()) +
+    String(n.getHours()).padStart(2, '0') +
+    String(n.getMinutes()).padStart(2, '0') +
+    String(n.getSeconds()).padStart(2, '0')
+  )
 }
 
 onMounted(doFetch)

@@ -35,13 +35,13 @@
         />
         <VSpacer />
         <VBtn
-          color="success"
-          prepend-icon="ri-file-excel-2-line"
+          color="primary"
+          prepend-icon="ri-download-2-line"
           size="small"
           :loading="exporting"
           @click="doExport"
         >
-          Excel
+          Export
         </VBtn>
       </VCardText>
     </VCard>
@@ -245,12 +245,24 @@ async function doExport() {
     }))
     const link    = document.createElement('a')
     link.href     = url
-    link.download = `kinerja-ar-${new Date().toISOString().slice(0, 10)}.xlsx`
+    link.download = `KINERJA AR - SEMUA - ${buildTimestamp()}.xlsx`
     link.click()
     URL.revokeObjectURL(url)
   } finally {
     exporting.value = false
   }
+}
+
+function buildTimestamp() {
+  const n = new Date()
+  return (
+    String(n.getDate()).padStart(2, '0') +
+    String(n.getMonth() + 1).padStart(2, '0') +
+    String(n.getFullYear()) +
+    String(n.getHours()).padStart(2, '0') +
+    String(n.getMinutes()).padStart(2, '0') +
+    String(n.getSeconds()).padStart(2, '0')
+  )
 }
 
 onMounted(doFetch)

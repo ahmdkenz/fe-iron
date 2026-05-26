@@ -55,13 +55,13 @@
         />
         <VSpacer />
         <VBtn
-          color="success"
-          prepend-icon="ri-file-excel-2-line"
+          color="primary"
+          prepend-icon="ri-download-2-line"
           size="small"
           :loading="exporting"
           @click="doExport"
         >
-          Excel
+          Export
         </VBtn>
       </VCardText>
     </VCard>
@@ -236,12 +236,32 @@ async function doExport() {
     }))
     const link    = document.createElement('a')
     link.href     = url
-    link.download = `aging-report-${filters.as_of_date}.xlsx`
+    link.download = `AGING - ${getKaryawanLabel()} - ${buildTimestamp()}.xlsx`
     link.click()
     URL.revokeObjectURL(url)
   } finally {
     exporting.value = false
   }
+}
+
+function buildTimestamp() {
+  const n = new Date()
+  return (
+    String(n.getDate()).padStart(2, '0') +
+    String(n.getMonth() + 1).padStart(2, '0') +
+    String(n.getFullYear()) +
+    String(n.getHours()).padStart(2, '0') +
+    String(n.getMinutes()).padStart(2, '0') +
+    String(n.getSeconds()).padStart(2, '0')
+  )
+}
+
+function getKaryawanLabel() {
+  if (filters.karyawan_ar_id) {
+    const found = karyawanList.value.find(k => k.id === filters.karyawan_ar_id)
+    if (found) return found.nama_karyawan
+  }
+  return authStore.user?.karyawan?.nama_karyawan ?? 'SEMUA'
 }
 
 onMounted(doFetch)
