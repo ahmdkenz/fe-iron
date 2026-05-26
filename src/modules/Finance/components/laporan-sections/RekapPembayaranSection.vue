@@ -211,7 +211,7 @@ const headers = [
   { title: 'Tanggal',     key: 'tanggal',     sortable: false },
   { title: 'Client',      key: 'client',      sortable: false },
   { title: 'Invoice',     key: 'invoice',     sortable: false },
-  { title: 'Ref Payment', key: 'ref_payment', sortable: false },
+  { title: 'No Referensi', key: 'ref_payment', sortable: false },
   { title: 'Metode',      key: 'metode',      sortable: false },
   { title: 'Nominal',     key: 'nominal',     sortable: false, align: 'end' },
   { title: 'PIC AR',      key: 'pic_ar',      sortable: false },
