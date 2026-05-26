@@ -549,7 +549,7 @@ async function exportExcel() {
     const url  = URL.createObjectURL(res.data)
     const a    = document.createElement('a')
     a.href     = url
-    a.download = `opening-balance-${new Date().toISOString().slice(0, 10)}.xlsx`
+    a.download = `Data Opening Balance-${new Date().toISOString().slice(0, 10)}.xlsx`
     a.click()
     URL.revokeObjectURL(url)
   } catch {
@@ -579,7 +579,7 @@ async function downloadTemplate() {
     const url  = URL.createObjectURL(res.data)
     const a    = document.createElement('a')
     a.href     = url
-    a.download = 'template-opening-balance.xlsx'
+    a.download = 'Template OB (Saldo Awal).xlsx'
     a.click()
     URL.revokeObjectURL(url)
   } catch {

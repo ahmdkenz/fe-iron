@@ -421,11 +421,12 @@
               Panduan Import:
             </div>
             <ul class="ps-4">
-              <li>Download template Excel, isi data, lalu upload file (.xlsx atau .csv).</li>
+              <li>Download template, isi data, lalu upload file (.xlsx atau .csv).</li>
               <li>Template memiliki 2 sheet: <strong>Invoice</strong> (header) dan <strong>Item Invoice</strong> (rincian).</li>
               <li>Kolom <strong>nama_klien</strong> wajib sesuai persis dengan data klien di sistem.</li>
               <li>Gunakan <strong>no_urut</strong> untuk menghubungkan invoice dengan item-itemnya.</li>
-              <li>Format tanggal: <strong>YYYY-MM-DD</strong> (contoh: 2025-06-01).</li>
+              <li>Format tanggal: <strong>YYYY-MM-DD</strong> (contoh: 2025-06-01). Berlaku untuk <strong>tanggal_invoice</strong>, <strong>tanggal_jatuh_tempo</strong>, <strong>periode_awal</strong>, dan <strong>periode_akhir</strong>.</li>
+              <li>Kolom <strong>tanggal_jatuh_tempo</strong> bersifat opsional — boleh dikosongkan.</li>
               <li>Import CSV hanya memproses Sheet "Invoice" tanpa item rincian.</li>
               <li>Lihat sheet <strong>Petunjuk Pengisian</strong> di template untuk panduan lengkap.</li>
             </ul>
@@ -694,7 +695,7 @@ async function exportExcel() {
     const url  = URL.createObjectURL(res.data)
     const a    = document.createElement('a')
     a.href     = url
-    a.download = `invoice-ar-${new Date().toISOString().slice(0, 10)}.xlsx`
+    a.download = `Data Tagihan Invoice-${new Date().toISOString().slice(0, 10)}.xlsx`
     a.click()
     URL.revokeObjectURL(url)
   } catch {
@@ -724,7 +725,7 @@ async function downloadTemplate() {
     const url  = URL.createObjectURL(res.data)
     const a    = document.createElement('a')
     a.href     = url
-    a.download = 'template-invoice-ar.xlsx'
+    a.download = 'Template Tagihan Invoice.xlsx'
     a.click()
     URL.revokeObjectURL(url)
   } catch {
