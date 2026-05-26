@@ -265,7 +265,7 @@
         <template #item.actions="{ item }">
           <div class="d-flex gap-1">
             <VBtn
-              v-if="item.can_record_payment"
+              v-if="item.can_record_payment && item.status !== 'LUNAS'"
               icon
               size="small"
               variant="tonal"

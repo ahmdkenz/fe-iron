@@ -65,55 +65,22 @@ export default [
     component: () => import('@/modules/Finance/views/OpeningBalanceApprovalIndex.vue'),
     meta: { requiresAuth: true, roles: ['DIREKTUR'] },
   },
+  // Halaman konsolidasi laporan
   {
-    path: '/finance/aging-report',
-    name: 'finance-aging-report',
-    component: () => import('@/modules/Finance/views/AgingReportIndex.vue'),
-    meta: { requiresAuth: true, roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR'] },
+    path: '/finance/laporan',
+    name: 'finance-laporan',
+    component: () => import('@/modules/Finance/views/LaporanIndex.vue'),
+    meta: { requiresAuth: true, roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR', 'AR'] },
   },
-  {
-    path: '/finance/rekap-klien',
-    name: 'finance-rekap-klien',
-    component: () => import('@/modules/Finance/views/RekapKlienIndex.vue'),
-    meta: { requiresAuth: true, roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR'] },
-  },
-  {
-    path: '/finance/pembayaran',
-    name: 'finance-pembayaran',
-    component: () => import('@/modules/Finance/views/PembayaranArIndex.vue'),
-    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'] },
-  },
-  {
-    path: '/finance/mutasi-piutang',
-    name: 'finance-mutasi-piutang',
-    component: () => import('@/modules/Finance/views/MutasiPiutangIndex.vue'),
-    meta: { requiresAuth: true, roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR'] },
-  },
-  {
-    path: '/finance/rekening-koran',
-    name: 'finance-rekening-koran',
-    component: () => import('@/modules/Finance/views/RekeningKoranIndex.vue'),
-    meta: { requiresAuth: true, roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR'] },
-  },
-  // NEXT UPDATE: Route jatuh-tempo disembunyikan sementara (kolom tanggal_jatuh_tempo dihapus dari DB)
-  // {
-  //   path: '/finance/jatuh-tempo',
-  //   name: 'finance-jatuh-tempo',
-  //   component: () => import('@/modules/Finance/views/JatuhTempoIndex.vue'),
-  //   meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'] },
-  // },
-  {
-    path: '/finance/rekap-pembayaran',
-    name: 'finance-rekap-pembayaran',
-    component: () => import('@/modules/Finance/views/RekapPembayaranIndex.vue'),
-    meta: { requiresAuth: true, roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR'] },
-  },
-  {
-    path: '/finance/kinerja-ar',
-    name: 'finance-kinerja-ar',
-    component: () => import('@/modules/Finance/views/KinerjaArIndex.vue'),
-    meta: { requiresAuth: true, roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR'] },
-  },
+  // Redirect URL lama ke tab yang tepat di halaman laporan
+  { path: '/finance/aging-report',     redirect: { name: 'finance-laporan', query: { tab: 'aging' } } },
+  { path: '/finance/rekap-klien',      redirect: { name: 'finance-laporan', query: { tab: 'rekap-klien' } } },
+  { path: '/finance/pembayaran',       redirect: { name: 'finance-laporan', query: { tab: 'riwayat-bayar' } } },
+  { path: '/finance/mutasi-piutang',   redirect: { name: 'finance-laporan', query: { tab: 'mutasi-piutang' } } },
+  { path: '/finance/rekening-koran',   redirect: { name: 'finance-laporan', query: { tab: 'rekening-koran' } } },
+  { path: '/finance/jatuh-tempo',      redirect: { name: 'finance-laporan', query: { tab: 'jatuh-tempo' } } },
+  { path: '/finance/rekap-pembayaran', redirect: { name: 'finance-laporan', query: { tab: 'rekap-pembayaran' } } },
+  { path: '/finance/kinerja-ar',       redirect: { name: 'finance-laporan', query: { tab: 'kinerja-ar' } } },
   {
     path: '/finance/export-data',
     name: 'finance-export-data',
@@ -132,10 +99,5 @@ export default [
     component: () => import('@/modules/Finance/views/RekonsiliasiBankShow.vue'),
     meta: { requiresAuth: true, roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR', 'AR'] },
   },
-  {
-    path: '/finance/jurnal-pic',
-    name: 'finance-jurnal-pic',
-    component: () => import('@/modules/Finance/views/JurnalPicIndex.vue'),
-    meta: { requiresAuth: true, roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR', 'AR'] },
-  },
+  { path: '/finance/jurnal-pic', redirect: { name: 'finance-laporan', query: { tab: 'jurnal-pic' } } },
 ]

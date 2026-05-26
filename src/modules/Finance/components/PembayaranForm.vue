@@ -254,8 +254,12 @@ async function handleSubmit() {
     await api.post(`/finance/invoices/${props.invoiceId}/pembayaran`, payload, {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
+    Object.keys(errors).forEach(k => (errors[k] = []))
+    errorMessage.value = ''
+    duplikatInfo.value = null
+    Object.assign(form, defaultForm())
     emit('saved')
-    await showSuccess('Pembayaran berhasil dicatat.')
+    showSuccess('Pembayaran berhasil dicatat.')
   } catch (err) {
     const errData = err.response?.data
     if (errData?.errors) {

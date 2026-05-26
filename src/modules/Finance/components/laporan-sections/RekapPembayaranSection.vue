@@ -1,17 +1,8 @@
 <template>
   <div>
-    <PageHeader
-      title="Rekap Pembayaran"
-      subtitle="Rekap pembayaran AR per transaksi"
-      :breadcrumbs="[
-        { title: 'Dashboard', to: { name: 'dashboard' } },
-        { title: 'Rekap Pembayaran', disabled: true },
-      ]"
-    />
-
     <!-- Filter -->
     <VCard class="mb-4">
-      <VCardText class="d-flex flex-wrap gap-3">
+      <VCardText class="d-flex flex-wrap gap-3 align-center">
         <VBtnToggle
           v-model="segment"
           variant="outlined"
@@ -68,6 +59,16 @@
           @focus="ensureKlienLoaded()"
           @update:model-value="doFetch"
         />
+        <VSpacer />
+        <VBtn
+          color="success"
+          prepend-icon="ri-file-excel-2-line"
+          size="small"
+          :loading="exporting"
+          @click="doExport"
+        >
+          Excel
+        </VBtn>
       </VCardText>
     </VCard>
 
@@ -140,26 +141,20 @@
         <template #item.tanggal="{ item }">
           <span class="font-weight-medium">{{ formatDate(item.tanggal) }}</span>
         </template>
-        <template #item.invoice="{ item }">
-          <span class="text-caption font-weight-medium">{{ item.invoice ?? '-' }}</span>
+        <template #item.transfer="{ item }">
+          <span v-if="item.transfer > 0" class="text-info">{{ formatCurrency(item.transfer) }}</span>
+          <span v-else class="text-medium-emphasis">-</span>
         </template>
-        <template #item.ref_payment="{ item }">
-          <span class="text-caption">{{ item.ref_payment ?? '-' }}</span>
+        <template #item.cash="{ item }">
+          <span v-if="item.cash > 0" class="text-success">{{ formatCurrency(item.cash) }}</span>
+          <span v-else class="text-medium-emphasis">-</span>
         </template>
-        <template #item.metode="{ item }">
-          <VChip size="x-small" :color="metodeColor(item.metode)" variant="tonal">
-            {{ item.metode }}
-          </VChip>
+        <template #item.giro="{ item }">
+          <span v-if="item.giro > 0" class="text-warning">{{ formatCurrency(item.giro) }}</span>
+          <span v-else class="text-medium-emphasis">-</span>
         </template>
-        <template #item.nominal="{ item }">
-          <span class="font-weight-bold">{{ formatCurrency(item.nominal) }}</span>
-        </template>
-        <template #item.pic_ar="{ item }">
-          <span class="text-caption">{{ item.pic_ar || '-' }}</span>
-        </template>
-        <template #item.is_rekon="{ item }">
-          <VIcon v-if="item.is_rekon" icon="ri-checkbox-circle-line" color="success" size="20" />
-          <span v-else class="text-medium-emphasis text-caption">-</span>
+        <template #item.total="{ item }">
+          <span class="font-weight-bold">{{ formatCurrency(item.total) }}</span>
         </template>
       </BaseTable>
     </VCard>
@@ -177,9 +172,10 @@ const { formatCurrency, formatDate } = useFormatter()
 const { items: klienList, loading: klienLoading, fetchAll: fetchKlien } = useCrud('/finance/klien-ar')
 const { ensureLoaded: ensureKlienLoaded } = useLazyFetchAll(fetchKlien)
 
-const loading = ref(false)
-const report  = reactive({ tanggal_dari: null, tanggal_sampai: null, summary: null, rows: [] })
-const segment = ref('ALL')
+const loading  = ref(false)
+const exporting = ref(false)
+const report   = reactive({ tanggal_dari: null, tanggal_sampai: null, summary: null, rows: [] })
+const segment  = ref('ALL')
 
 const now      = new Date()
 const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10)
@@ -205,15 +201,12 @@ function onTableOptions({ page: p, itemsPerPage }) {
 }
 
 const headers = [
-  { title: 'No',          key: 'no',          sortable: false, width: '50px' },
-  { title: 'Tanggal',     key: 'tanggal',     sortable: false },
-  { title: 'Client',      key: 'client',      sortable: false },
-  { title: 'Invoice',     key: 'invoice',     sortable: false },
-  { title: 'Ref Payment', key: 'ref_payment', sortable: false },
-  { title: 'Metode',      key: 'metode',      sortable: false },
-  { title: 'Nominal',     key: 'nominal',     sortable: false, align: 'end' },
-  { title: 'PIC AR',      key: 'pic_ar',      sortable: false },
-  { title: 'Rekon',       key: 'is_rekon',    sortable: false, align: 'center' },
+  { title: 'No',       key: 'no',       sortable: false, width: '50px' },
+  { title: 'Tanggal',  key: 'tanggal',  sortable: false },
+  { title: 'Transfer', key: 'transfer', sortable: false, align: 'end' },
+  { title: 'Cash',     key: 'cash',     sortable: false, align: 'end' },
+  { title: 'Giro',     key: 'giro',     sortable: false, align: 'end' },
+  { title: 'Total',    key: 'total',    sortable: false, align: 'end' },
 ]
 
 const metodeOptions = [
@@ -222,25 +215,44 @@ const metodeOptions = [
   { label: 'Giro',     value: 'GIRO'     },
 ]
 
-function metodeColor(metode) {
-  return { TRANSFER: 'info', CASH: 'success', GIRO: 'warning' }[metode] ?? 'default'
+function buildParams() {
+  const p = {}
+  if (filters.tanggal_dari)      p.tanggal_dari      = filters.tanggal_dari
+  if (filters.tanggal_sampai)    p.tanggal_sampai    = filters.tanggal_sampai
+  if (filters.metode_pembayaran) p.metode_pembayaran = filters.metode_pembayaran
+  if (filters.klien_ar_id)       p.klien_ar_id       = filters.klien_ar_id
+  if (segment.value !== 'ALL')   p.segment           = segment.value
+  return p
 }
 
 async function doFetch() {
   page.value    = 1
   loading.value = true
   try {
-    const params = {}
-    if (filters.tanggal_dari)      params.tanggal_dari      = filters.tanggal_dari
-    if (filters.tanggal_sampai)    params.tanggal_sampai    = filters.tanggal_sampai
-    if (filters.metode_pembayaran) params.metode_pembayaran = filters.metode_pembayaran
-    if (filters.klien_ar_id)       params.klien_ar_id       = filters.klien_ar_id
-    if (segment.value !== 'ALL')   params.segment           = segment.value
-
-    const { data } = await api.get('/finance/rekap-pembayaran', { params })
+    const { data } = await api.get('/finance/rekap-pembayaran', { params: buildParams() })
     Object.assign(report, data.data)
   } finally {
     loading.value = false
+  }
+}
+
+async function doExport() {
+  exporting.value = true
+  try {
+    const response = await api.get('/finance/rekap-pembayaran/export-excel', {
+      params:       buildParams(),
+      responseType: 'blob',
+    })
+    const url  = URL.createObjectURL(new Blob([response.data], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    }))
+    const link    = document.createElement('a')
+    link.href     = url
+    link.download = `rekap-pembayaran-${new Date().toISOString().slice(0, 10)}.xlsx`
+    link.click()
+    URL.revokeObjectURL(url)
+  } finally {
+    exporting.value = false
   }
 }
 
