@@ -277,117 +277,170 @@
     </VDialog>
 
     <!-- ── Dialog: Alokasikan Kelebihan Bayar ── -->
-    <VDialog v-model="kelebihanDialog" max-width="700" persistent>
+    <VDialog v-model="kelebihanDialog" max-width="680" persistent scrollable>
       <VCard>
-        <VCardTitle class="pa-4 pb-2"><span class="text-h6">Alokasikan Kelebihan Bayar</span></VCardTitle>
+        <!-- Header -->
+        <VCardTitle class="d-flex align-center gap-2 pa-4 pb-3">
+          <VIcon color="warning" size="20">ri-exchange-dollar-line</VIcon>
+          <span class="text-h6">Alokasikan Kelebihan Bayar</span>
+        </VCardTitle>
         <VDivider />
-        <VCardText class="pa-4">
-          <!-- Info kelebihan -->
-          <VCard variant="tonal" color="error" class="mb-4 pa-3">
-            <div class="d-flex flex-wrap gap-x-6 gap-y-1">
-              <div>
-                <div class="text-caption text-medium-emphasis">Sumber Invoice</div>
-                <div class="text-body-2 font-weight-medium">{{ kelebihanItem?.pembayaran?.klien ?? '-' }}</div>
-              </div>
-              <div>
-                <div class="text-caption text-medium-emphasis">Total Kelebihan</div>
-                <div class="text-body-2 font-weight-medium">{{ formatCurrency(kelebihanItem?.kelebihan_bayar?.total ?? 0) }}</div>
-              </div>
-              <div>
-                <div class="text-caption text-medium-emphasis">Sudah Dialokasi</div>
-                <div class="text-body-2">{{ formatCurrency(kelebihanItem?.kelebihan_bayar?.sudah_dialokasi ?? 0) }}</div>
-              </div>
-              <div>
-                <div class="text-caption text-medium-emphasis">Sisa Kelebihan</div>
-                <div class="text-body-2 font-weight-bold text-error">{{ formatCurrency(kelebihanItem?.kelebihan_bayar?.sisa ?? 0) }}</div>
-              </div>
-            </div>
-          </VCard>
 
-          <!-- Pilih invoice B2C -->
-          <div class="text-body-2 font-weight-medium mb-2">Pilih Invoice B2C (klien yang sama):</div>
-          <VProgressLinear v-if="invoiceB2CLoading" indeterminate color="primary" class="mb-2" />
-          <VAlert v-if="!invoiceB2CLoading && invoiceB2CList.length === 0" type="info" variant="tonal" class="mb-3">
-            Tidak ada invoice B2C yang terbuka untuk klien ini.
-          </VAlert>
-          <div v-if="invoiceB2CList.length > 0" class="mb-3">
-            <VCard
-              v-for="inv in invoiceB2CList"
-              :key="inv.id"
-              :variant="selectedInvoiceId === inv.id ? 'tonal' : 'outlined'"
-              :color="selectedInvoiceId === inv.id ? 'primary' : undefined"
-              class="mb-2 cursor-pointer"
-              @click="selectedInvoiceId = inv.id"
-            >
-              <VCardText class="pa-3">
-                <div class="d-flex align-center gap-2">
-                  <VIcon :color="selectedInvoiceId === inv.id ? 'primary' : 'grey'" size="18">
-                    {{ selectedInvoiceId === inv.id ? 'ri-radio-button-fill' : 'ri-checkbox-blank-circle-line' }}
-                  </VIcon>
-                  <div class="flex-1-1 d-flex flex-wrap gap-x-4 gap-y-1">
-                    <div><span class="text-caption text-medium-emphasis">No Invoice: </span><span class="text-body-2 font-weight-medium">{{ inv.no_invoice }}</span></div>
-                    <div><span class="text-caption text-medium-emphasis">Tanggal: </span><span class="text-body-2">{{ inv.tanggal }}</span></div>
-                    <div><span class="text-caption text-medium-emphasis">Total: </span><span class="text-body-2">{{ formatCurrency(inv.total_tagihan) }}</span></div>
-                    <div><span class="text-caption text-medium-emphasis">Sisa: </span><span class="text-body-2 font-weight-medium text-warning">{{ formatCurrency(inv.sisa_tagihan) }}</span></div>
-                    <VChip :color="statusInvoiceColor(inv.status)" size="x-small" variant="tonal">{{ inv.status }}</VChip>
-                  </div>
-                </div>
-              </VCardText>
-            </VCard>
+        <VCardText class="pa-4" style="max-height: 70vh">
+          <!-- Info strip -->
+          <div class="d-flex flex-wrap gap-4 align-center rounded-lg pa-3 mb-4 bg-error-subtle">
+            <div>
+              <div class="text-caption text-medium-emphasis">Klien</div>
+              <div class="text-body-2 font-weight-semibold">{{ kelebihanItem?.pembayaran?.klien ?? '-' }}</div>
+            </div>
+            <VDivider vertical class="align-self-stretch" />
+            <div>
+              <div class="text-caption text-medium-emphasis">Total Kelebihan</div>
+              <div class="text-body-2 font-weight-semibold">{{ formatCurrency(kelebihanItem?.kelebihan_bayar?.total ?? 0) }}</div>
+            </div>
+            <VDivider vertical class="align-self-stretch" />
+            <div>
+              <div class="text-caption text-medium-emphasis">Sudah Dialokasi</div>
+              <div class="text-body-2">{{ formatCurrency(kelebihanItem?.kelebihan_bayar?.sudah_dialokasi ?? 0) }}</div>
+            </div>
+            <VDivider vertical class="align-self-stretch" />
+            <div>
+              <div class="text-caption text-medium-emphasis">Sisa Kelebihan</div>
+              <div class="text-body-2 font-weight-bold text-error">{{ formatCurrency(kelebihanItem?.kelebihan_bayar?.sisa ?? 0) }}</div>
+            </div>
           </div>
 
-          <!-- Form jumlah & keterangan -->
-          <VRow v-if="invoiceB2CList.length > 0">
-            <VCol cols="12" md="6">
-              <VTextField
-                v-model.number="kelebihanJumlah"
-                label="Jumlah Dialokasikan"
-                type="number"
-                :hint="`Maks: ${formatCurrency(kelebihanItem?.kelebihan_bayar?.sisa ?? 0)}`"
-                persistent-hint
-                density="compact"
-                prefix="Rp"
-              />
-            </VCol>
-            <VCol cols="12" md="6">
-              <VTextField v-model="kelebihanKeterangan" label="Keterangan (opsional)" density="compact" />
-            </VCol>
-          </VRow>
+          <!-- Label section -->
+          <div class="text-caption text-medium-emphasis text-uppercase font-weight-medium mb-2" style="letter-spacing: 0.6px">
+            Pilih Invoice B2C (klien yang sama)
+          </div>
+
+          <VProgressLinear v-if="invoiceB2CLoading" indeterminate color="primary" class="mb-3" rounded />
+          <VAlert v-if="!invoiceB2CLoading && invoiceB2CList.length === 0" type="info" variant="tonal" density="compact" class="mb-3">
+            Tidak ada invoice B2C yang terbuka untuk klien ini.
+          </VAlert>
+
+          <!-- Invoice cards -->
+          <div v-if="invoiceB2CList.length > 0" class="d-flex flex-column gap-2 mb-3">
+            <div
+              v-for="inv in invoiceB2CList"
+              :key="inv.id"
+              class="rounded-lg cursor-pointer"
+              style="border: 2px solid; transition: border-color 0.15s, background 0.15s"
+              :style="selectedInvoices[inv.id]
+                ? 'border-color: rgb(var(--v-theme-primary)); background: rgba(var(--v-theme-primary), 0.06)'
+                : 'border-color: rgba(var(--v-border-color), 0.28)'"
+              @click="toggleInvoice(inv)"
+            >
+              <!-- Invoice info row -->
+              <div class="d-flex align-center gap-3 pa-3" :class="{ 'pb-2': selectedInvoices[inv.id] }">
+                <VCheckbox
+                  :model-value="!!selectedInvoices[inv.id]"
+                  color="primary"
+                  density="compact"
+                  hide-details
+                  readonly
+                  class="flex-0-0 mt-0"
+                />
+                <div class="flex-1-1 min-width-0">
+                  <div class="d-flex align-center gap-2 flex-wrap">
+                    <span class="text-body-2 font-weight-semibold">{{ inv.no_invoice }}</span>
+                    <VChip :color="statusInvoiceColor(inv.status)" size="x-small" variant="tonal">{{ inv.status }}</VChip>
+                  </div>
+                  <div class="d-flex flex-wrap gap-x-3 gap-y-0 mt-1">
+                    <span class="text-caption text-medium-emphasis">{{ inv.tanggal }}</span>
+                    <span class="text-caption text-medium-emphasis">Total: {{ formatCurrency(inv.total_tagihan) }}</span>
+                    <span class="text-caption font-weight-medium text-warning">Sisa: {{ formatCurrency(inv.sisa_tagihan) }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Inline input saat dipilih -->
+              <div v-if="selectedInvoices[inv.id]" class="d-flex gap-3 px-3 pb-3" @click.stop>
+                <VTextField
+                  v-model.number="selectedInvoices[inv.id].jumlah"
+                  label="Jumlah Dialokasikan"
+                  type="number"
+                  :hint="`Maks: ${formatCurrency(inv.sisa_tagihan)}`"
+                  persistent-hint
+                  density="compact"
+                  variant="outlined"
+                  prefix="Rp"
+                  style="max-width: 220px"
+                  @click.stop
+                />
+                <VTextField
+                  v-model="selectedInvoices[inv.id].keterangan"
+                  label="Keterangan (opsional)"
+                  density="compact"
+                  variant="outlined"
+                  class="flex-1-1"
+                  @click.stop
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Summary bar -->
+          <div
+            v-if="invoiceB2CList.length > 0 && Object.keys(selectedInvoices).length > 0"
+            class="d-flex justify-space-between align-center rounded-lg px-4 py-2 mb-1"
+            :class="sisaRemaining < 0 ? 'bg-error-subtle' : 'bg-success-subtle'"
+          >
+            <span class="text-body-2">
+              <span class="text-medium-emphasis">Total Dialokasikan:</span>
+              <strong class="ms-1">{{ formatCurrency(totalAlokasi) }}</strong>
+            </span>
+            <span
+              class="text-body-2 font-weight-medium"
+              :class="sisaRemaining < 0 ? 'text-error' : 'text-success'"
+            >
+              Sisa: {{ formatCurrency(sisaRemaining) }}
+            </span>
+          </div>
 
           <!-- Riwayat alokasi -->
           <template v-if="kelebihanItem?.kelebihan_bayar?.riwayat?.length > 0">
-            <VDivider class="my-3" />
-            <div class="text-body-2 font-weight-medium mb-2">Riwayat Alokasi Sebelumnya:</div>
-            <VCard variant="outlined" class="pa-2">
+            <VDivider class="my-4" />
+            <div class="text-caption text-medium-emphasis text-uppercase font-weight-medium mb-2" style="letter-spacing: 0.6px">
+              Riwayat Alokasi
+            </div>
+            <div class="d-flex flex-column gap-1">
               <div
                 v-for="r in kelebihanItem.kelebihan_bayar.riwayat"
                 :key="r.id"
-                class="d-flex gap-2 text-caption py-1"
+                class="d-flex align-center flex-wrap gap-x-2 gap-y-0 text-caption pa-2 rounded"
+                style="background: rgba(var(--v-border-color), 0.06)"
               >
+                <VIcon size="13" color="success" class="me-1">ri-checkbox-circle-line</VIcon>
                 <span class="font-weight-medium">{{ r.no_invoice }}</span>
-                <span>—</span>
-                <span class="text-success">{{ formatCurrency(r.jumlah) }}</span>
-                <span>—</span>
+                <span class="text-medium-emphasis">•</span>
+                <span class="text-success font-weight-medium">{{ formatCurrency(r.jumlah) }}</span>
+                <span class="text-medium-emphasis">•</span>
                 <span class="text-medium-emphasis">{{ r.tanggal }}</span>
-                <span>—</span>
+                <span class="text-medium-emphasis">•</span>
                 <span class="text-medium-emphasis">oleh {{ r.created_by }}</span>
               </div>
-            </VCard>
+            </div>
           </template>
 
-          <VAlert v-if="kelebihanError" type="error" variant="tonal" class="mt-3">{{ kelebihanError }}</VAlert>
+          <VAlert v-if="kelebihanError" type="error" variant="tonal" density="compact" class="mt-3">
+            {{ kelebihanError }}
+          </VAlert>
         </VCardText>
+
         <VDivider />
-        <VCardActions class="pa-4">
+        <VCardActions class="pa-3 gap-2">
           <VSpacer />
-          <VBtn variant="text" @click="closeKelebihanDialog">Batal</VBtn>
+          <VBtn variant="text" color="secondary" @click="closeKelebihanDialog">Batal</VBtn>
           <VBtn
             color="error"
-            variant="tonal"
-            :disabled="!selectedInvoiceId || !kelebihanJumlah || kelebihanJumlah <= 0 || invoiceB2CLoading"
+            variant="flat"
+            :disabled="Object.keys(selectedInvoices).length === 0 || totalAlokasi <= 0 || sisaRemaining < 0 || invoiceB2CLoading"
             :loading="kelebihanSaving"
             @click="doAlokasikanKelebihan"
           >
+            <VIcon start size="16">ri-check-line</VIcon>
             Alokasikan
           </VBtn>
         </VCardActions>
@@ -437,15 +490,20 @@ const unmatchItem    = ref(null)
 const unmatchSaving  = ref(false)
 
 // ── Kelebihan dialog ──
-const kelebihanDialog     = ref(false)
-const kelebihanItem       = ref(null)
-const invoiceB2CList      = ref([])
-const invoiceB2CLoading   = ref(false)
-const selectedInvoiceId   = ref(null)
-const kelebihanJumlah     = ref(null)
-const kelebihanKeterangan = ref('')
-const kelebihanSaving     = ref(false)
-const kelebihanError      = ref(null)
+const kelebihanDialog   = ref(false)
+const kelebihanItem     = ref(null)
+const invoiceB2CList    = ref([])
+const invoiceB2CLoading = ref(false)
+const selectedInvoices  = ref({}) // { [invoiceId]: { jumlah, keterangan } }
+const kelebihanSaving   = ref(false)
+const kelebihanError    = ref(null)
+
+const totalAlokasi = computed(() =>
+  Object.values(selectedInvoices.value).reduce((s, v) => s + (Number(v.jumlah) || 0), 0),
+)
+const sisaRemaining = computed(() =>
+  (kelebihanItem.value?.kelebihan_bayar?.sisa ?? 0) - totalAlokasi.value,
+)
 
 const filteredRows = computed(() => {
   if (filterStatus.value === 'SEMUA') return report.details
@@ -596,13 +654,11 @@ async function doUnmatch() {
 
 // ── Kelebihan Bayar ──
 async function openKelebihanDialog(item) {
-  kelebihanItem.value       = item
-  selectedInvoiceId.value   = null
-  kelebihanJumlah.value     = item.kelebihan_bayar?.sisa ?? null
-  kelebihanKeterangan.value = ''
-  kelebihanError.value      = null
-  invoiceB2CList.value      = []
-  kelebihanDialog.value     = true
+  kelebihanItem.value    = item
+  selectedInvoices.value = {}
+  kelebihanError.value   = null
+  invoiceB2CList.value   = []
+  kelebihanDialog.value  = true
 
   invoiceB2CLoading.value = true
   try {
@@ -613,35 +669,46 @@ async function openKelebihanDialog(item) {
   }
 }
 
+function toggleInvoice(inv) {
+  if (selectedInvoices.value[inv.id]) {
+    const next = { ...selectedInvoices.value }
+    delete next[inv.id]
+    selectedInvoices.value = next
+  } else {
+    const autoJumlah = Math.min(inv.sisa_tagihan, sisaRemaining.value)
+    selectedInvoices.value = {
+      ...selectedInvoices.value,
+      [inv.id]: { jumlah: autoJumlah > 0 ? autoJumlah : null, keterangan: '' },
+    }
+  }
+}
+
 function closeKelebihanDialog() {
-  kelebihanDialog.value     = false
-  kelebihanItem.value       = null
-  selectedInvoiceId.value   = null
-  kelebihanJumlah.value     = null
-  kelebihanKeterangan.value = ''
-  kelebihanError.value      = null
-  invoiceB2CList.value      = []
+  kelebihanDialog.value  = false
+  kelebihanItem.value    = null
+  selectedInvoices.value = {}
+  kelebihanError.value   = null
+  invoiceB2CList.value   = []
 }
 
 async function doAlokasikanKelebihan() {
-  if (!selectedInvoiceId.value || !kelebihanJumlah.value) return
+  const entries = Object.entries(selectedInvoices.value).filter(([, v]) => Number(v.jumlah) > 0)
+  if (!entries.length) return
   const itemId = kelebihanItem.value.id
   kelebihanSaving.value = true
   kelebihanError.value  = null
   try {
-    await api.post(`/finance/rekonsiliasi-bank/detail/${itemId}/kelebihan`, {
-      invoice_id : selectedInvoiceId.value,
-      jumlah     : kelebihanJumlah.value,
-      keterangan : kelebihanKeterangan.value || null,
-    })
+    for (const [invoiceId, { jumlah, keterangan }] of entries) {
+      await api.post(`/finance/rekonsiliasi-bank/detail/${itemId}/kelebihan`, {
+        invoice_id : Number(invoiceId),
+        jumlah,
+        keterangan : keterangan || null,
+      })
+    }
     await fetchDetail()
-    // Perbarui kelebihanItem dengan data terbaru dari server tanpa menutup dialog
     const updatedItem = report.details.find(d => d.id === itemId)
     if (updatedItem) kelebihanItem.value = updatedItem
-    selectedInvoiceId.value   = null
-    kelebihanJumlah.value     = updatedItem?.kelebihan_bayar?.sisa ?? null
-    kelebihanKeterangan.value = ''
-    // Muat ulang daftar invoice karena sisa kelebihan sudah berubah
+    selectedInvoices.value = {}
     invoiceB2CLoading.value = true
     try {
       const { data } = await api.get(`/finance/rekonsiliasi-bank/detail/${itemId}/invoice-b2c`)
