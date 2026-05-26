@@ -625,17 +625,30 @@ function closeKelebihanDialog() {
 
 async function doAlokasikanKelebihan() {
   if (!selectedInvoiceId.value || !kelebihanJumlah.value) return
+  const itemId = kelebihanItem.value.id
   kelebihanSaving.value = true
   kelebihanError.value  = null
   try {
-    await api.post(`/finance/rekonsiliasi-bank/detail/${kelebihanItem.value.id}/kelebihan`, {
+    await api.post(`/finance/rekonsiliasi-bank/detail/${itemId}/kelebihan`, {
       invoice_id : selectedInvoiceId.value,
       jumlah     : kelebihanJumlah.value,
       keterangan : kelebihanKeterangan.value || null,
     })
-    // Refresh data baris dari server agar kelebihan_bayar terupdate
     await fetchDetail()
-    closeKelebihanDialog()
+    // Perbarui kelebihanItem dengan data terbaru dari server tanpa menutup dialog
+    const updatedItem = report.details.find(d => d.id === itemId)
+    if (updatedItem) kelebihanItem.value = updatedItem
+    selectedInvoiceId.value   = null
+    kelebihanJumlah.value     = updatedItem?.kelebihan_bayar?.sisa ?? null
+    kelebihanKeterangan.value = ''
+    // Muat ulang daftar invoice karena sisa kelebihan sudah berubah
+    invoiceB2CLoading.value = true
+    try {
+      const { data } = await api.get(`/finance/rekonsiliasi-bank/detail/${itemId}/invoice-b2c`)
+      invoiceB2CList.value = data.data ?? []
+    } finally {
+      invoiceB2CLoading.value = false
+    }
   } catch (err) {
     kelebihanError.value = err?.response?.data?.message ?? 'Terjadi kesalahan, coba lagi.'
   } finally {

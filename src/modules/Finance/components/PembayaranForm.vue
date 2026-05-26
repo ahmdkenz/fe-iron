@@ -258,6 +258,7 @@ async function handleSubmit() {
     errorMessage.value = ''
     duplikatInfo.value = null
     Object.assign(form, defaultForm())
+    emit('update:modelValue', false)
     emit('saved')
     showSuccess('Pembayaran berhasil dicatat.')
   } catch (err) {
