@@ -5,59 +5,173 @@
   <meta charset="UTF-8" />
   <link rel="icon" href="/favicon.ico" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Materialize - Vuejs Admin Template</title>
+  <title>IRON - Intelligent Record of Organization Number</title>
   <link rel="stylesheet" type="text/css" href="/loader.css" />
 </head>
 
 <body>
-  <div id="app">
-    <div id="loading-bg">
-      <div class="loading-logo">
-        <!-- svg logo -->
-        <svg width="86" height="46" viewBox="0 0 268 150" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect width="50.289" height="143.953" rx="25.144" transform="matrix(-.8652 .50142 .49859 .86684 195.571 0)"
-            fill="var(--initial-loader-color)" />
-          <rect width="50.289" height="143.953" rx="25.144" transform="matrix(-.8652 .50142 .49859 .86684 196.084 0)"
-            fill="url(#a)" fill-opacity=".4" />
-          <rect width="50.289" height="143.953" rx="25.144" transform="rotate(30.094 86.573 322.042) skewX(.187)"
-            fill="var(--initial-loader-color)" />
-          <rect width="50.289" height="143.953" rx="25.144" transform="matrix(-.8652 .50142 .49859 .86684 94.197 0)"
-            fill="var(--initial-loader-color)" />
-          <rect width="50.289" height="143.953" rx="25.144" transform="matrix(-.8652 .50142 .49859 .86684 94.197 0)"
-            fill="url(#b)" fill-opacity=".4" />
-          <rect width="50.289" height="143.953" rx="25.144" transform="rotate(30.094 35.886 133.493) skewX(.187)"
-            fill="var(--initial-loader-color)" />
+  <!-- Loading screen — outside #app so Vue mount doesn't remove it prematurely -->
+  <div id="loading-bg">
+    <div class="iron-grid"></div>
+    <div class="iron-scanline"></div>
+
+    <!-- Ambient glow orbs -->
+    <div class="iron-orb iron-orb-a"></div>
+    <div class="iron-orb iron-orb-b"></div>
+
+    <div class="iron-content">
+      <!-- Logo -->
+      <div class="iron-logo-wrap">
+        <svg width="72" height="40" viewBox="0 0 268 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="50.289" height="143.953" rx="25.144" transform="matrix(-.8652 .50142 .49859 .86684 195.571 0)" fill="#38bdf8" />
+          <rect width="50.289" height="143.953" rx="25.144" transform="matrix(-.8652 .50142 .49859 .86684 196.084 0)" fill="url(#la)" fill-opacity=".4" />
+          <rect width="50.289" height="143.953" rx="25.144" transform="rotate(30.094 86.573 322.042) skewX(.187)" fill="#38bdf8" />
+          <rect width="50.289" height="143.953" rx="25.144" transform="matrix(-.8652 .50142 .49859 .86684 94.197 0)" fill="#38bdf8" />
+          <rect width="50.289" height="143.953" rx="25.144" transform="matrix(-.8652 .50142 .49859 .86684 94.197 0)" fill="url(#lb)" fill-opacity=".4" />
+          <rect width="50.289" height="143.953" rx="25.144" transform="rotate(30.094 35.886 133.493) skewX(.187)" fill="#38bdf8" />
           <defs>
-            <linearGradient id="a" x1="25.144" y1="0" x2="25.144" y2="143.953" gradientUnits="userSpaceOnUse">
+            <linearGradient id="la" x1="25.144" y1="0" x2="25.144" y2="143.953" gradientUnits="userSpaceOnUse">
               <stop />
               <stop offset="1" stop-opacity="0" />
             </linearGradient>
-            <linearGradient id="b" x1="25.144" y1="0" x2="25.144" y2="143.953" gradientUnits="userSpaceOnUse">
+            <linearGradient id="lb" x1="25.144" y1="0" x2="25.144" y2="143.953" gradientUnits="userSpaceOnUse">
               <stop />
               <stop offset="1" stop-opacity="0" />
             </linearGradient>
           </defs>
         </svg>
       </div>
-      <div class=" loading">
-        <div class="effect-1 effects"></div>
-        <div class="effect-2 effects"></div>
-        <div class="effect-3 effects"></div>
+
+      <!-- Decrypt title -->
+      <div class="iron-brand-wrap">
+        <span class="iron-title" id="iron-decrypt">IRON</span>
+      </div>
+
+      <!-- Subtitle — fades in after decrypt finishes -->
+      <div class="iron-subtitle" id="iron-subtitle">
+        Intelligent Record of Organization Number
+      </div>
+
+      <!-- Divider line -->
+      <div class="iron-divider" id="iron-divider"></div>
+
+      <!-- Progress section -->
+      <div class="iron-progress-section">
+        <div class="iron-progress-track">
+          <div class="iron-progress-fill" id="iron-progress-fill"></div>
+          <div class="iron-progress-glow" id="iron-progress-glow"></div>
+        </div>
+        <div class="iron-progress-meta">
+          <span class="iron-status" id="iron-status">Initializing...</span>
+          <span class="iron-pct"><span id="iron-progress-pct">0</span>%</span>
+        </div>
       </div>
     </div>
   </div>
+
+  <div id="app"></div>
+
   <script type="module" src="/src/main.js"></script>
+
   <script>
-    const loaderColor = localStorage.getItem('materialize-initial-loader-bg') || '#FFFFFF'
-    const primaryColor = localStorage.getItem('materialize-initial-loader-color') || '#666CFF'
+    ;(function () {
+      // ── Decrypt Identity Effect ─────────────────────────────────────────────
+      const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&*!?';
+      const TARGET = 'IRON';
+      const el = document.getElementById('iron-decrypt');
 
-    if (loaderColor)
-      document.documentElement.style.setProperty('--initial-loader-bg', loaderColor)
-    if (loaderColor)
-      document.documentElement.style.setProperty('--initial-loader-bg', loaderColor)
+      let frame = 0;
+      const TOTAL_FRAMES = 50; // ~1500ms at 30ms interval
 
-    if (primaryColor)
-      document.documentElement.style.setProperty('--initial-loader-color', primaryColor)
+      const decryptTimer = setInterval(function () {
+        const progress = frame / TOTAL_FRAMES;
+
+        el.textContent = TARGET.split('').map(function (char, i) {
+          if (progress >= (i + 1) / TARGET.length) return char;
+          return CHARS[Math.floor(Math.random() * CHARS.length)];
+        }).join(' '); // thin space between letters
+
+        frame++;
+
+        if (frame > TOTAL_FRAMES) {
+          clearInterval(decryptTimer);
+          el.textContent = TARGET.split('').join(' ');
+
+          // Reveal subtitle + divider after decrypt completes
+          setTimeout(function () {
+            var sub = document.getElementById('iron-subtitle');
+            var div = document.getElementById('iron-divider');
+            if (sub) sub.classList.add('iron-visible');
+            if (div) div.classList.add('iron-visible');
+          }, 150);
+        }
+      }, 30);
+
+      // ── Progress Bar Simulation ─────────────────────────────────────────────
+      var fill = document.getElementById('iron-progress-fill');
+      var glow = document.getElementById('iron-progress-glow');
+      var pctEl = document.getElementById('iron-progress-pct');
+      var statusEl = document.getElementById('iron-status');
+
+      var statuses = [
+        { at: 5,  text: 'Initializing modules...' },
+        { at: 25, text: 'Loading configuration...' },
+        { at: 45, text: 'Connecting to services...' },
+        { at: 65, text: 'Verifying session...' },
+        { at: 82, text: 'Almost ready...' },
+      ];
+
+      var progress = 0;
+      var statusIdx = 0;
+
+      var progressTimer = setInterval(function () {
+        // Fast early, slow near 90%
+        var inc = progress < 50
+          ? Math.random() * 7 + 3
+          : progress < 75
+            ? Math.random() * 4 + 1
+            : Math.random() * 1.5 + 0.5;
+
+        progress = Math.min(progress + inc, 90);
+
+        var pct = Math.floor(progress);
+        if (fill) fill.style.width = pct + '%';
+        if (glow) glow.style.left = Math.max(0, pct - 4) + '%';
+        if (pctEl) pctEl.textContent = pct;
+
+        // Advance status label
+        if (statusIdx < statuses.length && progress >= statuses[statusIdx].at) {
+          if (statusEl) statusEl.textContent = statuses[statusIdx].text;
+          statusIdx++;
+        }
+
+        if (progress >= 90) clearInterval(progressTimer);
+      }, 110);
+
+      // ── Completion Callback (called by main.js after Vue mount) ─────────────
+      window.__ironLoadingComplete = function () {
+        clearInterval(progressTimer);
+        progress = 100;
+
+        if (fill) {
+          fill.style.transition = 'width 0.35s cubic-bezier(0.4,0,0.2,1)';
+          fill.style.width = '100%';
+        }
+        if (glow) glow.style.left = '96%';
+        if (pctEl) pctEl.textContent = '100';
+        if (statusEl) statusEl.textContent = 'Ready.';
+
+        setTimeout(function () {
+          var bg = document.getElementById('loading-bg');
+          if (bg) {
+            bg.classList.add('iron-fade-out');
+            setTimeout(function () {
+              if (bg.parentNode) bg.parentNode.removeChild(bg);
+            }, 700);
+          }
+        }, 350);
+      };
+    })();
   </script>
 </body>
 

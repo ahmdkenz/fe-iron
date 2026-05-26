@@ -19,13 +19,19 @@ const authStore = useAuthStore(store)
 // This ensures the router guard has accurate auth state on first load/refresh,
 // preventing a flash-redirect to login for authenticated users.
 async function bootstrap() {
-  try {
-    await authStore.fetchMe()
-  } catch {
-    // 401 = no active session, the router guard will redirect to /login
-  }
+  // Run auth check and minimum splash duration in parallel.
+  // The splash must show for at least 2.8s so the decrypt + progress animations
+  // complete fully before the loader dismisses.
+  await Promise.allSettled([
+    authStore.fetchMe().catch(() => {}),
+    new Promise(resolve => setTimeout(resolve, 2800)),
+  ])
 
   app.mount('#app')
+
+  if (typeof window.__ironLoadingComplete === 'function') {
+    window.__ironLoadingComplete()
+  }
 }
 
 void bootstrap()

@@ -1,78 +1,248 @@
+/* ═══════════════════════════════════════════════════════════════
+   IRON — Initial Loading Screen
+   Dark cyberpunk theme matching LoginView aesthetic
+   ═══════════════════════════════════════════════════════════════ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
 body {
   margin: 0;
+  overflow: hidden;
 }
 
 html {
   overflow: hidden scroll;
 }
 
+/* ── Root overlay ───────────────────────────────────────────── */
 #loading-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #020812;
+  opacity: 1;
+  transition: opacity 0.65s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#loading-bg.iron-fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ── Background grid ────────────────────────────────────────── */
+.iron-grid {
   position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(56, 189, 248, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 189, 248, 0.045) 1px, transparent 1px);
+  background-size: 44px 44px;
+  pointer-events: none;
+}
+
+/* ── Scanline texture ───────────────────────────────────────── */
+.iron-scanline {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 3px,
+    rgba(0, 0, 0, 0.06) 3px,
+    rgba(0, 0, 0, 0.06) 4px
+  );
+  pointer-events: none;
+}
+
+/* ── Ambient glow orbs ──────────────────────────────────────── */
+.iron-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  animation: iron-orb-pulse 6s ease-in-out infinite;
+}
+
+.iron-orb-a {
+  width: 420px;
+  height: 420px;
+  background: radial-gradient(circle, rgba(102, 108, 255, 0.14) 0%, transparent 70%);
+  top: -100px;
+  right: -80px;
+  animation-delay: 0s;
+}
+
+.iron-orb-b {
+  width: 360px;
+  height: 360px;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.10) 0%, transparent 70%);
+  bottom: -80px;
+  left: -60px;
+  animation-delay: 3s;
+}
+
+@keyframes iron-orb-pulse {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50%       { opacity: 1;   transform: scale(1.12); }
+}
+
+/* ── Content wrapper ────────────────────────────────────────── */
+.iron-content {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  background: var(--initial-loader-bg, #fff);
-  block-size: 100%;
-  gap: 1rem 0;
-  inline-size: 100%;
+  gap: 0;
+  text-align: center;
+  width: 360px;
 }
 
-.loading {
+/* ── Logo ───────────────────────────────────────────────────── */
+.iron-logo-wrap {
+  margin-bottom: 28px;
+  opacity: 0;
+  transform: translateY(-16px);
+  animation: iron-rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.1s forwards;
+  filter: drop-shadow(0 0 14px rgba(56, 189, 248, 0.55));
+}
+
+/* ── Brand title (decrypt target) ──────────────────────────── */
+.iron-brand-wrap {
+  margin-bottom: 12px;
+  opacity: 0;
+  animation: iron-rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.3s forwards;
+}
+
+.iron-title {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 4rem;
+  font-weight: 900;
+  letter-spacing: 0.55rem;
+  color: #38bdf8;
+  text-shadow:
+    0 0 8px  rgba(56, 189, 248, 0.9),
+    0 0 20px rgba(56, 189, 248, 0.55),
+    0 0 45px rgba(56, 189, 248, 0.25),
+    0 0 80px rgba(102, 108, 255, 0.15);
+  user-select: none;
+}
+
+/* ── Subtitle ───────────────────────────────────────────────── */
+.iron-subtitle {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.28rem;
+  text-transform: uppercase;
+  color: #4e7a96;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+  margin-bottom: 20px;
+  white-space: nowrap;
+}
+
+.iron-subtitle.iron-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Decorative divider ─────────────────────────────────────── */
+.iron-divider {
+  width: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.4), transparent);
+  margin-bottom: 24px;
+  transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.iron-divider.iron-visible {
+  width: 240px;
+}
+
+/* ── Progress section ───────────────────────────────────────── */
+.iron-progress-section {
+  width: 100%;
+  opacity: 0;
+  animation: iron-rise 0.8s ease 0.65s forwards;
+}
+
+.iron-progress-track {
   position: relative;
-  box-sizing: border-box;
-  border: 3px solid transparent;
-  border-radius: 50%;
-  block-size: 55px;
-  inline-size: 55px;
+  width: 100%;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 9999px;
+  overflow: visible;
+  margin-bottom: 10px;
 }
 
-.loading .effect-1,
-.loading .effect-2,
-.loading .effect-3 {
+.iron-progress-fill {
   position: absolute;
-  box-sizing: border-box;
-  border: 3px solid transparent;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #666cff 0%, #38bdf8 100%);
+  border-radius: 9999px;
+  transition: width 0.25s ease;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.7), 0 0 22px rgba(56, 189, 248, 0.3);
+}
+
+/* Moving glow dot at the tip of the progress bar */
+.iron-progress-glow {
+  position: absolute;
+  top: 50%;
+  left: 0%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  background: #38bdf8;
   border-radius: 50%;
-  block-size: 100%;
-  border-inline-start: 3px solid var(--initial-loader-color, #eee);
-  inline-size: 100%;
+  box-shadow: 0 0 8px 3px rgba(56, 189, 248, 0.8);
+  transition: left 0.25s ease;
 }
 
-.loading .effect-1 {
-  animation: rotate 1s ease infinite;
+.iron-progress-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.loading .effect-2 {
-  animation: rotate-opacity 1s ease infinite 0.1s;
+/* ── Status text ────────────────────────────────────────────── */
+.iron-status {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.08rem;
+  color: #38bdf8;
+  opacity: 0.65;
+  animation: iron-blink 2s ease-in-out infinite;
 }
 
-.loading .effect-3 {
-  animation: rotate-opacity 1s ease infinite 0.2s;
+/* ── Percentage ─────────────────────────────────────────────── */
+.iron-pct {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.05rem;
+  color: rgba(56, 189, 248, 0.55);
+  min-width: 36px;
+  text-align: right;
 }
 
-.loading .effects {
-  transition: all 0.3s ease;
+/* ── Keyframes ──────────────────────────────────────────────── */
+@keyframes iron-rise {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes rotate {
-  0% {
-    transform: rotate(0deg);
-  }
-
-  100% {
-    transform: rotate(1turn);
-  }
-}
-
-@keyframes rotate-opacity {
-  0% {
-    opacity: 0.1;
-    transform: rotate(0deg);
-  }
-
-  100% {
-    opacity: 1;
-    transform: rotate(1turn);
-  }
+@keyframes iron-blink {
+  0%, 100% { opacity: 0.65; }
+  50%       { opacity: 0.35; }
 }
