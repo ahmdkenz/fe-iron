@@ -81,8 +81,6 @@
                 :rules="[v => !!v || 'Kode klien wajib diisi']"
                 :error-messages="errors.kode_klien"
                 :readonly="isEditing"
-                persistent-hint
-                :hint="isEditing ? '' : 'Format: AR-B2C-xxx atau AR-B2B-xxx'"
               />
             </VCol>
             <VCol
