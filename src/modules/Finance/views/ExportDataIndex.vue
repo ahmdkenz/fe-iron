@@ -460,105 +460,92 @@ function buildKinerjaArSection(rd) {
   }
 }
 
-// ── HTML/XLS builder (multi-sheet) ─────────────────────────────────────────────
+
+// ── HTML/XLS builder (SpreadsheetML, multi-sheet) ────────────────────
 
 function buildHtmlExcel(sections) {
   const exportDate = now.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })
 
-  const css = `
-    body { font-family: Calibri, Arial, sans-serif; font-size: 10pt; margin: 0; background: #ffffff; }
-    .main-tbl { border-collapse: collapse; width: 100%; }
+  const esc = (v) => String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
-    .hdr-title { background: #0D47A1; color: #ffffff; font-size: 14pt; font-weight: bold;
-                 padding: 12px 22px 4px; letter-spacing: 0.3px; }
-    .hdr-sub   { background: #0D47A1; color: #90CAF9; font-size: 9pt;
-                 padding: 2px 22px 12px; }
+  const styles = `<Styles>
+  <Style ss:ID="sT"><Font ss:Bold="1" ss:Color="#FFFFFF" ss:Size="14" ss:Name="Calibri"/><Interior ss:Color="#0D47A1" ss:Pattern="Solid"/></Style>
+  <Style ss:ID="sM"><Font ss:Italic="1" ss:Color="#90CAF9" ss:Size="9" ss:Name="Calibri"/><Interior ss:Color="#0D47A1" ss:Pattern="Solid"/></Style>
+  <Style ss:ID="sHL"><Font ss:Bold="1" ss:Color="#FFFFFF" ss:Size="10" ss:Name="Calibri"/><Interior ss:Color="#283593" ss:Pattern="Solid"/></Style>
+  <Style ss:ID="sHR"><Font ss:Bold="1" ss:Color="#FFFFFF" ss:Size="10" ss:Name="Calibri"/><Interior ss:Color="#283593" ss:Pattern="Solid"/><Alignment ss:Horizontal="Right"/></Style>
+  <Style ss:ID="sHC"><Font ss:Bold="1" ss:Color="#FFFFFF" ss:Size="10" ss:Name="Calibri"/><Interior ss:Color="#283593" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center"/></Style>
+  <Style ss:ID="dE"><Interior ss:Color="#F3F4FD" ss:Pattern="Solid"/><Font ss:Name="Calibri" ss:Size="10"/></Style>
+  <Style ss:ID="dO"><Interior ss:Color="#FFFFFF" ss:Pattern="Solid"/><Font ss:Name="Calibri" ss:Size="10"/></Style>
+  <Style ss:ID="dRE"><Interior ss:Color="#F3F4FD" ss:Pattern="Solid"/><Font ss:Name="Calibri" ss:Size="10"/><Alignment ss:Horizontal="Right"/></Style>
+  <Style ss:ID="dRO"><Interior ss:Color="#FFFFFF" ss:Pattern="Solid"/><Font ss:Name="Calibri" ss:Size="10"/><Alignment ss:Horizontal="Right"/></Style>
+  <Style ss:ID="dCE"><Interior ss:Color="#F3F4FD" ss:Pattern="Solid"/><Font ss:Name="Calibri" ss:Size="10"/><Alignment ss:Horizontal="Center"/></Style>
+  <Style ss:ID="dCO"><Interior ss:Color="#FFFFFF" ss:Pattern="Solid"/><Font ss:Name="Calibri" ss:Size="10"/><Alignment ss:Horizontal="Center"/></Style>
+  <Style ss:ID="dNE"><Interior ss:Color="#F3F4FD" ss:Pattern="Solid"/><Font ss:Name="Calibri" ss:Size="10"/><Alignment ss:Horizontal="Right"/><NumberFormat ss:Format="#,##0"/></Style>
+  <Style ss:ID="dNO"><Interior ss:Color="#FFFFFF" ss:Pattern="Solid"/><Font ss:Name="Calibri" ss:Size="10"/><Alignment ss:Horizontal="Right"/><NumberFormat ss:Format="#,##0"/></Style>
+  <Style ss:ID="dCuE"><Interior ss:Color="#F3F4FD" ss:Pattern="Solid"/><Font ss:Color="#1A237E" ss:Bold="1" ss:Name="Calibri" ss:Size="10"/><Alignment ss:Horizontal="Right"/><NumberFormat ss:Format="#,##0"/></Style>
+  <Style ss:ID="dCuO"><Interior ss:Color="#FFFFFF" ss:Pattern="Solid"/><Font ss:Color="#1A237E" ss:Bold="1" ss:Name="Calibri" ss:Size="10"/><Alignment ss:Horizontal="Right"/><NumberFormat ss:Format="#,##0"/></Style>
+  <Style ss:ID="tot"><Interior ss:Color="#E65100" ss:Pattern="Solid"/><Font ss:Bold="1" ss:Color="#FFFFFF" ss:Name="Calibri" ss:Size="10"/></Style>
+  <Style ss:ID="totR"><Interior ss:Color="#E65100" ss:Pattern="Solid"/><Font ss:Bold="1" ss:Color="#FFFFFF" ss:Name="Calibri" ss:Size="10"/><Alignment ss:Horizontal="Right"/></Style>
+  <Style ss:ID="totCu"><Interior ss:Color="#E65100" ss:Pattern="Solid"/><Font ss:Bold="1" ss:Color="#FFFFFF" ss:Name="Calibri" ss:Size="10"/><Alignment ss:Horizontal="Right"/><NumberFormat ss:Format="#,##0"/></Style>
+</Styles>`
 
-    .th   { background: #283593; color: #ffffff; font-weight: bold; font-size: 9.5pt;
-            padding: 7px 12px; border: 1px solid #1A237E; white-space: nowrap; }
-    .th.r { text-align: right; }
-    .th.c { text-align: center; }
+  function buildWs(s) {
+    const cols  = s.headers.length
+    const cCols = s.currencyCols ?? []
+    const nCols = (s.numericCols ?? []).filter(i => !cCols.includes(i))
 
-    .td     { padding: 5px 12px; border: 1px solid #E8EAF6; font-size: 9.5pt;
-              vertical-align: middle; color: #212121; }
-    .td.r   { text-align: right; }
-    .td.c   { text-align: center; }
-    .td.cur { text-align: right; color: #1A237E; font-weight: 500; }
-
-    .row-e .td { background: #F3F4FD; }
-    .row-o .td { background: #ffffff; }
-
-    .tot .td     { background: #E65100 !important; color: #ffffff !important;
-                   font-weight: bold; border: 1px solid #BF360C !important; }
-    .tot .td.cur { color: #ffffff !important; }
-  `
-
-  const wsXml = sections.map((s, i) =>
-    `<x:ExcelWorksheet><x:Name>${s.sheetName}</x:Name>` +
-    `<x:WorksheetOptions>${i === 0 ? '<x:Selected/>' : ''}<x:DisplayGridlines/></x:WorksheetOptions>` +
-    `</x:ExcelWorksheet>`
-  ).join('')
-
-  const buildSheet = (s) => {
-    const colCount = s.headers.length
-    const cCols    = s.currencyCols ?? []
-    const nCols    = (s.numericCols ?? []).filter(i => !cCols.includes(i))
-
-    const thRow = s.headers.map((h, i) => {
-      const align = cCols.includes(i) || s.aligns[i] === 'r' ? 'r' : s.aligns[i] === 'c' ? 'c' : ''
-      return `<th class="th${align ? ' '+align : ''}">${h}</th>`
-    }).join('')
-
-    const renderCell = (cell, ci) => {
-      const isCur = cCols.includes(ci)
-      const isNum = nCols.includes(ci)
-      let val = cell ?? ''
-      if (isCur && typeof cell === 'number')
-        val = cell === 0 ? '-' : 'Rp ' + cell.toLocaleString('id-ID')
-      else if (isNum && typeof cell === 'number')
-        val = cell.toLocaleString('id-ID')
-      const cls = isCur ? 'cur' : s.aligns[ci] === 'r' ? 'r' : s.aligns[ci] === 'c' ? 'c' : ''
-      return `<td class="td${cls ? ' '+cls : ''}">${val}</td>`
+    const hStyle = (ci) => {
+      if (cCols.includes(ci) || s.aligns[ci] === 'r') return 'sHR'
+      return s.aligns[ci] === 'c' ? 'sHC' : 'sHL'
+    }
+    const dStyle = (ci, ri) => {
+      const e = ri % 2 === 0
+      if (cCols.includes(ci)) return e ? 'dCuE' : 'dCuO'
+      if (nCols.includes(ci)) return e ? 'dNE' : 'dNO'
+      if (s.aligns[ci] === 'r') return e ? 'dRE' : 'dRO'
+      if (s.aligns[ci] === 'c') return e ? 'dCE' : 'dCO'
+      return e ? 'dE' : 'dO'
+    }
+    const tStyle = (ci) => {
+      if (cCols.includes(ci)) return 'totCu'
+      return s.aligns[ci] === 'r' ? 'totR' : 'tot'
+    }
+    const mkCell = (val, sid, isNum = false) => {
+      if (isNum && typeof val === 'number')
+        return `<Cell ss:StyleID="${sid}"><Data ss:Type="Number">${val}</Data></Cell>`
+      const str = val === null || val === undefined ? '' : String(val)
+      return `<Cell ss:StyleID="${sid}"><Data ss:Type="String">${esc(str)}</Data></Cell>`
     }
 
-    const dataRows = s.rows.map((row, ri) =>
-      `<tr class="${ri % 2 === 0 ? 'row-e' : 'row-o'}">${row.map((c, ci) => renderCell(c, ci)).join('')}</tr>`
-    ).join('')
-
-    const totalRowHtml = s.totalRow
-      ? `<tr class="tot">${s.totalRow.map((c, ci) => renderCell(c, ci)).join('')}</tr>`
+    const hRow  = `<Row>${s.headers.map((h, i) => mkCell(h, hStyle(i))).join('')}</Row>`
+    const dRows = s.rows.map((row, ri) =>
+      `<Row>${row.map((v, ci) => mkCell(v, dStyle(ci, ri), cCols.includes(ci) || nCols.includes(ci))).join('')}</Row>`
+    ).join('\n    ')
+    const tRow  = s.totalRow
+      ? `<Row>${s.totalRow.map((v, ci) => mkCell(v, tStyle(ci), cCols.includes(ci))).join('')}</Row>`
       : ''
 
-    return `<table class="main-tbl">
-  <tr><td colspan="${colCount}" class="hdr-title">${s.title}</td></tr>
-  <tr><td colspan="${colCount}" class="hdr-sub">${s.meta}&nbsp;&nbsp;&middot;&nbsp;&nbsp;Diekspor: ${exportDate} &middot; Project Iron</td></tr>
-  <tr>${thRow}</tr>
-  ${dataRows}
-  ${totalRowHtml}
-</table>`
+    return `<Worksheet ss:Name="${esc(s.sheetName)}">
+  <Table>
+    <Row><Cell ss:StyleID="sT" ss:MergeAcross="${cols - 1}"><Data ss:Type="String">${esc(s.title)}</Data></Cell></Row>
+    <Row><Cell ss:StyleID="sM" ss:MergeAcross="${cols - 1}"><Data ss:Type="String">${esc(s.meta)} · Diekspor: ${exportDate} · Project Iron</Data></Cell></Row>
+    ${hRow}
+    ${dRows}
+    ${tRow}
+  </Table>
+</Worksheet>`
   }
 
-  const sheetsHtml = sections.map((s, i) =>
-    (i === 0 ? '' : '<br clear="all" style="mso-break-type:wb-section-break">\n') + buildSheet(s)
-  ).join('\n')
-
-  return `<!DOCTYPE html>
-<html xmlns:o="urn:schemas-microsoft-com:office:office"
-      xmlns:x="urn:schemas-microsoft-com:office:excel"
-      xmlns="http://www.w3.org/TR/REC-html40">
-<head>
-<meta charset="UTF-8">
-<!--[if gte mso 9]><xml>
-<x:ExcelWorkbook><x:ExcelWorksheets>
-${wsXml}
-</x:ExcelWorksheets></x:ExcelWorkbook>
-</xml><![endif]-->
-<style>${css}</style>
-</head>
-<body>
-${sheetsHtml}
-</body>
-</html>`
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+          xmlns:o="urn:schemas-microsoft-com:office:office"
+          xmlns:x="urn:schemas-microsoft-com:office:excel"
+          xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"
+          xmlns:html="http://www.w3.org/TR/REC-html40">
+  ${styles}
+  ${sections.map(buildWs).join('\n  ')}
+</Workbook>`
 }
 
 function downloadXls(html, filename) {
