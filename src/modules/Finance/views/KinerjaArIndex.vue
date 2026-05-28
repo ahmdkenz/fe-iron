@@ -2,7 +2,7 @@
   <div>
     <PageHeader
       title="Kinerja AR per PIC"
-      subtitle="Performa penagihan per AR officer"
+      subtitle="Performa penagihan per PIC"
       :breadcrumbs="[
         { title: 'Dashboard', to: { name: 'dashboard' } },
         { title: 'Kinerja AR', disabled: true },
@@ -55,7 +55,7 @@
                 <VIcon icon="ri-user-star-line" />
               </VAvatar>
               <div>
-                <div class="text-caption text-medium-emphasis">Jumlah AR Officer</div>
+                <div class="text-caption text-medium-emphasis">Jumlah PIC</div>
                 <div class="text-h6 font-weight-bold">{{ report.rows?.length ?? 0 }}</div>
               </div>
             </div>
@@ -191,7 +191,7 @@ function onTableOptions({ page: p, itemsPerPage }) {
 
 const headers = [
   { title: 'No',             key: 'no',               sortable: false, width: '50px' },
-  { title: 'AR Officer',     key: 'nama_karyawan',    sortable: false },
+  { title: 'PIC',            key: 'nama_karyawan',    sortable: false },
   { title: 'Klien',          key: 'jumlah_klien',     sortable: false, align: 'center' },
   { title: 'Invoice',        key: 'jumlah_invoice',   sortable: false, align: 'center' },
   { title: 'Total Tagihan',  key: 'total_tagihan',    sortable: false, align: 'end' },
