@@ -538,6 +538,7 @@ async function exportExcel() {
     if (params.search) query.set('search', params.search)
     if (params.status !== undefined && params.status !== '') query.set('status', params.status)
     if (segment.value && segment.value !== 'ALL') query.set('segment', segment.value)
+    if (params.karyawan_ar_id) query.set('karyawan_ar_id', params.karyawan_ar_id)
 
     const res  = await api.get(`/finance/klien-ar/export?${query}`, { responseType: 'blob' })
     const url  = URL.createObjectURL(res.data)

@@ -272,6 +272,317 @@
         </template>
       </BaseTable>
     </VCard>
+
+    <!-- ── Section 2: List Opening Balance ──────────────────────────────────── -->
+    <div class="d-flex align-center gap-3 mt-6 mb-4">
+      <span class="text-h6 font-weight-semibold">List Opening Balance</span>
+      <VDivider />
+    </div>
+
+    <VRow class="mb-4">
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
+        <VCard>
+          <VCardText>
+            <div class="d-flex align-center gap-3">
+              <VAvatar
+                color="primary"
+                variant="tonal"
+                size="44"
+              >
+                <VIcon icon="ri-history-line" />
+              </VAvatar>
+              <div>
+                <div class="text-caption text-medium-emphasis">
+                  Total Data
+                </div>
+                <div class="text-h6 font-weight-bold">
+                  {{ obSummary.total_invoice ?? '-' }}
+                </div>
+              </div>
+            </div>
+          </VCardText>
+        </VCard>
+      </VCol>
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
+        <VCard>
+          <VCardText>
+            <div class="d-flex align-center gap-3">
+              <VAvatar
+                color="warning"
+                variant="tonal"
+                size="44"
+              >
+                <VIcon icon="ri-wallet-3-line" />
+              </VAvatar>
+              <div>
+                <div class="text-caption text-medium-emphasis">
+                  Total Saldo Awal
+                </div>
+                <div class="text-h6 font-weight-bold">
+                  {{ formatCurrency(obSummary.total_tagihan) }}
+                </div>
+              </div>
+            </div>
+          </VCardText>
+        </VCard>
+      </VCol>
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
+        <VCard>
+          <VCardText>
+            <div class="d-flex align-center gap-3">
+              <VAvatar
+                color="success"
+                variant="tonal"
+                size="44"
+              >
+                <VIcon icon="ri-money-cny-circle-line" />
+              </VAvatar>
+              <div>
+                <div class="text-caption text-medium-emphasis">
+                  Total Terbayar
+                </div>
+                <div class="text-h6 font-weight-bold">
+                  {{ formatCurrency(obSummary.total_pembayaran) }}
+                </div>
+              </div>
+            </div>
+          </VCardText>
+        </VCard>
+      </VCol>
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
+        <VCard>
+          <VCardText>
+            <div class="d-flex align-center gap-3">
+              <VAvatar
+                color="error"
+                variant="tonal"
+                size="44"
+              >
+                <VIcon icon="ri-error-warning-line" />
+              </VAvatar>
+              <div>
+                <div class="text-caption text-medium-emphasis">
+                  Sisa Piutang
+                </div>
+                <div class="text-h6 font-weight-bold">
+                  {{ formatCurrency(obSummary.total_sisa) }}
+                </div>
+              </div>
+            </div>
+          </VCardText>
+        </VCard>
+      </VCol>
+    </VRow>
+
+    <VCard>
+      <VCardText class="d-flex flex-wrap gap-3 pb-0 align-center">
+        <VTextField
+          v-model="obParams.search"
+          placeholder="Cari no. OB / klien..."
+          clearable
+          hide-details
+          density="compact"
+          style="max-width: 250px"
+          prepend-inner-icon="ri-search-line"
+          @update:model-value="debouncedObFetch"
+        />
+        <VSelect
+          v-model="obParams.status"
+          placeholder="Semua Status"
+          clearable
+          hide-details
+          density="compact"
+          style="max-width: 160px"
+          :items="statusOptions"
+          item-title="label"
+          item-value="value"
+          @update:model-value="doObFetch"
+        />
+        <VSelect
+          v-model="obParams.approval_status"
+          placeholder="Semua Approval"
+          clearable
+          hide-details
+          density="compact"
+          style="max-width: 220px"
+          :items="approvalStatusOptions"
+          item-title="label"
+          item-value="value"
+          @update:model-value="doObFetch"
+        />
+        <VAutocomplete
+          v-model="obParams.klien_ar_id"
+          placeholder="Semua Klien"
+          clearable
+          hide-details
+          density="compact"
+          style="max-width: 220px"
+          :items="klienList"
+          item-title="nama_klien"
+          item-value="id"
+          :loading="klienLoading"
+          @update:model-value="doObFetch"
+        />
+        <VSelect
+          v-model="obParams.periode_bulan"
+          placeholder="Bulan"
+          clearable
+          hide-details
+          density="compact"
+          style="max-width: 140px"
+          :items="bulanOptions"
+          item-title="label"
+          item-value="value"
+          @update:model-value="doObFetch"
+        />
+        <VTextField
+          v-model="obParams.periode_tahun"
+          placeholder="Tahun"
+          clearable
+          hide-details
+          density="compact"
+          style="max-width: 100px"
+          type="number"
+          @update:model-value="debouncedObFetch"
+        />
+        <VSpacer />
+        <VBtn
+          color="primary"
+          prepend-icon="ri-file-excel-line"
+          :loading="isExporting"
+          @click="exportExcel"
+        >
+          Export
+        </VBtn>
+      </VCardText>
+
+      <BaseTable
+        :headers="obHeaders"
+        :items="obItems"
+        :total="obMeta.total"
+        :loading="obLoading"
+        :per-page="obMeta.per_page"
+        :page="obMeta.current_page"
+        class="mt-2"
+        @update:options="onObTableOptions"
+      >
+        <template #item.no="{ index }">
+          {{ (obMeta.current_page - 1) * obMeta.per_page + index + 1 }}
+        </template>
+        <template #item.no_invoice="{ item }">
+          <VChip
+            color="primary"
+            size="small"
+            variant="tonal"
+            label
+          >
+            {{ item.no_invoice }}
+          </VChip>
+        </template>
+        <template #item.klien_ar="{ item }">
+          {{ item.klien_ar?.nama_klien ?? '-' }}
+        </template>
+        <template #item.tanggal_invoice="{ item }">
+          {{ formatDate(item.tanggal_invoice) }}
+        </template>
+        <template #item.periode="{ item }">
+          {{ formatPeriode(item) }}
+        </template>
+        <template #item.total_tagihan="{ item }">
+          {{ formatCurrency(item.total_tagihan) }}
+        </template>
+        <template #item.total_pembayaran="{ item }">
+          {{ formatCurrency(item.total_pembayaran) }}
+        </template>
+        <template #item.sisa_tagihan="{ item }">
+          <span :class="item.sisa_tagihan > 0 ? 'text-error' : 'text-success'">
+            {{ formatCurrency(item.sisa_tagihan) }}
+          </span>
+        </template>
+        <template #item.status="{ item }">
+          <InvoiceStatusBadge :status="item.status" />
+        </template>
+        <template #item.ob_approval_status="{ item }">
+          <ApprovalStatusBadge :status="item.approval_status" />
+        </template>
+        <template #item.ob_actions="{ item }">
+          <div class="d-flex gap-1">
+            <VBtn
+              v-if="item.can_record_payment && item.status !== 'LUNAS'"
+              icon
+              size="small"
+              variant="tonal"
+              color="success"
+              @click="openCatatBayar(item)"
+            >
+              <VIcon
+                icon="ri-money-cny-circle-line"
+                size="18"
+              />
+              <VTooltip activator="parent">
+                Catat Bayar
+              </VTooltip>
+            </VBtn>
+            <VBtn
+              v-if="item.can_print"
+              icon
+              size="small"
+              variant="text"
+              color="secondary"
+              @click="printInvoice(item.id)"
+            >
+              <VIcon
+                icon="ri-printer-line"
+                size="18"
+              />
+              <VTooltip activator="parent">
+                Cetak
+              </VTooltip>
+            </VBtn>
+            <VBtn
+              icon
+              size="small"
+              variant="text"
+              color="info"
+              :to="{ name: 'finance-invoice-show', params: { id: item.id } }"
+            >
+              <VIcon
+                icon="ri-eye-line"
+                size="18"
+              />
+              <VTooltip activator="parent">
+                Detail
+              </VTooltip>
+            </VBtn>
+          </div>
+        </template>
+      </BaseTable>
+    </VCard>
+
+    <!-- Catat Bayar Modal -->
+    <PembayaranForm
+      v-if="selectedForPayment"
+      v-model="showPembayaran"
+      :invoice-id="selectedForPayment.id"
+      :sisa-tagihan="selectedForPayment.sisa_tagihan"
+      @saved="onPembayaranSaved"
+    />
   </div>
 </template>
 
@@ -285,9 +596,12 @@ import api from '@/utils/axios'
 import { useAuthStore } from '@/stores/auth.store'
 import { useFinanceNotificationStore } from '@/stores/finance-notification.store'
 import ApprovalStatusBadge from '../components/ApprovalStatusBadge.vue'
+import InvoiceStatusBadge from '../components/InvoiceStatusBadge.vue'
+import PembayaranForm from '../components/PembayaranForm.vue'
 
 const { items, loading, meta, params, fetchList } = useCrud('/finance/opening-balance')
 const { items: klienList, loading: klienLoading, fetchAll: fetchKlien } = useCrud('/finance/klien-ar')
+const { items: obItems, loading: obLoading, meta: obMeta, params: obParams, fetchList: fetchObList } = useCrud('/finance/opening-balance')
 const { formatCurrency, formatDate } = useFormatter()
 const { showAlert, showSuccess, showError } = useSweetAlert()
 const authStore = useAuthStore()
@@ -296,11 +610,20 @@ const financeNotificationStore = useFinanceNotificationStore()
 const canApproveOpeningBalance = authStore.canApproveOpeningBalance
 const approvingId = ref(null)
 
+// ── Approval table params ──────────────────────────────────────────────────
 params.approval_status = 'PENDING'
 params.klien_ar_id = null
 params.periode_bulan = null
 params.periode_tahun = null
 
+// ── OB list table params ───────────────────────────────────────────────────
+obParams.status = ''
+obParams.approval_status = 'APPROVED'
+obParams.klien_ar_id = null
+obParams.periode_bulan = null
+obParams.periode_tahun = null
+
+// ── Summaries ──────────────────────────────────────────────────────────────
 const summary = reactive({
   total_invoice: null,
   total_tagihan: null,
@@ -308,17 +631,102 @@ const summary = reactive({
   total_sisa: null,
 })
 
+const obSummary = reactive({
+  total_invoice: null,
+  total_tagihan: null,
+  total_pembayaran: null,
+  total_sisa: null,
+})
+
+// ── Catat Bayar state ──────────────────────────────────────────────────────
+const showPembayaran     = ref(false)
+const selectedForPayment = ref(null)
+
+function openCatatBayar(item) {
+  selectedForPayment.value = item
+  showPembayaran.value     = true
+}
+
+function onPembayaranSaved() {
+  loadObList()
+  loadObSummary()
+}
+
+// ── Export ─────────────────────────────────────────────────────────────────
+const isExporting = ref(false)
+
+async function exportExcel() {
+  isExporting.value = true
+  try {
+    const res = await api.get('/finance/opening-balance/export', {
+      params: {
+        search:          obParams.search          || undefined,
+        status:          obParams.status          || undefined,
+        approval_status: obParams.approval_status || undefined,
+        klien_ar_id:     obParams.klien_ar_id     || undefined,
+        periode_bulan:   obParams.periode_bulan   || undefined,
+        periode_tahun:   obParams.periode_tahun   || undefined,
+      },
+      responseType: 'blob',
+    })
+    const url  = URL.createObjectURL(res.data)
+    const a    = document.createElement('a')
+    a.href     = url
+    a.download = `Data Opening Balance-${new Date().toISOString().slice(0, 10)}.xlsx`
+    a.click()
+    URL.revokeObjectURL(url)
+  } catch {
+    window.alert('Gagal mengunduh data export.')
+  } finally {
+    isExporting.value = false
+  }
+}
+
+// ── Print ──────────────────────────────────────────────────────────────────
+async function printInvoice(id) {
+  try {
+    const res = await api.get(`/finance/invoices/${id}/print`, { responseType: 'blob' })
+    const blobUrl = URL.createObjectURL(res.data)
+    window.open(blobUrl, '_blank')
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 30_000)
+  } catch {
+    window.alert('Gagal membuka dokumen cetak')
+  }
+}
+
+// ── Table headers ──────────────────────────────────────────────────────────
 const headers = [
   { title: 'No', key: 'no', sortable: false, width: '60px' },
   { title: 'No Opening Balance', key: 'no_invoice', sortable: false },
   { title: 'Klien', key: 'klien_ar', sortable: false },
-  { title: 'Entitas',    key: 'perusahaan', sortable: false },
+  { title: 'Entitas', key: 'perusahaan', sortable: false },
   { title: 'Tanggal', key: 'tanggal_invoice', sortable: false },
   { title: 'Nominal', key: 'total_tagihan', sortable: false },
   { title: 'Pengaju', key: 'submitted_by_name', sortable: false },
   { title: 'Diajukan Pada', key: 'submitted_at', sortable: false },
   { title: 'Approval', key: 'approval_status', sortable: false },
   { title: 'Aksi', key: 'actions', sortable: false, align: 'center', width: '100px' },
+]
+
+const obHeaders = [
+  { title: 'No', key: 'no', sortable: false, width: '60px' },
+  { title: 'No Opening Balance', key: 'no_invoice', sortable: false },
+  { title: 'Klien', key: 'klien_ar', sortable: false },
+  { title: 'Tanggal', key: 'tanggal_invoice', sortable: false },
+  { title: 'Periode', key: 'periode', sortable: false },
+  { title: 'Saldo Awal', key: 'total_tagihan', sortable: false },
+  { title: 'Total Terbayar', key: 'total_pembayaran', sortable: false },
+  { title: 'Sisa Tagihan', key: 'sisa_tagihan', sortable: false },
+  { title: 'Status', key: 'status', sortable: false },
+  { title: 'Approval', key: 'ob_approval_status', sortable: false },
+  { title: 'Aksi', key: 'ob_actions', sortable: false, align: 'center', width: '120px' },
+]
+
+const statusOptions = [
+  { label: 'Draft', value: 'DRAFT' },
+  { label: 'Terkirim', value: 'TERKIRIM' },
+  { label: 'Sebagian', value: 'SEBAGIAN' },
+  { label: 'Lunas', value: 'LUNAS' },
 ]
 
 const approvalStatusOptions = [
@@ -342,124 +750,112 @@ const bulanOptions = [
   { label: 'Desember', value: 12 },
 ]
 
-let listController = null
+// ── Abort controllers ──────────────────────────────────────────────────────
+let listController    = null
 let summaryController = null
-let klienController = null
+let klienController   = null
+let obListController    = null
+let obSummaryController = null
 
 function clearDebounceTimer() {
   clearTimeout(debounceTimer)
   debounceTimer = null
 }
 
+function clearObDebounceTimer() {
+  clearTimeout(obDebounceTimer)
+  obDebounceTimer = null
+}
+
 function abortPendingRequests() {
   listController?.abort()
   summaryController?.abort()
   klienController?.abort()
-  listController = null
+  obListController?.abort()
+  obSummaryController?.abort()
+  listController    = null
   summaryController = null
-  klienController = null
+  klienController   = null
+  obListController    = null
+  obSummaryController = null
 }
 
+// ── Loaders: approval table ────────────────────────────────────────────────
 async function loadKlien() {
   klienController?.abort()
-
   const controller = new AbortController()
-
   klienController = controller
   await fetchKlien({ signal: controller.signal })
-
-  if (klienController === controller)
-    klienController = null
+  if (klienController === controller) klienController = null
 }
 
 async function loadList() {
   listController?.abort()
-
   const controller = new AbortController()
-
   listController = controller
   await fetchList({}, { signal: controller.signal })
-
-  if (listController === controller)
-    listController = null
+  if (listController === controller) listController = null
 }
 
 async function loadSummary() {
   summaryController?.abort()
-
   const controller = new AbortController()
-
   summaryController = controller
-
   try {
     const { data } = await api.get('/finance/opening-balance/summary', {
       params: {
-        search: params.search,
+        search:          params.search,
         approval_status: params.approval_status,
-        klien_ar_id: params.klien_ar_id,
-        periode_bulan: params.periode_bulan,
-        periode_tahun: params.periode_tahun,
+        klien_ar_id:     params.klien_ar_id,
+        periode_bulan:   params.periode_bulan,
+        periode_tahun:   params.periode_tahun,
       },
       signal: controller.signal,
     })
-
-    if (controller.signal.aborted)
-      return
-
+    if (controller.signal.aborted) return
     Object.assign(summary, data.data)
   } catch (err) {
-    if (err.code === 'ERR_CANCELED')
-      return
-
-    // ignore summary error
+    if (err.code === 'ERR_CANCELED') return
   } finally {
-    if (summaryController === controller)
-      summaryController = null
+    if (summaryController === controller) summaryController = null
   }
 }
 
-function formatDateTime(value) {
-  if (!value) return '-'
-
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return value
-
-  return new Intl.DateTimeFormat('id-ID', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(date)
+// ── Loaders: OB list table ─────────────────────────────────────────────────
+async function loadObList() {
+  obListController?.abort()
+  const controller = new AbortController()
+  obListController = controller
+  await fetchObList({}, { signal: controller.signal })
+  if (obListController === controller) obListController = null
 }
 
-async function confirmApprove(item) {
-  const result = await showAlert({
-    icon: 'question',
-    title: 'Approve Opening Balance?',
-    text: `Anda akan menyetujui Opening Balance ${item.no_invoice} atas nama ${item.klien_ar?.nama_klien ?? '-'}.`,
-    confirmButtonText: 'Ya, Approve',
-    cancelButtonText: 'Batal',
-    showCancelButton: true,
-    focusCancel: true,
-    reverseButtons: true,
-  })
-
-  if (!result.isConfirmed)
-    return
-
-  approvingId.value = item.id
-
+async function loadObSummary() {
+  obSummaryController?.abort()
+  const controller = new AbortController()
+  obSummaryController = controller
   try {
-    await api.patch(`/finance/opening-balance/${item.id}/approve`, { note: null })
-    await showSuccess({ text: `Opening Balance ${item.no_invoice} berhasil disetujui.` })
-    doFetch()
-    financeNotificationStore.fetchPendingOpeningBalanceCount()
+    const { data } = await api.get('/finance/opening-balance/summary', {
+      params: {
+        search:          obParams.search,
+        status:          obParams.status,
+        approval_status: obParams.approval_status,
+        klien_ar_id:     obParams.klien_ar_id,
+        periode_bulan:   obParams.periode_bulan,
+        periode_tahun:   obParams.periode_tahun,
+      },
+      signal: controller.signal,
+    })
+    if (controller.signal.aborted) return
+    Object.assign(obSummary, data.data)
   } catch (err) {
-    const message = err?.response?.data?.message ?? 'Gagal menyetujui Opening Balance.'
-    showError({ text: message })
+    if (err.code === 'ERR_CANCELED') return
   } finally {
-    approvingId.value = null
+    if (obSummaryController === controller) obSummaryController = null
   }
 }
 
+// ── Fetch helpers: approval table ──────────────────────────────────────────
 function doFetch() {
   params.page = 1
   loadList()
@@ -478,19 +874,90 @@ function onTableOptions({ page, itemsPerPage }) {
   loadList()
 }
 
+// ── Fetch helpers: OB list table ───────────────────────────────────────────
+function doObFetch() {
+  obParams.page = 1
+  loadObList()
+  loadObSummary()
+}
+
+let obDebounceTimer = null
+function debouncedObFetch() {
+  clearObDebounceTimer()
+  obDebounceTimer = setTimeout(doObFetch, 400)
+}
+
+function onObTableOptions({ page, itemsPerPage }) {
+  obParams.page = page
+  obParams.per_page = itemsPerPage
+  loadObList()
+}
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+function formatPeriode(item) {
+  if (!item.periode_awal || !item.periode_akhir) return '-'
+  return `${formatDate(item.periode_awal)} - ${formatDate(item.periode_akhir)}`
+}
+
+function formatDateTime(value) {
+  if (!value) return '-'
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return value
+  return new Intl.DateTimeFormat('id-ID', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(date)
+}
+
+// ── Approve action ─────────────────────────────────────────────────────────
+async function confirmApprove(item) {
+  const result = await showAlert({
+    icon: 'question',
+    title: 'Approve Opening Balance?',
+    text: `Anda akan menyetujui Opening Balance ${item.no_invoice} atas nama ${item.klien_ar?.nama_klien ?? '-'}.`,
+    confirmButtonText: 'Ya, Approve',
+    cancelButtonText: 'Batal',
+    showCancelButton: true,
+    focusCancel: true,
+    reverseButtons: true,
+  })
+
+  if (!result.isConfirmed) return
+
+  approvingId.value = item.id
+  try {
+    await api.patch(`/finance/opening-balance/${item.id}/approve`, { note: null })
+    await showSuccess({ text: `Opening Balance ${item.no_invoice} berhasil disetujui.` })
+    doFetch()
+    loadObList()
+    loadObSummary()
+    financeNotificationStore.fetchPendingOpeningBalanceCount()
+  } catch (err) {
+    const message = err?.response?.data?.message ?? 'Gagal menyetujui Opening Balance.'
+    showError({ text: message })
+  } finally {
+    approvingId.value = null
+  }
+}
+
+// ── Lifecycle ──────────────────────────────────────────────────────────────
 onMounted(() => {
   loadKlien()
   loadList()
   loadSummary()
+  loadObList()
+  loadObSummary()
 })
 
 onDeactivated(() => {
   clearDebounceTimer()
+  clearObDebounceTimer()
   abortPendingRequests()
 })
 
 onBeforeUnmount(() => {
   clearDebounceTimer()
+  clearObDebounceTimer()
   abortPendingRequests()
 })
 </script>

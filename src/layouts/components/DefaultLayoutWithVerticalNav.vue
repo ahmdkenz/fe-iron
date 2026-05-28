@@ -21,7 +21,7 @@ const route = useRoute()
 let financeNotificationIntervalId = null
 
 const enrichedNavItems = computed(() => navItems.map(item => {
-  if (item.to?.name !== 'finance-opening-balance-approval')
+  if (item.to?.name !== 'finance-opening-balance')
     return item
 
   return {

@@ -77,13 +77,7 @@
     title: 'Opening Balance',
     to: { name: 'finance-opening-balance' },
     icon: { icon: 'ri-history-line' },
-    roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'],
-  },
-  {
-    title: 'Approval Opening Balance',
-    to: { name: 'finance-opening-balance-approval' },
-    icon: { icon: 'ri-task-line' },
-    roles: ['DIREKTUR'],
+    roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR', 'AR'],
   },
   { heading: 'REKONSILIASI' },
   {

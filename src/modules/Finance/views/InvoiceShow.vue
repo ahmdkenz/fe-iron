@@ -771,18 +771,12 @@ const latestDecisionLog = computed(() =>
   approvalLogs.value.find(log => ['APPROVED', 'REJECTED'].includes(log.action)))
 
 const listRoute = computed(() => {
-  if (isOpeningBalance.value && authStore.isDirector)
-    return { name: 'finance-opening-balance-approval' }
-
   return isOpeningBalance.value
     ? { name: 'finance-opening-balance' }
     : { name: 'finance-invoice-index' }
 })
 
 const listLabel = computed(() => {
-  if (isOpeningBalance.value && authStore.isDirector)
-    return 'Approval Opening Balance'
-
   return isOpeningBalance.value ? 'Opening Balance' : 'Invoice'
 })
 

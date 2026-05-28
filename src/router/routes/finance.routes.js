@@ -45,7 +45,7 @@ export default [
     path: '/finance/opening-balance',
     name: 'finance-opening-balance',
     component: () => import('@/modules/Finance/views/OpeningBalanceIndex.vue'),
-    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'] },
+    meta: { requiresAuth: true, roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR', 'AR'] },
   },
   {
     path: '/finance/opening-balance/create',
@@ -59,12 +59,7 @@ export default [
     component: () => import('@/modules/Finance/views/OpeningBalanceFormPage.vue'),
     meta: { requiresAuth: true, roles: ['MANAGER', 'SUPERVISOR', 'AR'] },
   },
-  {
-    path: '/finance/opening-balance/approval',
-    name: 'finance-opening-balance-approval',
-    component: () => import('@/modules/Finance/views/OpeningBalanceApprovalIndex.vue'),
-    meta: { requiresAuth: true, roles: ['DIREKTUR'] },
-  },
+  { path: '/finance/opening-balance/approval', redirect: { name: 'finance-opening-balance' } },
   // Halaman konsolidasi laporan
   {
     path: '/finance/laporan',

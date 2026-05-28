@@ -281,21 +281,6 @@
               </VTooltip>
             </VBtn>
             <VBtn
-              icon
-              size="small"
-              variant="text"
-              color="secondary"
-              @click="printInvoice(item.id)"
-            >
-              <VIcon
-                icon="ri-printer-line"
-                size="18"
-              />
-              <VTooltip activator="parent">
-                Cetak Invoice
-              </VTooltip>
-            </VBtn>
-            <VBtn
               v-if="item.can_print"
               icon
               size="small"
@@ -340,6 +325,21 @@
               />
               <VTooltip activator="parent">
                 Edit
+              </VTooltip>
+            </VBtn>
+            <VBtn
+              icon
+              size="small"
+              variant="text"
+              color="secondary"
+              @click="printInvoice(item.id)"
+            >
+              <VIcon
+                icon="ri-printer-line"
+                size="18"
+              />
+              <VTooltip activator="parent">
+                Cetak Invoice
               </VTooltip>
             </VBtn>
             <VBtn

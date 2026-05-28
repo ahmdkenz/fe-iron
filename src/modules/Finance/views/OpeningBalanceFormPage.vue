@@ -228,8 +228,8 @@
                       prepend-inner-icon="ri-money-dollar-circle-line"
                       :rules="[v => v > 0 || 'Saldo harus lebih dari 0']"
                       :error-messages="errors.saldo_awal"
-                      :readonly="form.details.length > 0"
-                      :hint="form.details.length > 0 ? 'Dihitung otomatis dari total sisa tagihan rincian' : ''"
+                      readonly
+                      hint="Dihitung otomatis dari total sisa tagihan rincian"
                       persistent-hint
                     />
                   </VCol>
