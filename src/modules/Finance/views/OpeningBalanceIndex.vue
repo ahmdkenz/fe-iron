@@ -397,12 +397,12 @@
 
           <VBtn
             variant="outlined"
-            color="success"
+            color="primary"
             prepend-icon="ri-file-excel-line"
             class="mb-4"
             @click="downloadTemplate"
           >
-            Download Template Excel
+            Download Template
           </VBtn>
 
           <VFileInput

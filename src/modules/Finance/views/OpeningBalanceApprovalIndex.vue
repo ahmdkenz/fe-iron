@@ -237,6 +237,23 @@
         <template #item.actions="{ item }">
           <div class="d-flex gap-1 justify-center">
             <VBtn
+              v-if="canApproveOpeningBalance && item.approval_status === 'PENDING'"
+              icon
+              size="small"
+              variant="text"
+              color="success"
+              :loading="approvingId === item.id"
+              @click="confirmApprove(item)"
+            >
+              <VIcon
+                icon="ri-checkbox-circle-line"
+                size="18"
+              />
+              <VTooltip activator="parent">
+                Approve
+              </VTooltip>
+            </VBtn>
+            <VBtn
               icon
               size="small"
               variant="text"
@@ -260,15 +277,24 @@
 
 <script setup>
 /* eslint-disable camelcase */
-import { onBeforeUnmount, onDeactivated, onMounted, reactive } from 'vue'
+import { onBeforeUnmount, onDeactivated, onMounted, reactive, ref } from 'vue'
 import { useCrud } from '@/composables/useCrud'
 import { useFormatter } from '@/composables/useFormatter'
+import { useSweetAlert } from '@/composables/useSweetAlert'
 import api from '@/utils/axios'
+import { useAuthStore } from '@/stores/auth.store'
+import { useFinanceNotificationStore } from '@/stores/finance-notification.store'
 import ApprovalStatusBadge from '../components/ApprovalStatusBadge.vue'
 
 const { items, loading, meta, params, fetchList } = useCrud('/finance/opening-balance')
 const { items: klienList, loading: klienLoading, fetchAll: fetchKlien } = useCrud('/finance/klien-ar')
 const { formatCurrency, formatDate } = useFormatter()
+const { showAlert, showSuccess, showError } = useSweetAlert()
+const authStore = useAuthStore()
+const financeNotificationStore = useFinanceNotificationStore()
+
+const canApproveOpeningBalance = authStore.canApproveOpeningBalance
+const approvingId = ref(null)
 
 params.approval_status = 'PENDING'
 params.klien_ar_id = null
@@ -402,6 +428,36 @@ function formatDateTime(value) {
     dateStyle: 'medium',
     timeStyle: 'short',
   }).format(date)
+}
+
+async function confirmApprove(item) {
+  const result = await showAlert({
+    icon: 'question',
+    title: 'Approve Opening Balance?',
+    text: `Anda akan menyetujui Opening Balance ${item.no_invoice} atas nama ${item.klien_ar?.nama_klien ?? '-'}.`,
+    confirmButtonText: 'Ya, Approve',
+    cancelButtonText: 'Batal',
+    showCancelButton: true,
+    focusCancel: true,
+    reverseButtons: true,
+  })
+
+  if (!result.isConfirmed)
+    return
+
+  approvingId.value = item.id
+
+  try {
+    await api.patch(`/finance/opening-balance/${item.id}/approve`, { note: null })
+    await showSuccess({ text: `Opening Balance ${item.no_invoice} berhasil disetujui.` })
+    doFetch()
+    financeNotificationStore.fetchPendingOpeningBalanceCount()
+  } catch (err) {
+    const message = err?.response?.data?.message ?? 'Gagal menyetujui Opening Balance.'
+    showError({ text: message })
+  } finally {
+    approvingId.value = null
+  }
 }
 
 function doFetch() {
