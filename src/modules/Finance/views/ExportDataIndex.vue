@@ -352,15 +352,17 @@ function buildRekapKlienSection(rows) {
   return {
     title: 'REKAP PIUTANG PER KLIEN',
     meta:  `Periode: ${bulanLabel} ${rekapKlienFilter.tahun ?? ''}  ·  Total Klien: ${rows.length}`,
-    headers: ['No', 'Kode Klien', 'Nama Klien', 'Jml Invoice', 'Total Tagihan', 'Total Terbayar', 'Sisa Piutang'],
-    aligns:  ['c',  '',           '',            'c',           'r',              'r',               'r'],
+    headers: ['No', 'Kode Klien', 'Nama Klien', 'Jml Invoice', 'Total Tagihan', 'Total Terbayar', 'Sisa Piutang', 'Draft', 'Terkirim', 'Sebagian', 'Lunas'],
+    aligns:  ['c',  '',           '',            'c',           'r',              'r',               'r',            'c',     'c',         'c',         'c'],
     rows: rows.map((r, i) => [i+1, r.kode_klien??'', r.nama_klien??'',
-      r.total_invoice??0, n(r.total_tagihan), n(r.total_pembayaran), n(r.sisa_tagihan)]),
+      r.total_invoice??0, n(r.total_tagihan), n(r.total_pembayaran), n(r.sisa_tagihan),
+      r.draft??0, r.terkirim??0, r.sebagian??0, r.lunas??0]),
     totalRow: ['', '', 'TOTAL', '',
       rows.reduce((s, r) => s + n(r.total_tagihan), 0),
       rows.reduce((s, r) => s + n(r.total_pembayaran), 0),
-      rows.reduce((s, r) => s + n(r.sisa_tagihan), 0)],
-    numericCols: [3],
+      rows.reduce((s, r) => s + n(r.sisa_tagihan), 0),
+      '', '', '', ''],
+    numericCols: [3, 7, 8, 9, 10],
     currencyCols: [4, 5, 6],
   }
 }
@@ -418,14 +420,17 @@ function buildJatuhTempoSection(rd) {
 function buildRekapPembayaranSection(rd) {
   const rows    = rd.rows ?? []
   const summary = rd.summary ?? {}
+  const fmtRp   = (v) => v ? `Rp ${n(v).toLocaleString('id-ID')}` : '-'
   return {
     title: 'REKAP PEMBAYARAN',
     meta:  `Periode: ${fmtDate(filters.dari)} s/d ${fmtDate(filters.sampai)}  ·  Total Transaksi: ${summary.jumlah_transaksi ?? 0}`,
-    headers: ['No', 'Tanggal', 'Transfer (Rp)', 'Cash (Rp)', 'Giro (Rp)', 'Total (Rp)'],
-    aligns:  ['c',  'c',        'r',             'r',          'r',          'r'],
-    rows: rows.map((r, i) => [i+1, fmtDate(r.tanggal), n(r.transfer), n(r.cash), n(r.giro), n(r.total)]),
-    totalRow: ['', 'TOTAL', n(summary.transfer), n(summary.cash), n(summary.giro), n(summary.total)],
-    currencyCols: [2, 3, 4, 5],
+    headers: ['No', 'Tanggal', 'Client', 'Invoice', 'Ref Payment', 'Metode', 'Nominal (Rp)', 'PIC AR', 'Rekon'],
+    aligns:  ['c',  'c',       '',       '',          '',             'c',      'r',             '',       'c'],
+    rows: rows.map((r, i) => [i+1, fmtDate(r.tanggal), r.client??'', r.invoice??'-', r.ref_payment??'-',
+      r.metode??'', n(r.nominal), r.pic_ar??'-', r.is_rekon ? 'Ya' : '-']),
+    totalRow: ['', 'TOTAL', '', '', '', '', n(summary.total),
+      `T: ${fmtRp(summary.transfer)}  C: ${fmtRp(summary.cash)}  G: ${fmtRp(summary.giro)}`, ''],
+    currencyCols: [6],
   }
 }
 
