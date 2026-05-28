@@ -333,6 +333,7 @@ function buildAgingSection(rd) {
   const rows    = rd.rows ?? []
   const summary = rd.summary ?? {}
   return {
+    sheetName: 'Aging Report',
     title: 'AGING REPORT — Laporan Umur Piutang',
     meta:  `Per Tanggal: ${fmtDate(agingFilter.as_of_date || filters.sampai)}  ·  Total Klien: ${rows.length}`,
     headers: ['No', 'Kode Klien', 'Nama Klien', 'Belum Jatuh Tempo', '1–30 Hari', '31–60 Hari', '61–90 Hari', '> 90 Hari', 'Total'],
@@ -350,6 +351,7 @@ function buildRekapKlienSection(rows) {
     ? (bulanOptions.find(b => b.value === rekapKlienFilter.bulan)?.label ?? '')
     : 'Semua Bulan'
   return {
+    sheetName: 'Rekap Per Klien',
     title: 'REKAP PIUTANG PER KLIEN',
     meta:  `Periode: ${bulanLabel} ${rekapKlienFilter.tahun ?? ''}  ·  Total Klien: ${rows.length}`,
     headers: ['No', 'Kode Klien', 'Nama Klien', 'Jml Invoice', 'Total Tagihan', 'Total Terbayar', 'Sisa Piutang', 'Draft', 'Terkirim', 'Sebagian', 'Lunas'],
@@ -369,6 +371,7 @@ function buildRekapKlienSection(rows) {
 
 function buildRiwayatPembayaranSection(rows) {
   return {
+    sheetName: 'Riwayat Pembayaran',
     title: 'RIWAYAT PEMBAYARAN AR',
     meta:  `Periode: ${fmtDate(filters.dari)} s/d ${fmtDate(filters.sampai)}  ·  Total Transaksi: ${rows.length}`,
     headers: ['No', 'Tanggal', 'No Invoice', 'Klien', 'Jumlah (Rp)', 'Metode', 'No Referensi', 'Dicatat Oleh'],
@@ -384,6 +387,7 @@ function buildMutasiPiutangSection(rd) {
   const rows    = rd.rows ?? []
   const summary = rd.summary ?? {}
   return {
+    sheetName: 'Mutasi Piutang',
     title: 'MUTASI PIUTANG',
     meta:  `Periode: ${fmtDate(filters.dari)} s/d ${fmtDate(filters.sampai)}  ·  Total Klien: ${rows.length}`,
     headers: ['No', 'Kode Klien', 'Nama Klien', 'Saldo Awal (Rp)', 'Invoice Masuk (Rp)', 'Pembayaran (Rp)', 'Saldo Akhir (Rp)'],
@@ -422,6 +426,7 @@ function buildRekapPembayaranSection(rd) {
   const summary = rd.summary ?? {}
   const fmtRp   = (v) => v ? `Rp ${n(v).toLocaleString('id-ID')}` : '-'
   return {
+    sheetName: 'Rekap Pembayaran',
     title: 'REKAP PEMBAYARAN',
     meta:  `Periode: ${fmtDate(filters.dari)} s/d ${fmtDate(filters.sampai)}  ·  Total Transaksi: ${summary.jumlah_transaksi ?? 0}`,
     headers: ['No', 'Tanggal', 'Client', 'Invoice', 'Ref Payment', 'Metode', 'Nominal (Rp)', 'PIC AR', 'Rekon'],
@@ -438,6 +443,7 @@ function buildKinerjaArSection(rd) {
   const rows    = rd.rows ?? []
   const summary = rd.summary ?? {}
   return {
+    sheetName: 'Kinerja AR',
     title: 'KINERJA AR PER PIC',
     meta:  `Periode: ${fmtDate(filters.dari)} s/d ${fmtDate(filters.sampai)}  ·  Jumlah AR Officer: ${rows.length}  ·  Collection Rate: ${summary.collection_rate ?? 0}%`,
     headers: ['No', 'AR Officer', 'Jml Klien', 'Jml Invoice', 'Total Tagihan (Rp)', 'Terkumpul (Rp)', 'Sisa (Rp)', 'Collection Rate'],
@@ -454,7 +460,7 @@ function buildKinerjaArSection(rd) {
   }
 }
 
-// ── HTML/XLS builder ────────────────────────────────────────────────────────────
+// ── HTML/XLS builder (multi-sheet) ─────────────────────────────────────────────
 
 function buildHtmlExcel(sections) {
   const exportDate = now.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })
@@ -463,65 +469,56 @@ function buildHtmlExcel(sections) {
     body { font-family: Calibri, Arial, sans-serif; font-size: 10pt; margin: 0; background: #ffffff; }
     .main-tbl { border-collapse: collapse; width: 100%; }
 
-    /* Document header */
-    .hdr-title { background: #0D47A1; color: #ffffff; font-size: 16pt; font-weight: bold;
-                 padding: 16px 22px 4px; letter-spacing: 0.3px; }
+    .hdr-title { background: #0D47A1; color: #ffffff; font-size: 14pt; font-weight: bold;
+                 padding: 12px 22px 4px; letter-spacing: 0.3px; }
     .hdr-sub   { background: #0D47A1; color: #90CAF9; font-size: 9pt;
-                 padding: 2px 22px 16px; }
+                 padding: 2px 22px 12px; }
 
-    /* Section header */
-    .sec-title { background: #1A237E; color: #ffffff; font-size: 11pt; font-weight: bold;
-                 padding: 9px 16px; border-left: 5px solid #FFC107; }
-    .sec-meta  { background: #E8EAF6; color: #283593; font-size: 8.5pt;
-                 padding: 4px 16px 4px 21px; font-style: italic;
-                 border-left: 5px solid #FFC107; border-bottom: 2px solid #5C6BC0; }
-
-    /* Column headers */
     .th   { background: #283593; color: #ffffff; font-weight: bold; font-size: 9.5pt;
             padding: 7px 12px; border: 1px solid #1A237E; white-space: nowrap; }
     .th.r { text-align: right; }
     .th.c { text-align: center; }
 
-    /* Data cells */
     .td     { padding: 5px 12px; border: 1px solid #E8EAF6; font-size: 9.5pt;
               vertical-align: middle; color: #212121; }
     .td.r   { text-align: right; }
     .td.c   { text-align: center; }
     .td.cur { text-align: right; color: #1A237E; font-weight: 500; }
 
-    /* Alternating rows */
     .row-e .td { background: #F3F4FD; }
     .row-o .td { background: #ffffff; }
 
-    /* Total row — orange accent */
     .tot .td     { background: #E65100 !important; color: #ffffff !important;
                    font-weight: bold; border: 1px solid #BF360C !important; }
     .tot .td.cur { color: #ffffff !important; }
-
-    /* Spacer */
-    .gap td { height: 22px; }
   `
 
-  const buildSection = (s) => {
-    const colCount  = s.headers.length
-    const cCols     = s.currencyCols ?? []
-    const nCols     = (s.numericCols ?? []).filter(i => !cCols.includes(i))
+  const wsXml = sections.map((s, i) =>
+    `<x:ExcelWorksheet><x:Name>${s.sheetName}</x:Name>` +
+    `<x:WorksheetOptions>${i === 0 ? '<x:Selected/>' : ''}<x:DisplayGridlines/></x:WorksheetOptions>` +
+    `</x:ExcelWorksheet>`
+  ).join('')
+
+  const buildSheet = (s) => {
+    const colCount = s.headers.length
+    const cCols    = s.currencyCols ?? []
+    const nCols    = (s.numericCols ?? []).filter(i => !cCols.includes(i))
 
     const thRow = s.headers.map((h, i) => {
       const align = cCols.includes(i) || s.aligns[i] === 'r' ? 'r' : s.aligns[i] === 'c' ? 'c' : ''
       return `<th class="th${align ? ' '+align : ''}">${h}</th>`
     }).join('')
 
-    const renderCell = (cell, ci, extraClass = '') => {
+    const renderCell = (cell, ci) => {
       const isCur = cCols.includes(ci)
       const isNum = nCols.includes(ci)
       let val = cell ?? ''
       if (isCur && typeof cell === 'number')
-        val = cell === 0 ? '–' : 'Rp ' + cell.toLocaleString('id-ID')
+        val = cell === 0 ? '-' : 'Rp ' + cell.toLocaleString('id-ID')
       else if (isNum && typeof cell === 'number')
         val = cell.toLocaleString('id-ID')
       const cls = isCur ? 'cur' : s.aligns[ci] === 'r' ? 'r' : s.aligns[ci] === 'c' ? 'c' : ''
-      return `<td class="td${cls ? ' '+cls : ''}${extraClass}">${val}</td>`
+      return `<td class="td${cls ? ' '+cls : ''}">${val}</td>`
     }
 
     const dataRows = s.rows.map((row, ri) =>
@@ -532,15 +529,18 @@ function buildHtmlExcel(sections) {
       ? `<tr class="tot">${s.totalRow.map((c, ci) => renderCell(c, ci)).join('')}</tr>`
       : ''
 
-    return `
-      <tr><td colspan="${colCount}" class="sec-title">${s.title}</td></tr>
-      <tr><td colspan="${colCount}" class="sec-meta">${s.meta}</td></tr>
-      <tr>${thRow}</tr>
-      ${dataRows}
-      ${totalRowHtml}
-      <tr class="gap"><td colspan="${colCount}"></td></tr>
-    `
+    return `<table class="main-tbl">
+  <tr><td colspan="${colCount}" class="hdr-title">${s.title}</td></tr>
+  <tr><td colspan="${colCount}" class="hdr-sub">${s.meta}&nbsp;&nbsp;&middot;&nbsp;&nbsp;Diekspor: ${exportDate} &middot; Project Iron</td></tr>
+  <tr>${thRow}</tr>
+  ${dataRows}
+  ${totalRowHtml}
+</table>`
   }
+
+  const sheetsHtml = sections.map((s, i) =>
+    (i === 0 ? '' : '<br clear="all" style="mso-break-type:wb-section-break">\n') + buildSheet(s)
+  ).join('\n')
 
   return `<!DOCTYPE html>
 <html xmlns:o="urn:schemas-microsoft-com:office:office"
@@ -550,19 +550,13 @@ function buildHtmlExcel(sections) {
 <meta charset="UTF-8">
 <!--[if gte mso 9]><xml>
 <x:ExcelWorkbook><x:ExcelWorksheets>
-<x:ExcelWorksheet><x:Name>Laporan AR</x:Name>
-<x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>
-</x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook>
+${wsXml}
+</x:ExcelWorksheets></x:ExcelWorkbook>
 </xml><![endif]-->
 <style>${css}</style>
 </head>
 <body>
-<table class="main-tbl">
-  <tr><td colspan="20" class="hdr-title">LAPORAN ACCOUNT RECEIVABLE</td></tr>
-  <tr><td colspan="20" class="hdr-sub">Diekspor pada: ${exportDate}&nbsp;&nbsp;&middot;&nbsp;&nbsp;Sistem: Project Iron</td></tr>
-  <tr class="gap"><td colspan="20"></td></tr>
-  ${sections.map(buildSection).join('')}
-</table>
+${sheetsHtml}
 </body>
 </html>`
 }
