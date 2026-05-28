@@ -78,12 +78,11 @@
                 label="Kode Klien"
                 density="compact"
                 variant="outlined"
-                :rules="[v => !!v || 'Kode klien otomatis belum siap']"
+                :rules="[v => !!v || 'Kode klien wajib diisi']"
                 :error-messages="errors.kode_klien"
-                readonly
+                :readonly="isEditing"
                 persistent-hint
-                :loading="kodePreviewLoading"
-                :hint="isEditing ? 'Dipertahankan' : 'Otomatis terisi'"
+                :hint="isEditing ? '' : 'Format: AR-B2C-xxx atau AR-B2B-xxx'"
               />
             </VCol>
             <VCol
@@ -134,7 +133,6 @@
                 :readonly="isArEditMode || isEditing"
                 :hint="isEditing ? 'Tidak dapat diubah setelah dibuat' : ''"
                 persistent-hint
-                @update:model-value="refreshKodeKlienPreview"
               />
             </VCol>
             <VCol
@@ -628,7 +626,6 @@ onMounted(async () => {
 
   if (!isEditing.value) {
     await Promise.all([
-      refreshKodeKlienPreview(),
       ensureRestoLoaded(restoLoadOpts),
     ])
     pageLoading.value = false
