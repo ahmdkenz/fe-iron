@@ -243,10 +243,28 @@
                       Tanggal dan Periode
                     </h4>
                     <p class="text-body-2 text-medium-emphasis mb-0">
-                      Gunakan tanggal pengajuan dan rentang periode yang sesuai dengan saldo awal yang dicatat.
+                      Isi <strong>Tanggal</strong> dengan tanggal pengajuan hari ini. Isi <strong>Periode Awal–Akhir</strong> sesuai rentang waktu invoice historis yang belum lunas — bukan tanggal hari ini.
                     </p>
                   </div>
                 </div>
+
+                <VAlert
+                  type="info"
+                  variant="tonal"
+                  density="compact"
+                  class="mb-4"
+                  icon="ri-information-line"
+                >
+                  <div class="text-body-2">
+                    <strong>Kapan menggunakan Opening Balance?</strong>
+                    Hanya untuk piutang <em>historis</em> yang berasal dari luar sistem (spreadsheet, sistem lama, atau manual).
+                    Jika invoice sudah pernah diinput di sistem ini, sisa tagihan sudah otomatis terbawa — tidak perlu Opening Balance.
+                  </div>
+                  <div class="text-body-2 mt-1">
+                    <strong>Contoh:</strong> Ada tagihan dari Mei 2026 yang belum lunas dan belum ada di sistem →
+                    isi Periode <code>01-05-2026</code> s/d <code>31-05-2026</code>, lalu daftarkan setiap invoice-nya di bagian Rincian.
+                  </div>
+                </VAlert>
 
                 <VRow>
                   <VCol
@@ -262,6 +280,8 @@
                       prepend-inner-icon="ri-calendar-line"
                       :rules="[v => !!v || 'Tanggal wajib diisi']"
                       :error-messages="errors.tanggal"
+                      hint="Tanggal pengajuan Opening Balance (hari ini)"
+                      persistent-hint
                     />
                   </VCol>
 
@@ -278,6 +298,8 @@
                       prepend-inner-icon="ri-calendar-event-line"
                       :rules="[v => !!v || 'Periode awal wajib diisi']"
                       :error-messages="errors.periode_awal"
+                      hint="Tanggal awal dari invoice historis yang belum lunas"
+                      persistent-hint
                     />
                   </VCol>
 
@@ -294,6 +316,8 @@
                       prepend-inner-icon="ri-calendar-check-line"
                       :rules="[v => !!v || 'Periode akhir wajib diisi']"
                       :error-messages="errors.periode_akhir"
+                      hint="Tanggal akhir periode — biasanya akhir bulan invoice yang belum lunas"
+                      persistent-hint
                     />
                   </VCol>
                 </VRow>
