@@ -36,7 +36,8 @@
     "vue3-apexcharts": "1.5.3",
     "vue3-perfect-scrollbar": "2.0.0",
     "vuetify": "3.8.6",
-    "webfontloader": "1.6.28"
+    "webfontloader": "1.6.28",
+    "write-excel-file": "^4.0.7"
   },
   "devDependencies": {
     "@antfu/eslint-config-vue": "0.43.1",

@@ -32,7 +32,6 @@ declare module 'vue' {
     JurnalPicSection: typeof import('./src/modules/Finance/components/laporan-sections/JurnalPicSection.vue')['default']
     KaryawanForm: typeof import('./src/modules/Master/components/KaryawanForm.vue')['default']
     KinerjaArSection: typeof import('./src/modules/Finance/components/laporan-sections/KinerjaArSection.vue')['default']
-    KlienArForm: typeof import('./src/modules/Finance/components/KlienArForm.vue')['default']
     ManagerDashboardSection: typeof import('./src/modules/Finance/components/ManagerDashboardSection.vue')['default']
     MoreBtn: typeof import('./src/@core/components/MoreBtn.vue')['default']
     MutasiPiutangSection: typeof import('./src/modules/Finance/components/laporan-sections/MutasiPiutangSection.vue')['default']

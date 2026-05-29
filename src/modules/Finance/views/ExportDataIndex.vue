@@ -220,6 +220,8 @@
 
 <script setup>
 import { computed, reactive, ref } from 'vue'
+import writeXlsxFile from 'write-excel-file/browser'
+import Swal from 'sweetalert2'
 import api from '@/utils/axios'
 
 const exporting = ref(false)
@@ -461,102 +463,84 @@ function buildKinerjaArSection(rd) {
 }
 
 
-// ── HTML/XLS builder (SpreadsheetML, multi-sheet) ────────────────────
+// ── Sheet data builder (write-excel-file, full styling) ──────────────
 
-function buildHtmlExcel(sections) {
+function sectionToSheetData(section) {
   const exportDate = now.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })
+  const cCols  = section.currencyCols ?? []
+  const nCols  = (section.numericCols ?? []).filter(i => !cCols.includes(i))
+  const cols   = section.headers.length
+  const aligns = section.aligns ?? []
 
-  const esc = (v) => String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-
-  const styles = `<Styles>
-  <Style ss:ID="sT"><Font ss:Bold="1" ss:Color="#FFFFFF" ss:Size="14" ss:Name="Calibri"/><Interior ss:Color="#0D47A1" ss:Pattern="Solid"/></Style>
-  <Style ss:ID="sM"><Font ss:Italic="1" ss:Color="#90CAF9" ss:Size="9" ss:Name="Calibri"/><Interior ss:Color="#0D47A1" ss:Pattern="Solid"/></Style>
-  <Style ss:ID="sHL"><Font ss:Bold="1" ss:Color="#FFFFFF" ss:Size="10" ss:Name="Calibri"/><Interior ss:Color="#283593" ss:Pattern="Solid"/></Style>
-  <Style ss:ID="sHR"><Font ss:Bold="1" ss:Color="#FFFFFF" ss:Size="10" ss:Name="Calibri"/><Interior ss:Color="#283593" ss:Pattern="Solid"/><Alignment ss:Horizontal="Right"/></Style>
-  <Style ss:ID="sHC"><Font ss:Bold="1" ss:Color="#FFFFFF" ss:Size="10" ss:Name="Calibri"/><Interior ss:Color="#283593" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center"/></Style>
-  <Style ss:ID="dE"><Interior ss:Color="#F3F4FD" ss:Pattern="Solid"/><Font ss:Name="Calibri" ss:Size="10"/></Style>
-  <Style ss:ID="dO"><Interior ss:Color="#FFFFFF" ss:Pattern="Solid"/><Font ss:Name="Calibri" ss:Size="10"/></Style>
-  <Style ss:ID="dRE"><Interior ss:Color="#F3F4FD" ss:Pattern="Solid"/><Font ss:Name="Calibri" ss:Size="10"/><Alignment ss:Horizontal="Right"/></Style>
-  <Style ss:ID="dRO"><Interior ss:Color="#FFFFFF" ss:Pattern="Solid"/><Font ss:Name="Calibri" ss:Size="10"/><Alignment ss:Horizontal="Right"/></Style>
-  <Style ss:ID="dCE"><Interior ss:Color="#F3F4FD" ss:Pattern="Solid"/><Font ss:Name="Calibri" ss:Size="10"/><Alignment ss:Horizontal="Center"/></Style>
-  <Style ss:ID="dCO"><Interior ss:Color="#FFFFFF" ss:Pattern="Solid"/><Font ss:Name="Calibri" ss:Size="10"/><Alignment ss:Horizontal="Center"/></Style>
-  <Style ss:ID="dNE"><Interior ss:Color="#F3F4FD" ss:Pattern="Solid"/><Font ss:Name="Calibri" ss:Size="10"/><Alignment ss:Horizontal="Right"/><NumberFormat ss:Format="#,##0"/></Style>
-  <Style ss:ID="dNO"><Interior ss:Color="#FFFFFF" ss:Pattern="Solid"/><Font ss:Name="Calibri" ss:Size="10"/><Alignment ss:Horizontal="Right"/><NumberFormat ss:Format="#,##0"/></Style>
-  <Style ss:ID="dCuE"><Interior ss:Color="#F3F4FD" ss:Pattern="Solid"/><Font ss:Color="#1A237E" ss:Bold="1" ss:Name="Calibri" ss:Size="10"/><Alignment ss:Horizontal="Right"/><NumberFormat ss:Format="#,##0"/></Style>
-  <Style ss:ID="dCuO"><Interior ss:Color="#FFFFFF" ss:Pattern="Solid"/><Font ss:Color="#1A237E" ss:Bold="1" ss:Name="Calibri" ss:Size="10"/><Alignment ss:Horizontal="Right"/><NumberFormat ss:Format="#,##0"/></Style>
-  <Style ss:ID="tot"><Interior ss:Color="#E65100" ss:Pattern="Solid"/><Font ss:Bold="1" ss:Color="#FFFFFF" ss:Name="Calibri" ss:Size="10"/></Style>
-  <Style ss:ID="totR"><Interior ss:Color="#E65100" ss:Pattern="Solid"/><Font ss:Bold="1" ss:Color="#FFFFFF" ss:Name="Calibri" ss:Size="10"/><Alignment ss:Horizontal="Right"/></Style>
-  <Style ss:ID="totCu"><Interior ss:Color="#E65100" ss:Pattern="Solid"/><Font ss:Bold="1" ss:Color="#FFFFFF" ss:Name="Calibri" ss:Size="10"/><Alignment ss:Horizontal="Right"/><NumberFormat ss:Format="#,##0"/></Style>
-</Styles>`
-
-  function buildWs(s) {
-    const cols  = s.headers.length
-    const cCols = s.currencyCols ?? []
-    const nCols = (s.numericCols ?? []).filter(i => !cCols.includes(i))
-
-    const hStyle = (ci) => {
-      if (cCols.includes(ci) || s.aligns[ci] === 'r') return 'sHR'
-      return s.aligns[ci] === 'c' ? 'sHC' : 'sHL'
-    }
-    const dStyle = (ci, ri) => {
-      const e = ri % 2 === 0
-      if (cCols.includes(ci)) return e ? 'dCuE' : 'dCuO'
-      if (nCols.includes(ci)) return e ? 'dNE' : 'dNO'
-      if (s.aligns[ci] === 'r') return e ? 'dRE' : 'dRO'
-      if (s.aligns[ci] === 'c') return e ? 'dCE' : 'dCO'
-      return e ? 'dE' : 'dO'
-    }
-    const tStyle = (ci) => {
-      if (cCols.includes(ci)) return 'totCu'
-      return s.aligns[ci] === 'r' ? 'totR' : 'tot'
-    }
-    const mkCell = (val, sid, isNum = false) => {
-      if (isNum && typeof val === 'number')
-        return `<Cell ss:StyleID="${sid}"><Data ss:Type="Number">${val}</Data></Cell>`
-      const str = val === null || val === undefined ? '' : String(val)
-      return `<Cell ss:StyleID="${sid}"><Data ss:Type="String">${esc(str)}</Data></Cell>`
-    }
-
-    const hRow  = `<Row>${s.headers.map((h, i) => mkCell(h, hStyle(i))).join('')}</Row>`
-    const dRows = s.rows.map((row, ri) =>
-      `<Row>${row.map((v, ci) => mkCell(v, dStyle(ci, ri), cCols.includes(ci) || nCols.includes(ci))).join('')}</Row>`
-    ).join('\n    ')
-    const tRow  = s.totalRow
-      ? `<Row>${s.totalRow.map((v, ci) => mkCell(v, tStyle(ci), cCols.includes(ci))).join('')}</Row>`
-      : ''
-
-    return `<Worksheet ss:Name="${esc(s.sheetName)}">
-  <Table>
-    <Row><Cell ss:StyleID="sT" ss:MergeAcross="${cols - 1}"><Data ss:Type="String">${esc(s.title)}</Data></Cell></Row>
-    <Row><Cell ss:StyleID="sM" ss:MergeAcross="${cols - 1}"><Data ss:Type="String">${esc(s.meta)} · Diekspor: ${exportDate} · Project Iron</Data></Cell></Row>
-    ${hRow}
-    ${dRows}
-    ${tRow}
-  </Table>
-</Worksheet>`
+  const getAlign = (ci) => {
+    if (cCols.includes(ci) || aligns[ci] === 'r') return 'right'
+    if (aligns[ci] === 'c') return 'center'
+    return 'left'
   }
 
-  return `<?xml version="1.0" encoding="UTF-8"?>
-<?mso-application progid="Excel.Sheet"?>
-<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
-          xmlns:o="urn:schemas-microsoft-com:office:office"
-          xmlns:x="urn:schemas-microsoft-com:office:excel"
-          xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"
-          xmlns:html="http://www.w3.org/TR/REC-html40">
-  ${styles}
-  ${sections.map(buildWs).join('\n  ')}
-</Workbook>`
-}
+  // ── Row builders ───────────────────────────────
+  const titleRow = [
+    {
+      value: section.title, span: cols,
+      fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#0D47A1',
+      fontSize: 14, fontFamily: 'Calibri',
+      align: 'left', alignVertical: 'middle', height: 32,
+    },
+    ...Array.from({ length: cols - 1 }, () => null),
+  ]
 
-function downloadXls(html, filename) {
-  const bom  = '﻿'
-  const blob = new Blob([bom + html], { type: 'application/vnd.ms-excel;charset=utf-8' })
-  const url  = URL.createObjectURL(blob)
-  const a    = document.createElement('a')
-  a.href = url
-  a.download = filename
-  a.click()
-  URL.revokeObjectURL(url)
+  const metaRow = [
+    {
+      value: `${section.meta} · Diekspor: ${exportDate} · Project Iron`, span: cols,
+      fontStyle: 'italic', color: '#90CAF9', backgroundColor: '#1565C0',
+      fontSize: 9, fontFamily: 'Calibri',
+      align: 'left', alignVertical: 'middle', height: 16,
+    },
+    ...Array.from({ length: cols - 1 }, () => null),
+  ]
+
+  const headerRow = section.headers.map((h, ci) => ({
+    value: h,
+    fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#283593',
+    fontSize: 10, fontFamily: 'Calibri',
+    align: getAlign(ci), alignVertical: 'middle', height: 22,
+    borderStyle: 'thin', borderColor: '#3949AB',
+  }))
+
+  const dataRows = section.rows.map((row, ri) => {
+    const even = ri % 2 === 0
+    const bg   = even ? '#F3F4FD' : '#FFFFFF'
+    const bc   = even ? '#DCDFE6' : '#EEEEEE'
+    return row.map((v, ci) => {
+      const isCu = cCols.includes(ci)
+      const isN  = nCols.includes(ci)
+      return {
+        value:      v,
+        type:       (isCu || isN) && typeof v === 'number' ? Number : undefined,
+        format:     (isCu || isN) ? '#,##0' : undefined,
+        fontWeight: isCu ? 'bold' : undefined,
+        color:      isCu ? '#1A237E' : '#212121',
+        backgroundColor: bg,
+        fontSize:   10, fontFamily: 'Calibri',
+        align:      getAlign(ci), alignVertical: 'middle', height: 16,
+        borderStyle: 'thin', borderColor: bc,
+      }
+    })
+  })
+
+  const totalRows = section.totalRow ? [
+    section.totalRow.map((v, ci) => ({
+      value:      v,
+      type:       cCols.includes(ci) && typeof v === 'number' ? Number : undefined,
+      format:     cCols.includes(ci) ? '#,##0' : undefined,
+      fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#E65100',
+      fontSize:   10, fontFamily: 'Calibri',
+      align:      getAlign(ci), alignVertical: 'middle', height: 18,
+      borderStyle: 'thin', borderColor: '#BF360C',
+    }))
+  ] : []
+
+  return [titleRow, metaRow, headerRow, ...dataRows, ...totalRows]
 }
 
 // ── Export handler ──────────────────────────────────────────────────────────────
@@ -570,7 +554,7 @@ async function doExport() {
       rekap_klien:        async () => buildRekapKlienSection(await fetchRekapKlien()),
       riwayat_pembayaran: async () => buildRiwayatPembayaranSection(await fetchRiwayatPembayaran()),
       mutasi_piutang:     async () => buildMutasiPiutangSection(await fetchMutasiPiutang()),
-      // NEXT UPDATE: jatuh_tempo:  async () => buildJatuhTempoSection(await fetchJatuhTempo()),
+      // NEXT UPDATE: jatuh_tempo: async () => buildJatuhTempoSection(await fetchJatuhTempo()),
       rekap_pembayaran:   async () => buildRekapPembayaranSection(await fetchRekapPembayaran()),
       kinerja_ar:         async () => buildKinerjaArSection(await fetchKinerjaAr()),
     }
@@ -581,9 +565,34 @@ async function doExport() {
         sections.push(await fetchMap[def.key]())
     }
 
-    downloadXls(buildHtmlExcel(sections), `laporan-ar-${todayStr}.xls`)
+    await writeXlsxFile(
+      sections.map(s => ({
+        data:    sectionToSheetData(s),
+        sheet:   s.sheetName,
+        columns: s.headers.map((h, i) => ({
+          width: (s.currencyCols ?? []).includes(i) ? 22 : Math.max((h?.length ?? 10) + 4, 14),
+        })),
+      }))
+    ).toFile(`laporan-ar-${todayStr}.xlsx`)
+
+    Swal.fire({
+      icon: 'success',
+      title: 'Export Berhasil!',
+      html: `<span style="color:#283593">${sections.length} laporan berhasil diunduh sebagai <b>file Excel</b></span>`,
+      iconColor: '#283593',
+      confirmButtonColor: '#283593',
+      timerProgressBar: true,
+      timer: 3000,
+      showConfirmButton: false,
+    })
   } catch (err) {
     console.error('Export gagal:', err)
+    Swal.fire({
+      icon: 'error',
+      title: 'Export Gagal',
+      text: err?.response?.data?.message || err?.message || 'Terjadi kesalahan saat mengambil data',
+      confirmButtonColor: '#283593',
+    })
   } finally {
     exporting.value = false
   }
