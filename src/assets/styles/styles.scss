@@ -1,1 +1,172 @@
-// Write your overrides
+// ─── Light mode refinements ───────────────────────────────────────────────
+// Tujuan: tampilan lebih tenang, tidak silau, dan tidak generik seperti
+// bawaan Material Design — menggunakan slate-blue palette yang konsisten.
+
+.v-theme--light {
+  // Sidebar: putih bersih dengan border halus + shadow tipis
+  .v-navigation-drawer {
+    background-color: #ffffff !important;
+    border-right: 1px solid rgba(37, 42, 66, 0.07) !important;
+    box-shadow: 2px 0 16px rgba(26, 32, 82, 0.06) !important;
+  }
+
+  // Topbar: semi-transparan dengan blur untuk kesan modern
+  .v-app-bar,
+  .layout-navbar {
+    background-color: rgba(240, 242, 250, 0.94) !important;
+    backdrop-filter: blur(12px) !important;
+    border-bottom: 1px solid rgba(37, 42, 66, 0.07) !important;
+    box-shadow: 0 1px 10px rgba(26, 32, 82, 0.07) !important;
+  }
+
+  // Card: putih dengan shadow lembut pengganti shadow material bawaan
+  .v-card {
+    background-color: #ffffff !important;
+    border: 1px solid rgba(37, 42, 66, 0.07) !important;
+    box-shadow: 0 2px 14px rgba(26, 32, 82, 0.07) !important;
+  }
+
+  // Dialog: sedikit off-white agar terbedakan dari card biasa
+  .v-overlay__content > .v-card,
+  .v-dialog > .v-overlay__content > .v-card {
+    background-color: #f8faff !important;
+    box-shadow: 0 8px 40px rgba(26, 32, 82, 0.14) !important;
+  }
+
+  // Dropdown / Menu
+  .v-menu > .v-overlay__content > .v-list,
+  .v-select__content > .v-list {
+    background-color: #ffffff !important;
+    border: 1px solid rgba(37, 42, 66, 0.08) !important;
+    box-shadow: 0 6px 28px rgba(26, 32, 82, 0.10) !important;
+  }
+
+  // Input field: putih dengan border slate-blue tipis
+  .v-field {
+    background-color: #ffffff !important;
+  }
+
+  .v-field__outline::before {
+    border-color: rgba(37, 42, 66, 0.14) !important;
+  }
+
+  // Data table header: cool slate, bukan abu-abu Material
+  .v-data-table > .v-table__wrapper > table > thead > tr > th {
+    background-color: #cdd2ec !important;
+    color: rgba(37, 42, 66, 0.75) !important;
+    letter-spacing: 0.02em;
+  }
+
+  .v-data-table__tr--odd > td {
+    background-color: #e2e6f4 !important;
+  }
+
+  // Chip: sedikit kurangi saturasi agar tidak terlalu noisy
+  .v-chip:not(.v-chip--variant-outlined) {
+    filter: saturate(0.88);
+  }
+
+  // Scrollbar: slate-blue yang tenang
+  ::-webkit-scrollbar-track {
+    background: #e6e9f4;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #c4c9e0;
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #adb4d4;
+  }
+
+  // Footer
+  .layout-footer {
+    background-color: #f0f2fa !important;
+    border-top: 1px solid rgba(37, 42, 66, 0.07) !important;
+  }
+}
+
+// ─── Dark mode refinements ─────────────────────────────────────────────────
+// Tujuan: mengurangi kecerahan berlebih bawaan template agar tidak menyilaukan
+// pada penggunaan malam hari / ruang gelap.
+
+.v-theme--dark {
+  // Navigasi sidebar lebih gelap
+  .v-navigation-drawer {
+    background-color: #0F1120 !important;
+    border-right-color: rgba(184, 188, 210, 0.06) !important;
+  }
+
+  // Topbar / app bar lebih gelap + sedikit blur
+  .v-app-bar,
+  .layout-navbar {
+    background-color: rgba(13, 15, 24, 0.92) !important;
+    backdrop-filter: blur(12px) !important;
+    border-bottom-color: rgba(184, 188, 210, 0.07) !important;
+  }
+
+  // Card & surface: kurangi elevasi warna supaya tidak kontras tajam
+  .v-card {
+    background-color: #151823 !important;
+    border: 1px solid rgba(184, 188, 210, 0.07);
+  }
+
+  // Dialog sedikit lebih gelap dari surface
+  .v-overlay__content > .v-card,
+  .v-dialog > .v-overlay__content > .v-card {
+    background-color: #181B2C !important;
+  }
+
+  // Menu dropdown
+  .v-menu > .v-overlay__content > .v-list,
+  .v-select__content > .v-list {
+    background-color: #181B2C !important;
+    border: 1px solid rgba(184, 188, 210, 0.09);
+  }
+
+  // Data table: header lebih gelap, odd row lebih subtle
+  .v-data-table > .v-table__wrapper > table > thead > tr > th {
+    background-color: #0D0F18 !important;
+    color: rgba(184, 188, 210, 0.65) !important;
+  }
+
+  .v-data-table__tr--odd > td {
+    background-color: #111320 !important;
+  }
+
+  // Input field background
+  .v-field {
+    --v-field-input-padding-top: 8px;
+    background-color: #1C1F30 !important;
+  }
+
+  .v-field__outline::before {
+    border-color: rgba(184, 188, 210, 0.12) !important;
+  }
+
+  // Chips lebih redup
+  .v-chip {
+    opacity: 0.9;
+  }
+
+  // Scrollbar
+  ::-webkit-scrollbar-track {
+    background: #0D0F18;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #252839;
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #2F3349;
+  }
+
+  // Footer layout
+  .layout-footer {
+    background-color: #0D0F18 !important;
+    border-top-color: rgba(184, 188, 210, 0.07) !important;
+  }
+}
