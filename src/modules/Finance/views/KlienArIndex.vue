@@ -109,13 +109,13 @@
         <template #item.investor="{ item }">
           <div v-if="item.resto?.investor">
             <div class="text-body-2">
-              {{ item.resto.investor.pengelola || item.resto.investor.nama_investor }}
+              {{ item.resto.investor.nama_investor }}
             </div>
             <div
               v-if="item.resto.investor.pengelola"
               class="text-caption text-medium-emphasis"
             >
-              {{ item.resto.investor.nama_investor }}
+              Pengelola: {{ item.resto.investor.pengelola }}
             </div>
           </div>
           <span

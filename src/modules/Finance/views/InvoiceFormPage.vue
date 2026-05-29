@@ -185,7 +185,7 @@
                         :title="item.raw.nama_klien"
                         :subtitle="[
                           `${item.raw.kode_klien} · ${item.raw.tipe_klien}`,
-                          item.raw.resto?.investor?.pengelola || item.raw.perusahaan?.nama_perusahaan || '',
+                          item.raw.resto?.investor?.nama_investor || item.raw.perusahaan?.nama_perusahaan || '',
                         ].filter(Boolean).join(' · ')"
                         lines="two"
                       />
@@ -199,13 +199,25 @@
                 >
                   <VTextField
                     :model-value="penerimaTagihan"
-                    label="Penerima Tagihan (Pengelola)"
+                    :label="currentInvestor ? 'Penerima Tagihan (Investor)' : 'Penerima Tagihan'"
                     density="compact"
                     variant="outlined"
                     prepend-inner-icon="ri-user-star-line"
                     readonly
                     :hint="penerimaTagihanHint"
-                    persistent-hint
+                    :persistent-hint="!!penerimaTagihanHint"
+                  />
+                  <VTextField
+                    v-if="currentInvestor?.pengelola"
+                    :model-value="currentInvestor.pengelola"
+                    label="Pengelola (Kontak Outlet)"
+                    density="compact"
+                    variant="outlined"
+                    prepend-inner-icon="ri-user-line"
+                    readonly
+                    class="mt-3"
+                    :hint="currentInvestor.no_hp_pengelola ? `HP: ${currentInvestor.no_hp_pengelola}` : ''"
+                    :persistent-hint="!!currentInvestor.no_hp_pengelola"
                   />
                 </VCol>
 
@@ -562,24 +574,28 @@ const form = reactive({
   items: [],
 })
 
+const currentKlienAr = computed(() =>
+  isEditing.value ? invoice.value?.klien_ar : selectedKlien.value,
+)
+
+const currentInvestor = computed(() => currentKlienAr.value?.resto?.investor)
+
 const penerimaTagihan = computed(() => {
-  const klienAr = isEditing.value ? invoice.value?.klien_ar : selectedKlien.value
-  const pengelola = klienAr?.resto?.investor?.pengelola
-  const perusahaan = isEditing.value
+  if (currentInvestor.value) return currentInvestor.value.nama_investor
+
+  return isEditing.value
     ? invoice.value?.perusahaan?.nama_perusahaan
     : selectedKlien.value?.perusahaan?.nama_perusahaan
-
-  return pengelola || perusahaan || ''
+    || ''
 })
 
 const penerimaTagihanHint = computed(() => {
-  const klienAr = isEditing.value ? invoice.value?.klien_ar : selectedKlien.value
-  const restoNama = klienAr?.resto?.nama_resto
-  const investorNama = klienAr?.resto?.investor?.nama_investor
-
-  if (restoNama && investorNama) return `${restoNama} · ${investorNama}`
-
-  return ''
+  if (!currentInvestor.value) return ''
+  const parts = []
+  if (currentInvestor.value.no_hp) parts.push(`HP: ${currentInvestor.value.no_hp}`)
+  const restoNama = currentKlienAr.value?.resto?.nama_resto
+  if (restoNama) parts.push(restoNama)
+  return parts.join(' · ')
 })
 
 const subtotal = computed(() =>

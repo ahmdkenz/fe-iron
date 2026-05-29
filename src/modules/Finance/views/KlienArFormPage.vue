@@ -89,10 +89,10 @@
             >
               <VTextField
                 v-model="form.nama_klien"
-                label="Nama Pengelola (Billing)"
+                label="Nama Investor (Billing)"
                 density="compact"
                 variant="outlined"
-                :rules="[v => !!v || 'Nama pengelola wajib diisi']"
+                :rules="[v => !!v || 'Nama investor wajib diisi']"
                 :error-messages="errors.nama_klien"
                 :readonly="isArEditMode"
                 :hint="isB2B ? 'Isi nama kontak keuangan/billing di PT' : (!isEditing && selectedRestoInvestor ? 'Otomatis dari data pengelola investor' : '')"
@@ -139,7 +139,7 @@
             >
               <VTextField
                 v-model="form.no_npwp"
-                label="No. NPWP Pengelola"
+                label="No. NPWP Investor"
                 density="compact"
                 variant="outlined"
                 :error-messages="errors.no_npwp"
@@ -152,7 +152,7 @@
             >
               <VTextField
                 v-model="form.no_wa"
-                label="No. WhatsApp Pengelola"
+                label="No. WhatsApp Investor"
                 placeholder="Contoh: 08123456789"
                 density="compact"
                 variant="outlined"
@@ -220,6 +220,7 @@
                 </div>
                 <div class="text-caption">
                   <strong>Investor:</strong> {{ selectedRestoInvestor.nama_investor }}
+                  <span v-if="selectedRestoInvestor.no_hp"> · {{ selectedRestoInvestor.no_hp }}</span>
                 </div>
                 <div
                   v-if="selectedRestoInvestor.pengelola"
@@ -569,8 +570,8 @@ function onRestoChange(restoId) {
   const selectedResto = restoList.value?.find(r => r.id === restoId)
   selectedRestoInvestor.value = selectedResto?.investor ?? null
 
-  if (selectedRestoInvestor.value?.pengelola && !form.nama_klien) {
-    form.nama_klien = selectedRestoInvestor.value.pengelola
+  if (selectedRestoInvestor.value?.nama_investor && !form.nama_klien) {
+    form.nama_klien = selectedRestoInvestor.value.nama_investor
   }
 }
 
