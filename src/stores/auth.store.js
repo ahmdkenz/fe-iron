@@ -1,6 +1,10 @@
 import { defineStore } from 'pinia'
 import api from '@/utils/axios'
 
+// Module-level singleton — bukan Pinia state karena Promise tidak serializable.
+// Menyimpan satu promise yang sama agar fetchMe() tidak dipanggil dua kali.
+let _initPromise = null
+
 function normalizeRoles(user) {
   const roles = Array.isArray(user?.roles)
     ? [...user.roles]
@@ -63,6 +67,14 @@ export const useAuthStore = defineStore('auth', {
   },
 
   actions: {
+    initAuth() {
+      if (!_initPromise) {
+        _initPromise = this.fetchMe().catch(() => {})
+      }
+
+      return _initPromise
+    },
+
     async login(username, password) {
       const { data } = await api.post('/auth/login', { username, password })
       const { user, token } = data.data

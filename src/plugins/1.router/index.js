@@ -28,8 +28,13 @@ function normalizeRoles(user) {
 }
 
 // Auth guard — reads from Pinia store (populated by bootstrap fetchMe before mount)
-router.beforeEach((to, _from, next) => {
+router.beforeEach(async (to, _from, next) => {
   const authStore = useAuthStore()
+
+  // Tunggu auth selesai diinisialisasi agar guard tidak membaca user === null
+  // saat fetchMe() belum selesai (race condition on initial navigation).
+  await authStore.initAuth()
+
   const isLoggedIn = authStore.isLoggedIn
   const roles = normalizeRoles(authStore.user)
   const requiresAuth = to.matched.some(r => r.meta.requiresAuth)

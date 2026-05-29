@@ -23,7 +23,7 @@ async function bootstrap() {
   // The splash must show for at least 2.8s so the decrypt + progress animations
   // complete fully before the loader dismisses.
   await Promise.allSettled([
-    authStore.fetchMe().catch(() => {}),
+    authStore.initAuth(),
     new Promise(resolve => setTimeout(resolve, 2800)),
   ])
 
