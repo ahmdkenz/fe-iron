@@ -211,7 +211,7 @@
           prepend-icon="ri-download-2-line"
           @click="doExport"
         >
-          Export Excel
+          Export
         </VBtn>
       </VCardText>
     </VCard>
