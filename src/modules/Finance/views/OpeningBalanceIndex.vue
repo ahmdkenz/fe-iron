@@ -931,6 +931,19 @@
         <VDivider />
         <VCardText class="pt-4">
           <VAlert
+            type="warning"
+            variant="tonal"
+            class="mb-3"
+            density="compact"
+          >
+            <div class="text-body-2">
+              <strong>Kapan menggunakan Opening Balance?</strong>
+              Hanya untuk piutang <em>historis</em> yang berasal dari luar sistem (spreadsheet, sistem lama, atau manual).
+              Jika invoice sudah pernah diinput di sistem ini, sisa tagihan sudah otomatis terbawa — tidak perlu Opening Balance.
+            </div>
+          </VAlert>
+
+          <VAlert
             type="info"
             variant="tonal"
             class="mb-4"
@@ -952,7 +965,12 @@
                 <strong>File CSV</strong> hanya mengimpor data OB utama (Sheet 1 saja).
               </li>
               <li>Kolom <strong>nama_klien</strong> harus cocok persis dengan nama klien di sistem.</li>
-              <li>Tanggal diisi format <strong>YYYY-MM-DD</strong> (contoh: <code>2024-01-15</code>).</li>
+              <li>
+                Kolom <strong>tanggal</strong> = tanggal pengajuan OB (hari ini).
+                Kolom <strong>periode_awal</strong> dan <strong>periode_akhir</strong> = rentang waktu invoice historis yang belum lunas
+                (bukan tanggal hari ini). Contoh: invoice Mei 2026 belum lunas → isi <code>2026-05-01</code> s/d <code>2026-05-31</code>.
+              </li>
+              <li>Semua tanggal diisi format <strong>YYYY-MM-DD</strong> (contoh: <code>2024-01-15</code>).</li>
               <li>Data berhasil diimport berstatus <strong>DRAFT</strong> dan perlu persetujuan Direktur.</li>
             </ul>
           </VAlert>
