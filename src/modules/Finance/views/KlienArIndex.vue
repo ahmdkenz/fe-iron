@@ -112,7 +112,7 @@
               {{ item.resto.investor.nama_investor }}
             </div>
             <div
-              v-if="item.resto.investor.pengelola"
+              v-if="item.resto.investor.pengelola && item.resto.investor.pengelola !== item.resto.investor.nama_investor"
               class="text-caption text-medium-emphasis"
             >
               Pengelola: {{ item.resto.investor.pengelola }}
@@ -244,6 +244,10 @@
           :value="selectedKlien.resto?.investor?.nama_investor"
         />
         <DetailRow
+          label="HP Investor"
+          :value="selectedKlien.resto?.investor?.no_hp"
+        />
+        <DetailRow
           label="Pengelola"
           :value="selectedKlien.resto?.investor?.pengelola"
         />
@@ -314,8 +318,9 @@
             </div>
             <ul class="ps-4">
               <li>Download template Excel, isi data, lalu upload file (.xlsx atau .csv).</li>
-              <li>Kolom <strong>kode_klien</strong>, <strong>nama_klien</strong>, dan <strong>tipe_klien</strong> wajib diisi.</li>
-              <li>Kolom <strong>kode_klien</strong>: isi kode unik klien, format <strong>AR-B2C-xxx</strong> (B2C) atau <strong>AR-B2B-xxx</strong> (B2B).</li>
+              <li>Kolom <strong>kode_resto</strong>, <strong>nama_klien</strong>, dan <strong>tipe_klien</strong> wajib diisi.</li>
+              <li>Kolom <strong>nama_klien</strong>: isi <strong>nama investor</strong> (untuk B2C/RESTO/MITRA) atau nama kontak billing PT (untuk B2B).</li>
+              <li>Kolom <strong>kode_resto</strong>: isi kode unik klien, format <strong>AR-B2C-xxx</strong> (B2C) atau <strong>AR-B2B-xxx</strong> (B2B).</li>
               <li>Kolom <strong>tipe_klien</strong>: isi persis <strong>RESTO / MITRA / PT / STOKIS</strong>.</li>
               <li>Untuk tipe RESTO/MITRA, kolom <strong>nama_resto</strong> wajib diisi sesuai data di sistem.</li>
               <li>Kolom <strong>nama_karyawan_ar</strong> wajib diisi sesuai nama karyawan di sistem.</li>
@@ -491,7 +496,7 @@ const headers = [
   { title: 'No',             key: 'no',          sortable: false, width: '60px' },
   { title: 'Kode Resto',           key: 'kode_klien',  sortable: false, minWidth: '140px' },
   { title: 'Segment',        key: 'segment',     sortable: false, minWidth: '100px' },
-  { title: 'Nama Pengelola', key: 'nama_klien',  sortable: false, minWidth: '200px' },
+  { title: 'Nama Investor (Billing)', key: 'nama_klien',  sortable: false, minWidth: '200px' },
   { title: 'Resto',          key: 'resto',        sortable: false, minWidth: '160px' },
   { title: 'Investor / Pengelola', key: 'investor', sortable: false, minWidth: '180px' },
   { title: 'PIC AR',         key: 'karyawan_ar', sortable: false, minWidth: '160px' },

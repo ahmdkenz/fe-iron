@@ -225,6 +225,17 @@
                       label="Kode Klien"
                       :value="invoice.klien_ar?.kode_klien"
                     />
+                    <template v-if="invoice.klien_ar?.resto?.investor">
+                      <DetailRow
+                        label="Investor"
+                        :value="invoice.klien_ar.resto.investor.nama_investor + (invoice.klien_ar.resto.investor.no_hp ? ' · ' + invoice.klien_ar.resto.investor.no_hp : '')"
+                      />
+                      <DetailRow
+                        v-if="invoice.klien_ar.resto.investor.pengelola"
+                        label="Pengelola"
+                        :value="invoice.klien_ar.resto.investor.pengelola + (invoice.klien_ar.resto.investor.no_hp_pengelola ? ' · ' + invoice.klien_ar.resto.investor.no_hp_pengelola : '')"
+                      />
+                    </template>
                     <DetailRow
                       label="Entitas Penagih"
                       :value="invoice.perusahaan?.nama_perusahaan"
