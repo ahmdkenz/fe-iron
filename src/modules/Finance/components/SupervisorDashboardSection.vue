@@ -56,7 +56,21 @@
               <VIcon icon="ri-bar-chart-grouped-line" class="me-2 text-primary" />
               Tren Invoicing & Pembayaran
             </VCardTitle>
-            <VCardSubtitle>6 bulan terakhir</VCardSubtitle>
+            <template #append>
+              <div class="d-flex flex-wrap gap-1">
+                <VBtn
+                  v-for="p in trendPeriods"
+                  :key="p.value"
+                  :variant="trendPeriod === p.value ? 'tonal' : 'text'"
+                  :color="trendPeriod === p.value ? 'primary' : undefined"
+                  size="x-small"
+                  density="compact"
+                  :loading="trendLoading && trendPeriod === p.value"
+                  @click="selectTrendPeriod(p.value)"
+                >{{ p.label }}</VBtn>
+              </div>
+            </template>
+            <VCardSubtitle>{{ trendPeriodLabel }}</VCardSubtitle>
           </VCardItem>
           <VCardText class="pt-4">
             <DeferredApexChart type="area" height="320" :options="revenueChartOptions" :series="revenueChartSeries" />
@@ -282,10 +296,39 @@ const compactFormatter = new Intl.NumberFormat('id-ID', {
 const metodeColorMap = { TRANSFER: 'info', CASH: 'success', GIRO: 'warning' }
 const rekonColorMap  = { MATCHED: 'success', POSSIBLE: 'warning', UNMATCHED: 'error', DIABAIKAN: 'secondary' }
 
-const loading          = ref(false)
+const trendPeriods = [
+  { label: '1D', value: '1D' },
+  { label: '1W', value: '1W' },
+  { label: '1M', value: '1M' },
+  { label: '3M', value: '3M' },
+  { label: '6M', value: '6M' },
+  { label: 'YTD', value: 'YTD' },
+  { label: '1Y', value: '1Y' },
+  { label: '3Y', value: '3Y' },
+  { label: '5Y', value: '5Y' },
+]
+
+const trendPeriodDescriptions = {
+  '1D':  'Hari ini',
+  '1W':  '7 hari terakhir',
+  '1M':  '30 hari terakhir',
+  '3M':  '3 bulan terakhir',
+  '6M':  '6 bulan terakhir',
+  'YTD': 'Tahun berjalan',
+  '1Y':  '12 bulan terakhir',
+  '3Y':  '3 tahun terakhir',
+  '5Y':  '5 tahun terakhir',
+}
+
+const loading           = ref(false)
 const loadingJatuhTempo = ref(false)
-const loadingPayments  = ref(false)
-const error            = ref('')
+const loadingPayments   = ref(false)
+const trendLoading      = ref(false)
+const trendPeriod       = ref('6M')
+const trendData         = ref({ labels: [], invoiceTotals: [], paymentTotals: [] })
+const error             = ref('')
+
+const trendPeriodLabel = computed(() => trendPeriodDescriptions[trendPeriod.value] ?? trendPeriod.value)
 
 const dashboard      = shallowRef(createEmptyDashboard())
 const kpi            = shallowRef(createEmptyKpi())
@@ -364,8 +407,8 @@ const kpiCards = computed(() => {
 // ─── Charts ───────────────────────────────────────────────────────────────────
 
 const revenueChartSeries = computed(() => [
-  { name: 'Total Ditagihkan', data: dashboard.value.monthlyTrend?.invoiceTotals ?? [] },
-  { name: 'Total Dibayar',    data: dashboard.value.monthlyTrend?.paymentTotals ?? [] },
+  { name: 'Total Ditagihkan', data: trendData.value.invoiceTotals },
+  { name: 'Total Dibayar',    data: trendData.value.paymentTotals },
 ])
 
 const revenueChartOptions = computed(() => {
@@ -377,7 +420,7 @@ const revenueChartOptions = computed(() => {
     stroke: { curve: 'smooth', width: 3 },
     fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.05, stops: [0, 90, 100] } },
     xaxis: {
-      categories: dashboard.value.monthlyTrend?.labels ?? [],
+      categories: trendData.value.labels,
       axisBorder: { show: false },
       axisTicks: { show: false },
       labels: { style: { colors: c['on-surface'], fontSize: '12px' } },
@@ -440,6 +483,28 @@ const recentInvoices = computed(() => dashboard.value.recentInvoices ?? [])
 
 // ─── Data Loading ─────────────────────────────────────────────────────────────
 
+async function loadTrend(period) {
+  trendLoading.value = true
+  try {
+    const { data } = await api.get('/finance/dashboard/global', { params: { period } })
+    const t = data.data?.monthly_trend ?? {}
+    trendData.value = {
+      labels:        t.labels ?? [],
+      invoiceTotals: (t.invoice_totals ?? []).map(Number),
+      paymentTotals: (t.payment_totals ?? []).map(Number),
+    }
+  } catch {
+    // keep existing data on error
+  } finally {
+    trendLoading.value = false
+  }
+}
+
+function selectTrendPeriod(period) {
+  trendPeriod.value = period
+  loadTrend(period)
+}
+
 async function loadDashboard() {
   loading.value = true
   error.value   = ''
@@ -450,6 +515,7 @@ async function loadDashboard() {
     ])
     dashboard.value = normalizeDashboard(dashRes.data.data)
     kpi.value       = normalizeKpi(kpiRes.data.data)
+    trendData.value = { ...dashboard.value.monthlyTrend }
   } catch (err) {
     error.value = err.response?.data?.message ?? 'Gagal memuat dashboard'
   } finally {
