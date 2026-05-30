@@ -59,16 +59,134 @@
 
       <!-- Card 1: Informasi Klien -->
       <VCard class="mb-4">
-        <VCardTitle class="pa-4 pb-2">
+        <VCardTitle class="pa-4 pb-2 d-flex align-center gap-2">
           <VIcon
-            icon="ri-building-line"
-            class="me-2"
+            :icon="isB2B ? 'ri-building-4-line' : 'ri-building-line'"
+            class="me-1"
           />
           Informasi Klien
+          <VChip
+            v-if="form.tipe_klien"
+            :color="isB2B ? 'info' : 'success'"
+            size="x-small"
+            variant="tonal"
+            class="ms-1"
+          >
+            {{ isB2B ? 'B2B — PT/Perusahaan' : 'B2C — Outlet Resto' }}
+          </VChip>
         </VCardTitle>
         <VDivider />
         <VCardText>
           <VRow>
+            <!-- Pemilih Tipe Klien -->
+            <VCol
+              cols="12"
+              class="pb-1"
+            >
+              <div v-if="!isEditing && !isArEditMode">
+                <div class="text-caption text-medium-emphasis mb-2 font-weight-medium">
+                  Pilih Tipe Klien <span class="text-error">*</span>
+                </div>
+                <VRow>
+                  <VCol
+                    cols="12"
+                    sm="6"
+                  >
+                    <VCard
+                      :variant="form.tipe_klien === 'RESTO' ? 'tonal' : 'outlined'"
+                      :color="form.tipe_klien === 'RESTO' ? 'success' : undefined"
+                      class="cursor-pointer"
+                      style="border-width: 2px"
+                      @click="selectTipeKlien('RESTO')"
+                    >
+                      <VCardText class="d-flex align-center gap-3 pa-4">
+                        <VAvatar
+                          color="success"
+                          variant="tonal"
+                          size="40"
+                        >
+                          <VIcon
+                            icon="ri-store-line"
+                            size="20"
+                          />
+                        </VAvatar>
+                        <div>
+                          <div class="font-weight-semibold">
+                            RESTO — B2C
+                          </div>
+                          <div class="text-caption text-medium-emphasis">
+                            Tagih ke pengelola outlet secara langsung
+                          </div>
+                        </div>
+                        <VSpacer />
+                        <VIcon
+                          v-if="form.tipe_klien === 'RESTO'"
+                          icon="ri-checkbox-circle-fill"
+                          color="success"
+                          size="20"
+                        />
+                      </VCardText>
+                    </VCard>
+                  </VCol>
+                  <VCol
+                    cols="12"
+                    sm="6"
+                  >
+                    <VCard
+                      :variant="form.tipe_klien === 'PT' ? 'tonal' : 'outlined'"
+                      :color="form.tipe_klien === 'PT' ? 'info' : undefined"
+                      class="cursor-pointer"
+                      style="border-width: 2px"
+                      @click="selectTipeKlien('PT')"
+                    >
+                      <VCardText class="d-flex align-center gap-3 pa-4">
+                        <VAvatar
+                          color="info"
+                          variant="tonal"
+                          size="40"
+                        >
+                          <VIcon
+                            icon="ri-building-4-line"
+                            size="20"
+                          />
+                        </VAvatar>
+                        <div>
+                          <div class="font-weight-semibold">
+                            PT — B2B
+                          </div>
+                          <div class="text-caption text-medium-emphasis">
+                            Tagih ke perusahaan/PT langsung
+                          </div>
+                        </div>
+                        <VSpacer />
+                        <VIcon
+                          v-if="form.tipe_klien === 'PT'"
+                          icon="ri-checkbox-circle-fill"
+                          color="info"
+                          size="20"
+                        />
+                      </VCardText>
+                    </VCard>
+                  </VCol>
+                </VRow>
+              </div>
+              <div
+                v-else
+                class="d-flex align-center gap-2 py-1"
+              >
+                <span class="text-caption text-medium-emphasis">Tipe Klien:</span>
+                <VChip
+                  :color="isB2B ? 'info' : 'success'"
+                  size="small"
+                  variant="tonal"
+                  :prepend-icon="isB2B ? 'ri-building-4-line' : 'ri-store-line'"
+                >
+                  {{ isB2B ? 'PT — B2B' : 'RESTO — B2C' }}
+                </VChip>
+                <span class="text-caption text-disabled ms-1">Tidak dapat diubah setelah dibuat</span>
+              </div>
+            </VCol>
+
             <VCol
               cols="12"
               md="3"
@@ -89,13 +207,13 @@
             >
               <VTextField
                 v-model="form.nama_klien"
-                label="Nama Investor (Billing)"
+                :label="namaKlienLabel"
                 density="compact"
                 variant="outlined"
-                :rules="[v => !!v || 'Nama investor wajib diisi']"
+                :rules="[v => !!v || `${namaKlienLabel} wajib diisi`]"
                 :error-messages="errors.nama_klien"
                 :readonly="isArEditMode"
-                :hint="isB2B ? 'Isi nama kontak keuangan/billing di PT' : (!isEditing && selectedRestoInvestor ? 'Otomatis dari data pengelola investor' : '')"
+                :hint="namaKlienHint"
                 persistent-hint
               />
             </VCol>
@@ -116,32 +234,24 @@
             </VCol>
             <VCol
               cols="12"
-              md="3"
-            >
-              <VSelect
-                v-model="form.tipe_klien"
-                label="Tipe Klien"
-                density="compact"
-                variant="outlined"
-                :items="tipeKlienOptions"
-                item-title="label"
-                item-value="value"
-                :rules="[v => !!v || 'Tipe klien wajib dipilih']"
-                :error-messages="errors.tipe_klien"
-                :readonly="isArEditMode || isEditing"
-                :hint="isEditing ? 'Tidak dapat diubah setelah dibuat' : ''"
-                persistent-hint
-              />
-            </VCol>
-            <VCol
-              cols="12"
               md="9"
             >
+              <VAlert
+                v-if="isB2B && !isArEditMode"
+                type="warning"
+                variant="tonal"
+                density="compact"
+                icon="ri-file-text-line"
+                class="mb-2"
+              >
+                NPWP Perusahaan wajib untuk penerbitan faktur pajak
+              </VAlert>
               <VTextField
                 v-model="form.no_npwp"
-                label="No. NPWP Investor"
+                :label="npwpLabel"
                 density="compact"
                 variant="outlined"
+                :rules="npwpRules"
                 :error-messages="errors.no_npwp"
                 :readonly="isArEditMode"
               />
@@ -152,7 +262,7 @@
             >
               <VTextField
                 v-model="form.no_wa"
-                label="No. WhatsApp Investor"
+                :label="isB2B ? 'No. WhatsApp Kontak Keuangan PT' : 'No. WhatsApp Investor'"
                 placeholder="Contoh: 08123456789"
                 density="compact"
                 variant="outlined"
@@ -176,6 +286,22 @@
         <VDivider />
         <VCardText>
           <VRow>
+            <VCol
+              v-if="!isB2B && !form.resto_id && !isEditing"
+              cols="12"
+              class="pb-1"
+            >
+              <VAlert
+                type="info"
+                variant="tonal"
+                density="compact"
+                icon="ri-store-2-line"
+                class="mb-0"
+              >
+                Pilih Resto terlebih dahulu — nama pengelola akan terisi otomatis ke field Billing
+              </VAlert>
+            </VCol>
+
             <VCol cols="12">
               <VAutocomplete
                 v-model="form.resto_id"
@@ -461,6 +587,21 @@ const isArRole    = computed(() => authStore.isArOnly)
 const isArEditMode = computed(() => isArRole.value && isEditing.value)
 const isB2B        = computed(() => form.tipe_klien === 'PT')
 
+const namaKlienLabel = computed(() =>
+  isB2B.value ? 'Nama Kontak Keuangan PT (Billing)' : 'Nama Investor (Billing)'
+)
+const namaKlienHint = computed(() => {
+  if (isB2B.value) return 'Isi nama kontak keuangan/billing di PT'
+  if (!isEditing.value && selectedRestoInvestor.value) return 'Otomatis dari data investor'
+  return ''
+})
+const npwpLabel = computed(() =>
+  isB2B.value ? 'No. NPWP Perusahaan (Wajib)' : 'No. NPWP Investor (Opsional)'
+)
+const npwpRules = computed(() =>
+  isB2B.value ? [v => !!v || 'NPWP Perusahaan wajib diisi untuk klien B2B'] : []
+)
+
 const filteredRestoList = computed(() => {
   if (isArRole.value) {
     const myKaryawanId = authStore.user?.karyawan?.id
@@ -493,11 +634,6 @@ const panduanTab        = ref('b2c')
 const selectedRestoInvestor = ref(null)
 
 const statusOptions = BOOLEAN_STATUS_OPTIONS
-
-const tipeKlienOptions = [
-  { label: 'RESTO (B2C)', value: 'RESTO' },
-  { label: 'PT (B2B)',    value: 'PT'    },
-]
 
 const displayKaryawan = computed(() => {
   if (isEditing.value)
@@ -535,6 +671,16 @@ function resetErrors() {
   })
 }
 
+function selectTipeKlien(tipe) {
+  if (isEditing.value || isArEditMode.value) return
+  form.tipe_klien = tipe
+  form.no_npwp = ''
+  form.nama_klien = ''
+  form.resto_id = null
+  selectedRestoInvestor.value = null
+  refreshKodeKlienPreview()
+}
+
 async function refreshKodeKlienPreview() {
   if (isEditing.value || !form.tipe_klien) return
 
@@ -551,6 +697,10 @@ async function refreshKodeKlienPreview() {
     kodePreviewLoading.value = false
   }
 }
+
+watch(() => form.tipe_klien, newType => {
+  if (newType) panduanTab.value = newType === 'PT' ? 'b2b' : 'b2c'
+})
 
 watch(() => form.karyawan_ar_id, (newId, oldId) => {
   if (!isArRole.value && newId !== oldId && !isEditing.value) {
