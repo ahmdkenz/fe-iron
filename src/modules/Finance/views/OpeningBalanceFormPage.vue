@@ -647,7 +647,7 @@ function klienFilter(value, query, item) {
 }
 
 function klienTipeColor(tipe) {
-  return { RESTO: 'success', MITRA: 'warning', PT: 'info', STOKIS: 'secondary' }[tipe] ?? 'default'
+  return { RESTO: 'success', PT: 'info' }[tipe] ?? 'default'
 }
 
 const selectedKlien = computed(() =>

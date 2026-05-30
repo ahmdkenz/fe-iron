@@ -88,12 +88,12 @@
         </template>
         <template #item.segment="{ item }">
           <VChip
-            :color="['RESTO','MITRA'].includes(item.tipe_klien) ? 'success' : 'info'"
+            :color="item.tipe_klien === 'RESTO' ? 'success' : 'info'"
             size="small"
             variant="tonal"
             label
           >
-            {{ ['RESTO','MITRA'].includes(item.tipe_klien) ? 'B2C' : 'B2B' }}
+            {{ item.tipe_klien === 'RESTO' ? 'B2C' : 'B2B' }}
           </VChip>
           <div class="text-caption text-medium-emphasis mt-1">
             {{ item.tipe_klien }}
@@ -319,10 +319,10 @@
             <ul class="ps-4">
               <li>Download template Excel, isi data, lalu upload file (.xlsx atau .csv).</li>
               <li>Kolom <strong>kode_resto</strong>, <strong>nama_klien</strong>, dan <strong>tipe_klien</strong> wajib diisi.</li>
-              <li>Kolom <strong>nama_klien</strong>: isi <strong>nama investor</strong> (untuk B2C/RESTO/MITRA) atau nama kontak billing PT (untuk B2B).</li>
+              <li>Kolom <strong>nama_klien</strong>: isi <strong>nama investor/pengelola</strong> (untuk B2C/RESTO) atau nama kontak billing PT (untuk B2B/PT).</li>
               <li>Kolom <strong>kode_resto</strong>: isi kode unik klien, format <strong>AR-B2C-xxx</strong> (B2C) atau <strong>AR-B2B-xxx</strong> (B2B).</li>
-              <li>Kolom <strong>tipe_klien</strong>: isi persis <strong>RESTO / MITRA / PT / STOKIS</strong>.</li>
-              <li>Untuk tipe RESTO/MITRA, kolom <strong>nama_resto</strong> wajib diisi sesuai data di sistem.</li>
+              <li>Kolom <strong>tipe_klien</strong>: isi persis <strong>RESTO</strong> (B2C) atau <strong>PT</strong> (B2B).</li>
+              <li>Untuk tipe RESTO, kolom <strong>nama_resto</strong> wajib diisi sesuai data di sistem.</li>
               <li>Kolom <strong>nama_karyawan_ar</strong> wajib diisi sesuai nama karyawan di sistem.</li>
               <li>Kolom <strong>status</strong>: 1 = Aktif, 0 = Nonaktif (default: 1).</li>
               <li>Lihat sheet <strong>Petunjuk Pengisian</strong> di template untuk panduan lengkap.</li>
@@ -604,7 +604,7 @@ function shareWhatsApp(klien) {
     .replace(/\D/g, '')
     .replace(/^0/, '62')
 
-  const isB2C    = ['RESTO', 'MITRA'].includes(klien.tipe_klien)
+  const isB2C    = klien.tipe_klien === 'RESTO'
   const segment  = isB2C ? 'B2C' : 'B2B'
 
   const lines = [

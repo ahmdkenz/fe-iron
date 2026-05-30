@@ -327,11 +327,11 @@
           <VTabs v-model="panduanTab" color="primary" class="px-4 pt-2">
             <VTab value="b2c">
               <VIcon icon="ri-store-line" class="me-1" size="18" />
-              B2C (RESTO / MITRA)
+              B2C (RESTO)
             </VTab>
             <VTab value="b2b">
               <VIcon icon="ri-building-4-line" class="me-1" size="18" />
-              B2B (PT / STOKIS)
+              B2B (PT)
             </VTab>
           </VTabs>
           <VDivider />
@@ -340,7 +340,7 @@
             <!-- Tab B2C -->
             <VTabsWindowItem value="b2c">
               <VAlert type="success" variant="tonal" density="compact" class="mb-4">
-                <strong>B2C</strong> — Penagihan ke pengelola outlet (Resto atau Mitra). Kode: <code>AR-B2C-xxx</code>
+                <strong>B2C (RESTO)</strong> — Penagihan ke pengelola outlet secara langsung. Kode: <code>AR-B2C-xxx</code>
               </VAlert>
 
               <VTable density="compact" class="rounded border mb-4">
@@ -353,7 +353,7 @@
                 <tbody>
                   <tr>
                     <td class="font-weight-medium">Tipe Klien</td>
-                    <td>Pilih <strong>RESTO</strong> (outlet langsung) atau <strong>MITRA</strong> (distributor/partner)</td>
+                    <td>Pilih <strong>RESTO</strong> — untuk penagihan ke pengelola outlet secara langsung</td>
                   </tr>
                   <tr>
                     <td class="font-weight-medium">Resto <span class="text-error">*</span></td>
@@ -379,14 +379,14 @@
               </VTable>
 
               <VAlert type="info" variant="tonal" density="compact" icon="ri-information-line">
-                Setiap B2C memiliki 1 Client per pengelola/outlet. Invoice ditagih langsung ke pengelola resto tersebut.
+                Setiap B2C memiliki 1 Client per outlet. Invoice ditagih langsung ke pengelola resto tersebut.
               </VAlert>
             </VTabsWindowItem>
 
             <!-- Tab B2B -->
             <VTabsWindowItem value="b2b">
               <VAlert type="primary" variant="tonal" density="compact" class="mb-4">
-                <strong>B2B</strong> — Penagihan langsung ke PT. Kode: <code>AR-B2B-xxx</code>
+                <strong>B2B (PT)</strong> — Penagihan langsung ke perusahaan/PT. Kode: <code>AR-B2B-xxx</code>
               </VAlert>
 
               <VTable density="compact" class="rounded border mb-4">
@@ -399,7 +399,7 @@
                 <tbody>
                   <tr>
                     <td class="font-weight-medium">Tipe Klien</td>
-                    <td>Pilih <strong>PT</strong> (perusahaan) atau <strong>STOKIS</strong> (grosir/distributor besar)</td>
+                    <td>Pilih <strong>PT</strong> — untuk penagihan ke badan usaha/perusahaan</td>
                   </tr>
                   <tr>
                     <td class="font-weight-medium">Resto</td>
@@ -459,7 +459,7 @@ const id = route.params.id
 const isEditing = computed(() => !!id)
 const isArRole    = computed(() => authStore.isArOnly)
 const isArEditMode = computed(() => isArRole.value && isEditing.value)
-const isB2B        = computed(() => ['PT', 'STOKIS'].includes(form.tipe_klien))
+const isB2B        = computed(() => form.tipe_klien === 'PT')
 
 const filteredRestoList = computed(() => {
   if (isArRole.value) {
@@ -495,10 +495,8 @@ const selectedRestoInvestor = ref(null)
 const statusOptions = BOOLEAN_STATUS_OPTIONS
 
 const tipeKlienOptions = [
-  { label: 'RESTO (B2C)',   value: 'RESTO'  },
-  { label: 'MITRA (B2C)',   value: 'MITRA'  },
-  { label: 'PT (B2B)',      value: 'PT'     },
-  { label: 'STOKIS (B2B)', value: 'STOKIS' },
+  { label: 'RESTO (B2C)', value: 'RESTO' },
+  { label: 'PT (B2B)',    value: 'PT'    },
 ]
 
 const displayKaryawan = computed(() => {
@@ -521,7 +519,7 @@ const errors = reactive({
 const defaultForm = () => ({
   kode_klien: '',
   nama_klien: '',
-  tipe_klien: 'MITRA',
+  tipe_klien: 'RESTO',
   no_npwp: '',
   no_wa: '',
   karyawan_ar_id: isArRole.value ? (authStore.user?.karyawan?.id ?? null) : null,
