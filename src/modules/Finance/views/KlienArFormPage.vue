@@ -627,7 +627,6 @@ const { ensureLoaded: ensureRestoLoaded } = useLazyFetchAll(fetchResto)
 const formRef           = ref(null)
 const pageLoading       = ref(!!id)
 const errorMessage      = ref('')
-const kodePreviewLoading = ref(false)
 const showPanduan       = ref(false)
 const panduanTab        = ref('b2c')
 
@@ -678,24 +677,6 @@ function selectTipeKlien(tipe) {
   form.nama_klien = ''
   form.resto_id = null
   selectedRestoInvestor.value = null
-  refreshKodeKlienPreview()
-}
-
-async function refreshKodeKlienPreview() {
-  if (isEditing.value || !form.tipe_klien) return
-
-  kodePreviewLoading.value = true
-  try {
-    const { data } = await api.get('/finance/klien-ar/preview-kode', {
-      params: { tipe_klien: form.tipe_klien },
-    })
-
-    form.kode_klien = data.data?.kode_klien ?? ''
-  } catch {
-    form.kode_klien = ''
-  } finally {
-    kodePreviewLoading.value = false
-  }
 }
 
 watch(() => form.tipe_klien, newType => {
