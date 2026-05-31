@@ -553,7 +553,7 @@ function openImport() {
 
 function closeImport() {
   showImport.value = false
-  if ((importResult.value?.inserted > 0) || (importResult.value?.updated > 0)) fetchList()
+  fetchList()
 }
 
 async function exportCsv() {
@@ -606,6 +606,7 @@ async function doImport() {
 
     importResult.value = res.data.data
     importFile.value   = null
+    if ((importResult.value?.inserted > 0) || (importResult.value?.updated > 0)) fetchList()
   } catch (err) {
     const message = err?.response?.data?.message || 'Gagal mengimport data.'
     await showError(message)

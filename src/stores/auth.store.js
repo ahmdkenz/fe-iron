@@ -69,7 +69,14 @@ export const useAuthStore = defineStore('auth', {
   actions: {
     initAuth() {
       if (!_initPromise) {
-        _initPromise = this.fetchMe().catch(() => {})
+        const token = localStorage.getItem('auth_token')
+        if (token) {
+          _initPromise = this.fetchMe().catch(() => {
+            localStorage.removeItem('auth_token')
+          })
+        } else {
+          _initPromise = Promise.resolve()
+        }
       }
 
       return _initPromise
