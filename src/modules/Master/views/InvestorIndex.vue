@@ -316,7 +316,7 @@
             class="mt-4"
           >
             <VAlert
-              :type="importResult.failed > 0 ? 'warning' : 'success'"
+              :type="(importResult.total === 0 || importResult.failed > 0) ? 'warning' : 'success'"
               variant="tonal"
               class="mb-3"
             >

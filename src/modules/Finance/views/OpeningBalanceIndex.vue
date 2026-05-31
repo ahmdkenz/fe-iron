@@ -38,6 +38,19 @@
           Ajukan Opening Balance
         </VBtn>
       </div>
+      <div
+        v-if="authStore.isDirector"
+        class="d-flex gap-2"
+      >
+        <VBtn
+          color="success"
+          prepend-icon="ri-checkbox-multiple-line"
+          :loading="approvingAll"
+          @click="confirmApproveAll"
+        >
+          Approve Semua
+        </VBtn>
+      </div>
     </PageHeader>
 
     <!-- ── Non-Director View ──────────────────────────────────────────────── -->
@@ -594,6 +607,23 @@
                 </VTooltip>
               </VBtn>
               <VBtn
+                v-if="item.approval_status === 'PENDING'"
+                icon
+                size="small"
+                variant="text"
+                color="error"
+                :loading="rejectingId === item.id"
+                @click="confirmReject(item)"
+              >
+                <VIcon
+                  icon="ri-close-circle-line"
+                  size="18"
+                />
+                <VTooltip activator="parent">
+                  Tolak
+                </VTooltip>
+              </VBtn>
+              <VBtn
                 icon
                 size="small"
                 variant="text"
@@ -1128,7 +1158,9 @@ const dirApprovalSummary = reactive({
   total_sisa: null,
 })
 
-const approvingId = ref(null)
+const approvingId  = ref(null)
+const rejectingId  = ref(null)
+const approvingAll = ref(false)
 
 // ── Director: OB list table ────────────────────────────────────────────────
 const { items: dirObItems, loading: dirObLoading, meta: dirObMeta, params: dirObParams, fetchList: fetchDirObList } = useCrud('/finance/opening-balance')
@@ -1616,6 +1648,80 @@ async function confirmApprove(item) {
     showError({ text: message })
   } finally {
     approvingId.value = null
+  }
+}
+
+// ── Reject action ──────────────────────────────────────────────────────────
+async function confirmReject(item) {
+  const result = await showAlert({
+    icon: 'warning',
+    title: 'Tolak Opening Balance?',
+    html: `Berikan alasan penolakan untuk <strong>${item.no_invoice}</strong> atas nama <strong>${item.klien_ar?.nama_klien ?? '-'}</strong>.`,
+    input: 'textarea',
+    inputPlaceholder: 'Alasan penolakan...',
+    inputAttributes: { rows: 3 },
+    inputValidator: value => !value?.trim() ? 'Alasan penolakan wajib diisi.' : null,
+    confirmButtonText: 'Ya, Tolak',
+    cancelButtonText: 'Batal',
+    showCancelButton: true,
+    focusCancel: true,
+    reverseButtons: true,
+  })
+
+  if (!result.isConfirmed) return
+
+  rejectingId.value = item.id
+  try {
+    await api.patch(`/finance/opening-balance/${item.id}/reject`, { note: result.value })
+    await showSuccess({ text: `Opening Balance ${item.no_invoice} berhasil ditolak.` })
+    doDirFetch()
+    financeNotificationStore.fetchPendingOpeningBalanceCount()
+  } catch (err) {
+    const message = err?.response?.data?.message ?? 'Gagal menolak Opening Balance.'
+    showError({ text: message })
+  } finally {
+    rejectingId.value = null
+  }
+}
+
+// ── Approve All action ─────────────────────────────────────────────────────
+async function confirmApproveAll() {
+  const pending = dirApprovalItems.value.filter(i => i.approval_status === 'PENDING')
+  if (!pending.length) {
+    showError({ text: 'Tidak ada Opening Balance yang perlu disetujui.' })
+
+    return
+  }
+
+  const result = await showAlert({
+    icon: 'question',
+    title: 'Approve Semua Opening Balance?',
+    text: `Anda akan menyetujui ${pending.length} Opening Balance yang sedang ditampilkan.`,
+    confirmButtonText: 'Ya, Approve Semua',
+    cancelButtonText: 'Batal',
+    showCancelButton: true,
+    focusCancel: true,
+    reverseButtons: true,
+  })
+
+  if (!result.isConfirmed) return
+
+  approvingAll.value = true
+  try {
+    await Promise.all(pending.map(item =>
+      api.patch(`/finance/opening-balance/${item.id}/approve`, { note: null }),
+    ))
+    await showSuccess({ text: `${pending.length} Opening Balance berhasil disetujui.` })
+    doDirFetch()
+    loadDirObList()
+    loadDirObSummary()
+    financeNotificationStore.fetchPendingOpeningBalanceCount()
+  } catch (err) {
+    const message = err?.response?.data?.message ?? 'Gagal menyetujui sebagian Opening Balance.'
+    showError({ text: message })
+    doDirFetch()
+  } finally {
+    approvingAll.value = false
   }
 }
 
