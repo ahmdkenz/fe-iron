@@ -1130,11 +1130,16 @@ const { items: klienList, loading: klienLoading, fetchAll: fetchKlien } = useCru
 const { items, loading, meta, params, fetchList } = useCrud('/finance/opening-balance')
 const { formatCurrency, formatDate } = useFormatter()
 
+const canSeeAll = authStore.hasAnyRole(['ADMIN', 'MANAGER', 'SUPERVISOR'])
+
 params.status = ''
 params.approval_status = ''
 params.klien_ar_id = null
 params.periode_bulan = null
 params.periode_tahun = null
+if (!canSeeAll) {
+  params.karyawan_id = authStore.user?.karyawan?.id
+}
 
 const summary = reactive({
   total_invoice: null,
