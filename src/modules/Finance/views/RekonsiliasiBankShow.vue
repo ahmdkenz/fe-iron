@@ -312,12 +312,12 @@
 
           <!-- Label section -->
           <div class="text-caption text-medium-emphasis text-uppercase font-weight-medium mb-2" style="letter-spacing: 0.6px">
-            Pilih Invoice B2C (klien yang sama)
+            Pilih Invoice B2C (investor yang sama)
           </div>
 
           <VProgressLinear v-if="invoiceB2CLoading" indeterminate color="primary" class="mb-3" rounded />
           <VAlert v-if="!invoiceB2CLoading && invoiceB2CList.length === 0" type="info" variant="tonal" density="compact" class="mb-3">
-            Tidak ada invoice B2C yang terbuka untuk klien ini.
+            Tidak ada invoice B2C yang terbuka untuk investor ini.
           </VAlert>
 
           <!-- Invoice cards -->
@@ -351,6 +351,10 @@
                     <span class="text-caption text-medium-emphasis">{{ inv.tanggal }}</span>
                     <span class="text-caption text-medium-emphasis">Total: {{ formatCurrency(inv.total_tagihan) }}</span>
                     <span class="text-caption font-weight-medium text-warning">Sisa: {{ formatCurrency(inv.sisa_tagihan) }}</span>
+                  </div>
+                  <div v-if="inv.nama_resto || inv.nama_klien" class="d-flex flex-wrap gap-x-2 mt-0.5">
+                    <span v-if="inv.nama_resto" class="text-caption text-primary">{{ inv.nama_resto }}</span>
+                    <span v-else-if="inv.nama_klien" class="text-caption text-primary">{{ inv.nama_klien }}</span>
                   </div>
                 </div>
               </div>
