@@ -365,7 +365,8 @@
             </div>
             <ul class="ps-4">
               <li>Download template Excel, isi data, lalu upload file (.xlsx atau .csv).</li>
-              <li>Kolom <strong>nama_resto</strong> wajib diisi.</li>
+              <li>Kolom <strong>nama_resto</strong> dan <strong>kode_resto</strong> wajib diisi untuk data baru.</li>
+              <li>Kolom <strong>kode_resto</strong> diisi manual (contoh: KD-001). Untuk data yang sudah ada, <strong>kode_resto tidak akan diperbarui</strong>.</li>
               <li>Kolom <strong>nama_investor</strong>, <strong>nama_entitas</strong>, <strong>nama_brand</strong>, <strong>nama_pic</strong> harus <strong>persis sama</strong> dengan data di sistem.</li>
               <li>Kolom <strong>tgl_aktif</strong> format: DD-MM-YYYY. Contoh: 15-01-2026.</li>
               <li>Lihat sheet <strong>Petunjuk Pengisian</strong> di template untuk panduan lengkap.</li>

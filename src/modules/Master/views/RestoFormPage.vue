@@ -54,12 +54,24 @@
               md="4"
             >
               <VTextField
-                :model-value="isEditing ? kodeResto : kodePreview"
+                v-if="isEditing"
+                :model-value="kodeResto"
                 label="Kode Resto"
                 density="compact"
                 variant="outlined"
                 readonly
-                :hint="isEditing ? 'Kode tidak dapat diubah' : 'Otomatis terisi dari Nama Resto'"
+                hint="Kode tidak dapat diubah"
+                persistent-hint
+              />
+              <VTextField
+                v-else
+                v-model="form.kode_resto"
+                label="Kode Resto"
+                density="compact"
+                variant="outlined"
+                :rules="[v => !!v || 'Kode resto wajib diisi']"
+                :error-messages="errors.kode_resto"
+                hint="Isi kode resto secara manual"
                 persistent-hint
               />
             </VCol>
@@ -398,14 +410,13 @@ const { ensureLoaded: ensureKaryawanLoaded } = useLazyFetchAll(fetchKaryawan)
 const brandList    = ref([])
 const brandLoading = ref(false)
 const kodeResto    = ref('')
-const kodePreview  = computed(() => form.nama_resto ? `OT-${form.nama_resto}` : '')
 
 const formRef = ref(null)
 const pageLoading = ref(!!id)
 const errorMessage = ref('')
 
 const errors = reactive({
-  nama_resto: [], perusahaan_id: [], brand_id: [], investor_id: [],
+  kode_resto: [], nama_resto: [], perusahaan_id: [], brand_id: [], investor_id: [],
   karyawan_id: [], supervisor: [], no_hp_supervisor: [], stokis: [],
   area: [], kota: [], alamat: [], no_telp: [], tgl_aktif: [], keterangan: [],
 })
@@ -413,7 +424,7 @@ const errors = reactive({
 const statusOptions = BOOLEAN_STATUS_OPTIONS
 
 const form = reactive({
-  nama_resto: '', perusahaan_id: null, brand_id: null, investor_id: null,
+  kode_resto: '', nama_resto: '', perusahaan_id: null, brand_id: null, investor_id: null,
   karyawan_id: null, supervisor: '', no_hp_supervisor: '', stokis: '',
   area: '', kota: '', alamat: '', no_telp: '', tgl_aktif: '', keterangan: '', status: 1,
 })

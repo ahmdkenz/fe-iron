@@ -8,17 +8,28 @@
   >
     <VForm ref="formRef">
       <VRow>
-        <!-- Kode Resto (auto-generated, readonly) -->
+        <!-- Kode Resto -->
         <VCol cols="12">
           <VTextField
-            :model-value="isEditing ? restoDataRef?.kode_resto : kodePreview"
+            v-if="isEditing"
+            :model-value="restoDataRef?.kode_resto"
             label="Kode Resto"
             density="compact"
             variant="outlined"
             readonly
-            :hint="isEditing ? 'Kode tidak dapat diubah' : 'Otomatis terisi setelah Entitas & Brand dipilih'"
+            hint="Kode tidak dapat diubah"
             persistent-hint
-            :loading="previewLoading"
+          />
+          <VTextField
+            v-else
+            v-model="form.kode_resto"
+            label="Kode Resto"
+            density="compact"
+            variant="outlined"
+            :rules="[v => !!v || 'Kode resto wajib diisi']"
+            :error-messages="errors.kode_resto"
+            hint="Isi kode resto secara manual"
+            persistent-hint
           />
         </VCol>
 
@@ -308,8 +319,6 @@ const { items: karyawanList,   loading: karyawanLoading,   fetchAll: fetchKaryaw
 
 const brandList    = ref([])
 const brandLoading = ref(false)
-const kodePreview  = ref('')
-const previewLoading = ref(false)
 
 const formRef      = ref(null)
 const errorMessage = ref('')
@@ -317,7 +326,7 @@ const restoDataRef = computed(() => props.restoData)
 const isEditing    = computed(() => !!props.restoData)
 
 const errors = reactive({
-  nama_resto: [], perusahaan_id: [], brand_id: [], investor_id: [],
+  kode_resto: [], nama_resto: [], perusahaan_id: [], brand_id: [], investor_id: [],
   karyawan_id: [], supervisor: [], no_hp_supervisor: [], stokis: [],
   area: [], kota: [], alamat: [], no_telp: [], tgl_aktif: [], keterangan: [],
 })
@@ -325,6 +334,7 @@ const errors = reactive({
 const statusOptions = BOOLEAN_STATUS_OPTIONS
 
 const defaultForm = () => ({
+  kode_resto: '',
   nama_resto: '',
   perusahaan_id: null,
   brand_id: null,
@@ -358,37 +368,17 @@ async function fetchBrands(perusahaanId) {
   }
 }
 
-async function refreshKodePreview() {
-  if (!form.perusahaan_id || !form.brand_id || isEditing.value) return
-  previewLoading.value = true
-  try {
-    const res = await api.get('/master/resto/preview-kode', {
-      params: { perusahaan_id: form.perusahaan_id, brand_id: form.brand_id },
-    })
-
-    kodePreview.value = res.data?.data?.kode ?? ''
-  } catch {
-    kodePreview.value = ''
-  } finally {
-    previewLoading.value = false
-  }
-}
-
 function onEntitasChange(val) {
   form.brand_id = null
-  kodePreview.value = ''
   fetchBrands(val)
 }
 
-function onBrandChange() {
-  refreshKodePreview()
-}
+function onBrandChange() {}
 
 watch(() => props.modelValue, async val => {
   if (val) {
     Object.keys(errors).forEach(k => (errors[k] = []))
     errorMessage.value = ''
-    kodePreview.value  = ''
 
     fetchEntitas()
     fetchInvestor()
@@ -396,6 +386,7 @@ watch(() => props.modelValue, async val => {
 
     if (props.restoData) {
       Object.assign(form, {
+        kode_resto: props.restoData.kode_resto    ?? '',
         nama_resto: props.restoData.nama_resto    ?? '',
         perusahaan_id: props.restoData.perusahaan_id ?? null,
         brand_id: props.restoData.brand_id      ?? null,
