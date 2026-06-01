@@ -1108,7 +1108,7 @@
 
 <script setup>
 /* eslint-disable camelcase */
-import { onBeforeUnmount, onDeactivated, onMounted, reactive, ref } from 'vue'
+import { onActivated, onBeforeUnmount, onDeactivated, onMounted, reactive, ref } from 'vue'
 import { useAuthStore } from '@/stores/auth.store'
 import { useCrud } from '@/composables/useCrud'
 import { useFormatter } from '@/composables/useFormatter'
@@ -1731,7 +1731,7 @@ async function confirmApproveAll() {
 }
 
 // ── Lifecycle ──────────────────────────────────────────────────────────────
-onMounted(() => {
+function initLoad() {
   loadKlien()
   if (authStore.isDirector) {
     loadDirApprovalList()
@@ -1746,7 +1746,14 @@ onMounted(() => {
     loadList()
     loadSummary()
   }
-})
+}
+
+// onMounted: load data saat pertama kali mount (termasuk di dalam KeepAlive)
+// onActivated: reload data saat kembali ke halaman via navigasi (KeepAlive re-activation)
+// Fix: route 'finance-opening-balance' ada di keepAliveRouteNames — tanpa onActivated,
+// direktur yang navigasi pergi-kembali tidak akan melihat OB baru yang baru diimport.
+onMounted(initLoad)
+onActivated(initLoad)
 
 onDeactivated(() => {
   clearDebounceTimer()
