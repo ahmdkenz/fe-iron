@@ -147,7 +147,7 @@
         <!-- Dicocokkan Oleh -->
         <template #item.matched_by="{ item }">
           <span v-if="item.matched_by" class="text-caption font-weight-medium">{{ item.matched_by }}</span>
-          <VChip v-else-if="item.status_cocok === 'MATCHED'" size="x-small" variant="tonal" color="secondary">Auto</VChip>
+          <span v-else-if="item.status_cocok === 'MATCHED'" class="text-caption font-weight-medium">{{ report.uploaded_by }}</span>
           <span v-else class="text-disabled">-</span>
         </template>
 
