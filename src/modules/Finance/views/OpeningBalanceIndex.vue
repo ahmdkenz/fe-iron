@@ -312,6 +312,7 @@
                 size="small"
                 variant="text"
                 color="secondary"
+                :loading="printingId === item.id"
                 @click="printInvoice(item.id)"
               >
                 <VIcon
@@ -899,6 +900,7 @@
                 size="small"
                 variant="text"
                 color="secondary"
+                :loading="printingId === item.id"
                 @click="printInvoice(item.id)"
               >
                 <VIcon
@@ -1166,6 +1168,7 @@ const dirApprovalSummary = reactive({
 const approvingId  = ref(null)
 const rejectingId  = ref(null)
 const approvingAll = ref(false)
+const printingId   = ref(null)
 
 // ── Director: OB list table ────────────────────────────────────────────────
 const { items: dirObItems, loading: dirObLoading, meta: dirObMeta, params: dirObParams, fetchList: fetchDirObList } = useCrud('/finance/opening-balance')
@@ -1331,13 +1334,16 @@ async function doImport() {
 
 // ── Print ──────────────────────────────────────────────────────────────────
 async function printInvoice(id) {
+  printingId.value = id
   try {
     const res = await api.get(`/finance/invoices/${id}/print`, { responseType: 'blob' })
     const blobUrl = URL.createObjectURL(res.data)
     window.open(blobUrl, '_blank')
     setTimeout(() => URL.revokeObjectURL(blobUrl), 30_000)
   } catch {
-    window.alert('Gagal membuka dokumen cetak')
+    await showError('Gagal membuka dokumen cetak')
+  } finally {
+    printingId.value = null
   }
 }
 

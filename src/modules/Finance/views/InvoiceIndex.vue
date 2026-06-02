@@ -332,6 +332,7 @@
               size="small"
               variant="text"
               color="secondary"
+              :loading="printingId === item.id"
               @click="printInvoice(item.id)"
             >
               <VIcon
@@ -562,6 +563,7 @@ const selectedForPayment = ref(null)
 const exportingExcel  = ref(false)
 const showImport      = ref(false)
 const importing       = ref(false)
+const printingId      = ref(null)
 const importFile      = ref(null)
 const importResult    = ref(null)
 const segment         = ref('ALL')
@@ -774,6 +776,7 @@ function onPembayaranSaved() {
 }
 
 async function printInvoice(id) {
+  printingId.value = id
   try {
     const res = await api.get(`/finance/invoices/${id}/print`, { responseType: 'blob' })
     const blobUrl = URL.createObjectURL(res.data)
@@ -781,6 +784,8 @@ async function printInvoice(id) {
     setTimeout(() => URL.revokeObjectURL(blobUrl), 30_000)
   } catch {
     await showError('Gagal membuka dokumen cetak')
+  } finally {
+    printingId.value = null
   }
 }
 
