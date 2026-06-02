@@ -1037,7 +1037,7 @@
               class="mb-3"
             >
               <div class="font-weight-medium mb-1">
-                Import selesai
+                {{ importResult.inserted_ob === 0 && (importResult.failed_ob + importResult.failed_detail + importResult.failed_item) > 0 ? 'Import dibatalkan — tidak ada data yang disimpan' : 'Import selesai' }}
               </div>
               <div class="text-body-2">
                 <span class="text-success font-weight-medium">{{ importResult.inserted_ob }}</span> OB ditambahkan
@@ -1316,7 +1316,12 @@ async function doImport() {
     importResult.value = res.data.data
     importFile.value   = null
   } catch (err) {
-    const message = err?.response?.data?.message || 'Gagal mengimport data.'
+    const errResponse = err?.response?.data
+    // Tampilkan tabel error jika backend mengembalikan daftar baris bermasalah (HTTP 422)
+    if (errResponse?.errors?.errors?.length) {
+      importResult.value = errResponse.errors
+    }
+    const message = errResponse?.message || 'Gagal mengimport data.'
     await showError(message)
   } finally {
     importing.value = false
