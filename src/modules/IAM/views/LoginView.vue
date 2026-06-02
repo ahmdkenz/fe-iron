@@ -147,6 +147,27 @@
               />
               <a href="#" class="a-forgot">Lupa Kata Sandi?</a>
             </div>
+            <!-- Attempt warning -->
+            <div v-if="failedAttempts > 0 && !isLocked" class="attempt-warn mb-4">
+              <VIcon icon="ri-error-warning-line" size="15" class="mr-1" />
+              {{ failedAttempts }}/3 percobaan gagal —
+              <span v-if="failedAttempts === 2"> percobaan selanjutnya akan mengunci akun.</span>
+              <span v-else> harap periksa kembali kredensial Anda.</span>
+            </div>
+
+            <!-- Lockout alert -->
+            <VAlert
+              v-if="isLocked"
+              type="warning"
+              variant="tonal"
+              class="mb-5"
+              icon="ri-lock-2-line"
+            >
+              <strong>Akun sementara terkunci.</strong><br>
+              Terlalu banyak percobaan gagal. Silakan coba lagi dalam
+              <strong class="countdown-text">{{ lockCountdown }}</strong>
+            </VAlert>
+
             <VAlert
               v-if="errorMessage"
               type="error"
@@ -162,14 +183,20 @@
               block
               size="large"
               :loading="isSubmitting"
-              :disabled="isSubmitting"
+              :disabled="isSubmitting || isLocked"
               class="fx-btn"
               elevation="0"
             >
               <template #loader>
                 <VProgressCircular indeterminate size="22" width="2" color="white" />
               </template>
-              {{ isSubmitting ? 'Memproses...' : 'Masuk ke Sistem' }}
+              <template v-if="isLocked">
+                <VIcon icon="ri-lock-2-line" size="16" class="mr-1" />
+                Terkunci {{ lockCountdown }}
+              </template>
+              <template v-else>
+                {{ isSubmitting ? 'Memproses...' : 'Masuk ke Sistem' }}
+              </template>
             </VBtn>
             <p class="text-center mt-6 a-contact-row">
               Kendala akses?
@@ -221,6 +248,69 @@ const isSubmitting   = ref(false)
 const processingText = ref('Memverifikasi kredensial...')
 const errors = reactive({ username: [], password: [] })
 const form   = reactive({ username: '', password: '' })
+
+// ── Lockout ───────────────────────────────────────────────────────────────────
+const MAX_ATTEMPTS    = 3
+const LOCK_DURATION   = 5 * 60 * 1000   // 5 menit
+const LOCK_ATTEMPT_KEY = 'iron_login_attempts'
+const LOCK_UNTIL_KEY   = 'iron_login_locked_until'
+
+const failedAttempts  = ref(0)
+const lockedUntil     = ref(0)
+const lockCountdown   = ref('')
+let countdownTimer    = null
+
+const isLocked = computed(() => lockedUntil.value > Date.now())
+
+function loadLockState() {
+  failedAttempts.value = parseInt(localStorage.getItem(LOCK_ATTEMPT_KEY) || '0')
+  const until = parseInt(localStorage.getItem(LOCK_UNTIL_KEY) || '0')
+  if (until > Date.now()) {
+    lockedUntil.value = until
+    startCountdown()
+  } else if (until) {
+    clearLockState()
+  }
+}
+
+function clearLockState() {
+  failedAttempts.value = 0
+  lockedUntil.value    = 0
+  localStorage.removeItem(LOCK_ATTEMPT_KEY)
+  localStorage.removeItem(LOCK_UNTIL_KEY)
+}
+
+function startCountdown() {
+  if (countdownTimer) clearInterval(countdownTimer)
+  updateCountdown()
+  countdownTimer = setInterval(() => {
+    if (Date.now() >= lockedUntil.value) {
+      clearLockState()
+      clearInterval(countdownTimer)
+      countdownTimer = null
+      lockCountdown.value = ''
+    } else {
+      updateCountdown()
+    }
+  }, 1000)
+}
+
+function updateCountdown() {
+  const remaining = lockedUntil.value - Date.now()
+  const mins = Math.floor(remaining / 60000)
+  const secs = Math.floor((remaining % 60000) / 1000)
+  lockCountdown.value = `${mins}:${secs.toString().padStart(2, '0')}`
+}
+
+function recordFailure() {
+  failedAttempts.value++
+  localStorage.setItem(LOCK_ATTEMPT_KEY, String(failedAttempts.value))
+  if (failedAttempts.value >= MAX_ATTEMPTS) {
+    lockedUntil.value = Date.now() + LOCK_DURATION
+    localStorage.setItem(LOCK_UNTIL_KEY, String(lockedUntil.value))
+    startCountdown()
+  }
+}
 
 // ── Theme ─────────────────────────────────────────────────────────────────────
 const themes = [
@@ -296,11 +386,14 @@ onMounted(() => {
 
   resizeFn = () => initCanvas()
   window.addEventListener('resize', resizeFn)
+
+  loadLockState()
 })
 
 onUnmounted(() => {
-  if (animFrame) cancelAnimationFrame(animFrame)
-  if (resizeFn)  window.removeEventListener('resize', resizeFn)
+  if (animFrame)      cancelAnimationFrame(animFrame)
+  if (resizeFn)       window.removeEventListener('resize', resizeFn)
+  if (countdownTimer) clearInterval(countdownTimer)
   if (mqListener) {
     window.matchMedia('(prefers-color-scheme: dark)').removeEventListener('change', mqListener)
   }
@@ -328,6 +421,8 @@ const employeeDisplayName = computed(() =>
 
 // ── Login ─────────────────────────────────────────────────────────────────────
 async function handleLogin() {
+  if (isLocked.value) return
+
   errorMessage.value = ''
   errors.username = []
   errors.password = []
@@ -339,12 +434,14 @@ async function handleLogin() {
     isSubmitting.value = true
     await authStore.login(form.username, form.password)
 
+    clearLockState()
     showOverlay.value = true
     setTimeout(() => { processingText.value = 'Menyiapkan ruang kerja aman...' }, 800)
     setTimeout(() => { processingText.value = 'Menginisialisasi dasbor utama...' }, 1600)
     setTimeout(() => { router.push({ name: 'dashboard' }) }, 2800)
   } catch (err) {
     isSubmitting.value = false
+    recordFailure()
     const data = err.response?.data
     if (data?.errors) {
       errors.username = data.errors.username ?? []
@@ -677,6 +774,17 @@ async function handleLogin() {
 .a-contact-row { font-size: 0.8rem; color: var(--dim); }
 .a-contact { font-weight: 600; color: var(--acc); text-decoration: none; transition: color 0.2s; }
 .a-contact:hover { color: var(--acc-hi); }
+
+/* ── Lockout ── */
+.attempt-warn {
+  font-size: 0.77rem; font-weight: 500;
+  color: #f59e0b;
+  background: rgba(245,158,11,0.08);
+  border: 1px solid rgba(245,158,11,0.22);
+  border-radius: 8px; padding: 7px 12px;
+  display: flex; align-items: center;
+}
+.countdown-text { font-family: 'Courier New', monospace; font-size: 1em; letter-spacing: 0.05em; }
 
 /* ── Success overlay ── */
 .sov {
