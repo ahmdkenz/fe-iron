@@ -8,7 +8,9 @@
         { title: 'Rekonsiliasi Bank', to: { name: 'finance-rekonsiliasi-bank' } },
         { title: 'Detail', disabled: true },
       ]"
-    />
+    >
+      <VBtn variant="text" prepend-icon="ri-arrow-left-line" :to="{ name: 'finance-rekonsiliasi-bank' }">Kembali</VBtn>
+    </PageHeader>
 
     <!-- Info Header -->
     <VCard class="mb-4" v-if="report.id">

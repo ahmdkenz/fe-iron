@@ -8,7 +8,9 @@
         { title: 'Laporan', to: { name: 'finance-laporan' } },
         { title: 'Pendapatan di Muka', disabled: true },
       ]"
-    />
+    >
+      <VBtn variant="text" prepend-icon="ri-arrow-left-line" :to="{ name: 'finance-laporan' }">Kembali</VBtn>
+    </PageHeader>
 
     <PendapatanDiMukaSection />
   </div>

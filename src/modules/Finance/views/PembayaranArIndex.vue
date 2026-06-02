@@ -8,7 +8,9 @@
         { title: 'Laporan', to: { name: 'finance-laporan' } },
         { title: 'Riwayat Pembayaran', disabled: true },
       ]"
-    />
+    >
+      <VBtn variant="text" prepend-icon="ri-arrow-left-line" :to="{ name: 'finance-laporan' }">Kembali</VBtn>
+    </PageHeader>
 
     <!-- Summary Card -->
     <VCard class="mb-4">

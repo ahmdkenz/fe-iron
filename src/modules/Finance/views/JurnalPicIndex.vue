@@ -8,7 +8,9 @@
         { title: 'Laporan', to: { name: 'finance-laporan' } },
         { title: 'Jurnal per PIC', disabled: true },
       ]"
-    />
+    >
+      <VBtn variant="text" prepend-icon="ri-arrow-left-line" :to="{ name: 'finance-laporan' }">Kembali</VBtn>
+    </PageHeader>
 
     <!-- Filter -->
     <VCard class="mb-4">

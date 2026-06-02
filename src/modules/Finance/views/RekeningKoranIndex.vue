@@ -9,6 +9,7 @@
         { title: 'Rekening Koran', disabled: true },
       ]"
     >
+      <VBtn variant="text" prepend-icon="ri-arrow-left-line" :to="{ name: 'finance-laporan' }">Kembali</VBtn>
       <div v-if="report.rows.length > 0" class="d-flex gap-2">
         <VBtn
           color="primary"
