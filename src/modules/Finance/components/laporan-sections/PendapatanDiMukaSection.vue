@@ -128,7 +128,12 @@
         </template>
 
         <template #item.jumlah="{ item }">
-          <span class="font-weight-bold">{{ formatCurrency(item.jumlah) }}</span>
+          <div>
+            <div class="font-weight-bold">{{ formatCurrency(item.jumlah) }}</div>
+            <div v-if="item.status === 'AKTIF' && item.sisa_pdm < item.jumlah" class="text-caption text-warning">
+              Sisa: {{ formatCurrency(item.sisa_pdm) }}
+            </div>
+          </div>
         </template>
 
         <template #item.status="{ item }">
@@ -148,8 +153,120 @@
         <template #item.created_by="{ item }">
           <span class="text-caption">{{ item.created_by ?? '-' }}</span>
         </template>
+
+        <template #item.aksi="{ item }">
+          <VBtn
+            v-if="item.status === 'AKTIF'"
+            size="x-small"
+            variant="tonal"
+            color="deep-purple"
+            @click="openGunakanDialog(item)"
+          >
+            Gunakan
+          </VBtn>
+          <span v-else class="text-disabled text-caption">-</span>
+        </template>
       </BaseTable>
     </VCard>
+
+    <!-- Dialog: Gunakan PDM untuk Invoice -->
+    <VDialog v-model="gunakanDialog" max-width="560" persistent>
+      <VCard>
+        <VCardTitle class="d-flex align-center gap-2 pa-4 pb-3">
+          <VIcon color="deep-purple" size="20">ri-exchange-dollar-line</VIcon>
+          <span class="text-h6">Gunakan PDM untuk Melunasi Invoice</span>
+        </VCardTitle>
+        <VDivider />
+
+        <VCardText class="pa-4">
+          <!-- Info PDM -->
+          <div class="rounded-lg pa-3 mb-4" style="background: rgba(103,58,183,0.06); border: 1px solid rgba(103,58,183,0.2)">
+            <div class="d-flex flex-wrap gap-4">
+              <div>
+                <div class="text-caption text-medium-emphasis">Klien</div>
+                <div class="text-body-2 font-weight-semibold">{{ selectedPdm?.klien ?? '-' }}</div>
+              </div>
+              <div>
+                <div class="text-caption text-medium-emphasis">No Ref Sumber</div>
+                <div class="text-body-2">{{ selectedPdm?.no_referensi_sumber ?? '-' }}</div>
+              </div>
+              <div>
+                <div class="text-caption text-medium-emphasis">Sisa PDM Tersedia</div>
+                <div class="text-body-2 font-weight-bold text-deep-purple">{{ formatCurrency(selectedPdm?.sisa_pdm ?? 0) }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pilih Invoice -->
+          <div class="text-body-2 font-weight-medium mb-2">Pilih Invoice / Opening Balance</div>
+          <VProgressLinear v-if="invoiceLoading" indeterminate color="deep-purple" class="mb-3" rounded />
+          <VAlert
+            v-if="!invoiceLoading && invoiceList.length === 0"
+            type="info"
+            variant="tonal"
+            density="compact"
+            class="mb-3"
+          >
+            Tidak ada invoice terbuka untuk klien ini.
+          </VAlert>
+
+          <VAutocomplete
+            v-if="invoiceList.length > 0"
+            v-model="gunakanForm.invoice_id"
+            label="Pilih Invoice"
+            :items="invoiceList"
+            item-title="label"
+            item-value="id"
+            hide-details="auto"
+            density="compact"
+            clearable
+            class="mb-4"
+            @update:model-value="onInvoiceSelected"
+          />
+
+          <!-- Input Jumlah -->
+          <VTextField
+            v-model.number="gunakanForm.jumlah"
+            label="Jumlah Digunakan"
+            type="number"
+            :hint="gunakanForm.invoice_id ? `Maks: ${formatCurrency(maxJumlah)}` : ''"
+            persistent-hint
+            density="compact"
+            variant="outlined"
+            prefix="Rp"
+            class="mb-4"
+          />
+
+          <!-- Keterangan -->
+          <VTextField
+            v-model="gunakanForm.keterangan"
+            label="Keterangan (opsional)"
+            density="compact"
+            variant="outlined"
+          />
+
+          <VAlert v-if="gunakanError" type="error" variant="tonal" density="compact" class="mt-3">
+            {{ gunakanError }}
+          </VAlert>
+        </VCardText>
+
+        <VDivider />
+        <VCardActions class="pa-4 gap-2">
+          <VSpacer />
+          <VBtn variant="text" @click="closeGunakanDialog">Batal</VBtn>
+          <VBtn
+            color="deep-purple"
+            variant="flat"
+            :loading="gunakanSaving"
+            :disabled="!gunakanForm.invoice_id || !gunakanForm.jumlah || gunakanForm.jumlah <= 0"
+            @click="doGunakan"
+          >
+            <VIcon start size="16">ri-check-line</VIcon>
+            Alokasikan
+          </VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
   </div>
 </template>
 
@@ -162,7 +279,7 @@ import { useSweetAlert } from '@/composables/useSweetAlert'
 import api from '@/utils/axios'
 
 const { formatCurrency, formatDate } = useFormatter()
-const { showError } = useSweetAlert()
+const { showError, showSuccess } = useSweetAlert()
 
 const { items: investorList, loading: investorLoading, fetchAll: fetchInvestor } = useCrud('/master/investor')
 const { ensureLoaded: ensureInvestorLoaded } = useLazyFetchAll(fetchInvestor)
@@ -206,15 +323,17 @@ const headers = [
   { title: 'Status',           key: 'status',               sortable: false, width: '110px' },
   { title: 'Keterangan',       key: 'keterangan',           sortable: false },
   { title: 'Dicatat Oleh',     key: 'created_by',           sortable: false, width: '130px' },
+  { title: 'Aksi',             key: 'aksi',                 sortable: false, width: '100px' },
 ]
 
 const statusOptions = [
   { label: 'Aktif',      value: 'AKTIF'      },
   { label: 'Dibatalkan', value: 'DIBATALKAN' },
+  { label: 'Terpakai',   value: 'TERPAKAI'   },
 ]
 
 function statusColor(status) {
-  return { AKTIF: 'deep-purple', DIBATALKAN: 'error' }[status] ?? 'grey'
+  return { AKTIF: 'deep-purple', DIBATALKAN: 'error', TERPAKAI: 'success' }[status] ?? 'grey'
 }
 
 function buildParams() {
@@ -272,6 +391,91 @@ function buildTimestamp() {
     String(n.getMinutes()).padStart(2, '0') +
     String(n.getSeconds()).padStart(2, '0')
   )
+}
+
+// ── Dialog: Gunakan PDM ──
+const gunakanDialog  = ref(false)
+const selectedPdm    = ref(null)
+const invoiceList    = ref([])
+const invoiceLoading = ref(false)
+const gunakanError   = ref(null)
+const gunakanSaving  = ref(false)
+const maxJumlah      = ref(0)
+
+const gunakanForm = reactive({
+  invoice_id: null,
+  jumlah:     null,
+  keterangan: '',
+})
+
+async function openGunakanDialog(pdm) {
+  selectedPdm.value      = pdm
+  gunakanForm.invoice_id = null
+  gunakanForm.jumlah     = null
+  gunakanForm.keterangan = ''
+  gunakanError.value     = null
+  invoiceList.value      = []
+  maxJumlah.value        = pdm.sisa_pdm ?? pdm.jumlah
+  gunakanDialog.value    = true
+
+  invoiceLoading.value = true
+  try {
+    const { data } = await api.get('/finance/invoices', {
+      params: { klien_ar_id: pdm.klien_ar_id, per_page: 100 },
+    })
+    const allInvoices = data.data?.data ?? data.data ?? []
+    invoiceList.value = allInvoices
+      .filter(inv => inv.status !== 'LUNAS' && inv.status !== 'DRAFT')
+      .map(inv => ({
+        id:    inv.id,
+        label: `${inv.no_invoice} — ${inv.status} — Sisa: Rp ${Number(inv.sisa_tagihan ?? 0).toLocaleString('id-ID')}`,
+        sisa_tagihan: inv.sisa_tagihan ?? 0,
+      }))
+  } catch {
+    // diam — tabel kosong sudah tampil pesan
+  } finally {
+    invoiceLoading.value = false
+  }
+}
+
+function onInvoiceSelected(invoiceId) {
+  const inv = invoiceList.value.find(i => i.id === invoiceId)
+  if (inv) {
+    const sisaInv = Number(inv.sisa_tagihan)
+    const sisaPdm = Number(selectedPdm.value?.sisa_pdm ?? 0)
+    maxJumlah.value    = Math.min(sisaInv, sisaPdm)
+    gunakanForm.jumlah = maxJumlah.value > 0 ? maxJumlah.value : null
+  }
+}
+
+function closeGunakanDialog() {
+  gunakanDialog.value    = false
+  selectedPdm.value      = null
+  invoiceList.value      = []
+  gunakanError.value     = null
+  gunakanForm.invoice_id = null
+  gunakanForm.jumlah     = null
+  gunakanForm.keterangan = ''
+}
+
+async function doGunakan() {
+  if (!selectedPdm.value || !gunakanForm.invoice_id || !gunakanForm.jumlah) return
+  gunakanSaving.value = true
+  gunakanError.value  = null
+  try {
+    await api.post(`/finance/pendapatan-di-muka/${selectedPdm.value.id}/gunakan`, {
+      invoice_id: gunakanForm.invoice_id,
+      jumlah:     gunakanForm.jumlah,
+      keterangan: gunakanForm.keterangan || null,
+    })
+    showSuccess({ text: 'PDM berhasil digunakan untuk melunasi invoice.' })
+    closeGunakanDialog()
+    doFetch()
+  } catch (err) {
+    gunakanError.value = err.response?.data?.message ?? 'Terjadi kesalahan, coba lagi.'
+  } finally {
+    gunakanSaving.value = false
+  }
 }
 
 onMounted(doFetch)
