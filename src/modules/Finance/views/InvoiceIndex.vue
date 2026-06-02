@@ -535,7 +535,7 @@ import api from '@/utils/axios.js'
 import InvoiceStatusBadge from '../components/InvoiceStatusBadge.vue'
 import PembayaranForm from '../components/PembayaranForm.vue'
 
-const { showSuccess, showError } = useSweetAlert()
+const { showSuccess, showError, showLoading, closeAlert } = useSweetAlert()
 const authStore = useAuthStore()
 const { items, loading, meta, params, fetchList, remove } = useCrud('/finance/invoices')
 const { items: klienList, loading: klienLoading, fetchAll: fetchKlien } = useCrud('/finance/klien-ar')
@@ -683,6 +683,7 @@ function onTableOptions({ page, itemsPerPage }) {
 
 async function exportExcel() {
   exportingExcel.value = true
+  showLoading({ title: 'Mengeksport Data Invoice', text: 'Mohon tunggu sebentar...' })
   try {
     const query = new URLSearchParams()
     if (params.status)             query.set('status', params.status)
@@ -698,10 +699,12 @@ async function exportExcel() {
     a.download = `Data Tagihan Invoice-${new Date().toISOString().slice(0, 10)}.xlsx`
     a.click()
     URL.revokeObjectURL(url)
+    showSuccess({ title: 'Export Berhasil!', text: 'File berhasil diunduh.' })
   } catch {
     await showError('Gagal mengunduh data Excel.')
   } finally {
     exportingExcel.value = false
+    closeAlert({ onlyLoading: true })
   }
 }
 
@@ -737,6 +740,7 @@ async function doImport() {
   if (!importFile.value) return
   importing.value    = true
   importResult.value = null
+  showLoading({ title: 'Mengimport Data Invoice', text: 'Mohon tunggu sebentar...' })
 
   try {
     const formData = new FormData()
@@ -753,6 +757,7 @@ async function doImport() {
     await showError(message)
   } finally {
     importing.value = false
+    closeAlert({ onlyLoading: true })
   }
 }
 

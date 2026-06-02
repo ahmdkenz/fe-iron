@@ -173,10 +173,12 @@ import { useCrud } from '@/composables/useCrud'
 import { useLazyFetchAll } from '@/composables/useLazyFetchAll'
 import { useFormatter } from '@/composables/useFormatter'
 import { useAuthStore } from '@/stores/auth.store'
+import { useSweetAlert } from '@/composables/useSweetAlert'
 import api from '@/utils/axios'
 
 const { formatCurrency, formatDate } = useFormatter()
 const authStore = useAuthStore()
+const { showError } = useSweetAlert()
 const { items: klienList, loading: klienLoading, fetchAll: fetchKlien } = useCrud('/finance/klien-ar')
 const { ensureLoaded: ensureKlienLoaded } = useLazyFetchAll(fetchKlien)
 
@@ -246,6 +248,9 @@ async function doFetch() {
   try {
     const { data } = await api.get('/finance/rekap-pembayaran', { params: buildParams() })
     Object.assign(report, data.data)
+  } catch (err) {
+    const msg = err.response?.data?.message ?? 'Gagal memuat laporan rekap pembayaran. Coba lagi.'
+    showError({ text: msg })
   } finally {
     loading.value = false
   }

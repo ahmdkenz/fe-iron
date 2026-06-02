@@ -203,13 +203,15 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onActivated, onMounted, reactive, ref } from 'vue'
 import { useCrud } from '@/composables/useCrud'
 import { useLazyFetchAll } from '@/composables/useLazyFetchAll'
 import { useFormatter } from '@/composables/useFormatter'
+import { useSweetAlert } from '@/composables/useSweetAlert'
 import api from '@/utils/axios'
 
 const { formatCurrency } = useFormatter()
+const { showError } = useSweetAlert()
 const { items: klienList, loading: klienLoading, fetchAll: fetchKlien } = useCrud('/finance/klien-ar')
 const { ensureLoaded: ensureKlienLoaded } = useLazyFetchAll(fetchKlien)
 
@@ -281,6 +283,9 @@ async function doFetch() {
   try {
     const { data } = await api.get('/finance/rekening-koran', { params: buildParams() })
     Object.assign(report, data.data)
+  } catch (err) {
+    const msg = err.response?.data?.message ?? 'Gagal memuat rekening koran. Coba lagi.'
+    showError({ text: msg })
   } finally {
     loading.value = false
   }
@@ -327,6 +332,10 @@ async function doExport() {
 }
 
 onMounted(() => {})
+
+onActivated(() => {
+  if (filters.klien_ar_id) doFetch()
+})
 </script>
 
 <style scoped>

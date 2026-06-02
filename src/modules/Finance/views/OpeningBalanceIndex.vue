@@ -1120,7 +1120,7 @@ import InvoiceStatusBadge from '../components/InvoiceStatusBadge.vue'
 import PembayaranForm from '../components/PembayaranForm.vue'
 
 const authStore = useAuthStore()
-const { showAlert, showSuccess, showError } = useSweetAlert()
+const { showAlert, showSuccess, showError, showLoading, closeAlert } = useSweetAlert()
 const financeNotificationStore = useFinanceNotificationStore()
 
 // ── Shared: klien list ─────────────────────────────────────────────────────
@@ -1207,6 +1207,7 @@ const isExporting = ref(false)
 
 async function exportExcel() {
   isExporting.value = true
+  showLoading({ title: 'Mengeksport Data Opening Balance', text: 'Mohon tunggu sebentar...' })
   try {
     const res = await api.get('/finance/opening-balance/export', {
       params: {
@@ -1226,10 +1227,12 @@ async function exportExcel() {
     a.download = `Data Opening Balance-${new Date().toISOString().slice(0, 10)}.xlsx`
     a.click()
     URL.revokeObjectURL(url)
+    showSuccess({ title: 'Export Berhasil!', text: 'File berhasil diunduh.' })
   } catch {
-    window.alert('Gagal mengunduh data export.')
+    await showError('Gagal mengunduh data export.')
   } finally {
     isExporting.value = false
+    closeAlert({ onlyLoading: true })
   }
 }
 
@@ -1238,6 +1241,7 @@ const isDirExporting = ref(false)
 
 async function exportDirExcel() {
   isDirExporting.value = true
+  showLoading({ title: 'Mengeksport Data Opening Balance', text: 'Mohon tunggu sebentar...' })
   try {
     const res = await api.get('/finance/opening-balance/export', {
       params: {
@@ -1256,10 +1260,12 @@ async function exportDirExcel() {
     a.download = `Data Opening Balance-${new Date().toISOString().slice(0, 10)}.xlsx`
     a.click()
     URL.revokeObjectURL(url)
+    showSuccess({ title: 'Export Berhasil!', text: 'File berhasil diunduh.' })
   } catch {
-    window.alert('Gagal mengunduh data export.')
+    await showError('Gagal mengunduh data export.')
   } finally {
     isDirExporting.value = false
+    closeAlert({ onlyLoading: true })
   }
 }
 
@@ -1292,7 +1298,7 @@ async function downloadTemplate() {
     a.click()
     URL.revokeObjectURL(url)
   } catch {
-    window.alert('Gagal mengunduh template.')
+    await showError('Gagal mengunduh template.')
   }
 }
 
@@ -1300,6 +1306,7 @@ async function doImport() {
   if (!importFile.value) return
   importing.value    = true
   importResult.value = null
+  showLoading({ title: 'Mengimport Data Opening Balance', text: 'Mohon tunggu sebentar...' })
   try {
     const formData = new FormData()
     formData.append('file', importFile.value)
@@ -1310,9 +1317,10 @@ async function doImport() {
     importFile.value   = null
   } catch (err) {
     const message = err?.response?.data?.message || 'Gagal mengimport data.'
-    window.alert(message)
+    await showError(message)
   } finally {
     importing.value = false
+    closeAlert({ onlyLoading: true })
   }
 }
 

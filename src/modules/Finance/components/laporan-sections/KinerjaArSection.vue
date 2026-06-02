@@ -167,9 +167,11 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useFormatter } from '@/composables/useFormatter'
+import { useSweetAlert } from '@/composables/useSweetAlert'
 import api from '@/utils/axios'
 
 const { formatCurrency } = useFormatter()
+const { showError } = useSweetAlert()
 
 const loading  = ref(false)
 const exporting = ref(false)
@@ -228,6 +230,9 @@ async function doFetch() {
   try {
     const { data } = await api.get('/finance/kinerja-ar', { params: buildParams() })
     Object.assign(report, data.data)
+  } catch (err) {
+    const msg = err.response?.data?.message ?? 'Gagal memuat laporan kinerja AR. Coba lagi.'
+    showError({ text: msg })
   } finally {
     loading.value = false
   }

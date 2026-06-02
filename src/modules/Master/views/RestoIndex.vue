@@ -474,7 +474,7 @@ import api from '@/utils/axios'
 
 const router = useRouter()
 const authStore = useAuthStore()
-const { showSuccess, showError } = useSweetAlert()
+const { showSuccess, showError, showLoading, closeAlert } = useSweetAlert()
 const { items, loading, meta, params, fetchList, remove } = useCrud('/master/resto')
 
 const tableCard     = ref(null)
@@ -558,6 +558,7 @@ function closeImport() {
 
 async function exportCsv() {
   exporting.value = true
+  showLoading({ title: 'Mengeksport Data Resto', text: 'Mohon tunggu sebentar...' })
   try {
     const query = new URLSearchParams()
     if (params.search) query.set('search', params.search)
@@ -570,10 +571,12 @@ async function exportCsv() {
     a.download = `resto-${new Date().toISOString().slice(0, 10)}.xlsx`
     a.click()
     URL.revokeObjectURL(url)
+    showSuccess({ title: 'Export Berhasil!', text: 'File berhasil diunduh.' })
   } catch {
     await showError('Gagal mengunduh data.')
   } finally {
     exporting.value = false
+    closeAlert({ onlyLoading: true })
   }
 }
 
@@ -595,6 +598,7 @@ async function doImport() {
   if (!importFile.value) return
   importing.value    = true
   importResult.value = null
+  showLoading({ title: 'Mengimport Data Resto', text: 'Mohon tunggu sebentar...' })
 
   try {
     const formData = new FormData()
@@ -612,6 +616,7 @@ async function doImport() {
     await showError(message)
   } finally {
     importing.value = false
+    closeAlert({ onlyLoading: true })
   }
 }
 
