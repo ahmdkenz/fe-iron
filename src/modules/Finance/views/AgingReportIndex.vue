@@ -5,6 +5,7 @@
       subtitle="Laporan umur piutang belum terbayar"
       :breadcrumbs="[
         { title: 'Dashboard', to: { name: 'dashboard' } },
+        { title: 'Laporan', to: { name: 'finance-laporan' } },
         { title: 'Laporan Aging', disabled: true },
       ]"
     />

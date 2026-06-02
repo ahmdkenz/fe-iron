@@ -5,6 +5,7 @@
       subtitle="Penelusuran pembayaran berdasarkan PIC dan nomor referensi"
       :breadcrumbs="[
         { title: 'Dashboard', to: { name: 'dashboard' } },
+        { title: 'Laporan', to: { name: 'finance-laporan' } },
         { title: 'Jurnal per PIC', disabled: true },
       ]"
     />

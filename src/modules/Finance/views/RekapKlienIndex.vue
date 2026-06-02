@@ -5,6 +5,7 @@
       subtitle="Ringkasan outstanding per Client"
       :breadcrumbs="[
         { title: 'Dashboard', to: { name: 'dashboard' } },
+        { title: 'Laporan', to: { name: 'finance-laporan' } },
         { title: 'Rekap per Klien', disabled: true },
       ]"
     />

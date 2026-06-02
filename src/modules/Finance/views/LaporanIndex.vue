@@ -9,114 +9,78 @@
       ]"
     />
 
-    <VTabs
-      v-model="activeTab"
-      show-arrows
-      class="mb-4"
-    >
-      <VTab value="jurnal-pic">Jurnal PIC</VTab>
-      <VTab value="rekening-koran">Rekening Koran</VTab>
-      <VTab value="aging">Aging</VTab>
-      <VTab value="rekap-klien">Rekap Klien</VTab>
-      <VTab value="riwayat-bayar">Riwayat Bayar</VTab>
-      <VTab value="mutasi-piutang">Mutasi Piutang</VTab>
-      <VTab value="rekap-pembayaran">Rekap Pembayaran</VTab>
-      <VTab value="kinerja-ar">Kinerja AR</VTab>
-      <VTab v-if="false" value="jatuh-tempo">Jatuh Tempo</VTab>
-    </VTabs>
-
-    <VTabsWindow v-model="activeTab">
-      <VTabsWindowItem value="jurnal-pic">
-        <KeepAlive>
-          <JurnalPicSection v-if="activeTab === 'jurnal-pic' || visited.has('jurnal-pic')" />
-        </KeepAlive>
-      </VTabsWindowItem>
-
-      <VTabsWindowItem value="rekening-koran">
-        <KeepAlive>
-          <RekeningKoranSection v-if="activeTab === 'rekening-koran' || visited.has('rekening-koran')" />
-        </KeepAlive>
-      </VTabsWindowItem>
-
-      <VTabsWindowItem value="aging">
-        <KeepAlive>
-          <AgingReportSection v-if="activeTab === 'aging' || visited.has('aging')" />
-        </KeepAlive>
-      </VTabsWindowItem>
-
-      <VTabsWindowItem value="rekap-klien">
-        <KeepAlive>
-          <RekapKlienSection v-if="activeTab === 'rekap-klien' || visited.has('rekap-klien')" />
-        </KeepAlive>
-      </VTabsWindowItem>
-
-      <VTabsWindowItem value="riwayat-bayar">
-        <KeepAlive>
-          <PembayaranArSection v-if="activeTab === 'riwayat-bayar' || visited.has('riwayat-bayar')" />
-        </KeepAlive>
-      </VTabsWindowItem>
-
-      <VTabsWindowItem value="mutasi-piutang">
-        <KeepAlive>
-          <MutasiPiutangSection v-if="activeTab === 'mutasi-piutang' || visited.has('mutasi-piutang')" />
-        </KeepAlive>
-      </VTabsWindowItem>
-
-      <VTabsWindowItem value="rekap-pembayaran">
-        <KeepAlive>
-          <RekapPembayaranSection v-if="activeTab === 'rekap-pembayaran' || visited.has('rekap-pembayaran')" />
-        </KeepAlive>
-      </VTabsWindowItem>
-
-      <VTabsWindowItem value="kinerja-ar">
-        <KeepAlive>
-          <KinerjaArSection v-if="activeTab === 'kinerja-ar' || visited.has('kinerja-ar')" />
-        </KeepAlive>
-      </VTabsWindowItem>
-
-      <VTabsWindowItem value="jatuh-tempo">
-        <KeepAlive>
-          <JatuhTempoSection v-if="activeTab === 'jatuh-tempo' || visited.has('jatuh-tempo')" />
-        </KeepAlive>
-      </VTabsWindowItem>
-    </VTabsWindow>
+    <VRow>
+      <VCol
+        v-for="report in reports"
+        :key="report.route"
+        cols="12"
+        sm="6"
+      >
+        <VCard height="100%">
+          <VCardText>
+            <div class="text-h6 mb-1">{{ report.title }}</div>
+            <div class="text-body-2 text-medium-emphasis">{{ report.description }}</div>
+          </VCardText>
+          <VCardActions class="pt-0 px-4 pb-4">
+            <VBtn
+              variant="outlined"
+              :to="{ name: report.route }"
+            >
+              Lihat laporan
+            </VBtn>
+          </VCardActions>
+        </VCard>
+      </VCol>
+    </VRow>
   </div>
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-
-import JurnalPicSection     from '@/modules/Finance/components/laporan-sections/JurnalPicSection.vue'
-import RekeningKoranSection from '@/modules/Finance/components/laporan-sections/RekeningKoranSection.vue'
-import AgingReportSection   from '@/modules/Finance/components/laporan-sections/AgingReportSection.vue'
-import RekapKlienSection    from '@/modules/Finance/components/laporan-sections/RekapKlienSection.vue'
-import PembayaranArSection  from '@/modules/Finance/components/laporan-sections/PembayaranArSection.vue'
-import MutasiPiutangSection from '@/modules/Finance/components/laporan-sections/MutasiPiutangSection.vue'
-import RekapPembayaranSection from '@/modules/Finance/components/laporan-sections/RekapPembayaranSection.vue'
-import KinerjaArSection     from '@/modules/Finance/components/laporan-sections/KinerjaArSection.vue'
-import JatuhTempoSection    from '@/modules/Finance/components/laporan-sections/JatuhTempoSection.vue'
-
-const VALID_TABS = [
-  'jurnal-pic', 'rekening-koran', 'aging', 'rekap-klien',
-  'riwayat-bayar', 'mutasi-piutang', 'rekap-pembayaran', 'kinerja-ar',
+const reports = [
+  {
+    title: 'Jurnal Aktivitas per PIC',
+    description: 'Penelusuran pembayaran berdasarkan PIC dan nomor referensi',
+    route: 'finance-laporan-jurnal-pic',
+  },
+  {
+    title: 'Rekening Koran',
+    description: 'Riwayat transaksi per klien dengan saldo berjalan',
+    route: 'finance-laporan-rekening-koran',
+  },
+  {
+    title: 'Laporan Aging',
+    description: 'Laporan umur piutang belum terbayar',
+    route: 'finance-laporan-aging',
+  },
+  {
+    title: 'Rekap Piutang per Klien',
+    description: 'Ringkasan outstanding per Client',
+    route: 'finance-laporan-rekap-klien',
+  },
+  {
+    title: 'Riwayat Pembayaran',
+    description: 'Daftar semua pembayaran AR',
+    route: 'finance-laporan-riwayat-bayar',
+  },
+  {
+    title: 'Mutasi Piutang',
+    description: 'Pergerakan piutang per klien dalam satu periode',
+    route: 'finance-laporan-mutasi-piutang',
+  },
+  {
+    title: 'Rekap Pembayaran',
+    description: 'Rekap pembayaran AR per transaksi',
+    route: 'finance-laporan-rekap-pembayaran',
+  },
+  {
+    title: 'Kinerja AR per PIC',
+    description: 'Performa penagihan per PIC',
+    route: 'finance-laporan-kinerja-ar',
+  },
+  {
+    title: 'Pendapatan di Muka',
+    description: 'Daftar pembayaran yang diterima sebelum jasa diberikan',
+    route: 'finance-laporan-pdm',
+  },
 ]
-
-const route  = useRoute()
-const router = useRouter()
-
-const initialTab = VALID_TABS.includes(route.query.tab) ? route.query.tab : 'jurnal-pic'
-const activeTab  = ref(initialTab)
-const visited    = ref(new Set([initialTab]))
-
-watch(activeTab, (tab) => {
-  visited.value.add(tab)
-  router.replace({ query: { tab } })
-})
-
-watch(() => route.query.tab, (tab) => {
-  if (tab && VALID_TABS.includes(tab) && tab !== activeTab.value) {
-    activeTab.value = tab
-  }
-})
 </script>

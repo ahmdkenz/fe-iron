@@ -5,6 +5,7 @@
       subtitle="Riwayat transaksi per klien dengan saldo berjalan"
       :breadcrumbs="[
         { title: 'Dashboard', to: { name: 'dashboard' } },
+        { title: 'Laporan', to: { name: 'finance-laporan' } },
         { title: 'Rekening Koran', disabled: true },
       ]"
     >

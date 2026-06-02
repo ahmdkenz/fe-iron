@@ -5,6 +5,7 @@
       subtitle="Pergerakan piutang per klien dalam satu periode"
       :breadcrumbs="[
         { title: 'Dashboard', to: { name: 'dashboard' } },
+        { title: 'Laporan', to: { name: 'finance-laporan' } },
         { title: 'Mutasi Piutang', disabled: true },
       ]"
     />

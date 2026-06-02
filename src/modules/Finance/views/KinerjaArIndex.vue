@@ -5,6 +5,7 @@
       subtitle="Performa penagihan per PIC"
       :breadcrumbs="[
         { title: 'Dashboard', to: { name: 'dashboard' } },
+        { title: 'Laporan', to: { name: 'finance-laporan' } },
         { title: 'Kinerja AR', disabled: true },
       ]"
     />

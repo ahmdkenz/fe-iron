@@ -5,6 +5,7 @@
       subtitle="Rekap pembayaran AR per transaksi"
       :breadcrumbs="[
         { title: 'Dashboard', to: { name: 'dashboard' } },
+        { title: 'Laporan', to: { name: 'finance-laporan' } },
         { title: 'Rekap Pembayaran', disabled: true },
       ]"
     />

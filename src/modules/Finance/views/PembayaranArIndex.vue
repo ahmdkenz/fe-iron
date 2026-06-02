@@ -5,6 +5,7 @@
       subtitle="Daftar semua pembayaran AR"
       :breadcrumbs="[
         { title: 'Dashboard', to: { name: 'dashboard' } },
+        { title: 'Laporan', to: { name: 'finance-laporan' } },
         { title: 'Riwayat Pembayaran', disabled: true },
       ]"
     />

@@ -158,12 +158,17 @@
               {{ formatCurrency(item.kelebihan_bayar.sisa) }}
             </span>
             <VBtn size="x-small" color="error" variant="tonal" @click="openKelebihanDialog(item)">
-              Alokasikan
+              Alokasikan / PDM
             </VBtn>
           </div>
-          <VChip v-else-if="item.kelebihan_bayar?.total > 0" size="x-small" color="success" variant="tonal">
-            Teralokasi
-          </VChip>
+          <div v-else-if="item.kelebihan_bayar?.total > 0" class="d-flex flex-column align-start gap-1">
+            <VChip v-if="item.kelebihan_bayar?.pdm?.status === 'AKTIF'" size="x-small" color="deep-purple" variant="tonal">
+              PDM
+            </VChip>
+            <VChip v-else size="x-small" color="success" variant="tonal">
+              Teralokasi
+            </VChip>
+          </div>
           <span v-else class="text-disabled">-</span>
         </template>
 
@@ -428,6 +433,55 @@
             </div>
           </template>
 
+          <!-- Pendapatan di Muka -->
+          <template v-if="kelebihanItem?.kelebihan_bayar">
+            <VDivider class="my-4" />
+            <div class="text-caption text-medium-emphasis text-uppercase font-weight-medium mb-2" style="letter-spacing: 0.6px">
+              Pendapatan di Muka (PDM)
+            </div>
+
+            <!-- PDM aktif -->
+            <div
+              v-if="kelebihanItem.kelebihan_bayar.pdm?.status === 'AKTIF'"
+              class="d-flex align-center gap-3 rounded-lg pa-3"
+              style="background: rgba(103,58,183,0.06); border: 1px solid rgba(103,58,183,0.2)"
+            >
+              <VIcon color="deep-purple" size="18">ri-time-line</VIcon>
+              <div class="flex-1-1">
+                <div class="text-body-2 font-weight-semibold text-deep-purple">PDM TERCATAT</div>
+                <div class="text-caption text-medium-emphasis">
+                  {{ formatCurrency(kelebihanItem.kelebihan_bayar.pdm.jumlah) }}
+                  &bull; {{ kelebihanItem.kelebihan_bayar.pdm.tanggal_pencatatan }}
+                  &bull; oleh {{ kelebihanItem.kelebihan_bayar.pdm.created_by }}
+                </div>
+              </div>
+              <VBtn size="x-small" variant="tonal" color="error" :loading="pdmCanceling" @click="doBatalkanPdm">
+                Batalkan PDM
+              </VBtn>
+            </div>
+
+            <!-- Sisa > 0 dan belum ada PDM aktif -->
+            <div v-else-if="kelebihanItem.kelebihan_bayar.sisa > 0">
+              <VBtn
+                variant="tonal"
+                color="deep-purple"
+                size="small"
+                :loading="pdmSaving"
+                @click="doCatatPdm"
+              >
+                <VIcon start size="16">ri-book-line</VIcon>
+                Catat {{ formatCurrency(kelebihanItem.kelebihan_bayar.sisa) }} sebagai PDM
+              </VBtn>
+              <div class="text-caption text-medium-emphasis mt-1">
+                Uang diterima namun belum ada invoice yang cocok
+              </div>
+            </div>
+
+            <VAlert v-if="pdmError" type="error" variant="tonal" density="compact" class="mt-2">
+              {{ pdmError }}
+            </VAlert>
+          </template>
+
           <VAlert v-if="kelebihanError" type="error" variant="tonal" density="compact" class="mt-3">
             {{ kelebihanError }}
           </VAlert>
@@ -501,6 +555,11 @@ const invoiceB2CLoading = ref(false)
 const selectedInvoices  = ref({}) // { [invoiceId]: { jumlah, keterangan } }
 const kelebihanSaving   = ref(false)
 const kelebihanError    = ref(null)
+
+// ── PDM ──
+const pdmSaving    = ref(false)
+const pdmCanceling = ref(false)
+const pdmError     = ref(null)
 
 const totalAlokasi = computed(() =>
   Object.values(selectedInvoices.value).reduce((s, v) => s + (Number(v.jumlah) || 0), 0),
@@ -661,6 +720,7 @@ async function openKelebihanDialog(item) {
   kelebihanItem.value    = item
   selectedInvoices.value = {}
   kelebihanError.value   = null
+  pdmError.value         = null
   invoiceB2CList.value   = []
   kelebihanDialog.value  = true
 
@@ -692,6 +752,7 @@ function closeKelebihanDialog() {
   kelebihanItem.value    = null
   selectedInvoices.value = {}
   kelebihanError.value   = null
+  pdmError.value         = null
   invoiceB2CList.value   = []
 }
 
@@ -724,6 +785,45 @@ async function doAlokasikanKelebihan() {
     kelebihanError.value = err?.response?.data?.message ?? 'Terjadi kesalahan, coba lagi.'
   } finally {
     kelebihanSaving.value = false
+  }
+}
+
+// ── PDM functions ──
+async function doCatatPdm() {
+  const itemId = kelebihanItem.value.id
+  const sisa   = kelebihanItem.value?.kelebihan_bayar?.sisa ?? 0
+  pdmSaving.value = true
+  pdmError.value  = null
+  try {
+    await api.post(`/finance/pendapatan-di-muka/detail/${itemId}/catat`, {
+      jumlah             : sisa,
+      tanggal_pencatatan : new Date().toISOString().slice(0, 10),
+    })
+    await fetchDetail()
+    const updatedItem = report.details.find(d => d.id === itemId)
+    if (updatedItem) kelebihanItem.value = updatedItem
+  } catch (err) {
+    pdmError.value = err?.response?.data?.message ?? 'Terjadi kesalahan saat mencatat PDM.'
+  } finally {
+    pdmSaving.value = false
+  }
+}
+
+async function doBatalkanPdm() {
+  const pdmId = kelebihanItem.value?.kelebihan_bayar?.pdm?.id
+  if (!pdmId) return
+  pdmCanceling.value = true
+  pdmError.value     = null
+  try {
+    await api.delete(`/finance/pendapatan-di-muka/${pdmId}/batal`)
+    await fetchDetail()
+    const itemId      = kelebihanItem.value.id
+    const updatedItem = report.details.find(d => d.id === itemId)
+    if (updatedItem) kelebihanItem.value = updatedItem
+  } catch (err) {
+    pdmError.value = err?.response?.data?.message ?? 'Terjadi kesalahan saat membatalkan PDM.'
+  } finally {
+    pdmCanceling.value = false
   }
 }
 

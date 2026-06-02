@@ -40,6 +40,7 @@ declare module 'vue' {
     PageHeader: typeof import('./src/components/shared/PageHeader.vue')['default']
     PembayaranArSection: typeof import('./src/modules/Finance/components/laporan-sections/PembayaranArSection.vue')['default']
     PembayaranForm: typeof import('./src/modules/Finance/components/PembayaranForm.vue')['default']
+    PendapatanDiMukaSection: typeof import('./src/modules/Finance/components/laporan-sections/PendapatanDiMukaSection.vue')['default']
     PicArDashboardSection: typeof import('./src/modules/Finance/components/PicArDashboardSection.vue')['default']
     RekapKlienSection: typeof import('./src/modules/Finance/components/laporan-sections/RekapKlienSection.vue')['default']
     RekapPembayaranSection: typeof import('./src/modules/Finance/components/laporan-sections/RekapPembayaranSection.vue')['default']
