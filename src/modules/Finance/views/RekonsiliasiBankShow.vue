@@ -135,13 +135,12 @@
         <!-- Selisih Bank -->
         <template #item.selisih_bank="{ item }">
           <template v-if="item.selisih_bank !== null && item.selisih_bank !== undefined">
-            <VChip
-              :color="item.selisih_bank === 0 ? 'success' : 'warning'"
-              size="x-small"
-              variant="tonal"
-            >
-              {{ formatCurrency(Math.abs(item.selisih_bank)) }}
+            <VChip v-if="item.selisih_bank === 0" color="success" size="x-small" variant="tonal">
+              Rp 0
             </VChip>
+            <span v-else :class="item.selisih_bank > 0 ? 'text-error font-weight-medium' : 'text-warning font-weight-medium'">
+              {{ item.selisih_bank > 0 ? '+' : '-' }}{{ formatCurrency(Math.abs(item.selisih_bank)) }}
+            </span>
           </template>
           <span v-else class="text-disabled">-</span>
         </template>
