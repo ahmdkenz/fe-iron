@@ -392,6 +392,7 @@ import { useSweetAlert } from '@/composables/useSweetAlert'
 import { setFlashAlert } from '@/utils/flashAlert'
 import api from '@/utils/axios'
 import { BOOLEAN_STATUS_OPTIONS, normalizeBooleanStatus } from '@/utils/status'
+import { toISODate } from '@/composables/useFormatter'
 
 const route = useRoute()
 const router = useRouter()
@@ -508,7 +509,7 @@ onMounted(async () => {
       kota: data.kota          ?? '',
       alamat: data.alamat        ?? '',
       no_telp: data.no_telp       ?? '',
-      tgl_aktif: data.tgl_aktif     ?? '',
+      tgl_aktif: toISODate(data.tgl_aktif) ?? '',
       keterangan: data.keterangan    ?? '',
       status: normalizeBooleanStatus(data.status),
     })

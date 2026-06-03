@@ -363,6 +363,7 @@
     "watchWithFilter": true,
     "whenever": true,
     "useGenerateImageVariant": true,
-    "useLazyFetchAll": true
+    "useLazyFetchAll": true,
+    "toISODate": true
   }
 }

@@ -519,7 +519,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { useCrud } from '@/composables/useCrud'
 import { useLazyFetchAll } from '@/composables/useLazyFetchAll'
 import { useSweetAlert } from '@/composables/useSweetAlert'
-import { useFormatter } from '@/composables/useFormatter'
+import { useFormatter, toISODate } from '@/composables/useFormatter'
 import { setFlashAlert } from '@/utils/flashAlert'
 import api from '@/utils/axios'
 import InvoiceItemRow from '../components/InvoiceItemRow.vue'
@@ -698,10 +698,10 @@ onMounted(async () => {
   invoice.value = data
   Object.assign(form, {
     no_invoice:                  data.no_invoice,
-    tanggal_invoice:             data.tanggal_invoice,
-    tanggal_jatuh_tempo:         data.tanggal_jatuh_tempo ?? '',
-    periode_awal:                data.periode_awal,
-    periode_akhir:               data.periode_akhir,
+    tanggal_invoice:             toISODate(data.tanggal_invoice),
+    tanggal_jatuh_tempo:         toISODate(data.tanggal_jatuh_tempo) ?? '',
+    periode_awal:                toISODate(data.periode_awal),
+    periode_akhir:               toISODate(data.periode_akhir),
     klien_ar_id:                 data.klien_ar_id,
     no_surat_jalan:              data.no_surat_jalan ?? '',
     tagihan_periode_sebelumnya:  data.tagihan_periode_sebelumnya ?? 0,

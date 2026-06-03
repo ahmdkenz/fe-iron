@@ -77,7 +77,7 @@
     <VCard>
       <VCardText class="pb-0">
         <div class="text-caption text-medium-emphasis">
-          Per tanggal: <strong>{{ report.as_of_date ?? '-' }}</strong>
+          Per tanggal: <strong>{{ formatDate(report.as_of_date) ?? '-' }}</strong>
           &nbsp;·&nbsp; {{ report.rows?.length ?? 0 }} klien
         </div>
       </VCardText>
@@ -137,7 +137,7 @@ import { useLazyFetchAll } from '@/composables/useLazyFetchAll'
 import { useFormatter } from '@/composables/useFormatter'
 import api from '@/utils/axios'
 
-const { formatCurrency } = useFormatter()
+const { formatCurrency, formatDate } = useFormatter()
 const { items: klienList, loading: klienLoading, fetchAll: fetchKlien } = useCrud('/finance/klien-ar')
 const { ensureLoaded: ensureKlienLoaded } = useLazyFetchAll(fetchKlien)
 

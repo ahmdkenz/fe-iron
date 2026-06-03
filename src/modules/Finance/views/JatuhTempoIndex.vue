@@ -111,7 +111,7 @@
     <VCard>
       <VCardText class="pb-0">
         <div class="text-caption text-medium-emphasis">
-          Per tanggal: <strong>{{ report.as_of_date ?? '-' }}</strong>
+          Per tanggal: <strong>{{ formatDate(report.as_of_date) ?? '-' }}</strong>
         </div>
       </VCardText>
       <VDivider class="mt-2" />

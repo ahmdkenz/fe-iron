@@ -4,6 +4,7 @@ const dateTimeFormatter = new Intl.DateTimeFormat('id-ID', {
   year: 'numeric',
   hour: '2-digit',
   minute: '2-digit',
+  timeZone: 'Asia/Jakarta',
 })
 
 const currencyFormatter = new Intl.NumberFormat('id-ID', {
@@ -35,6 +36,19 @@ function parseDate(value) {
 
   const date = new Date(value)
   return Number.isNaN(date.getTime()) ? null : date
+}
+
+/**
+ * Konversi DD-MM-YYYY ke YYYY-MM-DD agar kompatibel dengan <input type="date">.
+ */
+export function toISODate(value) {
+  if (!value) return ''
+  const ddmmyyyy = /^(\d{2})-(\d{2})-(\d{4})$/.exec(String(value))
+  if (ddmmyyyy) {
+    const [, d, m, y] = ddmmyyyy
+    return `${y}-${m}-${d}`
+  }
+  return String(value)
 }
 
 export function useFormatter() {

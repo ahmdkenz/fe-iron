@@ -121,8 +121,8 @@
     <VCard>
       <VCardText class="pb-0">
         <div class="text-caption text-medium-emphasis">
-          Periode: <strong>{{ report.tanggal_dari ?? '-' }}</strong>
-          s/d <strong>{{ report.tanggal_sampai ?? '-' }}</strong>
+          Periode: <strong>{{ formatDate(report.tanggal_dari) ?? '-' }}</strong>
+          s/d <strong>{{ formatDate(report.tanggal_sampai) ?? '-' }}</strong>
           &nbsp;·&nbsp; {{ report.summary?.jumlah_transaksi ?? 0 }} transaksi
         </div>
       </VCardText>

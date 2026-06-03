@@ -563,7 +563,7 @@
 /* eslint-disable camelcase */
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useFormatter } from '@/composables/useFormatter'
+import { useFormatter, toISODate } from '@/composables/useFormatter'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useCrud } from '@/composables/useCrud'
 import { setFlashAlert } from '@/utils/flashAlert'
@@ -713,10 +713,10 @@ async function loadOpeningBalance() {
     Object.assign(form, {
       no_invoice: data.no_invoice ?? '',
       klien_ar_id: data.klien_ar_id ?? null,
-      tanggal: data.tanggal_invoice ?? new Date().toISOString().slice(0, 10),
+      tanggal: toISODate(data.tanggal_invoice) || new Date().toISOString().slice(0, 10),
       saldo_awal: data.subtotal ?? null,
-      periode_awal: data.periode_awal ?? '',
-      periode_akhir: data.periode_akhir ?? '',
+      periode_awal: toISODate(data.periode_awal) ?? '',
+      periode_akhir: toISODate(data.periode_akhir) ?? '',
       keterangan: data.keterangan ?? '',
       details: data.opening_balance_details ?? [],
     })

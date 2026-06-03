@@ -33,7 +33,7 @@
           </div>
           <VSpacer />
           <div class="text-caption text-medium-emphasis text-right">
-            {{ report.created_at }}
+            {{ formatDateTime(report.created_at) }}
           </div>
         </div>
       </VCardText>
@@ -126,7 +126,7 @@
         <template #item.pembayaran="{ item }">
           <div v-if="item.pembayaran" class="text-caption">
             <div class="font-weight-medium">{{ item.pembayaran.no_referensi || '-' }}</div>
-            <div class="text-medium-emphasis">{{ item.pembayaran.tanggal_pembayaran }}</div>
+            <div class="text-medium-emphasis">{{ formatDate(item.pembayaran.tanggal_pembayaran) }}</div>
             <div class="text-medium-emphasis">{{ item.pembayaran.klien }}</div>
           </div>
           <span v-else class="text-disabled">-</span>
@@ -211,7 +211,7 @@
           <VCard variant="tonal" color="primary" class="mb-4 pa-3">
             <div class="text-caption text-medium-emphasis mb-1">Transaksi Bank</div>
             <div class="d-flex gap-4 flex-wrap">
-              <div><span class="text-caption text-medium-emphasis">Tanggal: </span><span class="text-body-2 font-weight-medium">{{ selectedItem?.tanggal }}</span></div>
+              <div><span class="text-caption text-medium-emphasis">Tanggal: </span><span class="text-body-2 font-weight-medium">{{ formatDate(selectedItem?.tanggal) }}</span></div>
               <div><span class="text-caption text-medium-emphasis">Kredit: </span><span class="text-body-2 font-weight-medium text-success">{{ formatCurrency(selectedItem?.kredit ?? 0) }}</span></div>
               <div class="flex-1-1"><span class="text-caption text-medium-emphasis">Keterangan: </span><span class="text-body-2">{{ selectedItem?.keterangan }}</span></div>
             </div>
@@ -239,7 +239,7 @@
                     <div class="d-flex flex-wrap gap-x-4 gap-y-1">
                       <div><span class="text-caption text-medium-emphasis">Klien: </span><span class="text-body-2 font-weight-medium">{{ k.klien ?? '-' }}</span></div>
                       <div><span class="text-caption text-medium-emphasis">No Invoice: </span><span class="text-body-2">{{ k.no_invoice ?? '-' }}</span></div>
-                      <div><span class="text-caption text-medium-emphasis">Tgl Bayar: </span><span class="text-body-2">{{ k.tanggal_pembayaran }}</span></div>
+                      <div><span class="text-caption text-medium-emphasis">Tgl Bayar: </span><span class="text-body-2">{{ formatDate(k.tanggal_pembayaran) }}</span></div>
                       <div><span class="text-caption text-medium-emphasis">No Ref: </span><span class="text-body-2">{{ k.no_referensi || '-' }}</span></div>
                       <div><span class="text-caption text-medium-emphasis">Nominal: </span><span class="text-body-2 font-weight-medium text-success">{{ formatCurrency(k.jumlah_pembayaran) }}</span></div>
                     </div>
@@ -354,7 +354,7 @@
                     <VChip :color="statusInvoiceColor(inv.status)" size="x-small" variant="tonal">{{ inv.status }}</VChip>
                   </div>
                   <div class="d-flex flex-wrap gap-x-3 gap-y-0 mt-1">
-                    <span class="text-caption text-medium-emphasis">{{ inv.tanggal }}</span>
+                    <span class="text-caption text-medium-emphasis">{{ formatDate(inv.tanggal) }}</span>
                     <span class="text-caption text-medium-emphasis">Total: {{ formatCurrency(inv.total_tagihan) }}</span>
                     <span class="text-caption font-weight-medium text-warning">Sisa: {{ formatCurrency(inv.sisa_tagihan) }}</span>
                   </div>
@@ -427,7 +427,7 @@
                 <span class="text-medium-emphasis">•</span>
                 <span class="text-success font-weight-medium">{{ formatCurrency(r.jumlah) }}</span>
                 <span class="text-medium-emphasis">•</span>
-                <span class="text-medium-emphasis">{{ r.tanggal }}</span>
+                <span class="text-medium-emphasis">{{ formatDate(r.tanggal) }}</span>
                 <span class="text-medium-emphasis">•</span>
                 <span class="text-medium-emphasis">oleh {{ r.created_by }}</span>
               </div>
@@ -452,7 +452,7 @@
                 <div class="text-body-2 font-weight-semibold text-deep-purple">PDM TERCATAT</div>
                 <div class="text-caption text-medium-emphasis">
                   {{ formatCurrency(kelebihanItem.kelebihan_bayar.pdm.jumlah) }}
-                  &bull; {{ kelebihanItem.kelebihan_bayar.pdm.tanggal_pencatatan }}
+                  &bull; {{ formatDate(kelebihanItem.kelebihan_bayar.pdm.tanggal_pencatatan) }}
                   &bull; oleh {{ kelebihanItem.kelebihan_bayar.pdm.created_by }}
                 </div>
               </div>
@@ -515,7 +515,7 @@ import { useFormatter } from '@/composables/useFormatter'
 import api from '@/utils/axios'
 
 const route = useRoute()
-const { formatCurrency } = useFormatter()
+const { formatCurrency, formatDate, formatDateTime } = useFormatter()
 
 const loading = ref(false)
 const report  = reactive({
