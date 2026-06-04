@@ -221,6 +221,35 @@
                   />
                 </VCol>
 
+                <VCol
+                  v-if="isB2B"
+                  cols="12"
+                  md="6"
+                >
+                  <VAutocomplete
+                    v-model="form.resto_id"
+                    label="Resto yang Ditagihkan (Opsional)"
+                    density="compact"
+                    variant="outlined"
+                    prepend-inner-icon="ri-store-line"
+                    :items="restoList"
+                    item-title="nama_resto"
+                    item-value="id"
+                    clearable
+                    :loading="restoLoading"
+                    hint="Pilih resto jika invoice ini untuk resto tertentu"
+                    persistent-hint
+                  >
+                    <template #item="{ props: p, item }">
+                      <VListItem
+                        v-bind="p"
+                        :title="item.raw.nama_resto"
+                        :subtitle="item.raw.kode_resto"
+                      />
+                    </template>
+                  </VAutocomplete>
+                </VCol>
+
                 <VCol cols="12">
                   <div class="text-caption text-medium-emphasis mb-2 d-flex align-center gap-1">
                     <VIcon
@@ -568,11 +597,33 @@ const form = reactive({
   periode_awal: '',
   periode_akhir: '',
   klien_ar_id: null,
+  resto_id: null,
   no_surat_jalan: '',
   tagihan_periode_sebelumnya: 0,
   keterangan: '',
   items: [],
 })
+
+const isB2B = computed(() => {
+  const klien = isEditing.value ? invoice.value?.klien_ar : selectedKlien.value
+  return klien?.tipe_klien === 'PT'
+})
+
+const restoList    = ref([])
+const restoLoading = ref(false)
+
+async function loadRestoByPerusahaan(perusahaanId) {
+  if (!perusahaanId) { restoList.value = []; return }
+  restoLoading.value = true
+  try {
+    const { data } = await api.get('/master/resto', { params: { perusahaan_id: perusahaanId, all: true } })
+    restoList.value = data.data ?? []
+  } catch {
+    restoList.value = []
+  } finally {
+    restoLoading.value = false
+  }
+}
 
 const currentKlienAr = computed(() =>
   isEditing.value ? invoice.value?.klien_ar : selectedKlien.value,
@@ -611,10 +662,17 @@ async function onKlienChange(klienId) {
 
   selectedKlien.value = klienList.value.find(k => k.id === klienId) ?? null
   form.tagihan_periode_sebelumnya = 0
+  form.resto_id = null
 
-  if (!klienId) return
+  if (!klienId) { restoList.value = []; return }
 
   await loadCarryover(klienId)
+
+  if (selectedKlien.value?.tipe_klien === 'PT') {
+    await loadRestoByPerusahaan(selectedKlien.value.perusahaan_id)
+  } else {
+    restoList.value = []
+  }
 }
 
 async function loadCarryover(klienId) {
@@ -696,6 +754,10 @@ onMounted(async () => {
   if (!data || data.status !== 'DRAFT') return
 
   invoice.value = data
+  if (data.klien_ar?.tipe_klien === 'PT' && data.klien_ar?.perusahaan_id) {
+    await loadRestoByPerusahaan(data.klien_ar.perusahaan_id)
+  }
+
   Object.assign(form, {
     no_invoice:                  data.no_invoice,
     tanggal_invoice:             toISODate(data.tanggal_invoice),
@@ -703,6 +765,7 @@ onMounted(async () => {
     periode_awal:                toISODate(data.periode_awal),
     periode_akhir:               toISODate(data.periode_akhir),
     klien_ar_id:                 data.klien_ar_id,
+    resto_id:                    data.resto_id ?? null,
     no_surat_jalan:              data.no_surat_jalan ?? '',
     tagihan_periode_sebelumnya:  data.tagihan_periode_sebelumnya ?? 0,
     keterangan:                  data.keterangan ?? '',

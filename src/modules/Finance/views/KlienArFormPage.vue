@@ -270,6 +270,39 @@
                 clearable
               />
             </VCol>
+
+            <VCol
+              v-if="isB2B"
+              cols="12"
+              md="9"
+            >
+              <VAutocomplete
+                v-model="form.perusahaan_id"
+                label="Entitas Perusahaan (Wajib untuk B2B)"
+                density="compact"
+                variant="outlined"
+                prepend-inner-icon="ri-building-2-line"
+                :items="perusahaanList"
+                item-title="nama_perusahaan"
+                item-value="id"
+                clearable
+                :loading="perusahaanLoading"
+                :rules="[v => !isB2B || !!v || 'Entitas Perusahaan wajib dipilih untuk klien B2B']"
+                :error-messages="errors.perusahaan_id"
+                :readonly="isArEditMode"
+                hint="Pilih entitas yang memiliki Resto-resto yang akan ditagihkan ke PT ini"
+                persistent-hint
+                @focus="ensurePerusahaanLoaded()"
+              >
+                <template #item="{ props: p, item }">
+                  <VListItem
+                    v-bind="p"
+                    :title="item.raw.nama_perusahaan"
+                    :subtitle="item.raw.nama_singkatan_perusahaan ?? item.raw.kode_perusahaan"
+                  />
+                </template>
+              </VAutocomplete>
+            </VCol>
           </VRow>
         </VCardText>
       </VCard>
@@ -528,8 +561,8 @@
                     <td>Pilih <strong>PT</strong> — untuk penagihan ke badan usaha/perusahaan</td>
                   </tr>
                   <tr>
-                    <td class="font-weight-medium">Resto</td>
-                    <td><em>Opsional</em> — isi salah satu Resto milik PT ini sebagai referensi jika diperlukan</td>
+                    <td class="font-weight-medium">Entitas Perusahaan <span class="text-error">*</span></td>
+                    <td>Pilih entitas yang memiliki Resto-resto PT ini. <strong>Wajib diisi</strong> agar Resto bisa dipilih saat membuat Invoice B2B</td>
                   </tr>
                   <tr>
                     <td class="font-weight-medium">Nama Pengelola (Billing)</td>
@@ -542,6 +575,10 @@
                   <tr>
                     <td class="font-weight-medium">No. WhatsApp</td>
                     <td>Nomor WA kontak keuangan/billing di PT</td>
+                  </tr>
+                  <tr>
+                    <td class="font-weight-medium">Resto</td>
+                    <td><em>Opsional</em> — isi salah satu Resto milik PT ini sebagai referensi jika diperlukan</td>
                   </tr>
                   <tr>
                     <td class="font-weight-medium">PIC AR</td>
@@ -621,8 +658,10 @@ const filteredRestoList = computed(() => {
 const { create, update, saving, fetchOne } = useCrud('/finance/klien-ar')
 const { items: karyawanList, loading: karyawanLoading, fetchAll: fetchKaryawan } = useCrud('/master/karyawan')
 const { items: restoList, loading: restoLoading, fetchAll: fetchResto } = useCrud('/master/resto')
+const { items: perusahaanList, loading: perusahaanLoading, fetchAll: fetchPerusahaan } = useCrud('/master/perusahaan')
 const { ensureLoaded: ensureKaryawanLoaded } = useLazyFetchAll(fetchKaryawan)
 const { ensureLoaded: ensureRestoLoaded } = useLazyFetchAll(fetchResto)
+const { ensureLoaded: ensurePerusahaanLoaded } = useLazyFetchAll(fetchPerusahaan)
 
 const formRef           = ref(null)
 const pageLoading       = ref(!!id)
@@ -647,6 +686,7 @@ const errors = reactive({
   tipe_klien: [],
   no_npwp: [],
   no_wa: [],
+  perusahaan_id: [],
   karyawan_ar_id: [],
   resto_id: [],
 })
@@ -657,6 +697,7 @@ const defaultForm = () => ({
   tipe_klien: 'RESTO',
   no_npwp: '',
   no_wa: '',
+  perusahaan_id: null,
   karyawan_ar_id: isArRole.value ? (authStore.user?.karyawan?.id ?? null) : null,
   resto_id: null,
   status: 1,
@@ -676,6 +717,7 @@ function selectTipeKlien(tipe) {
   form.no_npwp = ''
   form.nama_klien = ''
   form.resto_id = null
+  form.perusahaan_id = null
   selectedRestoInvestor.value = null
 }
 
@@ -755,6 +797,7 @@ onMounted(async () => {
   if (!isEditing.value) {
     await Promise.all([
       ensureRestoLoaded(restoLoadOpts),
+      ensurePerusahaanLoaded(),
     ])
     pageLoading.value = false
 
@@ -764,6 +807,7 @@ onMounted(async () => {
   await Promise.all([
     ensureKaryawanLoaded(),
     ensureRestoLoaded(restoLoadOpts),
+    ensurePerusahaanLoaded(),
   ])
 
   const data = await fetchOne(id)
@@ -775,6 +819,7 @@ onMounted(async () => {
       tipe_klien:     data.tipe_klien ?? 'MITRA',
       no_npwp:        data.no_npwp ?? '',
       no_wa:          data.no_wa ?? '',
+      perusahaan_id:  data.perusahaan_id ?? null,
       karyawan_ar_id: data.karyawan_ar_id ?? null,
       resto_id:       data.resto_id ?? null,
       status:         normalizeBooleanStatus(data.status),

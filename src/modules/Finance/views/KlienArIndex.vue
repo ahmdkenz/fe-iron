@@ -285,6 +285,67 @@
           :value="selectedKlien.updated_by_name"
         />
 
+        <!-- Bundle Share (hanya untuk B2B/PT) -->
+        <template v-if="selectedKlien.tipe_klien === 'PT'">
+          <VDivider class="my-4" />
+          <div class="text-caption font-weight-semibold text-medium-emphasis mb-3 d-flex align-center gap-1">
+            <VIcon icon="ri-share-line" size="14" />
+            Bundle Invoice Link
+          </div>
+
+          <div v-if="selectedKlien.bundle_share_url" class="mb-3">
+            <VTextField
+              :model-value="selectedKlien.bundle_share_url"
+              density="compact"
+              variant="outlined"
+              readonly
+              hide-details
+              class="mb-2"
+            >
+              <template #append-inner>
+                <VBtn
+                  icon
+                  size="x-small"
+                  variant="text"
+                  :color="bundleCopied ? 'success' : 'default'"
+                  @click="copyBundleLink(selectedKlien.bundle_share_url)"
+                >
+                  <VIcon :icon="bundleCopied ? 'ri-check-line' : 'ri-file-copy-line'" size="16" />
+                  <VTooltip activator="parent">
+                    {{ bundleCopied ? 'Tersalin!' : 'Salin Link' }}
+                  </VTooltip>
+                </VBtn>
+              </template>
+            </VTextField>
+            <VBtn
+              block
+              color="success"
+              variant="tonal"
+              size="small"
+              prepend-icon="ri-whatsapp-line"
+              :disabled="!selectedKlien.no_wa"
+              @click="shareBundleWhatsApp(selectedKlien)"
+            >
+              Kirim ke WhatsApp Keuangan PT
+            </VBtn>
+            <div v-if="!selectedKlien.no_wa" class="text-caption text-error mt-1">
+              No. WhatsApp belum diisi di data klien
+            </div>
+          </div>
+
+          <VBtn
+            block
+            :color="selectedKlien.bundle_share_url ? 'secondary' : 'primary'"
+            :variant="selectedKlien.bundle_share_url ? 'tonal' : 'elevated'"
+            size="small"
+            prepend-icon="ri-link-m"
+            :loading="bundleGenerating"
+            @click="generateBundleToken(selectedKlien)"
+          >
+            {{ selectedKlien.bundle_share_url ? 'Perbarui Bundle Link' : 'Buat Bundle Link' }}
+          </VBtn>
+        </template>
+
       </div>
     </VNavigationDrawer>
 
@@ -481,10 +542,12 @@ function onSegmentChange(val) {
   doFetchList()
 }
 
-const showDelete  = ref(false)
-const showDetail  = ref(false)
-const deleteError = ref('')
-const selectedKlien = ref(null)
+const showDelete      = ref(false)
+const showDetail      = ref(false)
+const deleteError     = ref('')
+const selectedKlien   = ref(null)
+const bundleGenerating = ref(false)
+const bundleCopied    = ref(false)
 
 const exporting    = ref(false)
 const showImport   = ref(false)
@@ -627,6 +690,50 @@ function shareWhatsApp(klien) {
   ].filter(Boolean).join('\n')
 
   window.open(`https://wa.me/${phone}?text=${encodeURIComponent(lines)}`, '_blank')
+}
+
+async function generateBundleToken(klien) {
+  bundleGenerating.value = true
+  try {
+    const res = await api.post(`/finance/klien-ar/${klien.id}/generate-bundle-token`)
+    const url = res.data?.data?.bundle_share_url
+    if (url) {
+      selectedKlien.value = { ...selectedKlien.value, bundle_share_url: url }
+      // Update item di list supaya konsisten
+      const idx = items.value.findIndex(i => i.id === klien.id)
+      if (idx !== -1) items.value[idx] = { ...items.value[idx], bundle_share_url: url }
+    }
+  } catch {
+    await showError('Gagal membuat bundle link.')
+  } finally {
+    bundleGenerating.value = false
+  }
+}
+
+async function copyBundleLink(url) {
+  try {
+    await navigator.clipboard.writeText(url)
+    bundleCopied.value = true
+    setTimeout(() => { bundleCopied.value = false }, 2000)
+  } catch {
+    // fallback: buka link
+    window.open(url, '_blank')
+  }
+}
+
+function shareBundleWhatsApp(klien) {
+  if (!klien.no_wa || !klien.bundle_share_url) return
+  const phone = klien.no_wa.replace(/\D/g, '').replace(/^0/, '62')
+  const text = [
+    `Yth. Bpk/Ibu *${klien.nama_klien}*,`,
+    '',
+    'Berikut kami sampaikan rekap tagihan untuk perusahaan Anda:',
+    `🔗 ${klien.bundle_share_url}`,
+    '',
+    'Mohon segera dilakukan pembayaran sesuai invoice yang tertera.',
+    'Terima kasih.',
+  ].join('\n')
+  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank')
 }
 
 async function doDelete() {
