@@ -147,81 +147,118 @@
       </VCol>
     </VRow>
 
-    <!-- Filter & Table -->
-    <VCard>
-      <VCardText class="d-flex flex-wrap gap-3 pb-0">
-        <VBtnToggle
-          v-model="segment"
-          variant="outlined"
-          mandatory
-          divided
-          density="compact"
-          @update:model-value="onSegmentChange"
-        >
-          <VBtn value="ALL" size="small" style="min-width: 80px">Semua</VBtn>
-          <VBtn value="B2C" size="small" style="min-width: 70px">B2C</VBtn>
-          <VBtn value="B2B" size="small" style="min-width: 70px">B2B</VBtn>
-        </VBtnToggle>
-        <VTextField
-          v-model="params.search"
-          placeholder="Cari no. invoice / klien..."
-          clearable
-          hide-details
-          density="compact"
-          style="max-width: 250px"
-          prepend-inner-icon="ri-search-line"
-          @update:model-value="debouncedFetch"
-        />
-        <VSelect
-          v-model="params.status"
-          placeholder="Semua Status"
-          clearable
-          hide-details
-          density="compact"
-          style="max-width: 160px"
-          :items="statusOptions"
-          item-title="label"
-          item-value="value"
-          @update:model-value="doFetch"
-        />
-        <VAutocomplete
-          v-model="params.klien_ar_id"
-          placeholder="Semua Klien"
-          clearable
-          hide-details
-          density="compact"
-          style="max-width: 220px"
-          :items="klienList"
-          item-title="nama_klien"
-          item-value="id"
-          :loading="klienLoading"
-          @focus="ensureKlienLoaded()"
-          @update:model-value="doFetch"
-        />
-        <VSelect
-          v-model="params.periode_bulan"
-          placeholder="Bulan"
-          clearable
-          hide-details
-          density="compact"
-          style="max-width: 140px"
-          :items="bulanOptions"
-          item-title="label"
-          item-value="value"
-          @update:model-value="doFetch"
-        />
-        <VTextField
-          v-model="params.periode_tahun"
-          placeholder="Tahun"
-          clearable
-          hide-details
-          density="compact"
-          style="max-width: 100px"
-          type="number"
-          @update:model-value="debouncedFetch"
-        />
+    <!-- Filter Card -->
+    <VCard class="mb-4">
+      <VCardText class="pa-0">
+        <div class="d-flex align-center justify-space-between px-4 py-3">
+          <div class="d-flex align-center gap-2">
+            <VIcon icon="ri-filter-3-line" size="16" color="primary" />
+            <span class="text-body-2 font-weight-semibold">Filter</span>
+          </div>
+          <VBtn
+            variant="text"
+            color="secondary"
+            size="small"
+            prepend-icon="ri-refresh-line"
+            @click="resetFilter"
+          >
+            Reset
+          </VBtn>
+        </div>
+        <VDivider />
+        <div class="d-flex flex-wrap align-center gap-4 px-4 py-3">
+          <div>
+            <div class="text-caption text-medium-emphasis mb-2">Segment</div>
+            <VBtnToggle
+              v-model="segment"
+              variant="outlined"
+              mandatory
+              divided
+              density="compact"
+              @update:model-value="onSegmentChange"
+            >
+              <VBtn value="ALL" size="small" style="min-width: 80px">Semua</VBtn>
+              <VBtn value="B2C" size="small" style="min-width: 70px">B2C</VBtn>
+              <VBtn value="B2B" size="small" style="min-width: 70px">B2B</VBtn>
+            </VBtnToggle>
+          </div>
+          <VDivider vertical style="height: 40px; align-self: flex-end;" class="d-none d-sm-block" />
+          <div style="min-width: 200px; flex: 1; max-width: 280px;">
+            <div class="text-caption text-medium-emphasis mb-2">Pencarian</div>
+            <VTextField
+              v-model="params.search"
+              placeholder="Cari no. invoice / klien..."
+              clearable
+              hide-details
+              density="compact"
+              prepend-inner-icon="ri-search-line"
+              @update:model-value="debouncedFetch"
+            />
+          </div>
+          <div style="min-width: 140px; max-width: 180px;">
+            <div class="text-caption text-medium-emphasis mb-2">Status</div>
+            <VSelect
+              v-model="params.status"
+              placeholder="Semua Status"
+              clearable
+              hide-details
+              density="compact"
+              :items="statusOptions"
+              item-title="label"
+              item-value="value"
+              @update:model-value="doFetch"
+            />
+          </div>
+          <div style="min-width: 180px; flex: 1; max-width: 260px;">
+            <div class="text-caption text-medium-emphasis mb-2">Klien</div>
+            <VAutocomplete
+              v-model="params.klien_ar_id"
+              placeholder="Semua Klien"
+              clearable
+              hide-details
+              density="compact"
+              :items="klienList"
+              item-title="nama_klien"
+              item-value="id"
+              :loading="klienLoading"
+              @focus="ensureKlienLoaded()"
+              @update:model-value="doFetch"
+            />
+          </div>
+          <VDivider vertical style="height: 40px; align-self: flex-end;" class="d-none d-sm-block" />
+          <div>
+            <div class="text-caption text-medium-emphasis mb-2">Bulan</div>
+            <VSelect
+              v-model="params.periode_bulan"
+              placeholder="Pilih Bulan"
+              clearable
+              hide-details
+              density="compact"
+              style="min-width: 140px;"
+              :items="bulanOptions"
+              item-title="label"
+              item-value="value"
+              @update:model-value="doFetch"
+            />
+          </div>
+          <div>
+            <div class="text-caption text-medium-emphasis mb-2">Tahun</div>
+            <VTextField
+              v-model="params.periode_tahun"
+              placeholder="Tahun"
+              clearable
+              hide-details
+              density="compact"
+              style="min-width: 90px; max-width: 110px;"
+              type="number"
+              @update:model-value="debouncedFetch"
+            />
+          </div>
+        </div>
       </VCardText>
+    </VCard>
 
+    <VCard>
       <BaseTable
         :headers="headers"
         :items="items"
@@ -570,6 +607,17 @@ const segment         = ref('ALL')
 
 function onSegmentChange(val) {
   params.segment = val === 'ALL' ? undefined : val
+  doFetch()
+}
+
+function resetFilter() {
+  segment.value        = 'ALL'
+  params.search        = ''
+  params.status        = ''
+  params.klien_ar_id   = null
+  params.periode_bulan = null
+  params.periode_tahun = null
+  params.segment       = undefined
   doFetch()
 }
 

@@ -166,79 +166,115 @@
         </VCol>
       </VRow>
 
-      <VCard>
-        <VCardText class="d-flex flex-wrap gap-3 pb-0">
-          <VTextField
-            v-model="params.search"
-            placeholder="Cari no. OB / klien..."
-            clearable
-            hide-details
-            density="compact"
-            style="max-width: 250px"
-            prepend-inner-icon="ri-search-line"
-            @update:model-value="debouncedFetch"
-          />
-          <VSelect
-            v-model="params.status"
-            placeholder="Semua Status"
-            clearable
-            hide-details
-            density="compact"
-            style="max-width: 160px"
-            :items="statusOptions"
-            item-title="label"
-            item-value="value"
-            @update:model-value="doFetch"
-          />
-          <VSelect
-            v-model="params.approval_status"
-            placeholder="Semua Approval"
-            clearable
-            hide-details
-            density="compact"
-            style="max-width: 220px"
-            :items="approvalStatusOptions"
-            item-title="label"
-            item-value="value"
-            @update:model-value="doFetch"
-          />
-          <VAutocomplete
-            v-model="params.klien_ar_id"
-            placeholder="Semua Klien"
-            clearable
-            hide-details
-            density="compact"
-            style="max-width: 220px"
-            :items="klienList"
-            item-title="nama_klien"
-            item-value="id"
-            :loading="klienLoading"
-            @update:model-value="doFetch"
-          />
-          <VSelect
-            v-model="params.periode_bulan"
-            placeholder="Bulan"
-            clearable
-            hide-details
-            density="compact"
-            style="max-width: 140px"
-            :items="bulanOptions"
-            item-title="label"
-            item-value="value"
-            @update:model-value="doFetch"
-          />
-          <VTextField
-            v-model="params.periode_tahun"
-            placeholder="Tahun"
-            clearable
-            hide-details
-            density="compact"
-            style="max-width: 100px"
-            type="number"
-            @update:model-value="debouncedFetch"
-          />
+      <!-- Filter Card -->
+      <VCard class="mb-4">
+        <VCardText class="pa-0">
+          <div class="d-flex align-center justify-space-between px-4 py-3">
+            <div class="d-flex align-center gap-2">
+              <VIcon icon="ri-filter-3-line" size="16" color="primary" />
+              <span class="text-body-2 font-weight-semibold">Filter</span>
+            </div>
+            <VBtn
+              variant="text"
+              color="secondary"
+              size="small"
+              prepend-icon="ri-refresh-line"
+              @click="resetFilter"
+            >
+              Reset
+            </VBtn>
+          </div>
+          <VDivider />
+          <div class="d-flex flex-wrap align-center gap-4 px-4 py-3">
+            <div style="min-width: 200px; flex: 1; max-width: 280px;">
+              <div class="text-caption text-medium-emphasis mb-2">Pencarian</div>
+              <VTextField
+                v-model="params.search"
+                placeholder="Cari no. OB / klien..."
+                clearable
+                hide-details
+                density="compact"
+                prepend-inner-icon="ri-search-line"
+                @update:model-value="debouncedFetch"
+              />
+            </div>
+            <div style="min-width: 140px; max-width: 180px;">
+              <div class="text-caption text-medium-emphasis mb-2">Status</div>
+              <VSelect
+                v-model="params.status"
+                placeholder="Semua Status"
+                clearable
+                hide-details
+                density="compact"
+                :items="statusOptions"
+                item-title="label"
+                item-value="value"
+                @update:model-value="doFetch"
+              />
+            </div>
+            <div style="min-width: 160px; max-width: 220px;">
+              <div class="text-caption text-medium-emphasis mb-2">Approval</div>
+              <VSelect
+                v-model="params.approval_status"
+                placeholder="Semua Approval"
+                clearable
+                hide-details
+                density="compact"
+                :items="approvalStatusOptions"
+                item-title="label"
+                item-value="value"
+                @update:model-value="doFetch"
+              />
+            </div>
+            <div style="min-width: 180px; flex: 1; max-width: 260px;">
+              <div class="text-caption text-medium-emphasis mb-2">Klien</div>
+              <VAutocomplete
+                v-model="params.klien_ar_id"
+                placeholder="Semua Klien"
+                clearable
+                hide-details
+                density="compact"
+                :items="klienList"
+                item-title="nama_klien"
+                item-value="id"
+                :loading="klienLoading"
+                @update:model-value="doFetch"
+              />
+            </div>
+            <VDivider vertical style="height: 40px; align-self: flex-end;" class="d-none d-sm-block" />
+            <div>
+              <div class="text-caption text-medium-emphasis mb-2">Bulan</div>
+              <VSelect
+                v-model="params.periode_bulan"
+                placeholder="Pilih Bulan"
+                clearable
+                hide-details
+                density="compact"
+                style="min-width: 140px;"
+                :items="bulanOptions"
+                item-title="label"
+                item-value="value"
+                @update:model-value="doFetch"
+              />
+            </div>
+            <div>
+              <div class="text-caption text-medium-emphasis mb-2">Tahun</div>
+              <VTextField
+                v-model="params.periode_tahun"
+                placeholder="Tahun"
+                clearable
+                hide-details
+                density="compact"
+                style="min-width: 90px; max-width: 110px;"
+                type="number"
+                @update:model-value="debouncedFetch"
+              />
+            </div>
+          </div>
         </VCardText>
+      </VCard>
 
+      <VCard>
         <BaseTable
           :headers="headers"
           :items="items"
@@ -474,67 +510,101 @@
         </VCol>
       </VRow>
 
-      <VCard>
-        <VCardText class="d-flex flex-wrap gap-3 pb-0">
-          <VTextField
-            v-model="dirApprovalParams.search"
-            placeholder="Cari no. OB / klien..."
-            clearable
-            hide-details
-            density="compact"
-            style="max-width: 250px"
-            prepend-inner-icon="ri-search-line"
-            @update:model-value="debouncedDirFetch"
-          />
-          <VSelect
-            v-model="dirApprovalParams.approval_status"
-            placeholder="Semua Approval"
-            clearable
-            hide-details
-            density="compact"
-            style="max-width: 230px"
-            :items="approvalStatusOptions"
-            item-title="label"
-            item-value="value"
-            @update:model-value="doDirFetch"
-          />
-          <VAutocomplete
-            v-model="dirApprovalParams.klien_ar_id"
-            placeholder="Semua Klien"
-            clearable
-            hide-details
-            density="compact"
-            style="max-width: 220px"
-            :items="klienList"
-            item-title="nama_klien"
-            item-value="id"
-            :loading="klienLoading"
-            @update:model-value="doDirFetch"
-          />
-          <VSelect
-            v-model="dirApprovalParams.periode_bulan"
-            placeholder="Bulan"
-            clearable
-            hide-details
-            density="compact"
-            style="max-width: 140px"
-            :items="bulanOptions"
-            item-title="label"
-            item-value="value"
-            @update:model-value="doDirFetch"
-          />
-          <VTextField
-            v-model="dirApprovalParams.periode_tahun"
-            placeholder="Tahun"
-            clearable
-            hide-details
-            density="compact"
-            style="max-width: 100px"
-            type="number"
-            @update:model-value="debouncedDirFetch"
-          />
+      <!-- Filter Card -->
+      <VCard class="mb-4">
+        <VCardText class="pa-0">
+          <div class="d-flex align-center justify-space-between px-4 py-3">
+            <div class="d-flex align-center gap-2">
+              <VIcon icon="ri-filter-3-line" size="16" color="primary" />
+              <span class="text-body-2 font-weight-semibold">Filter</span>
+            </div>
+            <VBtn
+              variant="text"
+              color="secondary"
+              size="small"
+              prepend-icon="ri-refresh-line"
+              @click="resetDirApprovalFilter"
+            >
+              Reset
+            </VBtn>
+          </div>
+          <VDivider />
+          <div class="d-flex flex-wrap align-center gap-4 px-4 py-3">
+            <div style="min-width: 200px; flex: 1; max-width: 280px;">
+              <div class="text-caption text-medium-emphasis mb-2">Pencarian</div>
+              <VTextField
+                v-model="dirApprovalParams.search"
+                placeholder="Cari no. OB / klien..."
+                clearable
+                hide-details
+                density="compact"
+                prepend-inner-icon="ri-search-line"
+                @update:model-value="debouncedDirFetch"
+              />
+            </div>
+            <div style="min-width: 160px; max-width: 220px;">
+              <div class="text-caption text-medium-emphasis mb-2">Approval</div>
+              <VSelect
+                v-model="dirApprovalParams.approval_status"
+                placeholder="Semua Approval"
+                clearable
+                hide-details
+                density="compact"
+                :items="approvalStatusOptions"
+                item-title="label"
+                item-value="value"
+                @update:model-value="doDirFetch"
+              />
+            </div>
+            <div style="min-width: 180px; flex: 1; max-width: 260px;">
+              <div class="text-caption text-medium-emphasis mb-2">Klien</div>
+              <VAutocomplete
+                v-model="dirApprovalParams.klien_ar_id"
+                placeholder="Semua Klien"
+                clearable
+                hide-details
+                density="compact"
+                :items="klienList"
+                item-title="nama_klien"
+                item-value="id"
+                :loading="klienLoading"
+                @update:model-value="doDirFetch"
+              />
+            </div>
+            <VDivider vertical style="height: 40px; align-self: flex-end;" class="d-none d-sm-block" />
+            <div>
+              <div class="text-caption text-medium-emphasis mb-2">Bulan</div>
+              <VSelect
+                v-model="dirApprovalParams.periode_bulan"
+                placeholder="Pilih Bulan"
+                clearable
+                hide-details
+                density="compact"
+                style="min-width: 140px;"
+                :items="bulanOptions"
+                item-title="label"
+                item-value="value"
+                @update:model-value="doDirFetch"
+              />
+            </div>
+            <div>
+              <div class="text-caption text-medium-emphasis mb-2">Tahun</div>
+              <VTextField
+                v-model="dirApprovalParams.periode_tahun"
+                placeholder="Tahun"
+                clearable
+                hide-details
+                density="compact"
+                style="min-width: 90px; max-width: 110px;"
+                type="number"
+                @update:model-value="debouncedDirFetch"
+              />
+            </div>
+          </div>
         </VCardText>
+      </VCard>
 
+      <VCard>
         <BaseTable
           :headers="approvalHeaders"
           :items="dirApprovalItems"
@@ -750,88 +820,126 @@
         </VCol>
       </VRow>
 
-      <VCard>
-        <VCardText class="d-flex flex-wrap gap-3 pb-0 align-center">
-          <VTextField
-            v-model="dirObParams.search"
-            placeholder="Cari no. OB / klien..."
-            clearable
-            hide-details
-            density="compact"
-            style="max-width: 250px"
-            prepend-inner-icon="ri-search-line"
-            @update:model-value="debouncedDirObFetch"
-          />
-          <VSelect
-            v-model="dirObParams.status"
-            placeholder="Semua Status"
-            clearable
-            hide-details
-            density="compact"
-            style="max-width: 160px"
-            :items="statusOptions"
-            item-title="label"
-            item-value="value"
-            @update:model-value="doDirObFetch"
-          />
-          <VSelect
-            v-model="dirObParams.approval_status"
-            placeholder="Semua Approval"
-            clearable
-            hide-details
-            density="compact"
-            style="max-width: 220px"
-            :items="approvalStatusOptions"
-            item-title="label"
-            item-value="value"
-            @update:model-value="doDirObFetch"
-          />
-          <VAutocomplete
-            v-model="dirObParams.klien_ar_id"
-            placeholder="Semua Klien"
-            clearable
-            hide-details
-            density="compact"
-            style="max-width: 220px"
-            :items="klienList"
-            item-title="nama_klien"
-            item-value="id"
-            :loading="klienLoading"
-            @update:model-value="doDirObFetch"
-          />
-          <VSelect
-            v-model="dirObParams.periode_bulan"
-            placeholder="Bulan"
-            clearable
-            hide-details
-            density="compact"
-            style="max-width: 140px"
-            :items="bulanOptions"
-            item-title="label"
-            item-value="value"
-            @update:model-value="doDirObFetch"
-          />
-          <VTextField
-            v-model="dirObParams.periode_tahun"
-            placeholder="Tahun"
-            clearable
-            hide-details
-            density="compact"
-            style="max-width: 100px"
-            type="number"
-            @update:model-value="debouncedDirObFetch"
-          />
-          <VSpacer />
-          <VBtn
-            color="primary"
-            prepend-icon="ri-file-excel-line"
-            :loading="isDirExporting"
-            @click="exportDirExcel"
-          >
-            Export
-          </VBtn>
+      <!-- Filter Card -->
+      <VCard class="mb-4">
+        <VCardText class="pa-0">
+          <div class="d-flex align-center justify-space-between px-4 py-3">
+            <div class="d-flex align-center gap-2">
+              <VIcon icon="ri-filter-3-line" size="16" color="primary" />
+              <span class="text-body-2 font-weight-semibold">Filter</span>
+            </div>
+            <div class="d-flex align-center gap-2">
+              <VBtn
+                variant="text"
+                color="secondary"
+                size="small"
+                prepend-icon="ri-refresh-line"
+                @click="resetDirObFilter"
+              >
+                Reset
+              </VBtn>
+              <VBtn
+                color="primary"
+                size="small"
+                prepend-icon="ri-file-excel-line"
+                :loading="isDirExporting"
+                @click="exportDirExcel"
+              >
+                Export
+              </VBtn>
+            </div>
+          </div>
+          <VDivider />
+          <div class="d-flex flex-wrap align-center gap-4 px-4 py-3">
+            <div style="min-width: 200px; flex: 1; max-width: 280px;">
+              <div class="text-caption text-medium-emphasis mb-2">Pencarian</div>
+              <VTextField
+                v-model="dirObParams.search"
+                placeholder="Cari no. OB / klien..."
+                clearable
+                hide-details
+                density="compact"
+                prepend-inner-icon="ri-search-line"
+                @update:model-value="debouncedDirObFetch"
+              />
+            </div>
+            <div style="min-width: 140px; max-width: 180px;">
+              <div class="text-caption text-medium-emphasis mb-2">Status</div>
+              <VSelect
+                v-model="dirObParams.status"
+                placeholder="Semua Status"
+                clearable
+                hide-details
+                density="compact"
+                :items="statusOptions"
+                item-title="label"
+                item-value="value"
+                @update:model-value="doDirObFetch"
+              />
+            </div>
+            <div style="min-width: 160px; max-width: 220px;">
+              <div class="text-caption text-medium-emphasis mb-2">Approval</div>
+              <VSelect
+                v-model="dirObParams.approval_status"
+                placeholder="Semua Approval"
+                clearable
+                hide-details
+                density="compact"
+                :items="approvalStatusOptions"
+                item-title="label"
+                item-value="value"
+                @update:model-value="doDirObFetch"
+              />
+            </div>
+            <div style="min-width: 180px; flex: 1; max-width: 260px;">
+              <div class="text-caption text-medium-emphasis mb-2">Klien</div>
+              <VAutocomplete
+                v-model="dirObParams.klien_ar_id"
+                placeholder="Semua Klien"
+                clearable
+                hide-details
+                density="compact"
+                :items="klienList"
+                item-title="nama_klien"
+                item-value="id"
+                :loading="klienLoading"
+                @update:model-value="doDirObFetch"
+              />
+            </div>
+            <VDivider vertical style="height: 40px; align-self: flex-end;" class="d-none d-sm-block" />
+            <div>
+              <div class="text-caption text-medium-emphasis mb-2">Bulan</div>
+              <VSelect
+                v-model="dirObParams.periode_bulan"
+                placeholder="Pilih Bulan"
+                clearable
+                hide-details
+                density="compact"
+                style="min-width: 140px;"
+                :items="bulanOptions"
+                item-title="label"
+                item-value="value"
+                @update:model-value="doDirObFetch"
+              />
+            </div>
+            <div>
+              <div class="text-caption text-medium-emphasis mb-2">Tahun</div>
+              <VTextField
+                v-model="dirObParams.periode_tahun"
+                placeholder="Tahun"
+                clearable
+                hide-details
+                density="compact"
+                style="min-width: 90px; max-width: 110px;"
+                type="number"
+                @update:model-value="debouncedDirObFetch"
+              />
+            </div>
+          </div>
         </VCardText>
+      </VCard>
 
+      <VCard>
         <BaseTable
           :headers="dirObHeaders"
           :items="dirObItems"
@@ -1575,6 +1683,35 @@ function onTableOptions({ page, itemsPerPage }) {
   params.page = page
   params.per_page = itemsPerPage
   loadList()
+}
+
+function resetFilter() {
+  params.search          = ''
+  params.status          = ''
+  params.approval_status = ''
+  params.klien_ar_id     = null
+  params.periode_bulan   = null
+  params.periode_tahun   = null
+  doFetch()
+}
+
+function resetDirApprovalFilter() {
+  dirApprovalParams.search          = ''
+  dirApprovalParams.approval_status = 'PENDING'
+  dirApprovalParams.klien_ar_id     = null
+  dirApprovalParams.periode_bulan   = null
+  dirApprovalParams.periode_tahun   = null
+  doDirFetch()
+}
+
+function resetDirObFilter() {
+  dirObParams.search          = ''
+  dirObParams.status          = ''
+  dirObParams.approval_status = 'APPROVED'
+  dirObParams.klien_ar_id     = null
+  dirObParams.periode_bulan   = null
+  dirObParams.periode_tahun   = null
+  doDirObFetch()
 }
 
 // ── Fetch helpers: director approval table ─────────────────────────────────

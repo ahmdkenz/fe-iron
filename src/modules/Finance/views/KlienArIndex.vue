@@ -36,32 +36,59 @@
       </div>
     </PageHeader>
 
-    <VCard>
-      <VCardText class="d-flex flex-wrap align-center gap-4 pb-0">
-        <VBtnToggle
-          v-model="segment"
-          variant="outlined"
-          mandatory
-          divided
-          density="compact"
-          @update:model-value="onSegmentChange"
-        >
-          <VBtn value="ALL" size="small" style="min-width: 80px">Semua</VBtn>
-          <VBtn value="B2C" size="small" style="min-width: 70px">B2C</VBtn>
-          <VBtn value="B2B" size="small" style="min-width: 70px">B2B</VBtn>
-        </VBtnToggle>
-        <VTextField
-          v-model="params.search"
-          placeholder="Cari kode / nama klien..."
-          clearable
-          hide-details
-          density="compact"
-          style="max-width: 300px"
-          prepend-inner-icon="ri-search-line"
-          @update:model-value="debouncedFetch"
-        />
+    <!-- Filter Card -->
+    <VCard class="mb-4">
+      <VCardText class="pa-0">
+        <div class="d-flex align-center justify-space-between px-4 py-3">
+          <div class="d-flex align-center gap-2">
+            <VIcon icon="ri-filter-3-line" size="16" color="primary" />
+            <span class="text-body-2 font-weight-semibold">Filter</span>
+          </div>
+          <VBtn
+            variant="text"
+            color="secondary"
+            size="small"
+            prepend-icon="ri-refresh-line"
+            @click="resetFilter"
+          >
+            Reset
+          </VBtn>
+        </div>
+        <VDivider />
+        <div class="d-flex flex-wrap align-center gap-4 px-4 py-3">
+          <div>
+            <div class="text-caption text-medium-emphasis mb-2">Segment</div>
+            <VBtnToggle
+              v-model="segment"
+              variant="outlined"
+              mandatory
+              divided
+              density="compact"
+              @update:model-value="onSegmentChange"
+            >
+              <VBtn value="ALL" size="small" style="min-width: 80px">Semua</VBtn>
+              <VBtn value="B2C" size="small" style="min-width: 70px">B2C</VBtn>
+              <VBtn value="B2B" size="small" style="min-width: 70px">B2B</VBtn>
+            </VBtnToggle>
+          </div>
+          <VDivider vertical style="height: 40px; align-self: flex-end;" class="d-none d-sm-block" />
+          <div style="min-width: 260px; flex: 1; max-width: 360px;">
+            <div class="text-caption text-medium-emphasis mb-2">Pencarian</div>
+            <VTextField
+              v-model="params.search"
+              placeholder="Cari kode / nama klien..."
+              clearable
+              hide-details
+              density="compact"
+              prepend-inner-icon="ri-search-line"
+              @update:model-value="debouncedFetch"
+            />
+          </div>
+        </div>
       </VCardText>
+    </VCard>
 
+    <VCard>
       <BaseTable
         :headers="headers"
         :items="items"
@@ -557,9 +584,9 @@ const importResult = ref(null)
 
 const headers = [
   { title: 'No',             key: 'no',          sortable: false, width: '60px' },
-  { title: 'Kode Resto',           key: 'kode_klien',  sortable: false, minWidth: '140px' },
+  { title: 'Kode Client',          key: 'kode_klien',  sortable: false, minWidth: '140px' },
   { title: 'Segment',        key: 'segment',     sortable: false, minWidth: '100px' },
-  { title: 'Nama Investor (Billing)', key: 'nama_klien',  sortable: false, minWidth: '200px' },
+  { title: 'Nama Billing',            key: 'nama_klien',  sortable: false, minWidth: '200px' },
   { title: 'Resto',          key: 'resto',        sortable: false, minWidth: '160px' },
   { title: 'Investor / Pengelola', key: 'investor', sortable: false, minWidth: '180px' },
   { title: 'PIC AR',         key: 'karyawan_ar', sortable: false, minWidth: '160px' },
@@ -581,6 +608,14 @@ function onTableOptions({ page, itemsPerPage }) {
     showAllItems.value = false
     params['per_page'] = itemsPerPage
   }
+  doFetchList()
+}
+
+function resetFilter() {
+  segment.value    = 'ALL'
+  params.search    = ''
+  params.segment   = undefined
+  params.page      = 1
   doFetchList()
 }
 
@@ -665,32 +700,6 @@ async function doImport() {
   }
 }
 
-function shareWhatsApp(klien) {
-  if (!klien.no_wa) return
-
-  const phone = klien.no_wa
-    .replace(/\D/g, '')
-    .replace(/^0/, '62')
-
-  const isB2C    = klien.tipe_klien === 'RESTO'
-  const segment  = isB2C ? 'B2C' : 'B2B'
-
-  const lines = [
-    '*📋 Data Client*',
-    '━━━━━━━━━━━━━━',
-    `🔖 Kode: ${klien.kode_klien}`,
-    `👤 Nama Billing: ${klien.nama_klien}`,
-    `🏷️ Tipe: ${klien.tipe_klien} (${segment})`,
-    klien.resto                          ? `🏪 Resto: ${klien.resto.nama_resto}`                            : null,
-    klien.resto?.investor                ? `👥 Investor: ${klien.resto.investor.nama_investor}`              : null,
-    klien.resto?.investor?.pengelola     ? `👤 Pengelola: ${klien.resto.investor.pengelola}`                 : null,
-    `📊 Status: ${klien.status ? 'Aktif' : 'Nonaktif'}`,
-    `👨‍💼 PIC AR: ${klien.karyawan_ar?.nama_karyawan ?? '-'}`,
-    '━━━━━━━━━━━━━━',
-  ].filter(Boolean).join('\n')
-
-  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(lines)}`, '_blank')
-}
 
 async function generateBundleToken(klien) {
   bundleGenerating.value = true
