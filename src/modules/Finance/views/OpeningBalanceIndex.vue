@@ -1207,7 +1207,7 @@
 
 <script setup>
 /* eslint-disable camelcase */
-import { onActivated, onBeforeUnmount, onDeactivated, onMounted, reactive, ref } from 'vue'
+import { defineAsyncComponent, onActivated, onBeforeUnmount, onDeactivated, onMounted, reactive, ref } from 'vue'
 import { useAuthStore } from '@/stores/auth.store'
 import { useCrud } from '@/composables/useCrud'
 import { useFormatter } from '@/composables/useFormatter'
@@ -1216,7 +1216,8 @@ import { useFinanceNotificationStore } from '@/stores/finance-notification.store
 import api from '@/utils/axios'
 import ApprovalStatusBadge from '../components/ApprovalStatusBadge.vue'
 import InvoiceStatusBadge from '../components/InvoiceStatusBadge.vue'
-import PembayaranForm from '../components/PembayaranForm.vue'
+
+const PembayaranForm = defineAsyncComponent(() => import('../components/PembayaranForm.vue'))
 
 const authStore = useAuthStore()
 const { showAlert, showSuccess, showError, showLoading, closeAlert } = useSweetAlert()

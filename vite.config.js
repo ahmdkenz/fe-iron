@@ -94,11 +94,12 @@ export default defineConfig(({ mode }) => {
       },
     },
     build: {
-      chunkSizeWarningLimit: 1500,
+      chunkSizeWarningLimit: 800,
       rollupOptions: {
         output: {
           manualChunks: {
             'vendor-vue': ['vue', 'vue-router', 'pinia'],
+            'vendor-vuetify': ['vuetify'],
             'vendor-charts': ['vue3-apexcharts', 'apexcharts'],
             'vendor-utils': ['axios', 'sweetalert2'],
           },

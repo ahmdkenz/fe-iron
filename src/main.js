@@ -20,11 +20,10 @@ const authStore = useAuthStore(store)
 // preventing a flash-redirect to login for authenticated users.
 async function bootstrap() {
   // Run auth check and minimum splash duration in parallel.
-  // The splash must show for at least 2.8s so the decrypt + progress animations
-  // complete fully before the loader dismisses.
+  // Minimum 1.2s ensures decrypt + progress animations complete before loader dismisses.
   await Promise.allSettled([
     authStore.initAuth(),
-    new Promise(resolve => setTimeout(resolve, 2800)),
+    new Promise(resolve => setTimeout(resolve, 1200)),
   ])
 
   app.mount('#app')

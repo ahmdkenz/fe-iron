@@ -588,7 +588,7 @@
 
 <script setup>
 /* eslint-disable camelcase */
-import { onBeforeUnmount, onDeactivated, onMounted, reactive, ref } from 'vue'
+import { defineAsyncComponent, onBeforeUnmount, onDeactivated, onMounted, reactive, ref } from 'vue'
 import { useCrud } from '@/composables/useCrud'
 import { useFormatter } from '@/composables/useFormatter'
 import { useSweetAlert } from '@/composables/useSweetAlert'
@@ -597,7 +597,8 @@ import { useAuthStore } from '@/stores/auth.store'
 import { useFinanceNotificationStore } from '@/stores/finance-notification.store'
 import ApprovalStatusBadge from '../components/ApprovalStatusBadge.vue'
 import InvoiceStatusBadge from '../components/InvoiceStatusBadge.vue'
-import PembayaranForm from '../components/PembayaranForm.vue'
+
+const PembayaranForm = defineAsyncComponent(() => import('../components/PembayaranForm.vue'))
 
 const { items, loading, meta, params, fetchList } = useCrud('/finance/opening-balance')
 const { items: klienList, loading: klienLoading, fetchAll: fetchKlien } = useCrud('/finance/klien-ar')

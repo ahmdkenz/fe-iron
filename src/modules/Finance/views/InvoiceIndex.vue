@@ -563,7 +563,7 @@
 </template>
 
 <script setup>
-import { nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
+import { defineAsyncComponent, nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useCrud } from '@/composables/useCrud.js'
 import { useLazyFetchAll } from '@/composables/useLazyFetchAll.js'
@@ -571,7 +571,8 @@ import { useFormatter } from '@/composables/useFormatter.js'
 import { useAuthStore } from '@/stores/auth.store'
 import api from '@/utils/axios.js'
 import InvoiceStatusBadge from '../components/InvoiceStatusBadge.vue'
-import PembayaranForm from '../components/PembayaranForm.vue'
+
+const PembayaranForm = defineAsyncComponent(() => import('../components/PembayaranForm.vue'))
 
 const { showSuccess, showError, showLoading, closeAlert } = useSweetAlert()
 const authStore = useAuthStore()

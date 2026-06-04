@@ -34,7 +34,7 @@
           density="compact"
           hide-details
           style="max-width: 180px"
-          @update:model-value="doFetch"
+          @update:model-value="debouncedFetch"
         />
         <VTextField
           v-model="filters.periode_akhir"
@@ -43,7 +43,7 @@
           density="compact"
           hide-details
           style="max-width: 180px"
-          @update:model-value="doFetch"
+          @update:model-value="debouncedFetch"
         />
         <VAutocomplete
           v-model="filters.klien_ar_id"
@@ -237,6 +237,12 @@ async function doFetch() {
   } finally {
     loading.value = false
   }
+}
+
+let debounceTimer = null
+function debouncedFetch() {
+  clearTimeout(debounceTimer)
+  debounceTimer = setTimeout(doFetch, 400)
 }
 
 onMounted(doFetch)
