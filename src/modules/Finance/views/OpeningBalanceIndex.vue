@@ -1207,7 +1207,7 @@
 
 <script setup>
 /* eslint-disable camelcase */
-import { defineAsyncComponent, onActivated, onBeforeUnmount, onDeactivated, onMounted, reactive, ref } from 'vue'
+import { defineAsyncComponent, onActivated, onBeforeUnmount, onDeactivated, reactive, ref } from 'vue'
 import { useAuthStore } from '@/stores/auth.store'
 import { useCrud } from '@/composables/useCrud'
 import { useFormatter } from '@/composables/useFormatter'
@@ -1894,11 +1894,10 @@ function initLoad() {
   }
 }
 
-// onMounted: load data saat pertama kali mount (termasuk di dalam KeepAlive)
-// onActivated: reload data saat kembali ke halaman via navigasi (KeepAlive re-activation)
-// Fix: route 'finance-opening-balance' ada di keepAliveRouteNames — tanpa onActivated,
-// direktur yang navigasi pergi-kembali tidak akan melihat OB baru yang baru diimport.
-onMounted(initLoad)
+// onActivated fires on first mount AND every re-activation (KeepAlive).
+// Using only onActivated avoids the double-load race that was resetting loading=false
+// prematurely (onMounted + onActivated both fired on first mount, causing the aborted
+// first request's finally block to clear loading while the second request was still running).
 onActivated(initLoad)
 
 onDeactivated(() => {
