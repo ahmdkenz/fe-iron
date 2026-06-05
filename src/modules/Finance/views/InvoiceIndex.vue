@@ -551,26 +551,36 @@
               Panduan Import:
             </div>
             <ul class="ps-4">
+              <li>Pilih template sesuai jenis klien: <strong>Template B2C</strong> untuk klien perorangan, <strong>Template B2B</strong> untuk klien perusahaan (PT).</li>
               <li>Download template, isi data, lalu upload file (.xlsx atau .csv).</li>
               <li>Template memiliki 2 sheet: <strong>Invoice</strong> (header) dan <strong>Item Invoice</strong> (rincian).</li>
               <li>Kolom <strong>nama_klien</strong> wajib sesuai persis dengan data klien di sistem.</li>
               <li>Gunakan <strong>no_urut</strong> untuk menghubungkan invoice dengan item-itemnya.</li>
-              <li>Format tanggal: <strong>YYYY-MM-DD</strong> (contoh: 2025-06-01). Berlaku untuk <strong>tanggal_invoice</strong>, <strong>tanggal_jatuh_tempo</strong>, <strong>periode_awal</strong>, dan <strong>periode_akhir</strong>.</li>
+              <li>Format tanggal: <strong>DD-MM-YYYY</strong> (contoh: 01-06-2025). Berlaku untuk <strong>tanggal_invoice</strong>, <strong>tanggal_jatuh_tempo</strong>, <strong>periode_awal</strong>, dan <strong>periode_akhir</strong>.</li>
               <li>Kolom <strong>tanggal_jatuh_tempo</strong> bersifat opsional — boleh dikosongkan.</li>
               <li>Import CSV hanya memproses Sheet "Invoice" tanpa item rincian.</li>
               <li>Lihat sheet <strong>Petunjuk Pengisian</strong> di template untuk panduan lengkap.</li>
             </ul>
           </VAlert>
 
-          <VBtn
-            variant="outlined"
-            color="primary"
-            prepend-icon="ri-file-excel-line"
-            class="mb-4"
-            @click="downloadTemplate"
-          >
-            Download Template Excel
-          </VBtn>
+          <div class="d-flex gap-2 mb-4">
+            <VBtn
+              variant="outlined"
+              color="primary"
+              prepend-icon="ri-file-excel-line"
+              @click="downloadTemplate('b2c')"
+            >
+              Template B2C
+            </VBtn>
+            <VBtn
+              variant="outlined"
+              color="success"
+              prepend-icon="ri-file-excel-line"
+              @click="downloadTemplate('b2b')"
+            >
+              Template B2B
+            </VBtn>
+          </div>
 
           <VFileInput
             v-model="importFile"
@@ -873,13 +883,13 @@ function closeImport() {
   }
 }
 
-async function downloadTemplate() {
+async function downloadTemplate(type = 'b2c') {
   try {
-    const res  = await api.get('/finance/invoices/import-template', { responseType: 'blob' })
+    const res  = await api.get('/finance/invoices/import-template', { responseType: 'blob', params: { type } })
     const url  = URL.createObjectURL(res.data)
     const a    = document.createElement('a')
     a.href     = url
-    a.download = 'Template Tagihan Invoice.xlsx'
+    a.download = type === 'b2b' ? 'Template Tagihan Invoice B2B.xlsx' : 'Template Tagihan Invoice B2C.xlsx'
     a.click()
     URL.revokeObjectURL(url)
   } catch {
