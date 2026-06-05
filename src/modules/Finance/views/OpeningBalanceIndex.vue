@@ -243,30 +243,24 @@
             </div>
             <VDivider vertical style="height: 40px; align-self: flex-end;" class="d-none d-sm-block" />
             <div>
-              <div class="text-caption text-medium-emphasis mb-2">Bulan</div>
-              <VSelect
-                v-model="params.periode_bulan"
-                placeholder="Pilih Bulan"
-                clearable
+              <div class="text-caption text-medium-emphasis mb-2">Dari</div>
+              <VTextField
+                v-model="params.tanggal_dari"
+                type="date"
                 hide-details
                 density="compact"
-                style="min-width: 140px;"
-                :items="bulanOptions"
-                item-title="label"
-                item-value="value"
-                @update:model-value="doFetch"
+                style="min-width: 150px; max-width: 170px;"
+                @update:model-value="debouncedFetch"
               />
             </div>
             <div>
-              <div class="text-caption text-medium-emphasis mb-2">Tahun</div>
+              <div class="text-caption text-medium-emphasis mb-2">Sampai</div>
               <VTextField
-                v-model="params.periode_tahun"
-                placeholder="Tahun"
-                clearable
+                v-model="params.tanggal_sampai"
+                type="date"
                 hide-details
                 density="compact"
-                style="min-width: 90px; max-width: 110px;"
-                type="number"
+                style="min-width: 150px; max-width: 170px;"
                 @update:model-value="debouncedFetch"
               />
             </div>
@@ -573,30 +567,24 @@
             </div>
             <VDivider vertical style="height: 40px; align-self: flex-end;" class="d-none d-sm-block" />
             <div>
-              <div class="text-caption text-medium-emphasis mb-2">Bulan</div>
-              <VSelect
-                v-model="dirApprovalParams.periode_bulan"
-                placeholder="Pilih Bulan"
-                clearable
+              <div class="text-caption text-medium-emphasis mb-2">Dari</div>
+              <VTextField
+                v-model="dirApprovalParams.tanggal_dari"
+                type="date"
                 hide-details
                 density="compact"
-                style="min-width: 140px;"
-                :items="bulanOptions"
-                item-title="label"
-                item-value="value"
-                @update:model-value="doDirFetch"
+                style="min-width: 150px; max-width: 170px;"
+                @update:model-value="debouncedDirFetch"
               />
             </div>
             <div>
-              <div class="text-caption text-medium-emphasis mb-2">Tahun</div>
+              <div class="text-caption text-medium-emphasis mb-2">Sampai</div>
               <VTextField
-                v-model="dirApprovalParams.periode_tahun"
-                placeholder="Tahun"
-                clearable
+                v-model="dirApprovalParams.tanggal_sampai"
+                type="date"
                 hide-details
                 density="compact"
-                style="min-width: 90px; max-width: 110px;"
-                type="number"
+                style="min-width: 150px; max-width: 170px;"
                 @update:model-value="debouncedDirFetch"
               />
             </div>
@@ -908,30 +896,24 @@
             </div>
             <VDivider vertical style="height: 40px; align-self: flex-end;" class="d-none d-sm-block" />
             <div>
-              <div class="text-caption text-medium-emphasis mb-2">Bulan</div>
-              <VSelect
-                v-model="dirObParams.periode_bulan"
-                placeholder="Pilih Bulan"
-                clearable
+              <div class="text-caption text-medium-emphasis mb-2">Dari</div>
+              <VTextField
+                v-model="dirObParams.tanggal_dari"
+                type="date"
                 hide-details
                 density="compact"
-                style="min-width: 140px;"
-                :items="bulanOptions"
-                item-title="label"
-                item-value="value"
-                @update:model-value="doDirObFetch"
+                style="min-width: 150px; max-width: 170px;"
+                @update:model-value="debouncedDirObFetch"
               />
             </div>
             <div>
-              <div class="text-caption text-medium-emphasis mb-2">Tahun</div>
+              <div class="text-caption text-medium-emphasis mb-2">Sampai</div>
               <VTextField
-                v-model="dirObParams.periode_tahun"
-                placeholder="Tahun"
-                clearable
+                v-model="dirObParams.tanggal_sampai"
+                type="date"
                 hide-details
                 density="compact"
-                style="min-width: 90px; max-width: 110px;"
-                type="number"
+                style="min-width: 150px; max-width: 170px;"
                 @update:model-value="debouncedDirObFetch"
               />
             </div>
@@ -1235,8 +1217,8 @@ const canSeeAll = authStore.hasAnyRole(['ADMIN', 'MANAGER', 'SUPERVISOR'])
 params.status = ''
 params.approval_status = ''
 params.klien_ar_id = null
-params.periode_bulan = null
-params.periode_tahun = null
+params.tanggal_dari = null
+params.tanggal_sampai = null
 if (!canSeeAll) {
   params.karyawan_id = authStore.user?.karyawan?.id
 }
@@ -1253,8 +1235,8 @@ const { items: dirApprovalItems, loading: dirApprovalLoading, meta: dirApprovalM
 
 dirApprovalParams.approval_status = 'PENDING'
 dirApprovalParams.klien_ar_id = null
-dirApprovalParams.periode_bulan = null
-dirApprovalParams.periode_tahun = null
+dirApprovalParams.tanggal_dari = null
+dirApprovalParams.tanggal_sampai = null
 
 const dirApprovalSummary = reactive({
   total_invoice: null,
@@ -1274,8 +1256,8 @@ const { items: dirObItems, loading: dirObLoading, meta: dirObMeta, params: dirOb
 dirObParams.status = ''
 dirObParams.approval_status = 'APPROVED'
 dirObParams.klien_ar_id = null
-dirObParams.periode_bulan = null
-dirObParams.periode_tahun = null
+dirObParams.tanggal_dari = null
+dirObParams.tanggal_sampai = null
 
 const dirObSummary = reactive({
   total_invoice: null,
@@ -1312,13 +1294,13 @@ async function exportExcel() {
   try {
     const res = await api.get('/finance/opening-balance/export', {
       params: {
-        search:          params.search        || undefined,
-        status:          params.status        || undefined,
+        search:          params.search          || undefined,
+        status:          params.status          || undefined,
         approval_status: params.approval_status || undefined,
-        klien_ar_id:     params.klien_ar_id   || undefined,
-        karyawan_id:     params.karyawan_id   || undefined,
-        periode_bulan:   params.periode_bulan || undefined,
-        periode_tahun:   params.periode_tahun || undefined,
+        klien_ar_id:     params.klien_ar_id     || undefined,
+        karyawan_id:     params.karyawan_id     || undefined,
+        tanggal_dari:    params.tanggal_dari    || undefined,
+        tanggal_sampai:  params.tanggal_sampai  || undefined,
       },
       responseType: 'blob',
     })
@@ -1350,8 +1332,8 @@ async function exportDirExcel() {
         status:          dirObParams.status          || undefined,
         approval_status: dirObParams.approval_status || undefined,
         klien_ar_id:     dirObParams.klien_ar_id     || undefined,
-        periode_bulan:   dirObParams.periode_bulan   || undefined,
-        periode_tahun:   dirObParams.periode_tahun   || undefined,
+        tanggal_dari:    dirObParams.tanggal_dari    || undefined,
+        tanggal_sampai:  dirObParams.tanggal_sampai  || undefined,
       },
       responseType: 'blob',
     })
@@ -1500,20 +1482,6 @@ const approvalStatusOptions = [
   { label: 'Ditolak', value: 'REJECTED' },
 ]
 
-const bulanOptions = [
-  { label: 'Januari', value: 1 },
-  { label: 'Februari', value: 2 },
-  { label: 'Maret', value: 3 },
-  { label: 'April', value: 4 },
-  { label: 'Mei', value: 5 },
-  { label: 'Juni', value: 6 },
-  { label: 'Juli', value: 7 },
-  { label: 'Agustus', value: 8 },
-  { label: 'September', value: 9 },
-  { label: 'Oktober', value: 10 },
-  { label: 'November', value: 11 },
-  { label: 'Desember', value: 12 },
-]
 
 // ── Abort controllers ──────────────────────────────────────────────────────
 let listController          = null
@@ -1586,8 +1554,8 @@ async function loadSummary() {
         approval_status: params.approval_status,
         klien_ar_id:     params.klien_ar_id,
         karyawan_id:     params.karyawan_id,
-        periode_bulan:   params.periode_bulan,
-        periode_tahun:   params.periode_tahun,
+        tanggal_dari:    params.tanggal_dari,
+        tanggal_sampai:  params.tanggal_sampai,
       },
       signal: controller.signal,
     })
@@ -1619,8 +1587,8 @@ async function loadDirApprovalSummary() {
         search:          dirApprovalParams.search,
         approval_status: dirApprovalParams.approval_status,
         klien_ar_id:     dirApprovalParams.klien_ar_id,
-        periode_bulan:   dirApprovalParams.periode_bulan,
-        periode_tahun:   dirApprovalParams.periode_tahun,
+        tanggal_dari:    dirApprovalParams.tanggal_dari,
+        tanggal_sampai:  dirApprovalParams.tanggal_sampai,
       },
       signal: controller.signal,
     })
@@ -1653,8 +1621,8 @@ async function loadDirObSummary() {
         status:          dirObParams.status,
         approval_status: dirObParams.approval_status,
         klien_ar_id:     dirObParams.klien_ar_id,
-        periode_bulan:   dirObParams.periode_bulan,
-        periode_tahun:   dirObParams.periode_tahun,
+        tanggal_dari:    dirObParams.tanggal_dari,
+        tanggal_sampai:  dirObParams.tanggal_sampai,
       },
       signal: controller.signal,
     })
@@ -1691,8 +1659,8 @@ function resetFilter() {
   params.status          = ''
   params.approval_status = ''
   params.klien_ar_id     = null
-  params.periode_bulan   = null
-  params.periode_tahun   = null
+  params.tanggal_dari    = null
+  params.tanggal_sampai  = null
   doFetch()
 }
 
@@ -1700,8 +1668,8 @@ function resetDirApprovalFilter() {
   dirApprovalParams.search          = ''
   dirApprovalParams.approval_status = 'PENDING'
   dirApprovalParams.klien_ar_id     = null
-  dirApprovalParams.periode_bulan   = null
-  dirApprovalParams.periode_tahun   = null
+  dirApprovalParams.tanggal_dari    = null
+  dirApprovalParams.tanggal_sampai  = null
   doDirFetch()
 }
 
@@ -1710,8 +1678,8 @@ function resetDirObFilter() {
   dirObParams.status          = ''
   dirObParams.approval_status = 'APPROVED'
   dirObParams.klien_ar_id     = null
-  dirObParams.periode_bulan   = null
-  dirObParams.periode_tahun   = null
+  dirObParams.tanggal_dari    = null
+  dirObParams.tanggal_sampai  = null
   doDirObFetch()
 }
 

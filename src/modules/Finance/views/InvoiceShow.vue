@@ -217,10 +217,18 @@
                     >
                       <ApprovalStatusBadge :status="invoice.approval_status" />
                     </DetailRow>
-                    <DetailRow
-                      label="Klien"
-                      :value="invoice.klien_ar?.nama_klien"
-                    />
+                    <DetailRow label="Klien">
+                      <span>{{ invoice.klien_ar?.nama_klien }}</span>
+                      <VChip
+                        :color="isB2B ? 'blue' : 'green'"
+                        size="x-small"
+                        variant="tonal"
+                        label
+                        class="ms-2"
+                      >
+                        {{ isB2B ? 'B2B' : 'B2C' }}
+                      </VChip>
+                    </DetailRow>
                     <DetailRow
                       label="Kode Klien"
                       :value="invoice.klien_ar?.kode_klien"
@@ -238,11 +246,16 @@
                     </template>
                     <DetailRow
                       label="Entitas Penagih"
-                      :value="invoice.perusahaan?.nama_perusahaan"
+                      :value="isB2B ? invoice.karyawan?.perusahaan?.nama_perusahaan : invoice.perusahaan?.nama_perusahaan"
                     />
                     <DetailRow
                       label="Staff AR"
                       :value="invoice.klien_ar?.karyawan_ar?.nama_karyawan"
+                    />
+                    <DetailRow
+                      v-if="isB2B && invoice.resto"
+                      label="Resto yang Ditagihkan"
+                      :value="`${invoice.resto.nama_resto} (${invoice.resto.kode_resto})`"
                     />
                   </VCol>
                 </VRow>
@@ -769,6 +782,7 @@ const statusTransitions = {
 }
 
 const isOpeningBalance = computed(() => invoice.value?.is_opening_balance === true)
+const isB2B = computed(() => invoice.value?.klien_ar?.tipe_klien === 'PT')
 const documentLabel = computed(() => isOpeningBalance.value ? 'Opening Balance' : 'Invoice')
 
 const canManagePayments = computed(() => !!invoice.value && invoice.value.can_record_payment)

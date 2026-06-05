@@ -227,30 +227,24 @@
           </div>
           <VDivider vertical style="height: 40px; align-self: flex-end;" class="d-none d-sm-block" />
           <div>
-            <div class="text-caption text-medium-emphasis mb-2">Bulan</div>
-            <VSelect
-              v-model="params.periode_bulan"
-              placeholder="Pilih Bulan"
-              clearable
+            <div class="text-caption text-medium-emphasis mb-2">Dari</div>
+            <VTextField
+              v-model="params.tanggal_dari"
+              type="date"
               hide-details
               density="compact"
-              style="min-width: 140px;"
-              :items="bulanOptions"
-              item-title="label"
-              item-value="value"
-              @update:model-value="doFetch"
+              style="min-width: 150px; max-width: 170px;"
+              @update:model-value="debouncedFetch"
             />
           </div>
           <div>
-            <div class="text-caption text-medium-emphasis mb-2">Tahun</div>
+            <div class="text-caption text-medium-emphasis mb-2">Sampai</div>
             <VTextField
-              v-model="params.periode_tahun"
-              placeholder="Tahun"
-              clearable
+              v-model="params.tanggal_sampai"
+              type="date"
               hide-details
               density="compact"
-              style="min-width: 90px; max-width: 110px;"
-              type="number"
+              style="min-width: 150px; max-width: 170px;"
               @update:model-value="debouncedFetch"
             />
           </div>
@@ -584,10 +578,10 @@ const { formatCurrency, formatDate } = useFormatter()
 const canSeeAll = authStore.hasAnyRole(['ADMIN', 'MANAGER', 'SUPERVISOR'])
 
 // Extend params with filter fields
-params.status        = ''
-params.klien_ar_id   = null
-params.periode_bulan = null
-params.periode_tahun = null
+params.status         = ''
+params.klien_ar_id    = null
+params.tanggal_dari   = null
+params.tanggal_sampai = null
 if (!canSeeAll) {
   params.karyawan_id = authStore.user?.karyawan?.id
 }
@@ -612,13 +606,13 @@ function onSegmentChange(val) {
 }
 
 function resetFilter() {
-  segment.value        = 'ALL'
-  params.search        = ''
-  params.status        = ''
-  params.klien_ar_id   = null
-  params.periode_bulan = null
-  params.periode_tahun = null
-  params.segment       = undefined
+  segment.value         = 'ALL'
+  params.search         = ''
+  params.status         = ''
+  params.klien_ar_id    = null
+  params.tanggal_dari   = null
+  params.tanggal_sampai = null
+  params.segment        = undefined
   doFetch()
 }
 
@@ -640,20 +634,6 @@ const statusOptions = [
   { label: 'Lunas',    value: 'LUNAS'    },
 ]
 
-const bulanOptions = [
-  { label: 'Januari',   value: 1  },
-  { label: 'Februari', value: 2  },
-  { label: 'Maret',     value: 3  },
-  { label: 'April',    value: 4  },
-  { label: 'Mei',       value: 5  },
-  { label: 'Juni',     value: 6  },
-  { label: 'Juli',      value: 7  },
-  { label: 'Agustus',  value: 8  },
-  { label: 'September', value: 9  },
-  { label: 'Oktober',  value: 10 },
-  { label: 'November',  value: 11 },
-  { label: 'Desember', value: 12 },
-]
 
 let listController = null
 let summaryController = null
@@ -693,8 +673,8 @@ async function loadSummary() {
   try {
     const { data } = await api.get('/finance/invoices/summary', {
       params: {
-        periode_bulan: params.periode_bulan,
-        periode_tahun: params.periode_tahun,
+        tanggal_dari: params.tanggal_dari,
+        tanggal_sampai: params.tanggal_sampai,
         klien_ar_id: params.klien_ar_id,
         ...(segment.value !== 'ALL' && { segment: segment.value }),
         ...(!canSeeAll && { karyawan_id: params.karyawan_id }),
@@ -739,8 +719,8 @@ async function exportExcel() {
     const query = new URLSearchParams()
     if (params.status)             query.set('status', params.status)
     if (params.klien_ar_id)        query.set('klien_ar_id', params.klien_ar_id)
-    if (params.periode_bulan)      query.set('periode_bulan', params.periode_bulan)
-    if (params.periode_tahun)      query.set('periode_tahun', params.periode_tahun)
+    if (params.tanggal_dari)       query.set('tanggal_dari', params.tanggal_dari)
+    if (params.tanggal_sampai)     query.set('tanggal_sampai', params.tanggal_sampai)
     if (segment.value !== 'ALL')   query.set('segment', segment.value)
 
     const res = await api.get(`/finance/invoices/export-excel?${query}`, { responseType: 'blob' })
