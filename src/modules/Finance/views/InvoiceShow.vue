@@ -134,6 +134,21 @@
       {{ actionErrorMessage }}
     </VAlert>
 
+    <VAlert
+      v-if="isB2B && invoice"
+      type="info"
+      variant="tonal"
+      icon="ri-building-4-line"
+      class="mb-4"
+      density="compact"
+    >
+      <strong>Invoice B2B</strong> — Tagihan ke PT / Perusahaan.
+      Klien: <strong>{{ invoice.klien_ar?.nama_klien }}</strong>
+      <template v-if="invoice.resto">
+        &nbsp;|&nbsp; Outlet: <strong>{{ invoice.resto.nama_resto }}</strong>
+      </template>
+    </VAlert>
+
     <div
       v-if="loading"
       class="text-center py-12"
@@ -151,13 +166,34 @@
           lg="8"
         >
           <div class="invoice-show-stack">
-            <VCard class="rounded-xl elevation-2 border">
-              <VCardTitle class="pa-4 pb-2 font-weight-bold text-primary d-flex align-center">
+            <VCard
+              class="rounded-xl elevation-2 border"
+              :class="isB2B ? 'b2b-card' : ''"
+            >
+              <VCardTitle
+                class="pa-4 pb-2 font-weight-bold d-flex align-center"
+                :class="isB2B ? 'text-info' : 'text-primary'"
+              >
                 <VIcon
                   icon="ri-file-list-3-line"
                   class="me-2"
                 />
                 Informasi {{ documentLabel }}
+                <VChip
+                  v-if="isB2B"
+                  color="info"
+                  size="x-small"
+                  variant="tonal"
+                  label
+                  class="ms-2"
+                >
+                  <VIcon
+                    icon="ri-building-4-line"
+                    size="12"
+                    class="me-1"
+                  />
+                  B2B
+                </VChip>
               </VCardTitle>
               <VDivider />
               <VCardText>
@@ -217,46 +253,144 @@
                     >
                       <ApprovalStatusBadge :status="invoice.approval_status" />
                     </DetailRow>
-                    <DetailRow label="Klien">
-                      <span>{{ invoice.klien_ar?.nama_klien }}</span>
-                      <VChip
-                        :color="isB2B ? 'blue' : 'green'"
-                        size="x-small"
-                        variant="tonal"
-                        label
-                        class="ms-2"
-                      >
-                        {{ isB2B ? 'B2B' : 'B2C' }}
-                      </VChip>
-                    </DetailRow>
+
+                    <!-- B2C: semua info klien ditampilkan inline -->
+                    <template v-if="!isB2B">
+                      <DetailRow label="Klien">
+                        <span>{{ invoice.klien_ar?.nama_klien }}</span>
+                        <VChip
+                          color="success"
+                          size="x-small"
+                          variant="tonal"
+                          label
+                          class="ms-2"
+                        >
+                          B2C
+                        </VChip>
+                      </DetailRow>
+                      <DetailRow
+                        label="Kode Klien"
+                        :value="invoice.klien_ar?.kode_klien"
+                      />
+                      <template v-if="invoice.klien_ar?.resto?.investor">
+                        <DetailRow
+                          label="Investor"
+                          :value="invoice.klien_ar.resto.investor.nama_investor + (invoice.klien_ar.resto.investor.no_hp ? ' · ' + invoice.klien_ar.resto.investor.no_hp : '')"
+                        />
+                        <DetailRow
+                          v-if="invoice.klien_ar.resto.investor.pengelola"
+                          label="Pengelola"
+                          :value="invoice.klien_ar.resto.investor.pengelola + (invoice.klien_ar.resto.investor.no_hp_pengelola ? ' · ' + invoice.klien_ar.resto.investor.no_hp_pengelola : '')"
+                        />
+                      </template>
+                      <DetailRow
+                        label="Entitas Penagih"
+                        :value="invoice.perusahaan?.nama_perusahaan"
+                      />
+                      <DetailRow
+                        label="Staff AR"
+                        :value="invoice.klien_ar?.karyawan_ar?.nama_karyawan"
+                      />
+                    </template>
+
+                    <!-- B2B: hanya referensi ringkas — detail lengkap ada di card "Informasi Klien B2B" -->
+                    <template v-else>
+                      <DetailRow label="Klien">
+                        <span class="font-weight-semibold text-info">{{ invoice.klien_ar?.nama_klien }}</span>
+                      </DetailRow>
+                      <DetailRow
+                        label="Entitas Penagih"
+                        :value="invoice.karyawan?.perusahaan?.nama_perusahaan"
+                      />
+                    </template>
+                  </VCol>
+                </VRow>
+              </VCardText>
+            </VCard>
+
+            <!-- Card khusus B2B: Informasi Klien & Outlet -->
+            <VCard
+              v-if="isB2B"
+              class="rounded-xl elevation-2 border b2b-client-card"
+            >
+              <VCardTitle class="pa-4 pb-2 font-weight-bold text-info d-flex align-center">
+                <VIcon
+                  icon="ri-building-4-line"
+                  class="me-2"
+                />
+                Informasi Klien B2B
+                <VSpacer />
+                <VChip
+                  color="info"
+                  size="x-small"
+                  variant="tonal"
+                  label
+                >
+                  PT / Perusahaan
+                </VChip>
+              </VCardTitle>
+              <VDivider color="info" />
+              <VCardText>
+                <VRow>
+                  <VCol
+                    cols="12"
+                    md="6"
+                  >
+                    <div class="text-caption text-medium-emphasis font-weight-medium text-uppercase mb-2">
+                      Identitas Klien
+                    </div>
+                    <DetailRow
+                      label="Nama Klien"
+                      :value="invoice.klien_ar?.nama_klien"
+                    />
                     <DetailRow
                       label="Kode Klien"
                       :value="invoice.klien_ar?.kode_klien"
-                    />
-                    <template v-if="invoice.klien_ar?.resto?.investor">
-                      <DetailRow
-                        label="Investor"
-                        :value="invoice.klien_ar.resto.investor.nama_investor + (invoice.klien_ar.resto.investor.no_hp ? ' · ' + invoice.klien_ar.resto.investor.no_hp : '')"
-                      />
-                      <DetailRow
-                        v-if="invoice.klien_ar.resto.investor.pengelola"
-                        label="Pengelola"
-                        :value="invoice.klien_ar.resto.investor.pengelola + (invoice.klien_ar.resto.investor.no_hp_pengelola ? ' · ' + invoice.klien_ar.resto.investor.no_hp_pengelola : '')"
-                      />
-                    </template>
-                    <DetailRow
-                      label="Entitas Penagih"
-                      :value="isB2B ? invoice.karyawan?.perusahaan?.nama_perusahaan : invoice.perusahaan?.nama_perusahaan"
                     />
                     <DetailRow
                       label="Staff AR"
                       :value="invoice.klien_ar?.karyawan_ar?.nama_karyawan"
                     />
+                    <VDivider class="my-3" />
+                    <div class="text-caption text-medium-emphasis font-weight-medium text-uppercase mb-2">
+                      Resto Tertagih
+                    </div>
+                    <DetailRow label="Nama Resto">
+                      <span class="font-weight-semibold">{{ invoice.resto?.nama_resto ?? '-' }}</span>
+                    </DetailRow>
                     <DetailRow
-                      v-if="isB2B && invoice.resto"
-                      label="Resto yang Ditagihkan"
-                      :value="`${invoice.resto.nama_resto} (${invoice.resto.kode_resto})`"
+                      label="Kode Resto"
+                      :value="invoice.resto?.kode_resto ?? '-'"
                     />
+                  </VCol>
+                  <VCol
+                    cols="12"
+                    md="6"
+                  >
+                    <template v-if="invoice.klien_ar?.resto?.investor">
+                      <div class="text-caption text-medium-emphasis font-weight-medium text-uppercase mb-2">
+                        Pemilik &amp; Pengelola
+                      </div>
+                      <DetailRow
+                        label="Investor"
+                        :value="invoice.klien_ar.resto.investor.nama_investor"
+                      />
+                      <DetailRow
+                        v-if="invoice.klien_ar.resto.investor.no_hp"
+                        label="HP Investor"
+                        :value="invoice.klien_ar.resto.investor.no_hp"
+                      />
+                      <DetailRow
+                        v-if="invoice.klien_ar.resto.investor.pengelola"
+                        label="Pengelola"
+                        :value="invoice.klien_ar.resto.investor.pengelola"
+                      />
+                      <DetailRow
+                        v-if="invoice.klien_ar.resto.investor.no_hp_pengelola"
+                        label="HP Pengelola"
+                        :value="invoice.klien_ar.resto.investor.no_hp_pengelola"
+                      />
+                    </template>
                   </VCol>
                 </VRow>
               </VCardText>
@@ -266,7 +400,10 @@
               v-if="isOpeningBalance"
               class="rounded-xl elevation-2 border"
             >
-              <VCardTitle class="pa-4 pb-2 font-weight-bold text-primary d-flex align-center">
+              <VCardTitle
+                class="pa-4 pb-2 font-weight-bold d-flex align-center"
+                :class="isB2B ? 'text-info' : 'text-primary'"
+              >
                 <VIcon
                   icon="ri-file-list-2-line"
                   class="me-2"
@@ -284,7 +421,10 @@
               v-if="isOpeningBalance"
               class="rounded-xl elevation-2 border"
             >
-              <VCardTitle class="pa-4 pb-2 font-weight-bold text-primary d-flex align-center">
+              <VCardTitle
+                class="pa-4 pb-2 font-weight-bold d-flex align-center"
+                :class="isB2B ? 'text-info' : 'text-primary'"
+              >
                 <VIcon
                   icon="ri-history-line"
                   class="me-2"
@@ -341,7 +481,10 @@
               v-if="!invoice.is_opening_balance"
               class="rounded-xl elevation-2 border"
             >
-              <VCardTitle class="pa-4 pb-2 font-weight-bold text-primary d-flex align-center">
+              <VCardTitle
+                class="pa-4 pb-2 font-weight-bold d-flex align-center"
+                :class="isB2B ? 'text-info' : 'text-primary'"
+              >
                 <VIcon
                   icon="ri-list-check-2"
                   class="me-2"
@@ -405,7 +548,10 @@
             </VCard>
             
             <VCard class="rounded-xl elevation-2 border">
-              <VCardTitle class="pa-4 pb-2 font-weight-bold text-primary d-flex align-center justify-space-between">
+              <VCardTitle
+                class="pa-4 pb-2 font-weight-bold d-flex align-center justify-space-between"
+                :class="isB2B ? 'text-info' : 'text-primary'"
+              >
                 <span>
                   <VIcon
                     icon="ri-bank-card-line"
@@ -498,7 +644,10 @@
         >
           <div class="invoice-show-stack">
             <VCard class="rounded-xl elevation-2 border">
-              <VCardTitle class="pa-4 pb-2 font-weight-bold text-primary d-flex align-center">
+              <VCardTitle
+                class="pa-4 pb-2 font-weight-bold d-flex align-center"
+                :class="isB2B ? 'text-info' : 'text-primary'"
+              >
                 <VIcon
                   icon="ri-calculator-line"
                   class="me-2"
@@ -540,11 +689,85 @@
               </VCardText>
             </VCard>
 
+            <!-- Sidebar widget khusus B2B -->
+            <VCard
+              v-if="isB2B"
+              class="rounded-xl elevation-2 border b2b-client-card"
+            >
+              <VCardTitle class="pa-4 pb-2 font-weight-bold text-info d-flex align-center">
+                <VIcon
+                  icon="ri-building-4-line"
+                  class="me-2"
+                />
+                Konteks B2B
+              </VCardTitle>
+              <VDivider color="info" />
+              <VCardText class="pt-3">
+                <div class="d-flex align-center mb-3">
+                  <VAvatar
+                    color="info"
+                    variant="tonal"
+                    size="36"
+                    class="me-3"
+                  >
+                    <VIcon
+                      icon="ri-building-4-line"
+                      size="18"
+                    />
+                  </VAvatar>
+                  <div>
+                    <div class="text-body-2 font-weight-semibold">
+                      {{ invoice.klien_ar?.nama_klien }}
+                    </div>
+                    <div class="text-caption text-medium-emphasis">
+                      {{ invoice.klien_ar?.kode_klien }}
+                    </div>
+                  </div>
+                </div>
+                <VDivider class="mb-3" />
+                <div
+                  v-if="invoice.resto"
+                  class="mb-3"
+                >
+                  <div class="text-caption text-medium-emphasis mb-1">
+                    Outlet Ditagihkan
+                  </div>
+                  <div class="d-flex align-center gap-2">
+                    <VIcon
+                      icon="ri-store-line"
+                      color="info"
+                      size="16"
+                    />
+                    <span class="text-body-2 font-weight-medium">{{ invoice.resto.nama_resto }}</span>
+                  </div>
+                  <div class="text-caption text-medium-emphasis ms-6">
+                    {{ invoice.resto.kode_resto }}
+                  </div>
+                </div>
+                <div v-if="invoice.karyawan?.perusahaan?.nama_perusahaan">
+                  <div class="text-caption text-medium-emphasis mb-1">
+                    Entitas Penagih
+                  </div>
+                  <div class="d-flex align-center gap-2">
+                    <VIcon
+                      icon="ri-briefcase-4-line"
+                      color="info"
+                      size="16"
+                    />
+                    <span class="text-body-2 font-weight-medium">{{ invoice.karyawan.perusahaan.nama_perusahaan }}</span>
+                  </div>
+                </div>
+              </VCardText>
+            </VCard>
+
             <VCard
               v-if="isOpeningBalance"
               class="rounded-xl elevation-2 border"
             >
-              <VCardTitle class="pa-4 pb-2 font-weight-bold text-primary d-flex align-center">
+              <VCardTitle
+                class="pa-4 pb-2 font-weight-bold d-flex align-center"
+                :class="isB2B ? 'text-info' : 'text-primary'"
+              >
                 <VIcon
                   icon="ri-shield-check-line"
                   class="me-2"
@@ -785,6 +1008,11 @@ const isOpeningBalance = computed(() => invoice.value?.is_opening_balance === tr
 const isB2B = computed(() => invoice.value?.klien_ar?.tipe_klien === 'PT')
 const documentLabel = computed(() => isOpeningBalance.value ? 'Opening Balance' : 'Invoice')
 
+const isOverdue = computed(() => {
+  if (!invoice.value?.tanggal_jatuh_tempo) return false
+  return new Date(invoice.value.tanggal_jatuh_tempo) < new Date()
+})
+
 const canManagePayments = computed(() => !!invoice.value && invoice.value.can_record_payment)
 
 const canChangeStatus = computed(() =>
@@ -815,10 +1043,12 @@ const pageTitle = computed(() => {
     : `Invoice ${invoice.value.no_invoice}`
 })
 
-const pageSubtitle = computed(() =>
-  isOpeningBalance.value
-    ? 'Detail saldo awal piutang klien dan proses persetujuannya'
-    : 'Detail tagihan Account Receivable')
+const pageSubtitle = computed(() => {
+  if (isOpeningBalance.value) return 'Detail saldo awal piutang klien dan proses persetujuannya'
+  return isB2B.value
+    ? 'Invoice B2B — Tagihan langsung ke perusahaan/PT'
+    : 'Invoice B2C — Tagihan ke pengelola outlet'
+})
 
 const showEditButton = computed(() => {
   if (!invoice.value) return false
@@ -1138,5 +1368,10 @@ onBeforeUnmount(() => {
 
 .invoice-table :deep(td) {
   vertical-align: middle;
+}
+
+.b2b-card,
+.b2b-client-card {
+  border-left: 3px solid rgb(var(--v-theme-info)) !important;
 }
 </style>
