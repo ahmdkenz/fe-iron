@@ -1,7 +1,7 @@
-﻿<template>
+<template>
   <div>
-    <PageHeader 
-      title="Client" 
+    <PageHeader
+      title="Client"
       subtitle="Kelola data klien Account Receivable"
       :breadcrumbs="[
         { title: 'Dashboard', to: { name: 'dashboard' } },
@@ -56,26 +56,10 @@
         </div>
         <VDivider />
         <div class="d-flex flex-wrap align-center gap-4 px-4 py-3">
-          <div>
-            <div class="text-caption text-medium-emphasis mb-2">Segment</div>
-            <VBtnToggle
-              v-model="segment"
-              variant="outlined"
-              mandatory
-              divided
-              density="compact"
-              @update:model-value="onSegmentChange"
-            >
-              <VBtn value="ALL" size="small" style="min-width: 80px">Semua</VBtn>
-              <VBtn value="B2C" size="small" style="min-width: 70px">B2C</VBtn>
-              <VBtn value="B2B" size="small" style="min-width: 70px">B2B</VBtn>
-            </VBtnToggle>
-          </div>
-          <VDivider vertical style="height: 40px; align-self: flex-end;" class="d-none d-sm-block" />
           <div style="min-width: 260px; flex: 1; max-width: 360px;">
             <div class="text-caption text-medium-emphasis mb-2">Pencarian</div>
             <VTextField
-              v-model="params.search"
+              v-model="search"
               placeholder="Cari kode / nama klien..."
               clearable
               hide-details
@@ -88,20 +72,37 @@
       </VCardText>
     </VCard>
 
-    <VCard>
+    <!-- B2B Table (canSeeAll only) -->
+    <VCard
+      v-if="canSeeAll"
+      class="mb-4"
+    >
+      <div class="d-flex align-center gap-2 px-4 py-3">
+        <VAvatar
+          color="warning"
+          variant="tonal"
+          size="32"
+        >
+          <VIcon
+            icon="ri-building-line"
+            size="18"
+          />
+        </VAvatar>
+        <span class="text-subtitle-1 font-weight-semibold">Client B2B</span>
+      </div>
+      <VDivider />
       <BaseTable
         :headers="headers"
-        :items="items"
-        :total="meta.total"
-        :loading="loading"
-        :per-page="meta.per_page"
-        :page="meta.current_page"
-        class="mt-2"
+        :items="itemsB2B"
+        :total="metaB2B.total"
+        :loading="loadingB2B"
+        :per-page="metaB2B.per_page"
+        :page="metaB2B.current_page"
         wrap-text
-        @update:options="onTableOptions"
+        @update:options="onTableOptionsB2B"
       >
         <template #item.no="{ index }">
-          {{ (meta.current_page - 1) * meta.per_page + index + 1 }}
+          {{ (metaB2B.current_page - 1) * metaB2B.per_page + index + 1 }}
         </template>
         <template #item.kode_klien="{ item }">
           <VChip
@@ -113,18 +114,137 @@
             {{ item.kode_klien }}
           </VChip>
         </template>
-        <template #item.segment="{ item }">
+        <template #item.resto="{ item }">
+          <span v-if="item.resto">{{ item.resto.nama_resto }}</span>
+          <span
+            v-else
+            class="text-medium-emphasis"
+          >-</span>
+        </template>
+        <template #item.investor="{ item }">
+          <div v-if="item.resto?.investor">
+            <div class="text-body-2">
+              {{ item.resto.investor.nama_investor }}
+            </div>
+            <div
+              v-if="item.resto.investor.pengelola && item.resto.investor.pengelola !== item.resto.investor.nama_investor"
+              class="text-caption text-medium-emphasis"
+            >
+              Pengelola: {{ item.resto.investor.pengelola }}
+            </div>
+          </div>
+          <span
+            v-else
+            class="text-medium-emphasis"
+          >-</span>
+        </template>
+        <template #item.karyawan_ar="{ item }">
+          {{ item.karyawan_ar?.nama_karyawan ?? '-' }}
+        </template>
+        <template #item.status="{ item }">
           <VChip
-            :color="item.tipe_klien === 'RESTO' ? 'success' : 'info'"
+            :color="item.status ? 'success' : 'error'"
+            size="small"
+            label
+          >
+            {{ item.status ? 'Aktif' : 'Nonaktif' }}
+          </VChip>
+        </template>
+        <template #item.actions="{ item }">
+          <div class="d-flex gap-1">
+            <VBtn
+              icon
+              size="small"
+              variant="text"
+              color="info"
+              @click="openDetail(item)"
+            >
+              <VIcon
+                icon="ri-eye-line"
+                size="18"
+              />
+              <VTooltip activator="parent">
+                Detail
+              </VTooltip>
+            </VBtn>
+            <VBtn
+              v-if="!authStore.isDirectorOnly"
+              icon
+              size="small"
+              variant="text"
+              color="primary"
+              @click="openEdit(item)"
+            >
+              <VIcon
+                icon="ri-pencil-line"
+                size="18"
+              />
+              <VTooltip activator="parent">
+                Edit
+              </VTooltip>
+            </VBtn>
+            <VBtn
+              v-if="!authStore.isDirectorOnly"
+              icon
+              size="small"
+              variant="text"
+              color="error"
+              @click="confirmDelete(item)"
+            >
+              <VIcon
+                icon="ri-delete-bin-line"
+                size="18"
+              />
+              <VTooltip activator="parent">
+                Hapus
+              </VTooltip>
+            </VBtn>
+          </div>
+        </template>
+      </BaseTable>
+    </VCard>
+
+    <!-- B2C Table -->
+    <VCard>
+      <div
+        v-if="canSeeAll"
+        class="d-flex align-center gap-2 px-4 py-3"
+      >
+        <VAvatar
+          color="primary"
+          variant="tonal"
+          size="32"
+        >
+          <VIcon
+            icon="ri-user-line"
+            size="18"
+          />
+        </VAvatar>
+        <span class="text-subtitle-1 font-weight-semibold">Client B2C</span>
+      </div>
+      <VDivider v-if="canSeeAll" />
+      <BaseTable
+        :headers="headers"
+        :items="itemsB2C"
+        :total="metaB2C.total"
+        :loading="loadingB2C"
+        :per-page="metaB2C.per_page"
+        :page="metaB2C.current_page"
+        wrap-text
+        @update:options="onTableOptionsB2C"
+      >
+        <template #item.no="{ index }">
+          {{ (metaB2C.current_page - 1) * metaB2C.per_page + index + 1 }}
+        </template>
+        <template #item.kode_klien="{ item }">
+          <VChip
+            color="primary"
             size="small"
             variant="tonal"
             label
           >
-            {{ item.tipe_klien === 'RESTO' ? 'B2C' : 'B2B' }}
+            {{ item.kode_klien }}
           </VChip>
-          <div class="text-caption text-medium-emphasis mt-1">
-            {{ item.tipe_klien }}
-          </div>
         </template>
         <template #item.resto="{ item }">
           <span v-if="item.resto">{{ item.resto.nama_resto }}</span>
@@ -511,7 +631,7 @@
       v-if="showDelete"
       v-model="showDelete"
       title="Hapus Client"
-      :loading="loading"
+      :loading="loadingB2C"
       @confirm="doDelete"
     >
       <p>
@@ -542,32 +662,17 @@ import api from '@/utils/axios'
 const router = useRouter()
 const authStore = useAuthStore()
 const { showSuccess, showError, showLoading, closeAlert } = useSweetAlert()
-const { items, loading, meta, params, fetchList, remove } = useCrud('/finance/klien-ar')
+
+const { items: itemsB2C, loading: loadingB2C, meta: metaB2C, params: paramsB2C, fetchList: fetchListB2C, remove } = useCrud('/finance/klien-ar')
+const { items: itemsB2B, loading: loadingB2B, meta: metaB2B, params: paramsB2B, fetchList: fetchListB2B } = useCrud('/finance/klien-ar')
 
 const canSeeAll = authStore.hasAnyRole(['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR'])
+
 if (!canSeeAll) {
-  params.karyawan_ar_id = authStore.user?.karyawan?.id
+  paramsB2C.karyawan_ar_id = authStore.user?.karyawan?.id
 }
 
-const segment = ref('ALL')
-const showAllItems = ref(false)
-
-// Fetches with all=true when "All" is selected so backend returns every record.
-// Meta per_page is forced to -1 afterward to keep the "All" indicator in the table.
-async function doFetchList() {
-  if (showAllItems.value) {
-    await fetchList({ all: true })
-    meta.per_page = -1
-  } else {
-    fetchList()
-  }
-}
-
-function onSegmentChange(val) {
-  params.segment = val === 'ALL' ? undefined : val
-  params.page    = 1
-  doFetchList()
-}
+const search = ref('')
 
 const showDelete      = ref(false)
 const showDetail      = ref(false)
@@ -584,9 +689,8 @@ const importResult = ref(null)
 
 const headers = [
   { title: 'No',             key: 'no',          sortable: false, width: '60px' },
-  { title: 'Kode Client',          key: 'kode_klien',  sortable: false, minWidth: '140px' },
-  { title: 'Segment',        key: 'segment',     sortable: false, minWidth: '100px' },
-  { title: 'Nama Billing',            key: 'nama_klien',  sortable: false, minWidth: '200px' },
+  { title: 'Kode Client',    key: 'kode_klien',  sortable: false, minWidth: '140px' },
+  { title: 'Nama Billing',   key: 'nama_klien',  sortable: false, minWidth: '200px' },
   { title: 'Resto',          key: 'resto',        sortable: false, minWidth: '160px' },
   { title: 'Investor / Pengelola', key: 'investor', sortable: false, minWidth: '180px' },
   { title: 'PIC AR',         key: 'karyawan_ar', sortable: false, minWidth: '160px' },
@@ -594,29 +698,45 @@ const headers = [
   { title: 'Aksi',           key: 'actions',     sortable: false, align: 'center', width: '120px' },
 ]
 
+function applySearch() {
+  paramsB2C.search = search.value
+  if (canSeeAll) paramsB2B.search = search.value
+}
+
+function loadListB2C() { fetchListB2C({ segment: canSeeAll ? 'B2C' : undefined }) }
+function loadListB2B() { if (canSeeAll) fetchListB2B({ segment: 'B2B' }) }
+
 let debounceTimer = null
 function debouncedFetch() {
   clearTimeout(debounceTimer)
-  debounceTimer = setTimeout(() => { params.page = 1; doFetchList() }, 400)
+  debounceTimer = setTimeout(() => {
+    applySearch()
+    paramsB2C.page = 1
+    if (canSeeAll) paramsB2B.page = 1
+    loadListB2C()
+    loadListB2B()
+  }, 400)
 }
 
-function onTableOptions({ page, itemsPerPage }) {
-  params.page = page
-  if (itemsPerPage === -1) {
-    showAllItems.value = true
-  } else {
-    showAllItems.value = false
-    params['per_page'] = itemsPerPage
-  }
-  doFetchList()
+function onTableOptionsB2C({ page, itemsPerPage }) {
+  paramsB2C.page = page
+  paramsB2C.per_page = itemsPerPage
+  loadListB2C()
+}
+
+function onTableOptionsB2B({ page, itemsPerPage }) {
+  paramsB2B.page = page
+  paramsB2B.per_page = itemsPerPage
+  loadListB2B()
 }
 
 function resetFilter() {
-  segment.value    = 'ALL'
-  params.search    = ''
-  params.segment   = undefined
-  params.page      = 1
-  doFetchList()
+  search.value  = ''
+  applySearch()
+  paramsB2C.page = 1
+  if (canSeeAll) paramsB2B.page = 1
+  loadListB2C()
+  loadListB2B()
 }
 
 function openCreate()      { router.push({ name: 'finance-klien-ar-create' }) }
@@ -632,7 +752,10 @@ function openImport() {
 
 function closeImport() {
   showImport.value = false
-  if ((importResult.value?.inserted > 0) || (importResult.value?.updated > 0)) doFetchList()
+  if ((importResult.value?.inserted > 0) || (importResult.value?.updated > 0)) {
+    loadListB2C()
+    loadListB2B()
+  }
 }
 
 async function exportExcel() {
@@ -640,10 +763,8 @@ async function exportExcel() {
   showLoading({ title: 'Mengeksport Data Klien AR', text: 'Mohon tunggu sebentar...' })
   try {
     const query = new URLSearchParams()
-    if (params.search) query.set('search', params.search)
-    if (params.status !== undefined && params.status !== '') query.set('status', params.status)
-    if (segment.value && segment.value !== 'ALL') query.set('segment', segment.value)
-    if (params.karyawan_ar_id) query.set('karyawan_ar_id', params.karyawan_ar_id)
+    if (search.value) query.set('search', search.value)
+    if (paramsB2C.karyawan_ar_id) query.set('karyawan_ar_id', paramsB2C.karyawan_ar_id)
 
     const res  = await api.get(`/finance/klien-ar/export?${query}`, { responseType: 'blob' })
     const url  = URL.createObjectURL(res.data)
@@ -700,7 +821,6 @@ async function doImport() {
   }
 }
 
-
 async function generateBundleToken(klien) {
   bundleGenerating.value = true
   try {
@@ -708,9 +828,8 @@ async function generateBundleToken(klien) {
     const url = res.data?.data?.bundle_share_url
     if (url) {
       selectedKlien.value = { ...selectedKlien.value, bundle_share_url: url }
-      // Update item di list supaya konsisten
-      const idx = items.value.findIndex(i => i.id === klien.id)
-      if (idx !== -1) items.value[idx] = { ...items.value[idx], bundle_share_url: url }
+      const idx = itemsB2B.value.findIndex(i => i.id === klien.id)
+      if (idx !== -1) itemsB2B.value[idx] = { ...itemsB2B.value[idx], bundle_share_url: url }
     }
   } catch {
     await showError('Gagal membuat bundle link.')
@@ -725,7 +844,6 @@ async function copyBundleLink(url) {
     bundleCopied.value = true
     setTimeout(() => { bundleCopied.value = false }, 2000)
   } catch {
-    // fallback: buka link
     window.open(url, '_blank')
   }
 }
@@ -756,7 +874,8 @@ async function doDelete() {
 
   const res = await remove(deleteId)
   if (res.success) {
-    doFetchList()
+    loadListB2C()
+    loadListB2B()
     await showSuccess('Client berhasil dihapus.')
   } else {
     deleteError.value = res.message || 'Gagal menghapus data'
@@ -764,5 +883,8 @@ async function doDelete() {
   }
 }
 
-onMounted(() => fetchList())
+onMounted(() => {
+  loadListB2C()
+  loadListB2B()
+})
 </script>

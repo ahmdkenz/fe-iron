@@ -228,17 +228,15 @@
                 >
                   <VAutocomplete
                     v-model="form.resto_id"
-                    label="Resto yang Ditagihkan (Opsional)"
+                    label="Resto yang Ditagihkan"
                     density="compact"
                     variant="outlined"
                     prepend-inner-icon="ri-store-line"
                     :items="restoList"
                     item-title="nama_resto"
                     item-value="id"
-                    clearable
                     :loading="restoLoading"
-                    hint="Pilih resto jika invoice ini untuk resto tertentu"
-                    persistent-hint
+                    :rules="[v => !!v || 'Resto yang ditagihkan wajib dipilih']"
                   >
                     <template #item="{ props: p, item }">
                       <VListItem
