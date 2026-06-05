@@ -1,64 +1,65 @@
 // ─── Light mode refinements ───────────────────────────────────────────────
-// Tujuan: tampilan lebih tenang, tidak silau, dan tidak generik seperti
-// bawaan Material Design — menggunakan slate-blue palette yang konsisten.
+// Warm Neutral palette — background cream off-white, primary biru #3B82F6
+// Tujuan: tampilan hangat dan nyaman di mata, tidak silau, tidak generik.
 
 .v-theme--light {
-  // Sidebar: putih bersih dengan border halus + shadow tipis
-  .v-navigation-drawer {
-    background-color: #ffffff !important;
-    border-right: 1px solid rgba(37, 42, 66, 0.07) !important;
-    box-shadow: 2px 0 16px rgba(26, 32, 82, 0.06) !important;
+  // Sidebar: slate/abu hangat — kontras jelas vs konten #F9F8F6
+  // Selector: .layout-vertical-nav (bukan .v-navigation-drawer, sidebar ini custom aside element)
+  .layout-vertical-nav {
+    background-color: #E8E3DC !important;
+    border-right: 1px solid rgba(87, 83, 78, 0.15) !important;
+    box-shadow: 4px 0 20px rgba(28, 25, 23, 0.10) !important;
   }
 
-  // Topbar: semi-transparan dengan blur untuk kesan modern
+  // Topbar: cream off-white semi-transparan dengan blur
   .v-app-bar,
   .layout-navbar {
-    background-color: rgba(240, 242, 250, 0.94) !important;
+    background-color: rgba(249, 248, 246, 0.95) !important;
     backdrop-filter: blur(12px) !important;
-    border-bottom: 1px solid rgba(37, 42, 66, 0.07) !important;
-    box-shadow: 0 1px 10px rgba(26, 32, 82, 0.07) !important;
+    border-bottom: 1px solid rgba(87, 83, 78, 0.10) !important;
+    box-shadow: 0 1px 10px rgba(28, 25, 23, 0.06) !important;
   }
 
-  // Card: putih dengan shadow lembut pengganti shadow material bawaan
+  // Card: putih dengan shadow warm lembut
   .v-card {
     background-color: #ffffff !important;
-    border: 1px solid rgba(37, 42, 66, 0.07) !important;
-    box-shadow: 0 2px 14px rgba(26, 32, 82, 0.07) !important;
+    border: 1px solid rgba(87, 83, 78, 0.09) !important;
+    box-shadow: 0 2px 14px rgba(28, 25, 23, 0.06) !important;
   }
 
   // Dialog: sedikit off-white agar terbedakan dari card biasa
   .v-overlay__content > .v-card,
   .v-dialog > .v-overlay__content > .v-card {
-    background-color: #f8faff !important;
-    box-shadow: 0 8px 40px rgba(26, 32, 82, 0.14) !important;
+    background-color: #fdfcfb !important;
+    box-shadow: 0 8px 40px rgba(28, 25, 23, 0.13) !important;
   }
 
   // Dropdown / Menu
   .v-menu > .v-overlay__content > .v-list,
   .v-select__content > .v-list {
     background-color: #ffffff !important;
-    border: 1px solid rgba(37, 42, 66, 0.08) !important;
-    box-shadow: 0 6px 28px rgba(26, 32, 82, 0.10) !important;
+    border: 1px solid rgba(87, 83, 78, 0.10) !important;
+    box-shadow: 0 6px 28px rgba(28, 25, 23, 0.10) !important;
   }
 
-  // Input field: putih dengan border slate-blue tipis
+  // Input field: putih dengan border warm tipis
   .v-field {
     background-color: #ffffff !important;
   }
 
   .v-field__outline::before {
-    border-color: rgba(37, 42, 66, 0.14) !important;
+    border-color: rgba(87, 83, 78, 0.16) !important;
   }
 
-  // Data table header: cool slate, bukan abu-abu Material
+  // Data table header: warm beige, bukan slate-blue
   .v-data-table > .v-table__wrapper > table > thead > tr > th {
-    background-color: #cdd2ec !important;
-    color: rgba(37, 42, 66, 0.75) !important;
+    background-color: #f0ede8 !important;
+    color: rgba(41, 37, 36, 0.72) !important;
     letter-spacing: 0.02em;
   }
 
   .v-data-table__tr--odd > td {
-    background-color: #e2e6f4 !important;
+    background-color: #f5f3ef !important;
   }
 
   // Chip: sedikit kurangi saturasi agar tidak terlalu noisy
@@ -66,24 +67,24 @@
     filter: saturate(0.88);
   }
 
-  // Scrollbar: slate-blue yang tenang
+  // Scrollbar: warm stone tones
   ::-webkit-scrollbar-track {
-    background: #e6e9f4;
+    background: #f5f4f1;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #c4c9e0;
+    background: #d4cfc7;
     border-radius: 4px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: #adb4d4;
+    background: #b8b2a7;
   }
 
   // Footer
   .layout-footer {
-    background-color: #f0f2fa !important;
-    border-top: 1px solid rgba(37, 42, 66, 0.07) !important;
+    background-color: #f5f4f1 !important;
+    border-top: 1px solid rgba(87, 83, 78, 0.09) !important;
   }
 }
 

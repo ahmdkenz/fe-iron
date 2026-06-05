@@ -167,26 +167,10 @@
         </div>
         <VDivider />
         <div class="d-flex flex-wrap align-center gap-4 px-4 py-3">
-          <div>
-            <div class="text-caption text-medium-emphasis mb-2">Segment</div>
-            <VBtnToggle
-              v-model="segment"
-              variant="outlined"
-              mandatory
-              divided
-              density="compact"
-              @update:model-value="onSegmentChange"
-            >
-              <VBtn value="ALL" size="small" style="min-width: 80px">Semua</VBtn>
-              <VBtn value="B2C" size="small" style="min-width: 70px">B2C</VBtn>
-              <VBtn value="B2B" size="small" style="min-width: 70px">B2B</VBtn>
-            </VBtnToggle>
-          </div>
-          <VDivider vertical style="height: 40px; align-self: flex-end;" class="d-none d-sm-block" />
           <div style="min-width: 200px; flex: 1; max-width: 280px;">
             <div class="text-caption text-medium-emphasis mb-2">Pencarian</div>
             <VTextField
-              v-model="params.search"
+              v-model="sharedFilters.search"
               placeholder="Cari no. invoice / klien..."
               clearable
               hide-details
@@ -198,7 +182,7 @@
           <div style="min-width: 140px; max-width: 180px;">
             <div class="text-caption text-medium-emphasis mb-2">Status</div>
             <VSelect
-              v-model="params.status"
+              v-model="sharedFilters.status"
               placeholder="Semua Status"
               clearable
               hide-details
@@ -212,7 +196,7 @@
           <div style="min-width: 180px; flex: 1; max-width: 260px;">
             <div class="text-caption text-medium-emphasis mb-2">Klien</div>
             <VAutocomplete
-              v-model="params.klien_ar_id"
+              v-model="sharedFilters.klien_ar_id"
               placeholder="Semua Klien"
               clearable
               hide-details
@@ -229,7 +213,7 @@
           <div>
             <div class="text-caption text-medium-emphasis mb-2">Dari</div>
             <VTextField
-              v-model="params.tanggal_dari"
+              v-model="sharedFilters.tanggal_dari"
               type="date"
               hide-details
               density="compact"
@@ -240,7 +224,7 @@
           <div>
             <div class="text-caption text-medium-emphasis mb-2">Sampai</div>
             <VTextField
-              v-model="params.tanggal_sampai"
+              v-model="sharedFilters.tanggal_sampai"
               type="date"
               hide-details
               density="compact"
@@ -252,19 +236,36 @@
       </VCardText>
     </VCard>
 
-    <VCard>
+    <!-- B2C Table -->
+    <VCard :class="canSeeAll ? 'mb-4' : ''">
+      <div
+        v-if="canSeeAll"
+        class="d-flex align-center gap-2 px-4 py-3"
+      >
+        <VAvatar
+          color="primary"
+          variant="tonal"
+          size="32"
+        >
+          <VIcon
+            icon="ri-user-line"
+            size="18"
+          />
+        </VAvatar>
+        <span class="text-subtitle-1 font-weight-semibold">Invoice B2C</span>
+      </div>
+      <VDivider v-if="canSeeAll" />
       <BaseTable
         :headers="headers"
-        :items="items"
-        :total="meta.total"
-        :loading="loading"
-        :per-page="meta.per_page"
-        :page="meta.current_page"
-        class="mt-2"
-        @update:options="onTableOptions"
+        :items="itemsB2C"
+        :total="metaB2C.total"
+        :loading="loadingB2C"
+        :per-page="metaB2C.per_page"
+        :page="metaB2C.current_page"
+        @update:options="onTableOptionsB2C"
       >
         <template #item.no="{ index }">
-          {{ (meta.current_page - 1) * meta.per_page + index + 1 }}
+          {{ (metaB2C.current_page - 1) * metaB2C.per_page + index + 1 }}
         </template>
         <template #item.no_invoice="{ item }">
           <VChip
@@ -303,13 +304,8 @@
               color="success"
               @click="openCatatBayar(item)"
             >
-              <VIcon
-                icon="ri-money-cny-circle-line"
-                size="18"
-              />
-              <VTooltip activator="parent">
-                Catat Bayar
-              </VTooltip>
+              <VIcon icon="ri-money-cny-circle-line" size="18" />
+              <VTooltip activator="parent">Catat Bayar</VTooltip>
             </VBtn>
             <VBtn
               v-if="item.can_print"
@@ -319,13 +315,8 @@
               color="success"
               @click="shareViaWhatsapp(item)"
             >
-              <VIcon
-                icon="ri-whatsapp-line"
-                size="18"
-              />
-              <VTooltip activator="parent">
-                Kirim via WhatsApp
-              </VTooltip>
+              <VIcon icon="ri-whatsapp-line" size="18" />
+              <VTooltip activator="parent">Kirim via WhatsApp</VTooltip>
             </VBtn>
             <VBtn
               icon
@@ -334,13 +325,8 @@
               color="info"
               :to="{ name: 'finance-invoice-show', params: { id: item.id } }"
             >
-              <VIcon
-                icon="ri-eye-line"
-                size="18"
-              />
-              <VTooltip activator="parent">
-                Detail
-              </VTooltip>
+              <VIcon icon="ri-eye-line" size="18" />
+              <VTooltip activator="parent">Detail</VTooltip>
             </VBtn>
             <VBtn
               v-if="item.status === 'DRAFT'"
@@ -350,13 +336,8 @@
               color="primary"
               :to="{ name: 'finance-invoice-edit', params: { id: item.id } }"
             >
-              <VIcon
-                icon="ri-pencil-line"
-                size="18"
-              />
-              <VTooltip activator="parent">
-                Edit
-              </VTooltip>
+              <VIcon icon="ri-pencil-line" size="18" />
+              <VTooltip activator="parent">Edit</VTooltip>
             </VBtn>
             <VBtn
               icon
@@ -366,13 +347,8 @@
               :loading="printingId === item.id"
               @click="printInvoice(item.id)"
             >
-              <VIcon
-                icon="ri-printer-line"
-                size="18"
-              />
-              <VTooltip activator="parent">
-                Cetak Invoice
-              </VTooltip>
+              <VIcon icon="ri-printer-line" size="18" />
+              <VTooltip activator="parent">Cetak Invoice</VTooltip>
             </VBtn>
             <VBtn
               v-if="item.status === 'DRAFT'"
@@ -382,13 +358,135 @@
               color="error"
               @click="confirmDelete(item)"
             >
-              <VIcon
-                icon="ri-delete-bin-line"
-                size="18"
-              />
-              <VTooltip activator="parent">
-                Hapus
-              </VTooltip>
+              <VIcon icon="ri-delete-bin-line" size="18" />
+              <VTooltip activator="parent">Hapus</VTooltip>
+            </VBtn>
+          </div>
+        </template>
+      </BaseTable>
+    </VCard>
+
+    <!-- B2B Table (hanya untuk admin/manager/supervisor) -->
+    <VCard v-if="canSeeAll">
+      <div class="d-flex align-center gap-2 px-4 py-3">
+        <VAvatar
+          color="warning"
+          variant="tonal"
+          size="32"
+        >
+          <VIcon
+            icon="ri-building-line"
+            size="18"
+          />
+        </VAvatar>
+        <span class="text-subtitle-1 font-weight-semibold">Invoice B2B</span>
+      </div>
+      <VDivider />
+      <BaseTable
+        :headers="headers"
+        :items="itemsB2B"
+        :total="metaB2B.total"
+        :loading="loadingB2B"
+        :per-page="metaB2B.per_page"
+        :page="metaB2B.current_page"
+        @update:options="onTableOptionsB2B"
+      >
+        <template #item.no="{ index }">
+          {{ (metaB2B.current_page - 1) * metaB2B.per_page + index + 1 }}
+        </template>
+        <template #item.no_invoice="{ item }">
+          <VChip
+            color="primary"
+            size="small"
+            variant="tonal"
+            label
+          >
+            {{ item.no_invoice }}
+          </VChip>
+        </template>
+        <template #item.klien_ar="{ item }">
+          {{ item.klien_ar?.nama_klien ?? '-' }}
+        </template>
+        <template #item.tanggal_invoice="{ item }">
+          {{ formatDate(item.tanggal_invoice) }}
+        </template>
+        <template #item.total_tagihan="{ item }">
+          {{ formatCurrency(item.total_tagihan) }}
+        </template>
+        <template #item.sisa_tagihan="{ item }">
+          <span :class="item.sisa_tagihan > 0 ? 'text-error' : 'text-success'">
+            {{ formatCurrency(item.sisa_tagihan) }}
+          </span>
+        </template>
+        <template #item.status="{ item }">
+          <InvoiceStatusBadge :status="item.status" />
+        </template>
+        <template #item.actions="{ item }">
+          <div class="d-flex gap-1">
+            <VBtn
+              v-if="item.can_record_payment && item.status !== 'LUNAS'"
+              icon
+              size="small"
+              variant="tonal"
+              color="success"
+              @click="openCatatBayar(item)"
+            >
+              <VIcon icon="ri-money-cny-circle-line" size="18" />
+              <VTooltip activator="parent">Catat Bayar</VTooltip>
+            </VBtn>
+            <VBtn
+              v-if="item.can_print"
+              icon
+              size="small"
+              variant="tonal"
+              color="success"
+              @click="shareViaWhatsapp(item)"
+            >
+              <VIcon icon="ri-whatsapp-line" size="18" />
+              <VTooltip activator="parent">Kirim via WhatsApp</VTooltip>
+            </VBtn>
+            <VBtn
+              icon
+              size="small"
+              variant="text"
+              color="info"
+              :to="{ name: 'finance-invoice-show', params: { id: item.id } }"
+            >
+              <VIcon icon="ri-eye-line" size="18" />
+              <VTooltip activator="parent">Detail</VTooltip>
+            </VBtn>
+            <VBtn
+              v-if="item.status === 'DRAFT'"
+              icon
+              size="small"
+              variant="text"
+              color="primary"
+              :to="{ name: 'finance-invoice-edit', params: { id: item.id } }"
+            >
+              <VIcon icon="ri-pencil-line" size="18" />
+              <VTooltip activator="parent">Edit</VTooltip>
+            </VBtn>
+            <VBtn
+              icon
+              size="small"
+              variant="text"
+              color="secondary"
+              :loading="printingId === item.id"
+              @click="printInvoice(item.id)"
+            >
+              <VIcon icon="ri-printer-line" size="18" />
+              <VTooltip activator="parent">Cetak Invoice</VTooltip>
+            </VBtn>
+            <VBtn
+              v-if="item.status === 'DRAFT'"
+              icon
+              size="small"
+              variant="text"
+              color="error"
+              @click="confirmDelete(item)"
+            >
+              <VIcon icon="ri-delete-bin-line" size="18" />
+              <VTooltip activator="parent">Hapus</VTooltip>
             </VBtn>
           </div>
         </template>
@@ -400,7 +498,7 @@
       v-if="showDelete"
       v-model="showDelete"
       title="Hapus Invoice"
-      :loading="loading"
+      :loading="loadingB2C"
       @confirm="doDelete"
     >
       <p>
@@ -570,20 +668,21 @@ const PembayaranForm = defineAsyncComponent(() => import('../components/Pembayar
 
 const { showSuccess, showError, showLoading, closeAlert } = useSweetAlert()
 const authStore = useAuthStore()
-const { items, loading, meta, params, fetchList, remove } = useCrud('/finance/invoices')
+const { items: itemsB2C, loading: loadingB2C, meta: metaB2C, params: paramsB2C, fetchList: fetchListB2C, remove } = useCrud('/finance/invoices')
+const { items: itemsB2B, loading: loadingB2B, meta: metaB2B, params: paramsB2B, fetchList: fetchListB2B } = useCrud('/finance/invoices')
 const { items: klienList, loading: klienLoading, fetchAll: fetchKlien } = useCrud('/finance/klien-ar')
 const { ensureLoaded: ensureKlienLoaded } = useLazyFetchAll(fetchKlien)
 const { formatCurrency, formatDate } = useFormatter()
 
 const canSeeAll = authStore.hasAnyRole(['ADMIN', 'MANAGER', 'SUPERVISOR'])
 
-// Extend params with filter fields
-params.status         = ''
-params.klien_ar_id    = null
-params.tanggal_dari   = null
-params.tanggal_sampai = null
-if (!canSeeAll) {
-  params.karyawan_id = authStore.user?.karyawan?.id
+const sharedFilters = reactive({ search: '', status: '', klien_ar_id: null, tanggal_dari: null, tanggal_sampai: null })
+
+if (canSeeAll) {
+  paramsB2C.segment = 'B2C'
+  paramsB2B.segment = 'B2B'
+} else {
+  paramsB2C.karyawan_id = authStore.user?.karyawan?.id
 }
 
 const summary       = reactive({ total_invoice: null, total_tagihan: null, total_pembayaran: null, total_sisa: null })
@@ -598,21 +697,13 @@ const importing       = ref(false)
 const printingId      = ref(null)
 const importFile      = ref(null)
 const importResult    = ref(null)
-const segment         = ref('ALL')
-
-function onSegmentChange(val) {
-  params.segment = val === 'ALL' ? undefined : val
-  doFetch()
-}
 
 function resetFilter() {
-  segment.value         = 'ALL'
-  params.search         = ''
-  params.status         = ''
-  params.klien_ar_id    = null
-  params.tanggal_dari   = null
-  params.tanggal_sampai = null
-  params.segment        = undefined
+  sharedFilters.search         = ''
+  sharedFilters.status         = ''
+  sharedFilters.klien_ar_id    = null
+  sharedFilters.tanggal_dari   = null
+  sharedFilters.tanggal_sampai = null
   doFetch()
 }
 
@@ -635,7 +726,8 @@ const statusOptions = [
 ]
 
 
-let listController = null
+let listControllerB2C = null
+let listControllerB2B = null
 let summaryController = null
 let debounceTimer = null
 
@@ -645,22 +737,39 @@ function clearDebounceTimer() {
 }
 
 function abortPendingRequests() {
-  listController?.abort()
+  listControllerB2C?.abort()
+  listControllerB2B?.abort()
   summaryController?.abort()
-  listController = null
+  listControllerB2C = null
+  listControllerB2B = null
   summaryController = null
 }
 
-async function loadList() {
-  listController?.abort()
+function applySharedFilters(p) {
+  p.search         = sharedFilters.search
+  p.status         = sharedFilters.status
+  p.klien_ar_id    = sharedFilters.klien_ar_id
+  p.tanggal_dari   = sharedFilters.tanggal_dari
+  p.tanggal_sampai = sharedFilters.tanggal_sampai
+}
 
+async function loadListB2C() {
+  listControllerB2C?.abort()
   const controller = new AbortController()
+  listControllerB2C = controller
+  await fetchListB2C({}, { signal: controller.signal })
+  if (listControllerB2C === controller)
+    listControllerB2C = null
+}
 
-  listController = controller
-  await fetchList({}, { signal: controller.signal })
-
-  if (listController === controller)
-    listController = null
+async function loadListB2B() {
+  if (!canSeeAll) return
+  listControllerB2B?.abort()
+  const controller = new AbortController()
+  listControllerB2B = controller
+  await fetchListB2B({}, { signal: controller.signal })
+  if (listControllerB2B === controller)
+    listControllerB2B = null
 }
 
 async function loadSummary() {
@@ -673,11 +782,10 @@ async function loadSummary() {
   try {
     const { data } = await api.get('/finance/invoices/summary', {
       params: {
-        tanggal_dari: params.tanggal_dari,
-        tanggal_sampai: params.tanggal_sampai,
-        klien_ar_id: params.klien_ar_id,
-        ...(segment.value !== 'ALL' && { segment: segment.value }),
-        ...(!canSeeAll && { karyawan_id: params.karyawan_id }),
+        tanggal_dari: sharedFilters.tanggal_dari,
+        tanggal_sampai: sharedFilters.tanggal_sampai,
+        klien_ar_id: sharedFilters.klien_ar_id,
+        ...(!canSeeAll && { karyawan_id: paramsB2C.karyawan_id }),
       },
       signal: controller.signal,
     })
@@ -696,8 +804,14 @@ async function loadSummary() {
 }
 
 function doFetch() {
-  params.page = 1
-  loadList()
+  applySharedFilters(paramsB2C)
+  paramsB2C.page = 1
+  loadListB2C()
+  if (canSeeAll) {
+    applySharedFilters(paramsB2B)
+    paramsB2B.page = 1
+    loadListB2B()
+  }
   loadSummary()
 }
 
@@ -706,10 +820,16 @@ function debouncedFetch() {
   debounceTimer = setTimeout(doFetch, 400)
 }
 
-function onTableOptions({ page, itemsPerPage }) {
-  params.page = page
-  params.per_page = itemsPerPage
-  loadList()
+function onTableOptionsB2C({ page, itemsPerPage }) {
+  paramsB2C.page = page
+  paramsB2C.per_page = itemsPerPage
+  loadListB2C()
+}
+
+function onTableOptionsB2B({ page, itemsPerPage }) {
+  paramsB2B.page = page
+  paramsB2B.per_page = itemsPerPage
+  loadListB2B()
 }
 
 async function exportExcel() {
@@ -717,11 +837,10 @@ async function exportExcel() {
   showLoading({ title: 'Mengeksport Data Invoice', text: 'Mohon tunggu sebentar...' })
   try {
     const query = new URLSearchParams()
-    if (params.status)             query.set('status', params.status)
-    if (params.klien_ar_id)        query.set('klien_ar_id', params.klien_ar_id)
-    if (params.tanggal_dari)       query.set('tanggal_dari', params.tanggal_dari)
-    if (params.tanggal_sampai)     query.set('tanggal_sampai', params.tanggal_sampai)
-    if (segment.value !== 'ALL')   query.set('segment', segment.value)
+    if (sharedFilters.status)         query.set('status', sharedFilters.status)
+    if (sharedFilters.klien_ar_id)    query.set('klien_ar_id', sharedFilters.klien_ar_id)
+    if (sharedFilters.tanggal_dari)   query.set('tanggal_dari', sharedFilters.tanggal_dari)
+    if (sharedFilters.tanggal_sampai) query.set('tanggal_sampai', sharedFilters.tanggal_sampai)
 
     const res = await api.get(`/finance/invoices/export-excel?${query}`, { responseType: 'blob' })
     const url  = URL.createObjectURL(res.data)
@@ -748,7 +867,8 @@ function openImport() {
 function closeImport() {
   showImport.value = false
   if (importResult.value?.inserted > 0) {
-    loadList()
+    loadListB2C()
+    if (canSeeAll) loadListB2B()
     loadSummary()
   }
 }
@@ -800,7 +920,8 @@ function openCatatBayar(item) {
 }
 
 function onPembayaranSaved() {
-  loadList()
+  loadListB2C()
+  if (canSeeAll) loadListB2B()
   loadSummary()
 }
 
@@ -851,7 +972,8 @@ async function doDelete() {
 
   const res = await remove(deleteId)
   if (res.success) {
-    loadList()
+    loadListB2C()
+    if (canSeeAll) loadListB2B()
     loadSummary()
     await showSuccess('Invoice berhasil dihapus.')
   } else {
@@ -861,7 +983,8 @@ async function doDelete() {
 }
 
 onMounted(() => {
-  loadList()
+  loadListB2C()
+  if (canSeeAll) loadListB2B()
   loadSummary()
 })
 
