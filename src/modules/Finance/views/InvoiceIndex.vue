@@ -383,7 +383,7 @@
       </div>
       <VDivider />
       <BaseTable
-        :headers="headers"
+        :headers="headersB2B"
         :items="itemsB2B"
         :total="metaB2B.total"
         :loading="loadingB2B"
@@ -404,8 +404,14 @@
             {{ item.no_invoice }}
           </VChip>
         </template>
+        <template #item.resto="{ item }">
+          {{ item.resto?.nama_resto ?? '-' }}
+        </template>
         <template #item.klien_ar="{ item }">
           {{ item.klien_ar?.nama_klien ?? '-' }}
+        </template>
+        <template #item.penerima_tagihan="{ item }">
+          {{ item.perusahaan?.nama_perusahaan ?? '-' }}
         </template>
         <template #item.tanggal_invoice="{ item }">
           {{ formatDate(item.tanggal_invoice) }}
@@ -726,6 +732,19 @@ const headers = [
   { title: 'Sisa Tagihan',   key: 'sisa_tagihan',   sortable: false },
   { title: 'Status',         key: 'status',         sortable: false },
   { title: 'Aksi',           key: 'actions',        sortable: false, align: 'center', width: '160px' },
+]
+
+const headersB2B = [
+  { title: 'No',                    key: 'no',               sortable: false, width: '60px' },
+  { title: 'No Invoice',            key: 'no_invoice',       sortable: false },
+  { title: 'OT Tertagih (Resto)',   key: 'resto',            sortable: false },
+  { title: 'Client',                key: 'klien_ar',         sortable: false },
+  { title: 'Penerima Tagihan',      key: 'penerima_tagihan', sortable: false },
+  { title: 'Tanggal',               key: 'tanggal_invoice',  sortable: false },
+  { title: 'Total Tagihan',         key: 'total_tagihan',    sortable: false },
+  { title: 'Sisa Tagihan',          key: 'sisa_tagihan',     sortable: false },
+  { title: 'Status',                key: 'status',           sortable: false },
+  { title: 'Aksi',                  key: 'actions',          sortable: false, align: 'center', width: '160px' },
 ]
 
 const statusOptions = [
