@@ -1,10 +1,5 @@
 export default [
   {
-    path: '/public/klien/:token',
-    name: 'public-klien-bundle',
-    component: () => import('@/modules/Finance/views/KlienArBundlePage.vue'),
-  },
-  {
     path: '/finance/klien-ar',
     name: 'finance-klien-ar',
     component: () => import('@/modules/Finance/views/KlienArIndex.vue'),

@@ -299,6 +299,11 @@
                         <span class="font-weight-semibold text-info">{{ invoice.klien_ar?.nama_klien }}</span>
                       </DetailRow>
                       <DetailRow
+                        v-if="invoice.klien_ar?.perusahaan"
+                        label="Penerima Tagihan"
+                        :value="invoice.klien_ar.perusahaan.nama_perusahaan"
+                      />
+                      <DetailRow
                         label="Entitas Penagih"
                         :value="invoice.karyawan?.perusahaan?.nama_perusahaan"
                       />

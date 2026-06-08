@@ -1219,9 +1219,6 @@ params.approval_status = ''
 params.klien_ar_id = null
 params.tanggal_dari = null
 params.tanggal_sampai = null
-if (!canSeeAll) {
-  params.karyawan_id = authStore.user?.karyawan?.id
-}
 
 const summary = reactive({
   total_invoice: null,
@@ -1651,6 +1648,8 @@ function debouncedFetch() {
 function onTableOptions({ page, itemsPerPage }) {
   params.page = page
   params.per_page = itemsPerPage
+  meta.current_page = page
+  meta.per_page = itemsPerPage
   loadList()
 }
 
@@ -1699,6 +1698,8 @@ function debouncedDirFetch() {
 function onDirApprovalTableOptions({ page, itemsPerPage }) {
   dirApprovalParams.page = page
   dirApprovalParams.per_page = itemsPerPage
+  dirApprovalMeta.current_page = page
+  dirApprovalMeta.per_page = itemsPerPage
   loadDirApprovalList()
 }
 
@@ -1718,6 +1719,8 @@ function debouncedDirObFetch() {
 function onDirObTableOptions({ page, itemsPerPage }) {
   dirObParams.page = page
   dirObParams.per_page = itemsPerPage
+  dirObMeta.current_page = page
+  dirObMeta.per_page = itemsPerPage
   loadDirObList()
 }
 
