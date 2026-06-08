@@ -274,9 +274,6 @@
             {{ item.no_invoice }}
           </VChip>
         </template>
-        <template #item.resto="{ item }">
-          {{ item.resto?.nama_resto ?? '-' }}
-        </template>
         <template #item.klien_ar="{ item }">
           {{ item.klien_ar?.nama_klien ?? '-' }}
         </template>
@@ -285,6 +282,9 @@
         </template>
         <template #item.tanggal_invoice="{ item }">
           {{ formatDate(item.tanggal_invoice) }}
+        </template>
+        <template #item.tanggal_kirim_barang="{ item }">
+          {{ item.tanggal_kirim_barang ? formatDate(item.tanggal_kirim_barang) : '-' }}
         </template>
         <template #item.total_tagihan="{ item }">
           {{ formatCurrency(item.total_tagihan) }}
@@ -548,6 +548,27 @@
         </VCardTitle>
         <VDivider />
         <VCardText class="pt-4">
+          <div class="mb-4">
+            <div class="text-body-2 font-weight-semibold mb-2">
+              Jenis Invoice
+            </div>
+            <VBtnToggle
+              v-model="importType"
+              mandatory
+              density="compact"
+              color="primary"
+              variant="outlined"
+              divided
+            >
+              <VBtn value="b2c">
+                B2C (Perorangan)
+              </VBtn>
+              <VBtn value="b2b">
+                B2B Konsolidasi (PT)
+              </VBtn>
+            </VBtnToggle>
+          </div>
+
           <VAlert
             type="info"
             variant="tonal"
@@ -557,14 +578,14 @@
               Panduan Import:
             </div>
             <ul class="ps-4">
-              <li>Pilih template sesuai jenis klien: <strong>Template B2C</strong> untuk klien perorangan, <strong>Template B2B</strong> untuk klien perusahaan (PT).</li>
-              <li>Download template, isi data, lalu upload file (.xlsx atau .csv).</li>
-              <li>Template memiliki 2 sheet: <strong>Invoice</strong> (header) dan <strong>Item Invoice</strong> (rincian).</li>
+              <li>Pilih template sesuai jenis klien di atas, lalu download template.</li>
+              <li>Isi data pada template, kemudian upload file (.xlsx).</li>
               <li>Kolom <strong>nama_klien</strong> wajib sesuai persis dengan data klien di sistem.</li>
-              <li>Gunakan <strong>no_urut</strong> untuk menghubungkan invoice dengan item-itemnya.</li>
-              <li>Format tanggal: <strong>DD-MM-YYYY</strong> (contoh: 01-06-2025). Berlaku untuk <strong>tanggal_invoice</strong>, <strong>tanggal_jatuh_tempo</strong>, <strong>periode_awal</strong>, dan <strong>periode_akhir</strong>.</li>
-              <li>Kolom <strong>tanggal_jatuh_tempo</strong> bersifat opsional — boleh dikosongkan.</li>
-              <li>Import CSV hanya memproses Sheet "Invoice" tanpa item rincian.</li>
+              <li>Gunakan <strong>no_urut</strong> untuk menghubungkan invoice dengan rinciannya.</li>
+              <li>Format tanggal: <strong>DD-MM-YYYY</strong> (contoh: 01-06-2025).</li>
+              <li v-if="importType === 'b2b'">Sheet 1 = Header invoice konsolidasi per klien PT (kolom: <strong>tanggal_kirim_barang</strong>, tanpa nama_resto).</li>
+              <li v-if="importType === 'b2b'">Sheet 2 = Detail pengiriman per resto (kolom: <strong>no_invoice_resto</strong>, <strong>nama_resto</strong>, <strong>stokis</strong>, <strong>kode_barang</strong>, <strong>nama_barang</strong>, <strong>qty</strong>, <strong>satuan</strong>, <strong>harga_satuan</strong>). Barang dengan kode sama antar resto akan dijumlah otomatis.</li>
+              <li v-if="importType === 'b2c'">Sheet 2 = Item invoice (kolom: <strong>kode_barang</strong>, <strong>nama_barang</strong>, <strong>qty</strong>, <strong>satuan</strong>, <strong>harga_satuan</strong>).</li>
               <li>Lihat sheet <strong>Petunjuk Pengisian</strong> di template untuk panduan lengkap.</li>
             </ul>
           </VAlert>
@@ -713,6 +734,7 @@ const importing       = ref(false)
 const printingId      = ref(null)
 const importFile      = ref(null)
 const importResult    = ref(null)
+const importType      = ref('b2c')
 
 function resetFilter() {
   sharedFilters.search         = ''
@@ -735,16 +757,16 @@ const headers = [
 ]
 
 const headersB2B = [
-  { title: 'No',                    key: 'no',               sortable: false, width: '60px' },
-  { title: 'No Invoice',            key: 'no_invoice',       sortable: false },
-  { title: 'OT Tertagih (Resto)',   key: 'resto',            sortable: false },
-  { title: 'Client',                key: 'klien_ar',         sortable: false },
-  { title: 'Penerima Tagihan',      key: 'penerima_tagihan', sortable: false },
-  { title: 'Tanggal',               key: 'tanggal_invoice',  sortable: false },
-  { title: 'Total Tagihan',         key: 'total_tagihan',    sortable: false },
-  { title: 'Sisa Tagihan',          key: 'sisa_tagihan',     sortable: false },
-  { title: 'Status',                key: 'status',           sortable: false },
-  { title: 'Aksi',                  key: 'actions',          sortable: false, align: 'center', width: '160px' },
+  { title: 'No',               key: 'no',                    sortable: false, width: '60px' },
+  { title: 'No Invoice',       key: 'no_invoice',            sortable: false },
+  { title: 'Client',           key: 'klien_ar',              sortable: false },
+  { title: 'Penerima Tagihan', key: 'penerima_tagihan',      sortable: false },
+  { title: 'Tgl. Invoice',     key: 'tanggal_invoice',       sortable: false },
+  { title: 'Tgl. Kirim',       key: 'tanggal_kirim_barang',  sortable: false },
+  { title: 'Total Tagihan',    key: 'total_tagihan',         sortable: false },
+  { title: 'Sisa Tagihan',     key: 'sisa_tagihan',          sortable: false },
+  { title: 'Status',           key: 'status',                sortable: false },
+  { title: 'Aksi',             key: 'actions',               sortable: false, align: 'center', width: '160px' },
 ]
 
 const statusOptions = [
@@ -890,6 +912,7 @@ async function exportExcel() {
 function openImport() {
   importFile.value   = null
   importResult.value = null
+  importType.value   = 'b2c'
   showImport.value   = true
 }
 
@@ -925,6 +948,7 @@ async function doImport() {
   try {
     const formData = new FormData()
     formData.append('file', importFile.value)
+    formData.append('type', importType.value)
 
     const res = await api.post('/finance/invoices/import', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },

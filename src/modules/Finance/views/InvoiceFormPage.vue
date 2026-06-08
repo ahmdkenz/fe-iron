@@ -130,6 +130,22 @@
                   />
                 </VCol>
                 <VCol
+                  v-if="isB2B"
+                  cols="12"
+                  md="6"
+                >
+                  <VTextField
+                    v-model="form.tanggal_kirim_barang"
+                    label="Tanggal Kirim Barang"
+                    density="compact"
+                    variant="outlined"
+                    type="date"
+                    prepend-inner-icon="ri-truck-line"
+                    hint="Tanggal pengiriman barang ke seluruh resto"
+                    persistent-hint
+                  />
+                </VCol>
+                <VCol
                   cols="12"
                   md="6"
                 >
@@ -591,6 +607,7 @@ const selectedKlien    = ref(null)
 const form = reactive({
   no_invoice: '',
   tanggal_invoice: new Date().toISOString().slice(0, 10),
+  tanggal_kirim_barang: '',
   tanggal_jatuh_tempo: '',
   periode_awal: '',
   periode_akhir: '',
@@ -759,6 +776,7 @@ onMounted(async () => {
   Object.assign(form, {
     no_invoice:                  data.no_invoice,
     tanggal_invoice:             toISODate(data.tanggal_invoice),
+    tanggal_kirim_barang:        toISODate(data.tanggal_kirim_barang) ?? '',
     tanggal_jatuh_tempo:         toISODate(data.tanggal_jatuh_tempo) ?? '',
     periode_awal:                toISODate(data.periode_awal),
     periode_akhir:               toISODate(data.periode_akhir),

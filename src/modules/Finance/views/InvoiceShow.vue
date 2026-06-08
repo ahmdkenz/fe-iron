@@ -211,6 +211,12 @@
                       :value="formatDate(invoice.tanggal_invoice)"
                     />
                     <DetailRow
+                      v-if="invoice.tanggal_kirim_barang"
+                      label="Tanggal Kirim Barang"
+                    >
+                      <span class="font-weight-semibold text-info">{{ formatDate(invoice.tanggal_kirim_barang) }}</span>
+                    </DetailRow>
+                    <DetailRow
                       v-if="invoice.tanggal_jatuh_tempo"
                       label="Jatuh Tempo"
                     >
@@ -358,15 +364,28 @@
                     />
                     <VDivider class="my-3" />
                     <div class="text-caption text-medium-emphasis font-weight-medium text-uppercase mb-2">
-                      Resto Tertagih
+                      Tagihan Resto
                     </div>
-                    <DetailRow label="Nama Resto">
-                      <span class="font-weight-semibold">{{ invoice.resto?.nama_resto ?? '-' }}</span>
-                    </DetailRow>
-                    <DetailRow
-                      label="Kode Resto"
-                      :value="invoice.resto?.kode_resto ?? '-'"
-                    />
+                    <template v-if="invoice.resto">
+                      <DetailRow label="Nama Resto">
+                        <span class="font-weight-semibold">{{ invoice.resto.nama_resto }}</span>
+                      </DetailRow>
+                      <DetailRow
+                        label="Kode Resto"
+                        :value="invoice.resto.kode_resto"
+                      />
+                    </template>
+                    <template v-else>
+                      <VAlert
+                        type="info"
+                        variant="tonal"
+                        density="compact"
+                        icon="ri-merge-cells-horizontal"
+                        class="mt-1"
+                      >
+                        <strong>Invoice Konsolidasi</strong> — tagihan mencakup seluruh resto klien pada tanggal pengiriman.
+                      </VAlert>
+                    </template>
                   </VCol>
                   <VCol
                     cols="12"
@@ -730,24 +749,43 @@
                   </div>
                 </div>
                 <VDivider class="mb-3" />
-                <div
-                  v-if="invoice.resto"
-                  class="mb-3"
-                >
-                  <div class="text-caption text-medium-emphasis mb-1">
-                    Outlet Ditagihkan
-                  </div>
-                  <div class="d-flex align-center gap-2">
-                    <VIcon
-                      icon="ri-store-line"
+                <div class="mb-3">
+                  <template v-if="invoice.resto">
+                    <div class="text-caption text-medium-emphasis mb-1">
+                      Outlet Ditagihkan
+                    </div>
+                    <div class="d-flex align-center gap-2">
+                      <VIcon
+                        icon="ri-store-line"
+                        color="info"
+                        size="16"
+                      />
+                      <span class="text-body-2 font-weight-medium">{{ invoice.resto.nama_resto }}</span>
+                    </div>
+                    <div class="text-caption text-medium-emphasis ms-6">
+                      {{ invoice.resto.kode_resto }}
+                    </div>
+                  </template>
+                  <template v-else>
+                    <div class="text-caption text-medium-emphasis mb-1">
+                      Mode Tagihan
+                    </div>
+                    <VChip
                       color="info"
-                      size="16"
-                    />
-                    <span class="text-body-2 font-weight-medium">{{ invoice.resto.nama_resto }}</span>
-                  </div>
-                  <div class="text-caption text-medium-emphasis ms-6">
-                    {{ invoice.resto.kode_resto }}
-                  </div>
+                      size="small"
+                      variant="tonal"
+                      label
+                      prepend-icon="ri-merge-cells-horizontal"
+                    >
+                      Konsolidasi
+                    </VChip>
+                    <div
+                      v-if="invoice.tanggal_kirim_barang"
+                      class="text-caption text-medium-emphasis mt-1"
+                    >
+                      Tgl kirim: <strong>{{ formatDate(invoice.tanggal_kirim_barang) }}</strong>
+                    </div>
+                  </template>
                 </div>
                 <div v-if="invoice.karyawan?.perusahaan?.nama_perusahaan">
                   <div class="text-caption text-medium-emphasis mb-1">
