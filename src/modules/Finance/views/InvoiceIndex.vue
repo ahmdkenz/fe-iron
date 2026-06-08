@@ -250,6 +250,17 @@
           />
         </VAvatar>
         <span class="text-subtitle-1 font-weight-semibold">Invoice B2B</span>
+        <VSpacer />
+        <VBtn
+          color="warning"
+          variant="outlined"
+          prepend-icon="ri-file-excel-line"
+          size="small"
+          :loading="exportingB2B"
+          @click="exportB2BDelivery"
+        >
+          Export Pengiriman
+        </VBtn>
       </div>
       <VDivider />
       <BaseTable
@@ -682,16 +693,18 @@
             class="mb-4"
           >
             <div class="font-weight-semibold mb-1 text-body-2">
-              Template B2B Konsolidasi — 2 Sheet:
+              Template B2B Konsolidasi — 1 Sheet Flat:
             </div>
             <div class="text-caption">
-              <strong>Sheet 1 (Invoice):</strong> no_urut · no_invoice · nama_klien · <strong>tanggal_kirim_barang</strong> · tanggal_jatuh_tempo · periode_awal · periode_akhir · no_surat_jalan · tagihan_sebelumnya · keterangan
+              <strong>Kolom A–F (Invoice, diulang tiap baris):</strong>
+              no_invoice_konsolidasi · nama_klien · <strong>tanggal_kirim_barang</strong> · tanggal_jatuh_tempo (opt) · periode_awal (opt) · periode_akhir (opt)
             </div>
             <div class="text-caption mt-1">
-              <strong>Sheet 2 (Item Invoice):</strong> no_urut_invoice · kode_barang · nama_barang · qty · satuan · harga_satuan
+              <strong>Kolom G–N (Item per baris):</strong>
+              no_invoice_resto · kode_resto · nama_resto · kode_barang · nama_barang · qty · satuan · harga_satuan
             </div>
-            <div class="text-caption mt-1 font-weight-medium text-success">
-              Isi qty total konsolidasi langsung di Sheet 2 — tidak perlu merinci per resto.
+            <div class="text-caption mt-2 font-weight-medium text-success">
+              Satu baris = satu item kiriman per resto. Baris dengan no_invoice_konsolidasi yang sama = satu invoice. Bisa langsung paste dari spreadsheet eksisting.
             </div>
           </VAlert>
 
@@ -828,6 +841,7 @@ const selectedInvoice    = ref(null)
 const showPembayaran     = ref(false)
 const selectedForPayment = ref(null)
 const exportingExcel  = ref(false)
+const exportingB2B    = ref(false)
 const showImport      = ref(false)
 const importing       = ref(false)
 const printingId      = ref(null)
@@ -1004,6 +1018,31 @@ async function exportExcel() {
     await showError('Gagal mengunduh data Excel.')
   } finally {
     exportingExcel.value = false
+    closeAlert({ onlyLoading: true })
+  }
+}
+
+async function exportB2BDelivery() {
+  exportingB2B.value = true
+  showLoading({ title: 'Mengeksport Data Pengiriman B2B', text: 'Mohon tunggu...' })
+  try {
+    const query = new URLSearchParams()
+    if (sharedFilters.tanggal_dari)   query.set('tanggal_dari',   sharedFilters.tanggal_dari)
+    if (sharedFilters.tanggal_sampai) query.set('tanggal_sampai', sharedFilters.tanggal_sampai)
+    if (sharedFilters.klien_ar_id)    query.set('klien_ar_id',    sharedFilters.klien_ar_id)
+
+    const res = await api.get(`/finance/invoices/export-b2b-delivery?${query}`, { responseType: 'blob' })
+    const url  = URL.createObjectURL(res.data)
+    const a    = document.createElement('a')
+    a.href     = url
+    a.download = `Data Pengiriman B2B-${new Date().toISOString().slice(0, 10)}.xlsx`
+    a.click()
+    URL.revokeObjectURL(url)
+    showSuccess({ title: 'Export Berhasil!', text: 'File berhasil diunduh.' })
+  } catch {
+    await showError('Gagal mengunduh data pengiriman B2B.')
+  } finally {
+    exportingB2B.value = false
     closeAlert({ onlyLoading: true })
   }
 }

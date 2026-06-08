@@ -523,6 +523,15 @@
                 <thead>
                   <tr>
                     <th>No</th>
+                    <th v-if="isB2B">
+                      No Invoice Resto
+                    </th>
+                    <th v-if="isB2B">
+                      Kode Resto
+                    </th>
+                    <th v-if="isB2B">
+                      Nama Resto
+                    </th>
                     <th>Barang</th>
                     <th>Nama Barang</th>
                     <th class="text-right">
@@ -543,6 +552,24 @@
                     :key="it.id"
                   >
                     <td>{{ i + 1 }}</td>
+                    <td v-if="isB2B">
+                      <VChip
+                        v-if="it.no_invoice_resto"
+                        size="x-small"
+                        color="info"
+                        variant="tonal"
+                        label
+                      >
+                        {{ it.no_invoice_resto }}
+                      </VChip>
+                      <span v-else>-</span>
+                    </td>
+                    <td v-if="isB2B">
+                      {{ it.kode_resto ?? '-' }}
+                    </td>
+                    <td v-if="isB2B">
+                      {{ it.nama_resto ?? '-' }}
+                    </td>
                     <td>
                       <VChip
                         v-if="it.barang?.kode_barang"
@@ -570,7 +597,7 @@
                 </tbody>
               </VTable>
             </VCard>
-            
+
             <VCard class="rounded-xl elevation-2 border">
               <VCardTitle
                 class="pa-4 pb-2 font-weight-bold d-flex align-center justify-space-between"
