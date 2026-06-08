@@ -531,7 +531,7 @@
     <!-- Import Modal -->
     <VDialog
       v-model="showImport"
-      max-width="600"
+      max-width="660"
       persistent
     >
       <VCard>
@@ -548,71 +548,170 @@
         </VCardTitle>
         <VDivider />
         <VCardText class="pt-4">
-          <div class="mb-4">
-            <div class="text-body-2 font-weight-semibold mb-2">
-              Jenis Invoice
-            </div>
-            <VBtnToggle
-              v-model="importType"
-              mandatory
-              density="compact"
-              color="primary"
-              variant="outlined"
-              divided
+          <!-- Langkah 1: Pilih Jenis -->
+          <div class="text-caption text-medium-emphasis font-weight-bold text-uppercase letter-spacing-widened mb-2">
+            Langkah 1 — Pilih Jenis Invoice
+          </div>
+          <div class="d-flex gap-2 mb-5">
+            <div
+              class="flex-1-1 pa-3 rounded-lg border cursor-pointer"
+              :style="importType === 'b2c'
+                ? 'border: 2px solid rgb(var(--v-theme-primary)); background: rgba(var(--v-theme-primary), 0.08);'
+                : 'border: 2px solid rgba(var(--v-border-color), var(--v-border-opacity));'"
+              @click="importType = 'b2c'"
             >
-              <VBtn value="b2c">
-                B2C (Perorangan)
-              </VBtn>
-              <VBtn value="b2b">
-                B2B Konsolidasi (PT)
-              </VBtn>
-            </VBtnToggle>
+              <div class="d-flex align-center gap-2">
+                <VAvatar
+                  :color="importType === 'b2c' ? 'primary' : 'secondary'"
+                  variant="tonal"
+                  size="32"
+                >
+                  <VIcon
+                    icon="ri-user-line"
+                    size="16"
+                  />
+                </VAvatar>
+                <div>
+                  <div
+                    class="text-body-2 font-weight-semibold"
+                    :class="importType === 'b2c' ? 'text-primary' : ''"
+                  >
+                    B2C
+                  </div>
+                  <div class="text-caption text-medium-emphasis">
+                    Klien Perorangan / Resto
+                  </div>
+                </div>
+                <VSpacer />
+                <VIcon
+                  :icon="importType === 'b2c' ? 'ri-checkbox-circle-fill' : 'ri-checkbox-blank-circle-line'"
+                  :color="importType === 'b2c' ? 'primary' : 'secondary'"
+                  size="18"
+                />
+              </div>
+            </div>
+            <div
+              class="flex-1-1 pa-3 rounded-lg border cursor-pointer"
+              :style="importType === 'b2b'
+                ? 'border: 2px solid rgb(var(--v-theme-success)); background: rgba(var(--v-theme-success), 0.08);'
+                : 'border: 2px solid rgba(var(--v-border-color), var(--v-border-opacity));'"
+              @click="importType = 'b2b'"
+            >
+              <div class="d-flex align-center gap-2">
+                <VAvatar
+                  :color="importType === 'b2b' ? 'success' : 'secondary'"
+                  variant="tonal"
+                  size="32"
+                >
+                  <VIcon
+                    icon="ri-building-4-line"
+                    size="16"
+                  />
+                </VAvatar>
+                <div>
+                  <div
+                    class="text-body-2 font-weight-semibold"
+                    :class="importType === 'b2b' ? 'text-success' : ''"
+                  >
+                    B2B Konsolidasi
+                  </div>
+                  <div class="text-caption text-medium-emphasis">
+                    Klien PT / Perusahaan
+                  </div>
+                </div>
+                <VSpacer />
+                <VIcon
+                  :icon="importType === 'b2b' ? 'ri-checkbox-circle-fill' : 'ri-checkbox-blank-circle-line'"
+                  :color="importType === 'b2b' ? 'success' : 'secondary'"
+                  size="18"
+                />
+              </div>
+            </div>
           </div>
 
+          <!-- Langkah 2: Download Template -->
+          <div class="text-caption text-medium-emphasis font-weight-bold text-uppercase letter-spacing-widened mb-2">
+            Langkah 2 — Download Template &amp; Isi Data
+          </div>
+          <VBtn
+            v-if="importType === 'b2c'"
+            variant="outlined"
+            color="primary"
+            prepend-icon="ri-file-excel-line"
+            size="small"
+            class="mb-3"
+            @click="downloadTemplate('b2c')"
+          >
+            Download Template B2C
+          </VBtn>
+          <VBtn
+            v-else
+            variant="outlined"
+            color="success"
+            prepend-icon="ri-file-excel-line"
+            size="small"
+            class="mb-3"
+            @click="downloadTemplate('b2b')"
+          >
+            Download Template B2B Konsolidasi
+          </VBtn>
+
+          <!-- Panduan per tipe -->
           <VAlert
+            v-if="importType === 'b2c'"
             type="info"
             variant="tonal"
+            density="compact"
             class="mb-4"
           >
-            <div class="mb-2 font-weight-medium">
-              Panduan Import:
+            <div class="font-weight-semibold mb-1 text-body-2">
+              Template B2C — 2 Sheet:
             </div>
-            <ul class="ps-4">
-              <li>Pilih template sesuai jenis klien di atas, lalu download template.</li>
-              <li>Isi data pada template, kemudian upload file (.xlsx).</li>
-              <li>Kolom <strong>nama_klien</strong> wajib sesuai persis dengan data klien di sistem.</li>
-              <li>Gunakan <strong>no_urut</strong> untuk menghubungkan invoice dengan rinciannya.</li>
-              <li>Format tanggal: <strong>DD-MM-YYYY</strong> (contoh: 01-06-2025).</li>
-              <li v-if="importType === 'b2b'">Sheet 1 = Header invoice konsolidasi per klien PT (kolom: <strong>tanggal_kirim_barang</strong>, tanpa nama_resto).</li>
-              <li v-if="importType === 'b2b'">Sheet 2 = Detail pengiriman per resto (kolom: <strong>no_invoice_resto</strong>, <strong>nama_resto</strong>, <strong>stokis</strong>, <strong>kode_barang</strong>, <strong>nama_barang</strong>, <strong>qty</strong>, <strong>satuan</strong>, <strong>harga_satuan</strong>). Barang dengan kode sama antar resto akan dijumlah otomatis.</li>
-              <li v-if="importType === 'b2c'">Sheet 2 = Item invoice (kolom: <strong>kode_barang</strong>, <strong>nama_barang</strong>, <strong>qty</strong>, <strong>satuan</strong>, <strong>harga_satuan</strong>).</li>
-              <li>Lihat sheet <strong>Petunjuk Pengisian</strong> di template untuk panduan lengkap.</li>
-            </ul>
+            <div class="text-caption">
+              <strong>Sheet 1 (Invoice):</strong> no_urut · no_invoice · nama_klien · tanggal_invoice · tanggal_jatuh_tempo · periode_awal · periode_akhir · no_surat_jalan · tagihan_sebelumnya · keterangan
+            </div>
+            <div class="text-caption mt-1">
+              <strong>Sheet 2 (Item Invoice):</strong> no_urut_invoice · kode_barang · nama_barang · qty · satuan · harga_satuan
+            </div>
+          </VAlert>
+          <VAlert
+            v-else
+            type="success"
+            variant="tonal"
+            density="compact"
+            class="mb-4"
+          >
+            <div class="font-weight-semibold mb-1 text-body-2">
+              Template B2B Konsolidasi — 2 Sheet:
+            </div>
+            <div class="text-caption">
+              <strong>Sheet 1 (Invoice):</strong> no_urut · no_invoice · nama_klien · <strong>tanggal_kirim_barang</strong> · tanggal_jatuh_tempo · periode_awal · periode_akhir · no_surat_jalan · tagihan_sebelumnya · keterangan
+            </div>
+            <div class="text-caption mt-1">
+              <strong>Sheet 2 (Item Invoice):</strong> no_urut_invoice · kode_barang · nama_barang · qty · satuan · harga_satuan
+            </div>
+            <div class="text-caption mt-1 font-weight-medium text-success">
+              Isi qty total konsolidasi langsung di Sheet 2 — tidak perlu merinci per resto.
+            </div>
           </VAlert>
 
-          <div class="d-flex gap-2 mb-4">
-            <VBtn
-              variant="outlined"
-              color="primary"
-              prepend-icon="ri-file-excel-line"
-              @click="downloadTemplate('b2c')"
-            >
-              Template B2C
-            </VBtn>
-            <VBtn
-              variant="outlined"
-              color="success"
-              prepend-icon="ri-file-excel-line"
-              @click="downloadTemplate('b2b')"
-            >
-              Template B2B
-            </VBtn>
+          <!-- Catatan umum -->
+          <div class="text-caption text-medium-emphasis mb-4 d-flex align-center gap-1">
+            <VIcon
+              icon="ri-information-line"
+              size="14"
+            />
+            Format tanggal: <strong>DD-MM-YYYY</strong> &nbsp;·&nbsp; Kolom <strong>nama_klien</strong> harus persis sesuai data di sistem &nbsp;·&nbsp; Hapus baris [CONTOH] sebelum upload
           </div>
 
+          <!-- Langkah 3: Upload -->
+          <div class="text-caption text-medium-emphasis font-weight-bold text-uppercase letter-spacing-widened mb-2">
+            Langkah 3 — Upload File
+          </div>
           <VFileInput
             v-model="importFile"
-            label="Pilih File (.xlsx atau .csv)"
-            accept=".xlsx,.xls,.csv"
+            label="Pilih File (.xlsx)"
+            accept=".xlsx,.xls"
             prepend-icon="ri-file-upload-line"
             variant="outlined"
             density="compact"
