@@ -236,36 +236,33 @@
       </VCardText>
     </VCard>
 
-    <!-- B2C Table -->
-    <VCard :class="canSeeAll ? 'mb-4' : ''">
-      <div
-        v-if="canSeeAll"
-        class="d-flex align-center gap-2 px-4 py-3"
-      >
+    <!-- B2B Table (hanya untuk admin/manager/supervisor) -->
+    <VCard v-if="canSeeAll" class="mb-4">
+      <div class="d-flex align-center gap-2 px-4 py-3">
         <VAvatar
-          color="primary"
+          color="warning"
           variant="tonal"
           size="32"
         >
           <VIcon
-            icon="ri-user-line"
+            icon="ri-building-line"
             size="18"
           />
         </VAvatar>
-        <span class="text-subtitle-1 font-weight-semibold">Invoice B2C</span>
+        <span class="text-subtitle-1 font-weight-semibold">Invoice B2B</span>
       </div>
-      <VDivider v-if="canSeeAll" />
+      <VDivider />
       <BaseTable
-        :headers="headers"
-        :items="itemsB2C"
-        :total="metaB2C.total"
-        :loading="loadingB2C"
-        :per-page="metaB2C.per_page"
-        :page="metaB2C.current_page"
-        @update:options="onTableOptionsB2C"
+        :headers="headersB2B"
+        :items="itemsB2B"
+        :total="metaB2B.total"
+        :loading="loadingB2B"
+        :per-page="metaB2B.per_page"
+        :page="metaB2B.current_page"
+        @update:options="onTableOptionsB2B"
       >
         <template #item.no="{ index }">
-          {{ (metaB2C.current_page - 1) * metaB2C.per_page + index + 1 }}
+          {{ (metaB2B.current_page - 1) * metaB2B.per_page + index + 1 }}
         </template>
         <template #item.no_invoice="{ item }">
           <VChip
@@ -277,8 +274,14 @@
             {{ item.no_invoice }}
           </VChip>
         </template>
+        <template #item.resto="{ item }">
+          {{ item.resto?.nama_resto ?? '-' }}
+        </template>
         <template #item.klien_ar="{ item }">
           {{ item.klien_ar?.nama_klien ?? '-' }}
+        </template>
+        <template #item.penerima_tagihan="{ item }">
+          {{ item.perusahaan?.nama_perusahaan ?? '-' }}
         </template>
         <template #item.tanggal_invoice="{ item }">
           {{ formatDate(item.tanggal_invoice) }}
@@ -366,33 +369,36 @@
       </BaseTable>
     </VCard>
 
-    <!-- B2B Table (hanya untuk admin/manager/supervisor) -->
-    <VCard v-if="canSeeAll">
-      <div class="d-flex align-center gap-2 px-4 py-3">
+    <!-- B2C Table -->
+    <VCard>
+      <div
+        v-if="canSeeAll"
+        class="d-flex align-center gap-2 px-4 py-3"
+      >
         <VAvatar
-          color="warning"
+          color="primary"
           variant="tonal"
           size="32"
         >
           <VIcon
-            icon="ri-building-line"
+            icon="ri-user-line"
             size="18"
           />
         </VAvatar>
-        <span class="text-subtitle-1 font-weight-semibold">Invoice B2B</span>
+        <span class="text-subtitle-1 font-weight-semibold">Invoice B2C</span>
       </div>
-      <VDivider />
+      <VDivider v-if="canSeeAll" />
       <BaseTable
-        :headers="headersB2B"
-        :items="itemsB2B"
-        :total="metaB2B.total"
-        :loading="loadingB2B"
-        :per-page="metaB2B.per_page"
-        :page="metaB2B.current_page"
-        @update:options="onTableOptionsB2B"
+        :headers="headers"
+        :items="itemsB2C"
+        :total="metaB2C.total"
+        :loading="loadingB2C"
+        :per-page="metaB2C.per_page"
+        :page="metaB2C.current_page"
+        @update:options="onTableOptionsB2C"
       >
         <template #item.no="{ index }">
-          {{ (metaB2B.current_page - 1) * metaB2B.per_page + index + 1 }}
+          {{ (metaB2C.current_page - 1) * metaB2C.per_page + index + 1 }}
         </template>
         <template #item.no_invoice="{ item }">
           <VChip
@@ -404,14 +410,8 @@
             {{ item.no_invoice }}
           </VChip>
         </template>
-        <template #item.resto="{ item }">
-          {{ item.resto?.nama_resto ?? '-' }}
-        </template>
         <template #item.klien_ar="{ item }">
           {{ item.klien_ar?.nama_klien ?? '-' }}
-        </template>
-        <template #item.penerima_tagihan="{ item }">
-          {{ item.perusahaan?.nama_perusahaan ?? '-' }}
         </template>
         <template #item.tanggal_invoice="{ item }">
           {{ formatDate(item.tanggal_invoice) }}
