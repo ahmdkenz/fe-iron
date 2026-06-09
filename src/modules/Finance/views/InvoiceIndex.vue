@@ -819,8 +819,6 @@ const sharedFilters = reactive({ search: '', status: '', klien_ar_id: null, tang
 if (canSeeAll) {
   paramsB2C.segment = 'B2C'
   paramsB2B.segment = 'B2B'
-} else {
-  paramsB2C.karyawan_id = authStore.user?.karyawan?.id
 }
 
 const summary       = reactive({ total_invoice: null, total_tagihan: null, total_pembayaran: null, total_sisa: null })
