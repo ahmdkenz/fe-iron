@@ -268,7 +268,164 @@
         </VCardText>
       </VCard>
 
+      <!-- B2B Table (hanya untuk admin/manager/supervisor) -->
+      <VCard
+        v-if="canSeeAll"
+        class="mb-4"
+      >
+        <div class="d-flex align-center gap-2 px-4 py-3">
+          <VAvatar
+            color="warning"
+            variant="tonal"
+            size="32"
+          >
+            <VIcon
+              icon="ri-building-line"
+              size="18"
+            />
+          </VAvatar>
+          <span class="text-subtitle-1 font-weight-semibold">Opening Balance B2B</span>
+        </div>
+        <VDivider />
+        <BaseTable
+          :headers="headers"
+          :items="itemsB2B"
+          :total="metaB2B.total"
+          :loading="loadingB2B"
+          :per-page="metaB2B.per_page"
+          :page="metaB2B.current_page"
+          class="mt-2"
+          @update:options="onTableOptionsB2B"
+        >
+          <template #item.no="{ index }">
+            {{ (metaB2B.current_page - 1) * metaB2B.per_page + index + 1 }}
+          </template>
+          <template #item.no_invoice="{ item }">
+            <VChip
+              color="primary"
+              size="small"
+              variant="tonal"
+              label
+            >
+              {{ item.no_invoice }}
+            </VChip>
+          </template>
+          <template #item.klien_ar="{ item }">
+            {{ item.klien_ar?.nama_klien ?? '-' }}
+          </template>
+          <template #item.tanggal_invoice="{ item }">
+            <span class="text-no-wrap">{{ formatDate(item.tanggal_invoice) }}</span>
+          </template>
+          <template #item.periode="{ item }">
+            <span class="text-no-wrap">{{ formatPeriode(item) }}</span>
+          </template>
+          <template #item.total_tagihan="{ item }">
+            {{ formatCurrency(item.total_tagihan) }}
+          </template>
+          <template #item.total_pembayaran="{ item }">
+            {{ formatCurrency(item.total_pembayaran) }}
+          </template>
+          <template #item.sisa_tagihan="{ item }">
+            <span :class="item.sisa_tagihan > 0 ? 'text-error' : 'text-success'">
+              {{ formatCurrency(item.sisa_tagihan) }}
+            </span>
+          </template>
+          <template #item.status="{ item }">
+            <InvoiceStatusBadge :status="item.status" />
+          </template>
+          <template #item.approval_status="{ item }">
+            <ApprovalStatusBadge :status="item.approval_status" />
+          </template>
+          <template #item.actions="{ item }">
+            <div class="d-flex gap-1">
+              <VBtn
+                v-if="item.can_record_payment && item.status !== 'LUNAS'"
+                icon
+                size="small"
+                variant="tonal"
+                color="success"
+                @click="openCatatBayar(item)"
+              >
+                <VIcon
+                  icon="ri-money-cny-circle-line"
+                  size="18"
+                />
+                <VTooltip activator="parent">
+                  Catat Bayar
+                </VTooltip>
+              </VBtn>
+              <VBtn
+                v-if="item.can_print"
+                icon
+                size="small"
+                variant="text"
+                color="secondary"
+                :loading="printingId === item.id"
+                @click="printInvoice(item.id)"
+              >
+                <VIcon
+                  icon="ri-printer-line"
+                  size="18"
+                />
+                <VTooltip activator="parent">
+                  Cetak
+                </VTooltip>
+              </VBtn>
+              <VBtn
+                icon
+                size="small"
+                variant="text"
+                color="info"
+                :to="{ name: 'finance-invoice-show', params: { id: item.id } }"
+              >
+                <VIcon
+                  icon="ri-eye-line"
+                  size="18"
+                />
+                <VTooltip activator="parent">
+                  Detail
+                </VTooltip>
+              </VBtn>
+              <VBtn
+                v-if="item.can_edit"
+                icon
+                size="small"
+                variant="text"
+                color="primary"
+                :to="{ name: 'finance-opening-balance-edit', params: { id: item.id } }"
+              >
+                <VIcon
+                  icon="ri-pencil-line"
+                  size="18"
+                />
+                <VTooltip activator="parent">
+                  Edit
+                </VTooltip>
+              </VBtn>
+            </div>
+          </template>
+        </BaseTable>
+      </VCard>
+
+      <!-- B2C Table -->
       <VCard>
+        <div
+          v-if="canSeeAll"
+          class="d-flex align-center gap-2 px-4 py-3"
+        >
+          <VAvatar
+            color="primary"
+            variant="tonal"
+            size="32"
+          >
+            <VIcon
+              icon="ri-user-line"
+              size="18"
+            />
+          </VAvatar>
+          <span class="text-subtitle-1 font-weight-semibold">Opening Balance B2C</span>
+        </div>
+        <VDivider v-if="canSeeAll" />
         <BaseTable
           :headers="headers"
           :items="items"
@@ -1210,6 +1367,7 @@ const { items: klienList, loading: klienLoading, fetchAll: fetchKlien } = useCru
 
 // ── Non-director: single table ─────────────────────────────────────────────
 const { items, loading, meta, params, fetchList } = useCrud('/finance/opening-balance')
+const { items: itemsB2B, loading: loadingB2B, meta: metaB2B, params: paramsB2B, fetchList: fetchListB2B } = useCrud('/finance/opening-balance')
 const { formatCurrency, formatDate } = useFormatter()
 
 const canSeeAll = authStore.hasAnyRole(['ADMIN', 'MANAGER', 'SUPERVISOR'])
@@ -1219,6 +1377,17 @@ params.approval_status = ''
 params.klien_ar_id = null
 params.tanggal_dari = null
 params.tanggal_sampai = null
+
+paramsB2B.status = ''
+paramsB2B.approval_status = ''
+paramsB2B.klien_ar_id = null
+paramsB2B.tanggal_dari = null
+paramsB2B.tanggal_sampai = null
+
+if (canSeeAll) {
+  params.segment = 'B2C'
+  paramsB2B.segment = 'B2B'
+}
 
 const summary = reactive({
   total_invoice: null,
@@ -1482,6 +1651,7 @@ const approvalStatusOptions = [
 
 // ── Abort controllers ──────────────────────────────────────────────────────
 let listController          = null
+let listControllerB2B       = null
 let summaryController       = null
 let klienController         = null
 let dirApprovalController   = null
@@ -1506,6 +1676,7 @@ function clearDirObDebounceTimer() {
 
 function abortPendingRequests() {
   listController?.abort()
+  listControllerB2B?.abort()
   summaryController?.abort()
   klienController?.abort()
   dirApprovalController?.abort()
@@ -1513,6 +1684,7 @@ function abortPendingRequests() {
   dirObController?.abort()
   dirObSumCtrl?.abort()
   listController        = null
+  listControllerB2B     = null
   summaryController     = null
   klienController       = null
   dirApprovalController = null
@@ -1537,6 +1709,15 @@ async function loadList() {
   listController = controller
   await fetchList({}, { signal: controller.signal })
   if (listController === controller) listController = null
+}
+
+async function loadListB2B() {
+  if (!canSeeAll) return
+  listControllerB2B?.abort()
+  const controller = new AbortController()
+  listControllerB2B = controller
+  await fetchListB2B({}, { signal: controller.signal })
+  if (listControllerB2B === controller) listControllerB2B = null
 }
 
 async function loadSummary() {
@@ -1633,9 +1814,23 @@ async function loadDirObSummary() {
 }
 
 // ── Fetch helpers: non-director ────────────────────────────────────────────
+function syncFiltersToB2B() {
+  paramsB2B.search          = params.search
+  paramsB2B.status          = params.status
+  paramsB2B.approval_status = params.approval_status
+  paramsB2B.klien_ar_id     = params.klien_ar_id
+  paramsB2B.tanggal_dari    = params.tanggal_dari
+  paramsB2B.tanggal_sampai  = params.tanggal_sampai
+}
+
 function doFetch() {
   params.page = 1
   loadList()
+  if (canSeeAll) {
+    syncFiltersToB2B()
+    paramsB2B.page = 1
+    loadListB2B()
+  }
   loadSummary()
 }
 
@@ -1651,6 +1846,14 @@ function onTableOptions({ page, itemsPerPage }) {
   meta.current_page = page
   meta.per_page = itemsPerPage
   loadList()
+}
+
+function onTableOptionsB2B({ page, itemsPerPage }) {
+  paramsB2B.page = page
+  paramsB2B.per_page = itemsPerPage
+  metaB2B.current_page = page
+  metaB2B.per_page = itemsPerPage
+  loadListB2B()
 }
 
 function resetFilter() {
@@ -1861,6 +2064,7 @@ function initLoad() {
       params.karyawan_id = authStore.user.karyawan_id
     }
     loadList()
+    if (canSeeAll) loadListB2B()
     loadSummary()
   }
 }
