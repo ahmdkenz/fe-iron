@@ -653,7 +653,7 @@
             class="mb-3"
             @click="downloadTemplate('b2b')"
           >
-            Download Template B2B Konsolidasi
+            Download Template B2B
           </VBtn>
 
           <!-- Panduan per tipe -->

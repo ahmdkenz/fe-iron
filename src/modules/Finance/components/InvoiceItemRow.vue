@@ -175,6 +175,7 @@ const createDefaultItem = () => ({
   harga_satuan: 0,
   subtotal: 0,
   keterangan: '',
+  no_invoice_resto: '',
 })
 
 const props = defineProps({
@@ -189,6 +190,7 @@ const props = defineProps({
       harga_satuan: 0,
       subtotal: 0,
       keterangan: '',
+      no_invoice_resto: '',
     }),
   },
   barangList: {

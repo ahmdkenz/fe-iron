@@ -99,6 +99,8 @@
                     variant="outlined"
                     prepend-inner-icon="ri-hashtag"
                     :rules="[v => !!v || 'No. Invoice wajib diisi']"
+                    :hint="isB2B ? 'Nomor invoice konsolidasi untuk penagihan ke perusahaan' : ''"
+                    :persistent-hint="isB2B"
                   />
                 </VCol>
                 <VCol
@@ -130,7 +132,6 @@
                   />
                 </VCol>
                 <VCol
-                  v-if="isB2B"
                   cols="12"
                   md="6"
                 >
@@ -141,8 +142,9 @@
                     variant="outlined"
                     type="date"
                     prepend-inner-icon="ri-truck-line"
-                    hint="Tanggal pengiriman barang ke seluruh resto"
+                    :hint="isB2B ? 'Tanggal pengiriman barang ke seluruh resto' : 'Tanggal pengiriman barang'"
                     persistent-hint
+                    clearable
                   />
                 </VCol>
                 <VCol
@@ -155,6 +157,23 @@
                     density="compact"
                     variant="outlined"
                     prepend-inner-icon="ri-truck-line"
+                  />
+                </VCol>
+                <VCol
+                  v-if="isB2B"
+                  cols="12"
+                  md="6"
+                >
+                  <VTextField
+                    v-model="noInvoiceResto"
+                    label="No. Invoice Resto"
+                    density="compact"
+                    variant="outlined"
+                    prepend-inner-icon="ri-receipt-line"
+                    placeholder="Nomor invoice dari resto"
+                    clearable
+                    hint="Nomor invoice yang diterima oleh resto"
+                    persistent-hint
                   />
                 </VCol>
               </VRow>
@@ -624,6 +643,8 @@ const isB2B = computed(() => {
   return klien?.tipe_klien === 'PT'
 })
 
+const noInvoiceResto = ref('')
+
 const restoList    = ref([])
 const restoLoading = ref(false)
 
@@ -678,6 +699,7 @@ async function onKlienChange(klienId) {
   selectedKlien.value = klienList.value.find(k => k.id === klienId) ?? null
   form.tagihan_periode_sebelumnya = 0
   form.resto_id = null
+  noInvoiceResto.value = ''
 
   if (!klienId) { restoList.value = []; return }
 
@@ -717,6 +739,7 @@ function addItem() {
     harga_satuan: 0,
     subtotal: 0,
     keterangan: '',
+    no_invoice_resto: '',
   })
   itemsError.value = ''
 }
@@ -738,6 +761,10 @@ async function submitAs(status = null) {
 
   const payload = { ...form }
   if (status) payload.status = status
+  payload.items = form.items.map(it => ({
+    ...it,
+    no_invoice_resto: isB2B.value ? (noInvoiceResto.value ?? '') : '',
+  }))
 
   const res = isEditing.value
     ? await update(id, payload)
@@ -769,6 +796,7 @@ onMounted(async () => {
   if (!data || data.status !== 'DRAFT') return
 
   invoice.value = data
+  noInvoiceResto.value = data.items?.[0]?.no_invoice_resto ?? ''
   if (data.klien_ar?.tipe_klien === 'PT' && data.klien_ar?.perusahaan_id) {
     await loadRestoByPerusahaan(data.klien_ar.perusahaan_id)
   }
@@ -786,15 +814,16 @@ onMounted(async () => {
     tagihan_periode_sebelumnya:  data.tagihan_periode_sebelumnya ?? 0,
     keterangan:                  data.keterangan ?? '',
     items: (data.items ?? []).map(it => ({
-      id:           it.id,
-      barang_id:    it.barang_id,
-      kode_barang:  it.barang?.kode_barang ?? it.kode_barang ?? '',
-      nama_barang:  it.nama_barang,
-      qty:          it.qty,
-      satuan:       it.satuan,
-      harga_satuan: it.harga_satuan,
-      subtotal:     it.subtotal,
-      keterangan:   it.keterangan ?? '',
+      id:               it.id,
+      barang_id:        it.barang_id,
+      kode_barang:      it.barang?.kode_barang ?? it.kode_barang ?? '',
+      nama_barang:      it.nama_barang,
+      qty:              it.qty,
+      satuan:           it.satuan,
+      harga_satuan:     it.harga_satuan,
+      subtotal:         it.subtotal,
+      keterangan:       it.keterangan ?? '',
+      no_invoice_resto: it.no_invoice_resto ?? '',
     })),
   })
 })
