@@ -296,10 +296,10 @@
             {{ item.klien_ar?.nama_klien ?? '-' }}
           </template>
           <template #item.tanggal_invoice="{ item }">
-            {{ formatDate(item.tanggal_invoice) }}
+            <span class="text-no-wrap">{{ formatDate(item.tanggal_invoice) }}</span>
           </template>
           <template #item.periode="{ item }">
-            {{ formatPeriode(item) }}
+            <span class="text-no-wrap">{{ formatPeriode(item) }}</span>
           </template>
           <template #item.total_tagihan="{ item }">
             {{ formatCurrency(item.total_tagihan) }}
@@ -621,7 +621,7 @@
           </template>
 
           <template #item.tanggal_invoice="{ item }">
-            {{ formatDate(item.tanggal_invoice) }}
+            <span class="text-no-wrap">{{ formatDate(item.tanggal_invoice) }}</span>
           </template>
           <template #item.total_tagihan="{ item }">
             {{ formatCurrency(item.total_tagihan) }}
@@ -630,7 +630,7 @@
             {{ item.submitted_by_name ?? item.created_by_name ?? '-' }}
           </template>
           <template #item.submitted_at="{ item }">
-            {{ formatDateTime(item.submitted_at) }}
+            <span class="text-no-wrap">{{ formatDateTime(item.submitted_at) }}</span>
           </template>
           <template #item.approval_status="{ item }">
             <ApprovalStatusBadge :status="item.approval_status" />
@@ -949,10 +949,10 @@
             {{ item.klien_ar?.nama_klien ?? '-' }}
           </template>
           <template #item.tanggal_invoice="{ item }">
-            {{ formatDate(item.tanggal_invoice) }}
+            <span class="text-no-wrap">{{ formatDate(item.tanggal_invoice) }}</span>
           </template>
           <template #item.periode="{ item }">
-            {{ formatPeriode(item) }}
+            <span class="text-no-wrap">{{ formatPeriode(item) }}</span>
           </template>
           <template #item.total_tagihan="{ item }">
             {{ formatCurrency(item.total_tagihan) }}
@@ -1429,8 +1429,8 @@ const headers = [
   { title: 'No', key: 'no', sortable: false, width: '60px' },
   { title: 'No Opening Balance', key: 'no_invoice', sortable: false },
   { title: 'Klien', key: 'klien_ar', sortable: false },
-  { title: 'Tanggal', key: 'tanggal_invoice', sortable: false },
-  { title: 'Periode', key: 'periode', sortable: false },
+  { title: 'Tanggal', key: 'tanggal_invoice', sortable: false, width: '115px' },
+  { title: 'Periode', key: 'periode', sortable: false, width: '210px' },
   { title: 'Saldo Awal', key: 'total_tagihan', sortable: false },
   { title: 'Total Terbayar', key: 'total_pembayaran', sortable: false },
   { title: 'Sisa Tagihan', key: 'sisa_tagihan', sortable: false },
@@ -1444,10 +1444,10 @@ const approvalHeaders = [
   { title: 'No Opening Balance', key: 'no_invoice', sortable: false },
   { title: 'Klien', key: 'klien_ar', sortable: false },
 
-  { title: 'Tanggal', key: 'tanggal_invoice', sortable: false },
+  { title: 'Tanggal', key: 'tanggal_invoice', sortable: false, width: '115px' },
   { title: 'Nominal', key: 'total_tagihan', sortable: false },
   { title: 'Pengaju', key: 'submitted_by_name', sortable: false },
-  { title: 'Diajukan Pada', key: 'submitted_at', sortable: false },
+  { title: 'Diajukan Pada', key: 'submitted_at', sortable: false, width: '155px' },
   { title: 'Approval', key: 'approval_status', sortable: false },
   { title: 'Aksi', key: 'dir_approval_actions', sortable: false, align: 'center', width: '100px' },
 ]
@@ -1456,8 +1456,8 @@ const dirObHeaders = [
   { title: 'No', key: 'no', sortable: false, width: '60px' },
   { title: 'No Opening Balance', key: 'no_invoice', sortable: false },
   { title: 'Klien', key: 'klien_ar', sortable: false },
-  { title: 'Tanggal', key: 'tanggal_invoice', sortable: false },
-  { title: 'Periode', key: 'periode', sortable: false },
+  { title: 'Tanggal', key: 'tanggal_invoice', sortable: false, width: '115px' },
+  { title: 'Periode', key: 'periode', sortable: false, width: '210px' },
   { title: 'Saldo Awal', key: 'total_tagihan', sortable: false },
   { title: 'Total Terbayar', key: 'total_pembayaran', sortable: false },
   { title: 'Sisa Tagihan', key: 'sisa_tagihan', sortable: false },

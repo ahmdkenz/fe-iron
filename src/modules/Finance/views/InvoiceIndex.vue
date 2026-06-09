@@ -281,10 +281,10 @@
           {{ item.perusahaan?.nama_perusahaan ?? '-' }}
         </template>
         <template #item.tanggal_invoice="{ item }">
-          {{ formatDate(item.tanggal_invoice) }}
+          <span class="text-no-wrap">{{ formatDate(item.tanggal_invoice) }}</span>
         </template>
         <template #item.tanggal_kirim_barang="{ item }">
-          {{ item.tanggal_kirim_barang ? formatDate(item.tanggal_kirim_barang) : '-' }}
+          <span class="text-no-wrap">{{ item.tanggal_kirim_barang ? formatDate(item.tanggal_kirim_barang) : '-' }}</span>
         </template>
         <template #item.total_tagihan="{ item }">
           {{ formatCurrency(item.total_tagihan) }}
@@ -414,7 +414,7 @@
           {{ item.klien_ar?.nama_klien ?? '-' }}
         </template>
         <template #item.tanggal_invoice="{ item }">
-          {{ formatDate(item.tanggal_invoice) }}
+          <span class="text-no-wrap">{{ formatDate(item.tanggal_invoice) }}</span>
         </template>
         <template #item.total_tagihan="{ item }">
           {{ formatCurrency(item.total_tagihan) }}
@@ -848,7 +848,7 @@ const headers = [
   { title: 'No',             key: 'no',             sortable: false, width: '60px' },
   { title: 'No Invoice',     key: 'no_invoice',     sortable: false },
   { title: 'Klien',          key: 'klien_ar',       sortable: false },
-  { title: 'Tanggal',        key: 'tanggal_invoice',    sortable: false },
+  { title: 'Tanggal',        key: 'tanggal_invoice',    sortable: false, width: '115px' },
   { title: 'Total Tagihan',  key: 'total_tagihan',  sortable: false },
   { title: 'Sisa Tagihan',   key: 'sisa_tagihan',   sortable: false },
   { title: 'Status',         key: 'status',         sortable: false },
@@ -860,8 +860,8 @@ const headersB2B = [
   { title: 'No Invoice',       key: 'no_invoice',            sortable: false },
   { title: 'Client',           key: 'klien_ar',              sortable: false },
   { title: 'Penerima Tagihan', key: 'penerima_tagihan',      sortable: false },
-  { title: 'Tgl. Invoice',     key: 'tanggal_invoice',       sortable: false },
-  { title: 'Tgl. Kirim',       key: 'tanggal_kirim_barang',  sortable: false },
+  { title: 'Tgl. Invoice',     key: 'tanggal_invoice',       sortable: false, width: '115px' },
+  { title: 'Tgl. Kirim',       key: 'tanggal_kirim_barang',  sortable: false, width: '115px' },
   { title: 'Total Tagihan',    key: 'total_tagihan',         sortable: false },
   { title: 'Sisa Tagihan',     key: 'sisa_tagihan',          sortable: false },
   { title: 'Status',           key: 'status',                sortable: false },
