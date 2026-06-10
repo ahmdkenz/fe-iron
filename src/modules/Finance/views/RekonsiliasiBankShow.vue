@@ -81,7 +81,6 @@
         <VBtnToggle v-model="filterStatus" variant="outlined" mandatory divided density="compact">
           <VBtn value="SEMUA"     size="small" style="min-width: 80px">Semua</VBtn>
           <VBtn value="MATCHED"   size="small" style="min-width: 90px"><span class="text-success">MATCHED</span></VBtn>
-          <VBtn value="POSSIBLE"  size="small" style="min-width: 95px"><span class="text-warning">POSSIBLE</span></VBtn>
           <VBtn value="UNMATCHED" size="small" style="min-width: 105px"><span class="text-error">UNMATCHED</span></VBtn>
         </VBtnToggle>
       </VCardText>
@@ -176,16 +175,8 @@
         <!-- Aksi -->
         <template #item.aksi="{ item }">
           <div class="d-flex gap-1 align-center flex-wrap">
-            <template v-if="item.status_cocok === 'UNMATCHED'">
+            <template v-if="item.status_cocok === 'UNMATCHED' || item.status_cocok === 'POSSIBLE'">
               <VBtn size="x-small" variant="tonal" color="primary" :loading="matchLoading === item.id" @click="openMatchDialog(item)">
-                <VIcon start size="14">ri-link-m</VIcon>Cocokkan
-              </VBtn>
-              <VBtn size="x-small" variant="text" color="grey" :loading="abaikanLoading === item.id" @click="doAbaikan(item)">
-                Abaikan
-              </VBtn>
-            </template>
-            <template v-else-if="item.status_cocok === 'POSSIBLE'">
-              <VBtn size="x-small" variant="tonal" color="warning" :loading="matchLoading === item.id" @click="openMatchDialog(item)">
                 <VIcon start size="14">ri-link-m</VIcon>Cocokkan
               </VBtn>
               <VBtn size="x-small" variant="text" color="grey" :loading="abaikanLoading === item.id" @click="doAbaikan(item)">
@@ -219,7 +210,7 @@
           <div class="text-body-2 font-weight-medium mb-2">Pilih Pembayaran yang Cocok:</div>
           <VProgressLinear v-if="kandidatLoading" indeterminate color="primary" class="mb-2" />
           <VAlert v-if="!kandidatLoading && kandidatList.length === 0" type="info" variant="tonal" class="mb-2">
-            Tidak ada kandidat pembayaran dalam rentang ±14 hari dengan nominal yang sama.
+            Tidak ada pembayaran TRANSFER yang tersedia untuk dicocokkan.
           </VAlert>
           <div v-if="kandidatList.length > 0">
             <VCard
