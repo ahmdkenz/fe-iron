@@ -613,7 +613,7 @@
                     class="text-body-2 font-weight-semibold"
                     :class="importType === 'b2b' ? 'text-success' : ''"
                   >
-                    B2B Konsolidasi
+                    B2B
                   </div>
                   <div class="text-caption text-medium-emphasis">
                     Klien PT / Perusahaan
@@ -682,7 +682,7 @@
             class="mb-4"
           >
             <div class="font-weight-semibold mb-1 text-body-2">
-              Template B2B Konsolidasi — 1 Sheet Flat:
+              Template B2B — 1 Sheet Flat:
             </div>
             <div class="text-caption">
               <strong>Kolom A–F (Invoice, diulang tiap baris):</strong>

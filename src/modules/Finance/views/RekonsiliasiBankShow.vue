@@ -391,9 +391,83 @@
             </div>
           </div>
 
+          <!-- Label section B2B -->
+          <div class="text-caption text-medium-emphasis text-uppercase font-weight-medium mb-2 mt-4" style="letter-spacing: 0.6px">
+            Pilih Invoice B2B (klien yang sama)
+          </div>
+
+          <VProgressLinear v-if="invoiceB2BLoading" indeterminate color="primary" class="mb-3" rounded />
+          <VAlert v-if="!invoiceB2BLoading && invoiceB2BList.length === 0" type="info" variant="tonal" density="compact" class="mb-3">
+            Tidak ada invoice B2B yang terbuka untuk klien ini.
+          </VAlert>
+
+          <!-- Invoice B2B cards -->
+          <div v-if="invoiceB2BList.length > 0" class="d-flex flex-column gap-2 mb-3">
+            <div
+              v-for="inv in invoiceB2BList"
+              :key="inv.id"
+              class="rounded-lg cursor-pointer"
+              style="border: 2px solid; transition: border-color 0.15s, background 0.15s"
+              :style="selectedInvoices[inv.id]
+                ? 'border-color: rgb(var(--v-theme-primary)); background: rgba(var(--v-theme-primary), 0.06)'
+                : 'border-color: rgba(var(--v-border-color), 0.28)'"
+              @click="toggleInvoice(inv)"
+            >
+              <div class="d-flex align-center gap-3 pa-3" :class="{ 'pb-2': selectedInvoices[inv.id] }">
+                <VCheckbox
+                  :model-value="!!selectedInvoices[inv.id]"
+                  color="primary"
+                  density="compact"
+                  hide-details
+                  readonly
+                  class="flex-0-0 mt-0"
+                />
+                <div class="flex-1-1 min-width-0">
+                  <div class="d-flex align-center gap-2 flex-wrap">
+                    <span class="text-body-2 font-weight-semibold">{{ inv.no_invoice }}</span>
+                    <VChip :color="statusInvoiceColor(inv.status)" size="x-small" variant="tonal">{{ inv.status }}</VChip>
+                    <VChip v-if="inv.is_opening_balance" color="deep-purple" size="x-small" variant="tonal">OB</VChip>
+                  </div>
+                  <div class="d-flex flex-wrap gap-x-3 gap-y-0 mt-1">
+                    <span class="text-caption text-medium-emphasis">{{ formatDate(inv.tanggal) }}</span>
+                    <span class="text-caption text-medium-emphasis">Total: {{ formatCurrency(inv.total_tagihan) }}</span>
+                    <span class="text-caption font-weight-medium text-warning">Sisa: {{ formatCurrency(inv.sisa_tagihan) }}</span>
+                  </div>
+                  <div v-if="inv.nama_klien" class="d-flex flex-wrap gap-x-2 mt-0.5">
+                    <span class="text-caption text-primary">{{ inv.nama_klien }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Inline input saat dipilih -->
+              <div v-if="selectedInvoices[inv.id]" class="d-flex gap-3 px-3 pb-3" @click.stop>
+                <VTextField
+                  v-model.number="selectedInvoices[inv.id].jumlah"
+                  label="Jumlah Dialokasikan"
+                  type="number"
+                  :hint="`Maks: ${formatCurrency(inv.sisa_tagihan)}`"
+                  persistent-hint
+                  density="compact"
+                  variant="outlined"
+                  prefix="Rp"
+                  style="max-width: 220px"
+                  @click.stop
+                />
+                <VTextField
+                  v-model="selectedInvoices[inv.id].keterangan"
+                  label="Keterangan (opsional)"
+                  density="compact"
+                  variant="outlined"
+                  class="flex-1-1"
+                  @click.stop
+                />
+              </div>
+            </div>
+          </div>
+
           <!-- Summary bar -->
           <div
-            v-if="invoiceB2CList.length > 0 && Object.keys(selectedInvoices).length > 0"
+            v-if="Object.keys(selectedInvoices).length > 0"
             class="d-flex justify-space-between align-center rounded-lg px-4 py-2 mb-1"
             :class="sisaRemaining < 0 ? 'bg-error-subtle' : 'bg-success-subtle'"
           >
@@ -495,7 +569,7 @@
           <VBtn
             color="error"
             variant="flat"
-            :disabled="Object.keys(selectedInvoices).length === 0 || totalAlokasi <= 0 || sisaRemaining < 0 || invoiceB2CLoading"
+            :disabled="Object.keys(selectedInvoices).length === 0 || totalAlokasi <= 0 || sisaRemaining < 0 || invoiceB2CLoading || invoiceB2BLoading"
             :loading="kelebihanSaving"
             @click="doAlokasikanKelebihan"
           >
@@ -553,6 +627,8 @@ const kelebihanDialog   = ref(false)
 const kelebihanItem     = ref(null)
 const invoiceB2CList    = ref([])
 const invoiceB2CLoading = ref(false)
+const invoiceB2BList    = ref([])
+const invoiceB2BLoading = ref(false)
 const selectedInvoices  = ref({}) // { [invoiceId]: { jumlah, keterangan } }
 const kelebihanSaving   = ref(false)
 const kelebihanError    = ref(null)
@@ -723,14 +799,21 @@ async function openKelebihanDialog(item) {
   kelebihanError.value   = null
   pdmError.value         = null
   invoiceB2CList.value   = []
+  invoiceB2BList.value   = []
   kelebihanDialog.value  = true
 
   invoiceB2CLoading.value = true
+  invoiceB2BLoading.value = true
   try {
-    const { data } = await api.get(`/finance/rekonsiliasi-bank/detail/${item.id}/invoice-b2c`)
-    invoiceB2CList.value = data.data ?? []
+    const [resB2C, resB2B] = await Promise.all([
+      api.get(`/finance/rekonsiliasi-bank/detail/${item.id}/invoice-b2c`),
+      api.get(`/finance/rekonsiliasi-bank/detail/${item.id}/invoice-b2b`),
+    ])
+    invoiceB2CList.value = resB2C.data?.data ?? []
+    invoiceB2BList.value = resB2B.data?.data ?? []
   } finally {
     invoiceB2CLoading.value = false
+    invoiceB2BLoading.value = false
   }
 }
 
@@ -755,6 +838,7 @@ function closeKelebihanDialog() {
   kelebihanError.value   = null
   pdmError.value         = null
   invoiceB2CList.value   = []
+  invoiceB2BList.value   = []
 }
 
 async function doAlokasikanKelebihan() {
@@ -776,11 +860,17 @@ async function doAlokasikanKelebihan() {
     if (updatedItem) kelebihanItem.value = updatedItem
     selectedInvoices.value = {}
     invoiceB2CLoading.value = true
+    invoiceB2BLoading.value = true
     try {
-      const { data } = await api.get(`/finance/rekonsiliasi-bank/detail/${itemId}/invoice-b2c`)
-      invoiceB2CList.value = data.data ?? []
+      const [resB2C, resB2B] = await Promise.all([
+        api.get(`/finance/rekonsiliasi-bank/detail/${itemId}/invoice-b2c`),
+        api.get(`/finance/rekonsiliasi-bank/detail/${itemId}/invoice-b2b`),
+      ])
+      invoiceB2CList.value = resB2C.data?.data ?? []
+      invoiceB2BList.value = resB2B.data?.data ?? []
     } finally {
       invoiceB2CLoading.value = false
+      invoiceB2BLoading.value = false
     }
   } catch (err) {
     kelebihanError.value = err?.response?.data?.message ?? 'Terjadi kesalahan, coba lagi.'

@@ -1447,6 +1447,7 @@ function onPembayaranSaved() {
     loadDirObSummary()
   } else {
     loadList()
+    if (canSeeAll) loadListB2B()
     loadSummary()
   }
 }
