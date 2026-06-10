@@ -1025,6 +1025,12 @@
         </VBtn>
       </template>
     </BaseModal>
+
+    <!-- Share Dialog -->
+    <ShareInvoicesDialog
+      v-model="showShareDialog"
+      :pre-selected="invoice ? [invoice] : []"
+    />
   </div>
 </template>
 
@@ -1040,6 +1046,7 @@ import api from '@/utils/axios'
 import ApprovalStatusBadge from '../components/ApprovalStatusBadge.vue'
 import InvoiceStatusBadge from '../components/InvoiceStatusBadge.vue'
 import OpeningBalanceDetailTable from '../components/OpeningBalanceDetailTable.vue'
+import ShareInvoicesDialog from '../components/ShareInvoicesDialog.vue'
 
 const route = useRoute()
 const authStore = useAuthStore()
@@ -1052,6 +1059,7 @@ const { formatCurrency, formatDate, formatDateTime } = useFormatter()
 
 const invoice = shallowRef(null)
 const showUbahStatus = ref(false)
+const showShareDialog = ref(false)
 const showDeletePembayaran = ref(false)
 const showApproveModal = ref(false)
 const showRejectModal = ref(false)
@@ -1382,27 +1390,8 @@ async function printInvoice() {
   }
 }
 
-async function shareViaWhatsapp() {
-  const rawPhone = invoice.value?.klien_ar?.no_wa ?? ''
-  if (!rawPhone) {
-    await showError('Nomor WhatsApp klien belum diisi. Silakan lengkapi data No. WhatsApp pada form Client.')
-    return
-  }
-
-  const phone = rawPhone.startsWith('0')
-    ? '62' + rawPhone.slice(1)
-    : rawPhone.replace(/^\+/, '')
-
-  const inv = invoice.value
-  const total = new Intl.NumberFormat('id-ID').format(inv.total_tagihan)
-  const msg =
-    `Halo, berikut kami kirimkan Invoice *${inv.no_invoice}*.\n\n` +
-    `Klien: ${inv.klien_ar.nama_klien}\n` +
-    `Total Tagihan: Rp ${total}\n` +
-    `Periode: ${inv.periode_awal} s/d ${inv.periode_akhir}\n\n` +
-    `Silakan akses dan unduh invoice di:\n${inv.share_url}`
-
-  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank')
+function shareViaWhatsapp() {
+  showShareDialog.value = true
 }
 
 async function refreshPendingOpeningBalanceBadge() {

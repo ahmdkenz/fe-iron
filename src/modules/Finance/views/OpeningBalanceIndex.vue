@@ -294,6 +294,8 @@
           :loading="loadingB2B"
           :per-page="metaB2B.per_page"
           :page="metaB2B.current_page"
+          show-select
+          v-model:selected="selectedInvoices"
           class="mt-2"
           @update:options="onTableOptionsB2B"
         >
@@ -352,6 +354,22 @@
                 />
                 <VTooltip activator="parent">
                   Catat Bayar
+                </VTooltip>
+              </VBtn>
+              <VBtn
+                v-if="item.can_print"
+                icon
+                size="small"
+                variant="tonal"
+                color="success"
+                @click="openShareDialog([item])"
+              >
+                <VIcon
+                  icon="ri-whatsapp-line"
+                  size="18"
+                />
+                <VTooltip activator="parent">
+                  Kirim via WhatsApp
                 </VTooltip>
               </VBtn>
               <VBtn
@@ -433,6 +451,8 @@
           :loading="loading"
           :per-page="meta.per_page"
           :page="meta.current_page"
+          show-select
+          v-model:selected="selectedInvoices"
           class="mt-2"
           @update:options="onTableOptions"
         >
@@ -497,6 +517,22 @@
                 v-if="item.can_print"
                 icon
                 size="small"
+                variant="tonal"
+                color="success"
+                @click="openShareDialog([item])"
+              >
+                <VIcon
+                  icon="ri-whatsapp-line"
+                  size="18"
+                />
+                <VTooltip activator="parent">
+                  Kirim via WhatsApp
+                </VTooltip>
+              </VBtn>
+              <VBtn
+                v-if="item.can_print"
+                icon
+                size="small"
                 variant="text"
                 color="secondary"
                 :loading="printingId === item.id"
@@ -546,6 +582,21 @@
         </BaseTable>
       </VCard>
     </template>
+
+    <!-- Bulk Action Bar (non-director) -->
+    <BulkActionBar
+      v-if="!authStore.isDirector"
+      :selected="selectedInvoices"
+      @share="openShareDialog(selectedInvoices)"
+      @delete="doBulkDelete"
+      @clear="selectedInvoices = []"
+    />
+
+    <!-- Share Dialog -->
+    <ShareInvoicesDialog
+      v-model="showShareDialog"
+      :pre-selected="shareTargetInvoices"
+    />
 
     <!-- ── Director View ──────────────────────────────────────────────────── -->
     <template v-if="authStore.isDirector">
@@ -1134,6 +1185,22 @@
                 v-if="item.can_print"
                 icon
                 size="small"
+                variant="tonal"
+                color="success"
+                @click="openShareDialog([item])"
+              >
+                <VIcon
+                  icon="ri-whatsapp-line"
+                  size="18"
+                />
+                <VTooltip activator="parent">
+                  Kirim via WhatsApp
+                </VTooltip>
+              </VBtn>
+              <VBtn
+                v-if="item.can_print"
+                icon
+                size="small"
                 variant="text"
                 color="secondary"
                 :loading="printingId === item.id"
@@ -1355,11 +1422,13 @@ import { useFinanceNotificationStore } from '@/stores/finance-notification.store
 import api from '@/utils/axios'
 import ApprovalStatusBadge from '../components/ApprovalStatusBadge.vue'
 import InvoiceStatusBadge from '../components/InvoiceStatusBadge.vue'
+import ShareInvoicesDialog from '../components/ShareInvoicesDialog.vue'
+import BulkActionBar from '../components/BulkActionBar.vue'
 
 const PembayaranForm = defineAsyncComponent(() => import('../components/PembayaranForm.vue'))
 
 const authStore = useAuthStore()
-const { showAlert, showSuccess, showError, showLoading, closeAlert } = useSweetAlert()
+const { showAlert, showSuccess, showError, showLoading, closeAlert, confirmDelete } = useSweetAlert()
 const financeNotificationStore = useFinanceNotificationStore()
 
 // ── Shared: klien list ─────────────────────────────────────────────────────
@@ -1431,6 +1500,50 @@ const dirObSummary = reactive({
   total_pembayaran: null,
   total_sisa: null,
 })
+
+// ── Bulk select state ──────────────────────────────────────────────────────
+const selectedInvoices    = ref([])
+const showShareDialog     = ref(false)
+const shareTargetInvoices = ref([])
+
+function openShareDialog(invoices) {
+  shareTargetInvoices.value = Array.isArray(invoices) ? invoices : [invoices]
+  showShareDialog.value = true
+}
+
+async function doBulkDelete() {
+  const draftItems = selectedInvoices.value.filter(inv => inv.status === 'DRAFT')
+  const skipped = selectedInvoices.value.length - draftItems.length
+
+  if (!draftItems.length) {
+    await showError('Tidak ada invoice berstatus DRAFT yang bisa dihapus.')
+    return
+  }
+
+  const confirmText = skipped > 0
+    ? `Hanya ${draftItems.length} invoice DRAFT yang akan dihapus. ${skipped} invoice non-DRAFT dilewati.`
+    : `Sebanyak ${draftItems.length} invoice yang dipilih akan dihapus.`
+
+  const { isConfirmed } = await confirmDelete(confirmText)
+  if (!isConfirmed) return
+
+  showLoading({ title: 'Menghapus Data', text: 'Invoice sedang dihapus...' })
+  try {
+    const res = await api.delete('/finance/invoices/bulk', {
+      data: { ids: draftItems.map(inv => inv.id) },
+    })
+    const deleted = res.data?.data?.deleted ?? draftItems.length
+    selectedInvoices.value = []
+    loadList()
+    if (canSeeAll) loadListB2B()
+    loadSummary()
+    await showSuccess(`${deleted} invoice berhasil dihapus.`)
+  } catch (err) {
+    await showError(err.response?.data?.message ?? 'Gagal menghapus invoice')
+  } finally {
+    closeAlert({ onlyLoading: true })
+  }
+}
 
 // ── Catat Bayar state ──────────────────────────────────────────────────────
 const showPembayaran     = ref(false)

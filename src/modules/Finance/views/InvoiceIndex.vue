@@ -259,6 +259,8 @@
         :loading="loadingB2B"
         :per-page="metaB2B.per_page"
         :page="metaB2B.current_page"
+        show-select
+        v-model:selected="selectedInvoices"
         @update:options="onTableOptionsB2B"
       >
         <template #item.no="{ index }">
@@ -316,7 +318,7 @@
               size="small"
               variant="tonal"
               color="success"
-              @click="shareViaWhatsapp(item)"
+              @click="openShareDialog([item])"
             >
               <VIcon icon="ri-whatsapp-line" size="18" />
               <VTooltip activator="parent">Kirim via WhatsApp</VTooltip>
@@ -395,6 +397,8 @@
         :loading="loadingB2C"
         :per-page="metaB2C.per_page"
         :page="metaB2C.current_page"
+        show-select
+        v-model:selected="selectedInvoices"
         @update:options="onTableOptionsB2C"
       >
         <template #item.no="{ index }">
@@ -446,7 +450,7 @@
               size="small"
               variant="tonal"
               color="success"
-              @click="shareViaWhatsapp(item)"
+              @click="openShareDialog([item])"
             >
               <VIcon icon="ri-whatsapp-line" size="18" />
               <VTooltip activator="parent">Kirim via WhatsApp</VTooltip>
@@ -528,6 +532,20 @@
       :sisa-tagihan="selectedForPayment.sisa_tagihan"
       @saved="onPembayaranSaved"
     />
+    <!-- Bulk Action Bar -->
+    <BulkActionBar
+      :selected="selectedInvoices"
+      @share="openShareDialog(selectedInvoices)"
+      @delete="doBulkDelete"
+      @clear="selectedInvoices = []"
+    />
+
+    <!-- Share Dialog -->
+    <ShareInvoicesDialog
+      v-model="showShareDialog"
+      :pre-selected="shareTargetInvoices"
+    />
+
     <!-- Import Modal -->
     <VDialog
       v-model="showImport"
@@ -801,10 +819,12 @@ import { useFormatter } from '@/composables/useFormatter.js'
 import { useAuthStore } from '@/stores/auth.store'
 import api from '@/utils/axios.js'
 import InvoiceStatusBadge from '../components/InvoiceStatusBadge.vue'
+import ShareInvoicesDialog from '../components/ShareInvoicesDialog.vue'
+import BulkActionBar from '../components/BulkActionBar.vue'
 
 const PembayaranForm = defineAsyncComponent(() => import('../components/PembayaranForm.vue'))
 
-const { showSuccess, showError, showLoading, closeAlert } = useSweetAlert()
+const { showSuccess, showError, showLoading, closeAlert, confirmDelete: confirmDeleteSwal } = useSweetAlert()
 const authStore = useAuthStore()
 const { items: itemsB2C, loading: loadingB2C, meta: metaB2C, params: paramsB2C, fetchList: fetchListB2C, remove } = useCrud('/finance/invoices')
 const { items: itemsB2B, loading: loadingB2B, meta: metaB2B, params: paramsB2B, fetchList: fetchListB2B } = useCrud('/finance/invoices')
@@ -826,6 +846,9 @@ const showDelete         = ref(false)
 const deleteError        = ref('')
 const selectedInvoice    = ref(null)
 const showPembayaran     = ref(false)
+const selectedInvoices   = ref([])
+const showShareDialog    = ref(false)
+const shareTargetInvoices = ref([])
 const selectedForPayment = ref(null)
 const exportingExcel  = ref(false)
 const showImport      = ref(false)
@@ -1091,26 +1114,43 @@ async function printInvoice(id) {
   }
 }
 
-async function shareViaWhatsapp(inv) {
-  const rawPhone = inv.klien_ar?.no_wa ?? ''
-  if (!rawPhone) {
-    await showError('Nomor WhatsApp klien belum diisi. Silakan lengkapi data No. WhatsApp pada form Client.')
+function openShareDialog(invoices) {
+  shareTargetInvoices.value = Array.isArray(invoices) ? invoices : [invoices]
+  showShareDialog.value = true
+}
+
+async function doBulkDelete() {
+  const draftItems = selectedInvoices.value.filter(inv => inv.status === 'DRAFT')
+  const skipped = selectedInvoices.value.length - draftItems.length
+
+  if (!draftItems.length) {
+    await showError('Tidak ada invoice berstatus DRAFT yang bisa dihapus.')
     return
   }
 
-  const phone = rawPhone.startsWith('0')
-    ? '62' + rawPhone.slice(1)
-    : rawPhone.replace(/^\+/, '')
+  const confirmText = skipped > 0
+    ? `Hanya ${draftItems.length} invoice DRAFT yang akan dihapus. ${skipped} invoice non-DRAFT dilewati.`
+    : `Sebanyak ${draftItems.length} invoice yang dipilih akan dihapus.`
 
-  const total = new Intl.NumberFormat('id-ID').format(inv.total_tagihan)
-  const msg =
-    `Halo, berikut kami kirimkan Invoice *${inv.no_invoice}*.\n\n` +
-    `Klien: ${inv.klien_ar.nama_klien}\n` +
-    `Total Tagihan: Rp ${total}\n` +
-    `Periode: ${inv.periode_awal} s/d ${inv.periode_akhir}\n\n` +
-    `Silakan akses dan unduh invoice di:\n${inv.share_url}`
+  const { isConfirmed } = await confirmDeleteSwal(confirmText)
+  if (!isConfirmed) return
 
-  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank')
+  showLoading({ title: 'Menghapus Data', text: 'Invoice sedang dihapus...' })
+  try {
+    const res = await api.delete('/finance/invoices/bulk', {
+      data: { ids: draftItems.map(inv => inv.id) },
+    })
+    const deleted = res.data?.data?.deleted ?? draftItems.length
+    selectedInvoices.value = []
+    loadListB2C()
+    if (canSeeAll) loadListB2B()
+    loadSummary()
+    await showSuccess(`${deleted} invoice berhasil dihapus.`)
+  } catch (err) {
+    await showError(err.response?.data?.message ?? 'Gagal menghapus invoice')
+  } finally {
+    closeAlert({ onlyLoading: true })
+  }
 }
 
 async function doDelete() {
