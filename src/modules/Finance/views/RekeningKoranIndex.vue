@@ -2,7 +2,7 @@
   <div>
     <PageHeader
       title="Rekening Koran"
-      subtitle="Riwayat transaksi per klien dengan saldo berjalan"
+      subtitle="Jurnal umum transaksi bank dari seluruh PIC AR"
       :breadcrumbs="[
         { title: 'Dashboard', to: { name: 'dashboard' } },
         { title: 'Laporan', to: { name: 'finance-laporan' } },
@@ -10,42 +10,34 @@
       ]"
     >
       <VBtn variant="text" prepend-icon="ri-arrow-left-line" :to="{ name: 'finance-laporan' }">Kembali</VBtn>
-      <div v-if="report.rows.length > 0" class="d-flex gap-2">
-        <VBtn
-          color="primary"
-          prepend-icon="ri-file-excel-2-line"
-          :loading="exporting.excel"
-          @click="doExport('excel')"
-        >
-          Export Excel
-        </VBtn>
-        <VBtn
-          color="primary"
-          prepend-icon="ri-file-pdf-2-line"
-          :loading="exporting.pdf"
-          @click="doExport('pdf')"
-        >
-          Export PDF
-        </VBtn>
-      </div>
     </PageHeader>
 
     <!-- Filter -->
     <VCard class="mb-4">
       <VCardText class="d-flex flex-wrap gap-3 align-center">
         <VAutocomplete
-          v-model="filters.klien_ar_id"
-          placeholder="Pilih Klien (wajib)"
+          v-model="filters.pic_ar_id"
+          placeholder="Semua PIC AR"
           clearable
           hide-details
           density="compact"
-          style="max-width: 280px"
-          :items="klienList"
-          item-title="nama_klien"
+          style="max-width: 230px"
+          :items="picArList"
+          item-title="name"
           item-value="id"
-          :loading="klienLoading"
-          @focus="ensureKlienLoaded()"
-          @update:model-value="onKlienChange"
+          :loading="picArLoading"
+          @focus="ensurePicArLoaded()"
+          @update:model-value="doFetch"
+        />
+        <VSelect
+          v-model="filters.bank_type"
+          placeholder="Semua Bank"
+          clearable
+          hide-details
+          density="compact"
+          style="max-width: 160px"
+          :items="bankTypeOptions"
+          @update:model-value="doFetch"
         />
         <VTextField
           v-model="filters.periode_awal"
@@ -65,191 +57,237 @@
           style="max-width: 180px"
           @update:model-value="doFetch"
         />
-      </VCardText>
-    </VCard>
-
-    <!-- Empty state: belum pilih klien -->
-    <VCard v-if="!filters.klien_ar_id" class="d-flex align-center justify-center" style="min-height: 300px;">
-      <VCardText class="text-center text-medium-emphasis">
-        <VIcon icon="ri-file-paper-2-line" size="64" class="mb-4 text-disabled" />
-        <div class="text-h6 mb-1">Pilih Klien Terlebih Dahulu</div>
-        <div class="text-body-2">Rekening koran akan ditampilkan setelah klien dipilih</div>
-      </VCardText>
-    </VCard>
-
-    <template v-else>
-      <!-- Summary Cards -->
-      <VRow class="mb-4">
-        <!-- Saldo Awal -->
-        <VCol cols="12" sm="6" md="3">
-          <VCard class="stat-card">
-            <VCardText class="pa-4">
-              <div class="d-flex align-center justify-space-between mb-3">
-                <span class="text-overline text-medium-emphasis font-weight-bold">Saldo Awal</span>
-                <VAvatar color="secondary" size="40" rounded="lg">
-                  <VIcon icon="ri-wallet-3-line" size="20" class="text-white" />
-                </VAvatar>
-              </div>
-              <div class="text-h5 font-weight-bold mb-1">
-                {{ formatCurrency(report.saldo_awal ?? 0) }}
-              </div>
-              <div class="stat-bar" style="background: rgb(var(--v-theme-secondary));" />
-            </VCardText>
-          </VCard>
-        </VCol>
-
-        <!-- Total Debit -->
-        <VCol cols="12" sm="6" md="3">
-          <VCard class="stat-card">
-            <VCardText class="pa-4">
-              <div class="d-flex align-center justify-space-between mb-3">
-                <span class="text-overline text-medium-emphasis font-weight-bold">Total Debit</span>
-                <VAvatar color="warning" size="40" rounded="lg">
-                  <VIcon icon="ri-bill-line" size="20" class="text-white" />
-                </VAvatar>
-              </div>
-              <div class="text-h5 font-weight-bold text-warning mb-1">
-                {{ formatCurrency(report.total_debit ?? 0) }}
-              </div>
-              <div class="stat-bar" style="background: rgb(var(--v-theme-warning));" />
-            </VCardText>
-          </VCard>
-        </VCol>
-
-        <!-- Total Kredit -->
-        <VCol cols="12" sm="6" md="3">
-          <VCard class="stat-card">
-            <VCardText class="pa-4">
-              <div class="d-flex align-center justify-space-between mb-3">
-                <span class="text-overline text-medium-emphasis font-weight-bold">Total Kredit</span>
-                <VAvatar color="success" size="40" rounded="lg">
-                  <VIcon icon="ri-money-cny-circle-line" size="20" class="text-white" />
-                </VAvatar>
-              </div>
-              <div class="text-h5 font-weight-bold text-success mb-1">
-                {{ formatCurrency(report.total_kredit ?? 0) }}
-              </div>
-              <div class="stat-bar" style="background: rgb(var(--v-theme-success));" />
-            </VCardText>
-          </VCard>
-        </VCol>
-
-        <!-- Saldo Akhir -->
-        <VCol cols="12" sm="6" md="3">
-          <VCard class="stat-card">
-            <VCardText class="pa-4">
-              <div class="d-flex align-center justify-space-between mb-3">
-                <span class="text-overline text-medium-emphasis font-weight-bold">Saldo Akhir</span>
-                <VAvatar
-                  :color="(report.saldo_akhir ?? 0) > 0 ? 'error' : 'success'"
-                  size="40"
-                  rounded="lg"
-                >
-                  <VIcon
-                    :icon="(report.saldo_akhir ?? 0) > 0 ? 'ri-error-warning-line' : 'ri-check-double-line'"
-                    size="20"
-                    class="text-white"
-                  />
-                </VAvatar>
-              </div>
-              <div
-                class="text-h5 font-weight-bold mb-1"
-                :class="(report.saldo_akhir ?? 0) > 0 ? 'text-error' : 'text-success'"
-              >
-                {{ formatCurrency(report.saldo_akhir ?? 0) }}
-              </div>
-              <div
-                class="stat-bar"
-                :style="{ background: `rgb(var(--v-theme-${(report.saldo_akhir ?? 0) > 0 ? 'error' : 'success'}))` }"
-              />
-            </VCardText>
-          </VCard>
-        </VCol>
-      </VRow>
-
-      <!-- Tabel -->
-      <VCard>
-        <VCardText class="pb-0">
-          <div class="text-caption text-medium-emphasis">
-            <span v-if="report.klien">
-              <strong>{{ report.klien.nama_klien }}</strong>
-              <span v-if="report.klien.perusahaan"> &mdash; {{ report.klien.perusahaan }}</span>
-            </span>
-            &nbsp;&middot;&nbsp;
-            Periode: <strong>{{ report.periode_awal ?? '-' }}</strong>
-            s/d <strong>{{ report.periode_akhir ?? '-' }}</strong>
-            &nbsp;&middot;&nbsp; {{ report.rows?.length ?? 0 }} transaksi
-          </div>
-        </VCardText>
-        <VDivider class="mt-2" />
-        <VProgressLinear v-if="loading" indeterminate color="primary" />
-        <BaseTable
-          :headers="headers"
-          :items="paginatedRows"
-          :total="report.rows.length"
-          :loading="loading"
-          :per-page="perPage"
-          :page="page"
-          @update:options="onTableOptions"
+        <VBtnToggle
+          v-model="filters.status_posting_2"
+          density="compact"
+          rounded="lg"
+          color="success"
+          @update:model-value="doFetch"
         >
-          <template #item.no="{ index }">
-            {{ (page - 1) * perPage + index + 1 }}
-          </template>
-          <template #item.tipe="{ item }">
-            <VChip
-              :color="item.tipe === 'INVOICE' ? 'warning' : 'success'"
-              size="x-small"
-              variant="tonal"
-              label
-            >
-              {{ item.tipe }}
-            </VChip>
-          </template>
-          <template #item.debit="{ item }">
-            <span v-if="item.debit > 0" class="text-warning font-weight-medium">
-              {{ formatCurrency(item.debit) }}
-            </span>
-            <span v-else class="text-disabled">-</span>
-          </template>
-          <template #item.kredit="{ item }">
-            <span v-if="item.kredit > 0" class="text-success font-weight-medium">
-              {{ formatCurrency(item.kredit) }}
-            </span>
-            <span v-else class="text-disabled">-</span>
-          </template>
-          <template #item.saldo="{ item }">
-            <span class="font-weight-bold" :class="item.saldo > 0 ? 'text-error' : 'text-success'">
-              {{ formatCurrency(item.saldo) }}
-            </span>
-          </template>
-        </BaseTable>
-      </VCard>
-    </template>
+          <VBtn value="">Semua</VBtn>
+          <VBtn value="POSTED">Posted</VBtn>
+          <VBtn value="PENDING">Pending</VBtn>
+        </VBtnToggle>
+      </VCardText>
+    </VCard>
+
+    <!-- Summary Cards -->
+    <VRow class="mb-4">
+      <VCol cols="12" sm="6" md="3">
+        <VCard class="stat-card">
+          <VCardText class="pa-4">
+            <div class="d-flex align-center justify-space-between mb-3">
+              <span class="text-overline text-medium-emphasis font-weight-bold">Total Matched</span>
+              <VAvatar color="secondary" size="40" rounded="lg">
+                <VIcon icon="ri-check-double-line" size="20" class="text-white" />
+              </VAvatar>
+            </div>
+            <div class="text-h5 font-weight-bold mb-1">
+              {{ summary.total_matched.toLocaleString('id-ID') }}
+            </div>
+            <div class="stat-bar" style="background: rgb(var(--v-theme-secondary));" />
+          </VCardText>
+        </VCard>
+      </VCol>
+
+      <VCol cols="12" sm="6" md="3">
+        <VCard class="stat-card">
+          <VCardText class="pa-4">
+            <div class="d-flex align-center justify-space-between mb-3">
+              <span class="text-overline text-medium-emphasis font-weight-bold">Total Posted</span>
+              <VAvatar color="success" size="40" rounded="lg">
+                <VIcon icon="ri-checkbox-circle-line" size="20" class="text-white" />
+              </VAvatar>
+            </div>
+            <div class="text-h5 font-weight-bold text-success mb-1">
+              {{ summary.total_posted.toLocaleString('id-ID') }}
+            </div>
+            <div class="stat-bar" style="background: rgb(var(--v-theme-success));" />
+          </VCardText>
+        </VCard>
+      </VCol>
+
+      <VCol cols="12" sm="6" md="3">
+        <VCard class="stat-card">
+          <VCardText class="pa-4">
+            <div class="d-flex align-center justify-space-between mb-3">
+              <span class="text-overline text-medium-emphasis font-weight-bold">Total Pending</span>
+              <VAvatar color="warning" size="40" rounded="lg">
+                <VIcon icon="ri-time-line" size="20" class="text-white" />
+              </VAvatar>
+            </div>
+            <div class="text-h5 font-weight-bold text-warning mb-1">
+              {{ summary.total_pending.toLocaleString('id-ID') }}
+            </div>
+            <div class="stat-bar" style="background: rgb(var(--v-theme-warning));" />
+          </VCardText>
+        </VCard>
+      </VCol>
+
+      <VCol cols="12" sm="6" md="3">
+        <VCard class="stat-card">
+          <VCardText class="pa-4">
+            <div class="d-flex align-center justify-space-between mb-3">
+              <span class="text-overline text-medium-emphasis font-weight-bold">Total Mutasi Masuk</span>
+              <VAvatar color="primary" size="40" rounded="lg">
+                <VIcon icon="ri-money-cny-circle-line" size="20" class="text-white" />
+              </VAvatar>
+            </div>
+            <div class="text-h5 font-weight-bold text-primary mb-1">
+              {{ formatCurrency(summary.total_mutasi_masuk) }}
+            </div>
+            <div class="stat-bar" style="background: rgb(var(--v-theme-primary));" />
+          </VCardText>
+        </VCard>
+      </VCol>
+    </VRow>
+
+    <!-- Tabel -->
+    <VCard>
+      <VCardText class="pb-0">
+        <div class="text-caption text-medium-emphasis">
+          {{ summary.total_matched }} transaksi matched
+          <span v-if="filters.bank_type"> &middot; {{ filters.bank_type }}</span>
+          <span v-if="filters.periode_awal || filters.periode_akhir">
+            &middot; Periode:
+            <strong>{{ filters.periode_awal || '-' }}</strong>
+            s/d
+            <strong>{{ filters.periode_akhir || '-' }}</strong>
+          </span>
+        </div>
+      </VCardText>
+      <VDivider class="mt-2" />
+      <VProgressLinear v-if="loading" indeterminate color="primary" />
+      <BaseTable
+        :headers="headers"
+        :items="rows"
+        :total="meta.total"
+        :loading="loading"
+        :per-page="meta.per_page"
+        :page="meta.current_page"
+        @update:options="onTableOptions"
+      >
+        <template #item.no="{ index }">
+          {{ (meta.current_page - 1) * meta.per_page + index + 1 }}
+        </template>
+        <template #item.bank_type="{ item }">
+          <VChip
+            :color="bankColor(item.bank_type)"
+            size="x-small"
+            variant="tonal"
+            label
+          >
+            {{ item.bank_type ?? '-' }}
+          </VChip>
+        </template>
+        <template #item.dk="{ item }">
+          <VChip
+            :color="item.dk === 'K' ? 'success' : 'warning'"
+            size="x-small"
+            variant="tonal"
+            label
+          >
+            {{ item.dk }}
+          </VChip>
+        </template>
+        <template #item.mutasi="{ item }">
+          <span
+            class="font-weight-medium"
+            :class="item.dk === 'K' ? 'text-success' : 'text-warning'"
+          >
+            {{ formatCurrency(item.mutasi) }}
+          </span>
+        </template>
+        <template #item.saldo="{ item }">
+          <span class="font-weight-bold">{{ formatCurrency(item.saldo) }}</span>
+        </template>
+        <template #item.status_posting_1="{ item }">
+          <VChip
+            :color="statusRekonColor(item.status_posting_1)"
+            size="x-small"
+            variant="tonal"
+            label
+          >
+            {{ item.status_posting_1 ?? '-' }}
+          </VChip>
+        </template>
+        <template #item.selisih="{ item }">
+          <span v-if="item.selisih > 0" class="text-info font-weight-medium">
+            +{{ formatCurrency(item.selisih) }}
+          </span>
+          <span v-else-if="item.selisih < 0" class="text-error font-weight-medium">
+            -{{ formatCurrency(Math.abs(item.selisih)) }}
+          </span>
+          <span v-else class="text-disabled">-</span>
+        </template>
+        <template #item.waktu_transaksi="{ item }">
+          <span class="text-mono text-caption">{{ item.waktu_transaksi ?? '-' }}</span>
+        </template>
+        <template #item.deskripsi="{ item }">
+          <span v-if="item.deskripsi" class="text-caption">{{ item.deskripsi }}</span>
+          <span v-else class="text-disabled">-</span>
+        </template>
+        <template #item.status_posting_2="{ item }">
+          <VChip
+            v-if="item.status_posting_2 === 'POSTED'"
+            color="success"
+            size="x-small"
+            variant="tonal"
+            label
+          >
+            {{ item.posted_by ?? item.pic_ar ?? '-' }} Sudah Posting
+          </VChip>
+          <VChip
+            v-else
+            color="secondary"
+            size="x-small"
+            variant="tonal"
+            label
+          >
+            {{ item.pic_ar ?? '-' }} Belum Posting
+          </VChip>
+        </template>
+      </BaseTable>
+    </VCard>
   </div>
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { useCrud } from '@/composables/useCrud'
 import { useLazyFetchAll } from '@/composables/useLazyFetchAll'
 import { useFormatter } from '@/composables/useFormatter'
 import api from '@/utils/axios'
 
 const { formatCurrency } = useFormatter()
-const { items: klienList, loading: klienLoading, fetchAll: fetchKlien } = useCrud('/finance/klien-ar')
-const { ensureLoaded: ensureKlienLoaded } = useLazyFetchAll(fetchKlien)
 
-const loading  = ref(false)
-const exporting = reactive({ excel: false, pdf: false })
-const report   = reactive({
-  klien: null,
-  periode_awal: null,
-  periode_akhir: null,
-  saldo_awal: 0,
-  total_debit: 0,
-  total_kredit: 0,
-  saldo_akhir: 0,
-  rows: [],
+// PIC AR list
+const picArList    = ref([])
+const picArLoading = ref(false)
+async function fetchPicAr() {
+  picArLoading.value = true
+  try {
+    const { data } = await api.get('/finance/rekening-koran/pic-ar-list')
+    picArList.value = data.data
+  } finally {
+    picArLoading.value = false
+  }
+}
+const { ensureLoaded: ensurePicArLoaded } = useLazyFetchAll(fetchPicAr)
+
+const loading = ref(false)
+const rows    = ref([])
+const summary = reactive({
+  total_matched:      0,
+  total_posted:       0,
+  total_pending:      0,
+  total_mutasi_masuk: 0,
+})
+const meta = reactive({
+  current_page: 1,
+  last_page:    1,
+  per_page:     25,
+  total:        0,
 })
 
 const now      = new Date()
@@ -257,89 +295,81 @@ const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().sl
 const lastDay  = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10)
 
 const filters = reactive({
-  klien_ar_id:   null,
-  periode_awal:  firstDay,
-  periode_akhir: lastDay,
+  pic_ar_id:        null,
+  bank_type:        null,
+  periode_awal:     firstDay,
+  periode_akhir:    lastDay,
+  status_posting_1: '',
+  status_posting_2: '',
 })
 
-const page    = ref(1)
-const perPage = ref(25)
-
-const paginatedRows = computed(() =>
-  report.rows.slice((page.value - 1) * perPage.value, page.value * perPage.value)
-)
-
-function onTableOptions({ page: p, itemsPerPage }) {
-  page.value    = p
-  perPage.value = itemsPerPage
-}
-
-function onKlienChange() {
-  if (filters.klien_ar_id) doFetch()
-  else {
-    Object.assign(report, { klien: null, saldo_awal: 0, total_debit: 0, total_kredit: 0, saldo_akhir: 0, rows: [] })
-  }
-}
+const bankTypeOptions = ['BCA', 'MANDIRI', 'CIMB', 'BSI']
 
 const headers = [
-  { title: 'No',          key: 'no',          sortable: false, width: '50px' },
-  { title: 'Tanggal',     key: 'tanggal',     sortable: false, width: '110px' },
-  { title: 'Tipe',        key: 'tipe',        sortable: false, width: '100px' },
-  { title: 'No. Dokumen', key: 'no_dokumen',  sortable: false },
-  { title: 'Keterangan',  key: 'keterangan',  sortable: false },
-  { title: 'Debit',       key: 'debit',       sortable: false, align: 'end' },
-  { title: 'Kredit',      key: 'kredit',      sortable: false, align: 'end' },
-  { title: 'Saldo',       key: 'saldo',       sortable: false, align: 'end' },
+  { title: 'No',               key: 'no',               sortable: false, width: '50px' },
+  { title: 'TRXID',            key: 'no_referensi',     sortable: false },
+  { title: 'TGL',              key: 'tanggal',          sortable: false, width: '110px' },
+  { title: 'TRX TIME',         key: 'waktu_transaksi',  sortable: false, width: '100px' },
+  { title: 'D/K',              key: 'dk',               sortable: false, width: '60px' },
+  { title: 'MUTASI',           key: 'mutasi',           sortable: false, align: 'end' },
+  { title: 'SALDO',            key: 'saldo',            sortable: false, align: 'end' },
+  { title: 'DESKRIPSI',        key: 'deskripsi',        sortable: false },
+  { title: 'KETERANGAN BANK',  key: 'keterangan',       sortable: false },
+  { title: 'STATUS POSTING 1', key: 'status_posting_1', sortable: false, width: '140px' },
+  { title: 'DB',               key: 'no_dokumen_ar',    sortable: false },
+  { title: 'SELISIH',          key: 'selisih',          sortable: false, align: 'end' },
+  { title: 'STATUS POSTING 2', key: 'status_posting_2', sortable: false, width: '140px' },
 ]
 
-function buildParams() {
-  const params = {}
-  if (filters.klien_ar_id)   params.klien_ar_id   = filters.klien_ar_id
-  if (filters.periode_awal)  params.periode_awal  = filters.periode_awal
-  if (filters.periode_akhir) params.periode_akhir = filters.periode_akhir
+function buildParams(page = meta.current_page, perPage = meta.per_page) {
+  const params = { page, per_page: perPage }
+  if (filters.pic_ar_id)        params.pic_ar_id        = filters.pic_ar_id
+  if (filters.bank_type)        params.bank_type        = filters.bank_type
+  if (filters.periode_awal)     params.periode_awal     = filters.periode_awal
+  if (filters.periode_akhir)    params.periode_akhir    = filters.periode_akhir
+  if (filters.status_posting_1) params.status_posting_1 = filters.status_posting_1
+  if (filters.status_posting_2) params.status_posting_2 = filters.status_posting_2
   return params
 }
 
-async function doFetch() {
-  if (!filters.klien_ar_id) return
-  page.value    = 1
+async function doFetch(resetPage = true) {
+  if (resetPage) meta.current_page = 1
   loading.value = true
   try {
     const { data } = await api.get('/finance/rekening-koran', { params: buildParams() })
-    Object.assign(report, data.data)
+    const result = data.data
+    rows.value = result.rows
+    Object.assign(summary, {
+      total_matched:      result.total_matched,
+      total_posted:       result.total_posted,
+      total_pending:      result.total_pending,
+      total_mutasi_masuk: result.total_mutasi_masuk,
+    })
+    Object.assign(meta, result.meta)
   } finally {
     loading.value = false
   }
 }
 
-async function doExport(type) {
-  exporting[type] = true
-  try {
-    const endpoint = type === 'excel'
-      ? '/finance/rekening-koran/export-excel'
-      : '/finance/rekening-koran/export-pdf'
-
-    const mimeType = type === 'excel'
-      ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-      : 'application/pdf'
-
-    const ext = type === 'excel' ? 'xlsx' : 'pdf'
-
-    const response = await api.get(endpoint, {
-      params: buildParams(),
-      responseType: 'blob',
-    })
-
-    const url  = URL.createObjectURL(new Blob([response.data], { type: mimeType }))
-    const link = document.createElement('a')
-    link.href  = url
-    link.download = `rekening-koran-${filters.klien_ar_id}-${filters.periode_awal}-${filters.periode_akhir}.${ext}`
-    link.click()
-    URL.revokeObjectURL(url)
-  } finally {
-    exporting[type] = false
-  }
+function onTableOptions({ page, itemsPerPage }) {
+  meta.current_page = page
+  meta.per_page     = itemsPerPage
+  doFetch(false)
 }
+
+function bankColor(type) {
+  const map = { BCA: 'info', MANDIRI: 'warning', CIMB: 'error', BSI: 'success' }
+  return map[type] ?? 'default'
+}
+
+function statusRekonColor(status) {
+  if (status === 'MATCHED')   return 'success'
+  if (status === 'UNMATCHED') return 'warning'
+  if (status === 'DIABAIKAN') return 'default'
+  return 'default'
+}
+
+onMounted(doFetch)
 </script>
 
 <style scoped>
