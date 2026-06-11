@@ -3,13 +3,11 @@ import axios from 'axios'
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
   headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+  withCredentials: true,
   timeout: 15000,
 })
 
 api.interceptors.request.use(config => {
-  const token = localStorage.getItem('auth_token')
-  if (token) config.headers.Authorization = `Bearer ${token}`
-
   // Untuk FormData (file upload), hapus Content-Type agar browser/axios
   // otomatis mengisi 'multipart/form-data; boundary=...' yang benar.
   // Jika Content-Type tetap 'application/json', server tidak bisa membaca file.
