@@ -12,44 +12,10 @@
 <body>
   <!-- Loading screen — outside #app so Vue mount doesn't remove it prematurely -->
   <div id="loading-bg">
-    <div class="iron-grid"></div>
-    <div class="iron-scanline"></div>
-
-    <!-- Ambient glow orbs -->
-    <div class="iron-orb iron-orb-a"></div>
-    <div class="iron-orb iron-orb-b"></div>
-
     <div class="iron-content">
-      <!-- Logo -->
-      <div class="iron-logo-wrap">
-        <svg width="72" height="40" viewBox="0 0 268 150" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect width="50.289" height="143.953" rx="25.144" transform="matrix(-.8652 .50142 .49859 .86684 195.571 0)" fill="#38bdf8" />
-          <rect width="50.289" height="143.953" rx="25.144" transform="matrix(-.8652 .50142 .49859 .86684 196.084 0)" fill="url(#la)" fill-opacity=".4" />
-          <rect width="50.289" height="143.953" rx="25.144" transform="rotate(30.094 86.573 322.042) skewX(.187)" fill="#38bdf8" />
-          <rect width="50.289" height="143.953" rx="25.144" transform="matrix(-.8652 .50142 .49859 .86684 94.197 0)" fill="#38bdf8" />
-          <rect width="50.289" height="143.953" rx="25.144" transform="matrix(-.8652 .50142 .49859 .86684 94.197 0)" fill="url(#lb)" fill-opacity=".4" />
-          <rect width="50.289" height="143.953" rx="25.144" transform="rotate(30.094 35.886 133.493) skewX(.187)" fill="#38bdf8" />
-          <defs>
-            <linearGradient id="la" x1="25.144" y1="0" x2="25.144" y2="143.953" gradientUnits="userSpaceOnUse">
-              <stop />
-              <stop offset="1" stop-opacity="0" />
-            </linearGradient>
-            <linearGradient id="lb" x1="25.144" y1="0" x2="25.144" y2="143.953" gradientUnits="userSpaceOnUse">
-              <stop />
-              <stop offset="1" stop-opacity="0" />
-            </linearGradient>
-          </defs>
-        </svg>
-      </div>
-
-      <!-- Decrypt title -->
+      <!-- Scatter-assemble title -->
       <div class="iron-brand-wrap">
-        <span class="iron-title" id="iron-decrypt">IRON</span>
-      </div>
-
-      <!-- Subtitle — fades in after decrypt finishes -->
-      <div class="iron-subtitle" id="iron-subtitle">
-        Intelligent Record of Organization Number
+        <span class="iron-title" id="iron-decrypt"></span>
       </div>
 
       <!-- Divider line -->
@@ -75,42 +41,88 @@
 
   <script>
     ;(function () {
-      // ── Decrypt Identity Effect ─────────────────────────────────────────────
-      const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&*!?';
-      const TARGET = 'IRON';
-      const el = document.getElementById('iron-decrypt');
+      var CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%&*!?+=~';
+      var TEXT  = 'Intelligent Record of Organization Number';
+      var el    = document.getElementById('iron-decrypt');
 
-      let frame = 0;
-      const TOTAL_FRAMES = 50; // ~1500ms at 30ms interval
-
-      const decryptTimer = setInterval(function () {
-        const progress = frame / TOTAL_FRAMES;
-
-        el.textContent = TARGET.split('').map(function (char, i) {
-          if (progress >= (i + 1) / TARGET.length) return char;
-          return CHARS[Math.floor(Math.random() * CHARS.length)];
-        }).join(' '); // thin space between letters
-
-        frame++;
-
-        if (frame > TOTAL_FRAMES) {
-          clearInterval(decryptTimer);
-          el.textContent = TARGET.split('').join(' ');
-
-          // Reveal subtitle + divider after decrypt completes
-          setTimeout(function () {
-            var sub = document.getElementById('iron-subtitle');
-            var div = document.getElementById('iron-divider');
-            if (sub) sub.classList.add('iron-visible');
-            if (div) div.classList.add('iron-visible');
-          }, 150);
+      // Build individual character spans
+      el.innerHTML = '';
+      var charData = [];
+      TEXT.split('').forEach(function (ch) {
+        var span = document.createElement('span');
+        span.className = 'iron-char';
+        if (ch === ' ') {
+          span.textContent = ' ';
+          span.style.opacity = '1';
+        } else {
+          span.textContent = CHARS[Math.floor(Math.random() * CHARS.length)];
+          span.style.opacity = '0';
         }
-      }, 30);
+        el.appendChild(span);
+        charData.push({ el: span, target: ch, isSpace: ch === ' ' });
+      });
+
+      // ── Phase 1: Scatter chars across viewport ─────────────────────────────
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          var vw = window.innerWidth;
+          var vh = window.innerHeight;
+
+          charData.forEach(function (d) {
+            if (d.isSpace) return;
+            var rx  = (Math.random() - 0.5) * vw * 1.5;
+            var ry  = (Math.random() - 0.5) * vh * 1.3;
+            var rot = (Math.random() - 0.5) * 720;
+            d.el.style.transform  = 'translate(' + rx + 'px, ' + ry + 'px) rotate(' + rot + 'deg)';
+            d.el.style.opacity    = '0.25';
+            d.el.style.transition = 'none';
+          });
+
+          // ── Phase 2: Assemble after 400ms scatter display ───────────────────
+          setTimeout(function () {
+            var settled   = 0;
+            var nonSpaces = charData.filter(function (d) { return !d.isSpace; });
+            var total     = nonSpaces.length;
+
+            nonSpaces.forEach(function (d) {
+              var delay = Math.random() * 500; // max 500ms stagger
+
+              setTimeout(function () {
+                // Fly to natural position
+                d.el.style.transition = 'transform 0.75s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease';
+                d.el.style.transform  = 'translate(0px, 0px) rotate(0deg)';
+                d.el.style.opacity    = '1';
+
+                // Scramble during flight, settle at arrival
+                var ticks    = 0;
+                var maxTicks = 10;
+                var timer = setInterval(function () {
+                  if (ticks >= maxTicks) {
+                    d.el.textContent = d.target;
+                    clearInterval(timer);
+                    settled++;
+                    if (settled >= total) {
+                      setTimeout(function () {
+                        var div = document.getElementById('iron-divider');
+                        if (div) div.classList.add('iron-visible');
+                      }, 150);
+                    }
+                  } else {
+                    d.el.textContent = CHARS[Math.floor(Math.random() * CHARS.length)];
+                    ticks++;
+                  }
+                }, 50);
+
+              }, delay);
+            });
+          }, 400);
+        });
+      });
 
       // ── Progress Bar Simulation ─────────────────────────────────────────────
-      var fill = document.getElementById('iron-progress-fill');
-      var glow = document.getElementById('iron-progress-glow');
-      var pctEl = document.getElementById('iron-progress-pct');
+      var fill     = document.getElementById('iron-progress-fill');
+      var glow     = document.getElementById('iron-progress-glow');
+      var pctEl    = document.getElementById('iron-progress-pct');
       var statusEl = document.getElementById('iron-status');
 
       var statuses = [
@@ -121,11 +133,10 @@
         { at: 82, text: 'Almost ready...' },
       ];
 
-      var progress = 0;
+      var progress  = 0;
       var statusIdx = 0;
 
       var progressTimer = setInterval(function () {
-        // Fast early, slow near 90%
         var inc = progress < 50
           ? Math.random() * 7 + 3
           : progress < 75
@@ -135,11 +146,10 @@
         progress = Math.min(progress + inc, 90);
 
         var pct = Math.floor(progress);
-        if (fill) fill.style.width = pct + '%';
-        if (glow) glow.style.left = Math.max(0, pct - 4) + '%';
+        if (fill)  fill.style.width  = pct + '%';
+        if (glow)  glow.style.left   = Math.max(0, pct - 4) + '%';
         if (pctEl) pctEl.textContent = pct;
 
-        // Advance status label
         if (statusIdx < statuses.length && progress >= statuses[statusIdx].at) {
           if (statusEl) statusEl.textContent = statuses[statusIdx].text;
           statusIdx++;
@@ -148,7 +158,7 @@
         if (progress >= 90) clearInterval(progressTimer);
       }, 110);
 
-      // ── Completion Callback (called by main.js after Vue mount) ─────────────
+      // ── Completion Callback (called by main.js after Vue mount) ────────────
       window.__ironLoadingComplete = function () {
         clearInterval(progressTimer);
         progress = 100;
@@ -157,8 +167,8 @@
           fill.style.transition = 'width 0.35s cubic-bezier(0.4,0,0.2,1)';
           fill.style.width = '100%';
         }
-        if (glow) glow.style.left = '96%';
-        if (pctEl) pctEl.textContent = '100';
+        if (glow)  glow.style.left         = '96%';
+        if (pctEl) pctEl.textContent       = '100';
         if (statusEl) statusEl.textContent = 'Ready.';
 
         setTimeout(function () {

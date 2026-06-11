@@ -23,7 +23,7 @@ async function bootstrap() {
   // Minimum 1.2s ensures decrypt + progress animations complete before loader dismisses.
   await Promise.allSettled([
     authStore.initAuth(),
-    new Promise(resolve => setTimeout(resolve, 1200)),
+    new Promise(resolve => setTimeout(resolve, 2400)),
   ])
 
   app.mount('#app')
