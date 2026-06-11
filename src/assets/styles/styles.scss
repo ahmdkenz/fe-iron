@@ -1,14 +1,14 @@
 // ─── Light mode refinements ───────────────────────────────────────────────
-// AdminLTE palette — background #f4f6f9, sidebar gelap #343a40, primary Bootstrap blue #0d6efd
+// TailAdmin palette — background #f4f6f9, sidebar navy #1C2434, primary Bootstrap blue #0d6efd
 
 .v-theme--light {
-  // Sidebar: AdminLTE dark sidebar #343a40
+  // Sidebar: TailAdmin dark navy #1C2434
   .layout-vertical-nav {
-    background-color: #343a40 !important;
-    border-right: 1px solid rgba(0, 0, 0, 0.20) !important;
-    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15) !important;
+    background-color: #1C2434 !important;
+    border-right: 1px solid rgba(0, 0, 0, 0.25) !important;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.18) !important;
 
-    // Teks nav items terang agar terbaca di atas sidebar gelap
+    // Teks nav items terang agar terbaca di atas sidebar navy
     .nav-item-title,
     .nav-section-title,
     .v-list-item-title,
@@ -16,12 +16,32 @@
       color: rgba(255, 255, 255, 0.85) !important;
     }
 
-    .v-icon {
-      color: rgba(255, 255, 255, 0.70) !important;
+    // Section title text — lebih subtle seperti TailAdmin
+    .nav-section-title .title-text {
+      color: rgba(255, 255, 255, 0.40) !important;
     }
 
-    .v-list-item:hover {
-      background-color: rgba(255, 255, 255, 0.07) !important;
+    // Section title dividers — override ke white agar terlihat di sidebar gelap
+    .nav-section-title .title-text::before,
+    .nav-section-title .title-text::after {
+      border-color: rgba(255, 255, 255, 0.10) !important;
+    }
+
+    // Icon nav item (inactive)
+    .v-icon {
+      color: rgba(255, 255, 255, 0.65) !important;
+    }
+
+    // Active nav item icon — full white tanpa opacity reduction
+    .nav-link > .router-link-exact-active .v-icon,
+    .nav-link > .router-link-active .v-icon {
+      color: #fff !important;
+    }
+
+    // Hover state
+    .v-list-item:hover,
+    .nav-link > a:not(.router-link-active, .router-link-exact-active):hover {
+      background-color: rgba(255, 255, 255, 0.08) !important;
     }
   }
 
@@ -32,6 +52,12 @@
     backdrop-filter: blur(12px) !important;
     border-bottom: 1px solid rgba(0, 0, 0, 0.10) !important;
     box-shadow: 0 1px 10px rgba(0, 0, 0, 0.06) !important;
+    color: #212529;
+  }
+
+  // Content area safeguard — explicit dark text agar tidak tertimpa warna putih
+  .layout-page-content {
+    color: #212529;
   }
 
   // Card: putih dengan shadow netral
@@ -95,6 +121,25 @@
     background: #adb5bd;
   }
 
+  // Breadcrumb: hapus glass box & pill background di light mode → plain text style
+  .modern-breadcrumb-wrapper {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+    border-color: transparent !important;
+  }
+
+  .modern-breadcrumb-wrapper::after {
+    display: none !important;
+  }
+
+  .breadcrumb-active {
+    background: transparent !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    color: rgb(var(--v-theme-primary)) !important;
+  }
+
   // Footer
   .layout-footer {
     background-color: #f4f6f9 !important;
@@ -108,7 +153,8 @@
 
 .v-theme--dark {
   // Navigasi sidebar lebih gelap
-  .v-navigation-drawer {
+  // Fix: gunakan .layout-vertical-nav (bukan .v-navigation-drawer yang tidak exist)
+  .layout-vertical-nav {
     background-color: #0F1120 !important;
     border-right-color: rgba(184, 188, 210, 0.06) !important;
   }
