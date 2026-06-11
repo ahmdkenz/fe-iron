@@ -187,6 +187,19 @@
               <VBtn size="x-small" variant="outlined" color="error" :loading="unmatchLoading === item.id" @click="openUnmatchDialog(item)">
                 <VIcon start size="14">ri-link-unlink</VIcon>Batalkan
               </VBtn>
+              <VBtn
+                v-if="item.status_posting_2 !== 'POSTED'"
+                size="x-small"
+                variant="tonal"
+                color="success"
+                :loading="postingLoadingId === item.id"
+                @click="openPostingDialog(item)"
+              >
+                <VIcon start size="14">ri-checkbox-circle-line</VIcon>Posting
+              </VBtn>
+              <VChip v-else color="success" size="x-small" variant="tonal" label>
+                <VIcon start size="12">ri-check-line</VIcon>Sudah Posting
+              </VChip>
             </template>
           </div>
         </template>
@@ -269,6 +282,26 @@
           <VSpacer />
           <VBtn variant="text" @click="unmatchDialog = false">Batal</VBtn>
           <VBtn color="error" variant="tonal" :loading="unmatchSaving" @click="doUnmatch">Ya, Batalkan</VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
+
+    <!-- ── Dialog: Konfirmasi Posting Jurnal ── -->
+    <VDialog v-model="postingDialog" max-width="420" persistent>
+      <VCard>
+        <VCardTitle class="pa-4 pb-2"><span class="text-h6">Konfirmasi Posting</span></VCardTitle>
+        <VDivider />
+        <VCardText class="pa-4">
+          <p class="text-body-2 mb-1">Posting transaksi berikut ke jurnal Rekening Koran?</p>
+          <p class="text-body-2 font-weight-bold mb-0">{{ postingTarget?.no_referensi ?? '-' }}</p>
+        </VCardText>
+        <VDivider />
+        <VCardActions class="pa-4">
+          <VSpacer />
+          <VBtn variant="text" @click="postingDialog = false">Batal</VBtn>
+          <VBtn color="success" variant="tonal" :loading="postingSaving" @click="doPosting">
+            <VIcon start size="16">ri-checkbox-circle-line</VIcon>Ya, Posting
+          </VBtn>
         </VCardActions>
       </VCard>
     </VDialog>
@@ -623,6 +656,32 @@ const invoiceB2BLoading = ref(false)
 const selectedInvoices  = ref({}) // { [invoiceId]: { jumlah, keterangan } }
 const kelebihanSaving   = ref(false)
 const kelebihanError    = ref(null)
+
+// ── Posting dialog ──
+const postingLoadingId = ref(null)
+const postingDialog    = ref(false)
+const postingTarget    = ref(null)
+const postingSaving    = ref(false)
+
+function openPostingDialog(item) {
+  postingTarget.value = item
+  postingDialog.value = true
+}
+
+async function doPosting() {
+  postingSaving.value    = true
+  postingLoadingId.value = postingTarget.value.id
+  try {
+    await api.patch(`/finance/rekening-koran/${postingTarget.value.id}/posting`, {
+      status_posting_2: 'POSTED',
+    })
+    postingTarget.value.status_posting_2 = 'POSTED'
+    postingDialog.value = false
+  } finally {
+    postingSaving.value    = false
+    postingLoadingId.value = null
+  }
+}
 
 // ── PDM ──
 const pdmSaving    = ref(false)
