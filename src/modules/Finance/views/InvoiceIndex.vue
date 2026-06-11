@@ -703,18 +703,18 @@
             class="mb-4"
           >
             <div class="font-weight-semibold mb-1 text-body-2">
-              Template B2B — 1 Sheet Flat:
+              Template B2B — 2 Sheet (Data Invoice + Item Invoice):
             </div>
             <div class="text-caption">
-              <strong>Kolom A–F (Invoice, diulang tiap baris):</strong>
-              no_invoice_konsolidasi · nama_klien · <strong>tanggal_kirim_barang</strong> · tanggal_jatuh_tempo (opt) · periode_awal (opt) · periode_akhir (opt)
+              <strong>Sheet 1 — Kolom A–G (Data Invoice):</strong>
+              no_urut · nama_klien · <strong>tanggal_kirim_barang</strong> · no_surat_jalan (opt) · tanggal_jatuh_tempo (opt) · periode_awal (opt) · periode_akhir (opt)
             </div>
             <div class="text-caption mt-1">
-              <strong>Kolom G–N (Item per baris):</strong>
-              no_invoice_resto · kode_resto · nama_resto · kode_barang · nama_barang · qty · satuan · harga_satuan
+              <strong>Sheet 2 — Kolom A–I (Item Invoice):</strong>
+              no_urut_invoice · no_invoice_resto · kode_resto · nama_resto · kode_barang · nama_barang · qty · satuan · harga_satuan
             </div>
             <div class="text-caption mt-2 font-weight-medium text-success">
-              Satu baris = satu item kiriman per resto. Baris dengan no_invoice_konsolidasi yang sama = satu invoice. Bisa langsung paste dari spreadsheet eksisting.
+              No. Invoice konsolidasi digenerate otomatis oleh sistem (format: SI-ABB-DDMMYYYYHHmmss-XXX). Gunakan no_urut yang sama di Sheet 2 untuk menghubungkan item ke invoice.
             </div>
           </VAlert>
 

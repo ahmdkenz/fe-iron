@@ -98,10 +98,30 @@
                     density="compact"
                     variant="outlined"
                     prepend-inner-icon="ri-hashtag"
-                    :rules="[v => !!v || 'No. Invoice wajib diisi']"
-                    :hint="isB2B ? 'Nomor invoice konsolidasi untuk penagihan ke perusahaan' : ''"
+                    :readonly="isB2B"
+                    :rules="isB2B ? [] : [v => !!v || 'No. Invoice wajib diisi']"
+                    :hint="isB2B ? 'Digenerate otomatis — klik refresh untuk generate ulang' : ''"
                     :persistent-hint="isB2B"
-                  />
+                    :loading="consolidatedNoLoading"
+                  >
+                    <template
+                      v-if="isB2B"
+                      #append-inner
+                    >
+                      <VBtn
+                        icon
+                        size="x-small"
+                        variant="text"
+                        :loading="consolidatedNoLoading"
+                        @click.stop="loadConsolidatedNo"
+                      >
+                        <VIcon
+                          icon="ri-refresh-line"
+                          size="16"
+                        />
+                      </VBtn>
+                    </template>
+                  </VTextField>
                 </VCol>
                 <VCol
                   cols="12"
@@ -643,7 +663,23 @@ const isB2B = computed(() => {
   return klien?.tipe_klien === 'PT'
 })
 
-const noInvoiceResto = ref('')
+const noInvoiceResto       = ref('')
+const consolidatedNoLoading = ref(false)
+
+async function loadConsolidatedNo() {
+  if (!form.klien_ar_id) return
+  consolidatedNoLoading.value = true
+  try {
+    const { data } = await api.get('/finance/invoices/preview-no-konsolidasi', {
+      params: { klien_ar_id: form.klien_ar_id },
+    })
+    form.no_invoice = data.data?.no_invoice ?? ''
+  } catch {
+    // biarkan kosong jika gagal
+  } finally {
+    consolidatedNoLoading.value = false
+  }
+}
 
 const restoList    = ref([])
 const restoLoading = ref(false)
@@ -706,9 +742,13 @@ async function onKlienChange(klienId) {
   await loadCarryover(klienId)
 
   if (selectedKlien.value?.tipe_klien === 'PT') {
-    await loadRestoByPerusahaan(selectedKlien.value.perusahaan_id)
+    await Promise.all([
+      loadRestoByPerusahaan(selectedKlien.value.perusahaan_id),
+      loadConsolidatedNo(),
+    ])
   } else {
     restoList.value = []
+    form.no_invoice = ''
   }
 }
 
