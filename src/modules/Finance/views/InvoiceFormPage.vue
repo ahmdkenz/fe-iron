@@ -98,16 +98,13 @@
                     density="compact"
                     variant="outlined"
                     prepend-inner-icon="ri-hashtag"
-                    :readonly="isB2B"
-                    :rules="isB2B ? [] : [v => !!v || 'No. Invoice wajib diisi']"
-                    :hint="isB2B ? 'Digenerate otomatis — klik refresh untuk generate ulang' : ''"
-                    :persistent-hint="isB2B"
+                    readonly
+                    :rules="[]"
+                    hint="Digenerate otomatis — klik refresh untuk generate ulang"
+                    persistent-hint
                     :loading="consolidatedNoLoading"
                   >
-                    <template
-                      v-if="isB2B"
-                      #append-inner
-                    >
+                    <template #append-inner>
                       <VBtn
                         icon
                         size="x-small"
@@ -748,7 +745,7 @@ async function onKlienChange(klienId) {
     ])
   } else {
     restoList.value = []
-    form.no_invoice = ''
+    await loadConsolidatedNo()
   }
 }
 
