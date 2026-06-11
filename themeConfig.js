@@ -50,7 +50,7 @@ export const { themeConfig, layoutConfig } = defineThemeConfig({
   verticalNav: {
     isVerticalNavCollapsed: false,
     defaultNavItemIconProps: { icon: 'ri-circle-fill' },
-    isVerticalNavSemiDark: false,
+    isVerticalNavSemiDark: true,
   },
   horizontalNav: {
     type: 'sticky',
