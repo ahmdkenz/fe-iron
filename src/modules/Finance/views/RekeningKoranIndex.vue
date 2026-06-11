@@ -14,60 +14,79 @@
 
     <!-- Filter -->
     <VCard class="mb-4">
-      <VCardText class="d-flex flex-wrap gap-3 align-center">
-        <VAutocomplete
-          v-model="filters.pic_ar_id"
-          placeholder="Semua PIC AR"
-          clearable
-          hide-details
-          density="compact"
-          style="max-width: 230px"
-          :items="picArList"
-          item-title="name"
-          item-value="id"
-          :loading="picArLoading"
-          @focus="ensurePicArLoaded()"
-          @update:model-value="doFetch"
-        />
-        <VSelect
-          v-model="filters.bank_type"
-          placeholder="Semua Bank"
-          clearable
-          hide-details
-          density="compact"
-          style="max-width: 160px"
-          :items="bankTypeOptions"
-          @update:model-value="doFetch"
-        />
-        <VTextField
-          v-model="filters.periode_awal"
-          label="Dari Tanggal"
-          type="date"
-          density="compact"
-          hide-details
-          style="max-width: 180px"
-          @update:model-value="doFetch"
-        />
-        <VTextField
-          v-model="filters.periode_akhir"
-          label="Sampai Tanggal"
-          type="date"
-          density="compact"
-          hide-details
-          style="max-width: 180px"
-          @update:model-value="doFetch"
-        />
-        <VBtnToggle
-          v-model="filters.status_posting_2"
-          density="compact"
-          rounded="lg"
-          color="success"
-          @update:model-value="doFetch"
-        >
-          <VBtn value="">Semua</VBtn>
-          <VBtn value="POSTED">Posted</VBtn>
-          <VBtn value="PENDING">Pending</VBtn>
-        </VBtnToggle>
+      <VCardText class="pa-4">
+        <div class="d-flex flex-wrap gap-3 align-center mb-3">
+          <VAutocomplete
+            v-model="filters.pic_ar_id"
+            placeholder="Semua PIC AR"
+            clearable
+            hide-details
+            density="compact"
+            style="max-width: 230px"
+            :items="picArList"
+            item-title="name"
+            item-value="id"
+            :loading="picArLoading"
+            @focus="ensurePicArLoaded()"
+            @update:model-value="doFetch"
+          />
+          <VSelect
+            v-model="filters.bank_type"
+            placeholder="Semua Bank"
+            clearable
+            hide-details
+            density="compact"
+            style="max-width: 160px"
+            :items="bankTypeOptions"
+            @update:model-value="doFetch"
+          />
+          <VTextField
+            v-model="filters.periode_awal"
+            label="Dari Tanggal"
+            type="date"
+            density="compact"
+            hide-details
+            style="max-width: 180px"
+            @update:model-value="doFetch"
+          />
+          <VTextField
+            v-model="filters.periode_akhir"
+            label="Sampai Tanggal"
+            type="date"
+            density="compact"
+            hide-details
+            style="max-width: 180px"
+            @update:model-value="doFetch"
+          />
+        </div>
+        <div class="d-flex flex-wrap gap-5 align-center">
+          <div class="d-flex align-center gap-2">
+            <span class="text-caption text-medium-emphasis font-weight-medium">D/K</span>
+            <VBtnToggle
+              v-model="filters.dk"
+              rounded="lg"
+              color="primary"
+              @update:model-value="doFetch"
+            >
+              <VBtn value="" size="small" min-width="72">Semua</VBtn>
+              <VBtn value="K" size="small" min-width="72">Kredit</VBtn>
+              <VBtn value="D" size="small" min-width="72">Debit</VBtn>
+            </VBtnToggle>
+          </div>
+          <div class="d-flex align-center gap-2">
+            <span class="text-caption text-medium-emphasis font-weight-medium">Status</span>
+            <VBtnToggle
+              v-model="filters.status_posting_2"
+              rounded="lg"
+              color="success"
+              @update:model-value="doFetch"
+            >
+              <VBtn value="" size="small" min-width="72">Semua</VBtn>
+              <VBtn value="POSTED" size="small" min-width="80">Posted</VBtn>
+              <VBtn value="PENDING" size="small" min-width="80">Pending</VBtn>
+            </VBtnToggle>
+          </div>
+        </div>
       </VCardText>
     </VCard>
 
@@ -202,14 +221,9 @@
           <span class="font-weight-bold">{{ formatCurrency(item.saldo) }}</span>
         </template>
         <template #item.status_posting_1="{ item }">
-          <VChip
-            :color="statusRekonColor(item.status_posting_1)"
-            size="x-small"
-            variant="tonal"
-            label
-          >
+          <span :class="statusRekonClass(item.status_posting_1)" class="text-caption font-weight-bold">
             {{ item.status_posting_1 ?? '-' }}
-          </VChip>
+          </span>
         </template>
         <template #item.selisih="{ item }">
           <span v-if="item.selisih > 0" class="text-info font-weight-medium">
@@ -223,8 +237,8 @@
         <template #item.waktu_transaksi="{ item }">
           <span class="text-mono text-caption">{{ item.waktu_transaksi ?? '-' }}</span>
         </template>
-        <template #item.deskripsi="{ item }">
-          <span v-if="item.deskripsi" class="text-caption">{{ item.deskripsi }}</span>
+        <template #item.keterangan="{ item }">
+          <span v-if="item.keterangan" class="text-caption">{{ item.keterangan }}</span>
           <span v-else class="text-disabled">-</span>
         </template>
         <template #item.status_posting_2="{ item }">
@@ -299,6 +313,7 @@ const filters = reactive({
   bank_type:        null,
   periode_awal:     firstDay,
   periode_akhir:    lastDay,
+  dk:               '',
   status_posting_1: '',
   status_posting_2: '',
 })
@@ -308,13 +323,13 @@ const bankTypeOptions = ['BCA', 'MANDIRI', 'CIMB', 'BSI']
 const headers = [
   { title: 'No',               key: 'no',               sortable: false, width: '50px' },
   { title: 'TRXID',            key: 'no_referensi',     sortable: false },
-  { title: 'TGL',              key: 'tanggal',          sortable: false, width: '110px' },
+  { title: 'TGL',              key: 'tanggal',          sortable: false, width: '130px' },
   { title: 'TRX TIME',         key: 'waktu_transaksi',  sortable: false, width: '100px' },
   { title: 'D/K',              key: 'dk',               sortable: false, width: '60px' },
   { title: 'MUTASI',           key: 'mutasi',           sortable: false, align: 'end' },
   { title: 'SALDO',            key: 'saldo',            sortable: false, align: 'end' },
-  { title: 'DESKRIPSI',        key: 'deskripsi',        sortable: false },
-  { title: 'KETERANGAN BANK',  key: 'keterangan',       sortable: false },
+  { title: 'DESKRIPSI',        key: 'keterangan',       sortable: false, minWidth: '220px' },
+  { title: 'KETERANGAN BANK',  key: 'bank_type',        sortable: false, width:    '110px' },
   { title: 'STATUS POSTING 1', key: 'status_posting_1', sortable: false, width: '140px' },
   { title: 'DB',               key: 'no_dokumen_ar',    sortable: false },
   { title: 'SELISIH',          key: 'selisih',          sortable: false, align: 'end' },
@@ -327,6 +342,7 @@ function buildParams(page = meta.current_page, perPage = meta.per_page) {
   if (filters.bank_type)        params.bank_type        = filters.bank_type
   if (filters.periode_awal)     params.periode_awal     = filters.periode_awal
   if (filters.periode_akhir)    params.periode_akhir    = filters.periode_akhir
+  if (filters.dk)               params.dk               = filters.dk
   if (filters.status_posting_1) params.status_posting_1 = filters.status_posting_1
   if (filters.status_posting_2) params.status_posting_2 = filters.status_posting_2
   return params
@@ -367,6 +383,13 @@ function statusRekonColor(status) {
   if (status === 'UNMATCHED') return 'warning'
   if (status === 'DIABAIKAN') return 'default'
   return 'default'
+}
+
+function statusRekonClass(status) {
+  if (status === 'MATCHED')   return 'text-success'
+  if (status === 'UNMATCHED') return 'text-error'
+  if (status === 'DIABAIKAN') return 'text-medium-emphasis'
+  return 'text-disabled'
 }
 
 onMounted(doFetch)
