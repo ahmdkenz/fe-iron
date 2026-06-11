@@ -1,90 +1,104 @@
 // ─── Light mode refinements ───────────────────────────────────────────────
-// Warm Neutral palette — background cream off-white, primary biru #3B82F6
-// Tujuan: tampilan hangat dan nyaman di mata, tidak silau, tidak generik.
+// AdminLTE palette — background #f4f6f9, sidebar gelap #343a40, primary Bootstrap blue #0d6efd
 
 .v-theme--light {
-  // Sidebar: slate/abu hangat — kontras jelas vs konten #F9F8F6
-  // Selector: .layout-vertical-nav (bukan .v-navigation-drawer, sidebar ini custom aside element)
+  // Sidebar: AdminLTE dark sidebar #343a40
   .layout-vertical-nav {
-    background-color: #E8E3DC !important;
-    border-right: 1px solid rgba(87, 83, 78, 0.15) !important;
-    box-shadow: 4px 0 20px rgba(28, 25, 23, 0.10) !important;
+    background-color: #343a40 !important;
+    border-right: 1px solid rgba(0, 0, 0, 0.20) !important;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15) !important;
+
+    // Teks nav items terang agar terbaca di atas sidebar gelap
+    .nav-item-title,
+    .nav-section-title,
+    .v-list-item-title,
+    .v-list-item__content {
+      color: rgba(255, 255, 255, 0.85) !important;
+    }
+
+    .v-icon {
+      color: rgba(255, 255, 255, 0.70) !important;
+    }
+
+    .v-list-item:hover {
+      background-color: rgba(255, 255, 255, 0.07) !important;
+    }
   }
 
-  // Topbar: cream off-white semi-transparan dengan blur
+  // Topbar: putih bersih semi-transparan dengan blur
   .v-app-bar,
   .layout-navbar {
-    background-color: rgba(249, 248, 246, 0.95) !important;
+    background-color: rgba(255, 255, 255, 0.95) !important;
     backdrop-filter: blur(12px) !important;
-    border-bottom: 1px solid rgba(87, 83, 78, 0.10) !important;
-    box-shadow: 0 1px 10px rgba(28, 25, 23, 0.06) !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.10) !important;
+    box-shadow: 0 1px 10px rgba(0, 0, 0, 0.06) !important;
   }
 
-  // Card: putih dengan shadow warm lembut
+  // Card: putih dengan shadow netral
   .v-card {
     background-color: #ffffff !important;
-    border: 1px solid rgba(87, 83, 78, 0.09) !important;
-    box-shadow: 0 2px 14px rgba(28, 25, 23, 0.06) !important;
+    border: 1px solid rgba(0, 0, 0, 0.09) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
   }
 
-  // Dialog: sedikit off-white agar terbedakan dari card biasa
+  // Dialog
   .v-overlay__content > .v-card,
   .v-dialog > .v-overlay__content > .v-card {
-    background-color: #fdfcfb !important;
-    box-shadow: 0 8px 40px rgba(28, 25, 23, 0.13) !important;
+    background-color: #ffffff !important;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.13) !important;
   }
 
   // Dropdown / Menu
   .v-menu > .v-overlay__content > .v-list,
   .v-select__content > .v-list {
     background-color: #ffffff !important;
-    border: 1px solid rgba(87, 83, 78, 0.10) !important;
-    box-shadow: 0 6px 28px rgba(28, 25, 23, 0.10) !important;
+    border: 1px solid rgba(0, 0, 0, 0.10) !important;
+    box-shadow: 0 6px 28px rgba(0, 0, 0, 0.10) !important;
   }
 
-  // Input field: putih dengan border warm tipis
+  // Input field: putih dengan border abu Bootstrap
   .v-field {
     background-color: #ffffff !important;
   }
 
   .v-field__outline::before {
-    border-color: rgba(87, 83, 78, 0.16) !important;
+    border-color: rgba(0, 0, 0, 0.16) !important;
   }
 
-  // Data table header: warm beige, bukan slate-blue
+  // Data table header: Bootstrap grey
   .v-data-table > .v-table__wrapper > table > thead > tr > th {
-    background-color: #f0ede8 !important;
-    color: rgba(41, 37, 36, 0.72) !important;
+    background-color: #e9ecef !important;
+    color: rgba(33, 37, 41, 0.72) !important;
     letter-spacing: 0.02em;
   }
 
   .v-data-table__tr--odd > td {
-    background-color: #f5f3ef !important;
+    background-color: #f8f9fa !important;
   }
 
-  // Chip: sedikit kurangi saturasi agar tidak terlalu noisy
+  // Chip
   .v-chip:not(.v-chip--variant-outlined) {
     filter: saturate(0.88);
   }
 
-  // Scrollbar: warm stone tones
+  // Scrollbar: Bootstrap grey tones
   ::-webkit-scrollbar-track {
-    background: #f5f4f1;
+    background: #e9ecef;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #d4cfc7;
+    background: #ced4da;
     border-radius: 4px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: #b8b2a7;
+    background: #adb5bd;
   }
 
   // Footer
   .layout-footer {
-    background-color: #f5f4f1 !important;
-    border-top: 1px solid rgba(87, 83, 78, 0.09) !important;
+    background-color: #f4f6f9 !important;
+    border-top: 1px solid rgba(0, 0, 0, 0.09) !important;
   }
 }
 
