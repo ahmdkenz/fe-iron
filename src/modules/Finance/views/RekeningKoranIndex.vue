@@ -102,7 +102,7 @@
               </VAvatar>
             </div>
             <div class="text-h5 font-weight-bold mb-1">
-              {{ summary.total_matched.toLocaleString('id-ID') }}
+              {{ (summary.total_matched ?? 0).toLocaleString('id-ID') }}
             </div>
             <div class="stat-bar" style="background: rgb(var(--v-theme-secondary));" />
           </VCardText>
@@ -119,7 +119,7 @@
               </VAvatar>
             </div>
             <div class="text-h5 font-weight-bold text-success mb-1">
-              {{ summary.total_posted.toLocaleString('id-ID') }}
+              {{ (summary.total_posted ?? 0).toLocaleString('id-ID') }}
             </div>
             <div class="stat-bar" style="background: rgb(var(--v-theme-success));" />
           </VCardText>
@@ -136,7 +136,7 @@
               </VAvatar>
             </div>
             <div class="text-h5 font-weight-bold text-warning mb-1">
-              {{ summary.total_pending.toLocaleString('id-ID') }}
+              {{ (summary.total_pending ?? 0).toLocaleString('id-ID') }}
             </div>
             <div class="stat-bar" style="background: rgb(var(--v-theme-warning));" />
           </VCardText>
@@ -271,9 +271,11 @@ import { onMounted, reactive, ref } from 'vue'
 import { useCrud } from '@/composables/useCrud'
 import { useLazyFetchAll } from '@/composables/useLazyFetchAll'
 import { useFormatter } from '@/composables/useFormatter'
+import { useSweetAlert } from '@/composables/useSweetAlert'
 import api from '@/utils/axios'
 
 const { formatCurrency } = useFormatter()
+const { showError } = useSweetAlert()
 
 // PIC AR list
 const picArList    = ref([])
@@ -283,6 +285,8 @@ async function fetchPicAr() {
   try {
     const { data } = await api.get('/finance/rekening-koran/pic-ar-list')
     picArList.value = data.data
+  } catch {
+    // List kosong — user masih bisa lanjut tanpa filter PIC AR
   } finally {
     picArLoading.value = false
   }
@@ -362,6 +366,9 @@ async function doFetch(resetPage = true) {
       total_mutasi_masuk: result.total_mutasi_masuk,
     })
     Object.assign(meta, result.meta)
+  } catch (err) {
+    const msg = err.response?.data?.message ?? 'Gagal memuat data rekening koran.'
+    showError({ text: msg })
   } finally {
     loading.value = false
   }
@@ -376,13 +383,6 @@ function onTableOptions({ page, itemsPerPage }) {
 function bankColor(type) {
   const map = { BCA: 'info', MANDIRI: 'warning', CIMB: 'error', BSI: 'success' }
   return map[type] ?? 'default'
-}
-
-function statusRekonColor(status) {
-  if (status === 'MATCHED')   return 'success'
-  if (status === 'UNMATCHED') return 'warning'
-  if (status === 'DIABAIKAN') return 'default'
-  return 'default'
 }
 
 function statusRekonClass(status) {

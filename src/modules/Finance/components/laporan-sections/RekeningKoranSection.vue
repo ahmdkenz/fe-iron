@@ -325,7 +325,10 @@ async function doExport() {
     link.href  = url
     link.download = `REK KORAN - ${getKlienLabel()} - ${buildTimestamp()}.xlsx`
     link.click()
-    URL.revokeObjectURL(url)
+    setTimeout(() => URL.revokeObjectURL(url), 10_000)
+  } catch (err) {
+    const msg = err.response?.data?.message ?? 'Gagal mengekspor data. Coba lagi.'
+    showError({ text: msg })
   } finally {
     exporting.value = false
   }

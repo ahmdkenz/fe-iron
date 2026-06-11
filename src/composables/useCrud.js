@@ -65,6 +65,9 @@ export function useCrud(endpoint) {
         items.value = cachedItems
 
         return cachedItems
+      } catch (err) {
+        if (err.code !== 'ERR_CANCELED')
+          error.value = err.response?.data?.message ?? 'Gagal memuat data'
       } finally {
         loading.value = false
       }
