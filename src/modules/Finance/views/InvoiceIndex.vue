@@ -686,10 +686,13 @@
               Template B2C — 2 Sheet:
             </div>
             <div class="text-caption">
-              <strong>Sheet 1 (Invoice):</strong> no_urut · no_invoice · nama_klien · tanggal_invoice · tanggal_jatuh_tempo · periode_awal · periode_akhir · no_surat_jalan · tagihan_sebelumnya · keterangan
+              <strong>Sheet 1 (Invoice):</strong> no_urut · no_invoice · nama_klien · tanggal_invoice · tanggal_jatuh_tempo · periode_awal · periode_akhir · no_surat_jalan · keterangan
             </div>
             <div class="text-caption mt-1">
               <strong>Sheet 2 (Item Invoice):</strong> no_urut_invoice · kode_barang · nama_barang · qty · satuan · harga_satuan
+            </div>
+            <div class="text-caption mt-2 font-weight-medium text-info">
+              Tagihan sebelumnya dihitung otomatis dari sisa tagihan klien yang belum lunas — tidak perlu diisi.
             </div>
           </VAlert>
           <VAlert
