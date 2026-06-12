@@ -718,7 +718,7 @@
                 <VDivider class="my-2" />
                 <DetailRow
                   label="Total Tagihan"
-                  :value="formatCurrency(invoice.total_tagihan)"
+                  :value="formatCurrency(invoice.subtotal)"
                 />
                 <DetailRow
                   label="Total Terbayar"
@@ -732,9 +732,9 @@
                   >Sisa Tagihan</span>
                   <span
                     class="text-body-1 font-weight-bold"
-                    :class="invoice.sisa_tagihan > 0 ? 'text-error' : 'text-success'"
+                    :class="Math.max(0, invoice.subtotal - invoice.total_pembayaran) > 0 ? 'text-error' : 'text-success'"
                   >
-                    {{ formatCurrency(invoice.sisa_tagihan) }}
+                    {{ formatCurrency(Math.max(0, invoice.subtotal - invoice.total_pembayaran)) }}
                   </span>
                 </div>
               </VCardText>
