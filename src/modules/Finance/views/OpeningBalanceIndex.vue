@@ -44,7 +44,7 @@
       >
         <VBtn
           color="success"
-          prepend-icon="ri-checkbox-multiple-line"
+          prepend-icon="ri-check-double-line"
           :loading="approvingAll"
           @click="confirmApproveAll"
         >
@@ -427,10 +427,7 @@
 
       <!-- B2C Table -->
       <VCard>
-        <div
-          v-if="canSeeAll"
-          class="d-flex align-center gap-2 px-4 py-3"
-        >
+        <div class="d-flex align-center gap-2 px-4 py-3">
           <VAvatar
             color="primary"
             variant="tonal"
@@ -443,7 +440,7 @@
           </VAvatar>
           <span class="text-subtitle-1 font-weight-semibold">Opening Balance B2C</span>
         </div>
-        <VDivider v-if="canSeeAll" />
+        <VDivider />
         <BaseTable
           :headers="headers"
           :items="items"

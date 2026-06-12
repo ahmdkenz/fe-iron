@@ -373,10 +373,7 @@
 
     <!-- B2C Table -->
     <VCard>
-      <div
-        v-if="canSeeAll"
-        class="d-flex align-center gap-2 px-4 py-3"
-      >
+      <div class="d-flex align-center gap-2 px-4 py-3">
         <VAvatar
           color="primary"
           variant="tonal"
@@ -389,7 +386,7 @@
         </VAvatar>
         <span class="text-subtitle-1 font-weight-semibold">Invoice B2C</span>
       </div>
-      <VDivider v-if="canSeeAll" />
+      <VDivider />
       <BaseTable
         :headers="headers"
         :items="itemsB2C"
