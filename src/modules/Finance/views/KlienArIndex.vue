@@ -465,12 +465,13 @@
             </div>
             <ul class="ps-4">
               <li>Download template Excel, isi data, lalu upload file (.xlsx atau .csv).</li>
-              <li>Kolom <strong>kode_resto</strong>, <strong>nama_klien</strong>, dan <strong>tipe_klien</strong> wajib diisi.</li>
+              <li>Kolom <strong>kode_klien</strong>, <strong>nama_klien</strong>, dan <strong>tipe_klien</strong> wajib diisi.</li>
               <li>Kolom <strong>nama_klien</strong>: isi <strong>nama investor/pengelola</strong> (untuk B2C/RESTO) atau nama kontak billing PT (untuk B2B/PT).</li>
-              <li>Kolom <strong>kode_resto</strong>: isi kode unik klien, format <strong>AR-B2C-xxx</strong> (B2C) atau <strong>AR-B2B-xxx</strong> (B2B).</li>
+              <li>Kolom <strong>kode_klien</strong>: isi kode unik klien, format <strong>AR-B2C-xxx</strong> (B2C) atau <strong>AR-B2B-xxx</strong> (B2B).</li>
               <li>Kolom <strong>tipe_klien</strong>: isi persis <strong>RESTO</strong> (B2C) atau <strong>PT</strong> (B2B).</li>
               <li>Untuk tipe RESTO, kolom <strong>nama_resto</strong> wajib diisi sesuai data di sistem.</li>
               <li>Kolom <strong>nama_karyawan_ar</strong> wajib diisi sesuai nama karyawan di sistem.</li>
+              <li>Untuk tipe PT, kolom <strong>nama_entitas</strong> wajib diisi persis sesuai nama perusahaan di sistem.</li>
               <li>Kolom <strong>status</strong>: 1 = Aktif, 0 = Nonaktif (default: 1).</li>
               <li>Lihat sheet <strong>Petunjuk Pengisian</strong> di template untuk panduan lengkap.</li>
             </ul>
