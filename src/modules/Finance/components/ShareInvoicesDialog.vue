@@ -154,7 +154,7 @@
                     <span class="text-body-2 font-weight-semibold">{{ inv.no_invoice }}</span>
                   </div>
                   <div class="text-caption text-medium-emphasis">
-                    Saldo Awal: <strong>{{ formatCurrency(inv.total_tagihan) }}</strong>
+                    Saldo Awal: <strong>{{ formatCurrency(inv.subtotal) }}</strong>
                     <span
                       v-if="inv.sisa_tagihan > 0"
                       class="ms-2 text-error"
@@ -214,7 +214,7 @@
                   </div>
                   <div class="text-caption text-medium-emphasis">
                     Periode: {{ inv.periode_awal }} s/d {{ inv.periode_akhir }}
-                    · Total: <strong>{{ formatCurrency(inv.total_tagihan) }}</strong>
+                    · Total: <strong>{{ formatCurrency(inv.subtotal) }}</strong>
                   </div>
                 </div>
               </div>
@@ -327,7 +327,7 @@ const clientPhone = computed(() => {
 const grandTotal = computed(() =>
   allInvoices.value
     .filter(inv => checkedIds.value.includes(inv.id))
-    .reduce((sum, inv) => sum + (inv.total_tagihan ?? 0), 0)
+    .reduce((sum, inv) => sum + (inv.subtotal ?? 0), 0)
 )
 
 function toggleCheck(id) {
@@ -378,11 +378,11 @@ function buildMessage(selected) {
   const klien = clientName.value
   const obList = selected.filter(inv => inv.is_opening_balance)
   const regList = selected.filter(inv => !inv.is_opening_balance)
-  const total = selected.reduce((s, inv) => s + (inv.total_tagihan ?? 0), 0)
+  const total = selected.reduce((s, inv) => s + (inv.subtotal ?? 0), 0)
 
   if (selected.length === 1) {
     const inv = selected[0]
-    const t = new Intl.NumberFormat('id-ID').format(inv.total_tagihan)
+    const t = new Intl.NumberFormat('id-ID').format(inv.subtotal)
     if (inv.is_opening_balance) {
       return (
         `Halo, berikut kami kirimkan Opening Balance *${inv.no_invoice}*.\n\n` +
@@ -405,7 +405,7 @@ function buildMessage(selected) {
   if (obList.length) {
     msg += '\n*Opening Balance:*\n'
     for (const inv of obList) {
-      const t = new Intl.NumberFormat('id-ID').format(inv.total_tagihan)
+      const t = new Intl.NumberFormat('id-ID').format(inv.subtotal)
       msg += `- ${inv.no_invoice} | Rp ${t}\n  ${inv.share_url}\n`
     }
   }
@@ -413,7 +413,7 @@ function buildMessage(selected) {
   if (regList.length) {
     msg += '\n*Invoice Reguler:*\n'
     for (const inv of regList) {
-      const t = new Intl.NumberFormat('id-ID').format(inv.total_tagihan)
+      const t = new Intl.NumberFormat('id-ID').format(inv.subtotal)
       msg += `- ${inv.no_invoice} | Periode: ${inv.periode_awal} s/d ${inv.periode_akhir} | Rp ${t}\n  ${inv.share_url}\n`
     }
   }
