@@ -288,12 +288,12 @@
         <template #item.tanggal_kirim_barang="{ item }">
           <span class="text-no-wrap">{{ item.tanggal_kirim_barang ? formatDate(item.tanggal_kirim_barang) : '-' }}</span>
         </template>
-        <template #item.total_tagihan="{ item }">
-          {{ formatCurrency(item.total_tagihan) }}
+        <template #item.subtotal="{ item }">
+          {{ formatCurrency(item.subtotal) }}
         </template>
         <template #item.sisa_tagihan="{ item }">
-          <span :class="item.sisa_tagihan > 0 ? 'text-error' : 'text-success'">
-            {{ formatCurrency(item.sisa_tagihan) }}
+          <span :class="Math.max(0, item.subtotal - item.total_pembayaran) > 0 ? 'text-error' : 'text-success'">
+            {{ formatCurrency(Math.max(0, item.subtotal - item.total_pembayaran)) }}
           </span>
         </template>
         <template #item.status="{ item }">
@@ -420,12 +420,12 @@
         <template #item.tanggal_invoice="{ item }">
           <span class="text-no-wrap">{{ formatDate(item.tanggal_invoice) }}</span>
         </template>
-        <template #item.total_tagihan="{ item }">
-          {{ formatCurrency(item.total_tagihan) }}
+        <template #item.subtotal="{ item }">
+          {{ formatCurrency(item.subtotal) }}
         </template>
         <template #item.sisa_tagihan="{ item }">
-          <span :class="item.sisa_tagihan > 0 ? 'text-error' : 'text-success'">
-            {{ formatCurrency(item.sisa_tagihan) }}
+          <span :class="Math.max(0, item.subtotal - item.total_pembayaran) > 0 ? 'text-error' : 'text-success'">
+            {{ formatCurrency(Math.max(0, item.subtotal - item.total_pembayaran)) }}
           </span>
         </template>
         <template #item.status="{ item }">
@@ -875,7 +875,7 @@ const headers = [
   { title: 'No Invoice',     key: 'no_invoice',     sortable: false },
   { title: 'Klien',          key: 'klien_ar',       sortable: false },
   { title: 'Tanggal',        key: 'tanggal_invoice',    sortable: false, width: '115px' },
-  { title: 'Total Tagihan',  key: 'total_tagihan',  sortable: false },
+  { title: 'Total Barang',   key: 'subtotal',        sortable: false },
   { title: 'Sisa Tagihan',   key: 'sisa_tagihan',   sortable: false },
   { title: 'Status',         key: 'status',         sortable: false },
   { title: 'Aksi',           key: 'actions',        sortable: false, align: 'center', width: '160px' },
@@ -888,7 +888,7 @@ const headersB2B = [
   { title: 'Penerima Tagihan', key: 'penerima_tagihan',      sortable: false },
   { title: 'Tgl. Invoice',     key: 'tanggal_invoice',       sortable: false, width: '115px' },
   { title: 'Tgl. Kirim',       key: 'tanggal_kirim_barang',  sortable: false, width: '115px' },
-  { title: 'Total Tagihan',    key: 'total_tagihan',         sortable: false },
+  { title: 'Total Barang',     key: 'subtotal',              sortable: false },
   { title: 'Sisa Tagihan',     key: 'sisa_tagihan',          sortable: false },
   { title: 'Status',           key: 'status',                sortable: false },
   { title: 'Aksi',             key: 'actions',               sortable: false, align: 'center', width: '160px' },

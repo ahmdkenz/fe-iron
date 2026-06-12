@@ -1237,6 +1237,9 @@ async function loadInvoice() {
   invoice.value = data
   newStatus.value = ''
 
+  if (data?.is_opening_balance && data?.can_print)
+    api.post(`/finance/invoices/${id.value}/sync-gdrive`).catch(() => {})
+
   if (!data)
     pageErrorMessage.value = error.value ?? 'Data invoice tidak ditemukan'
 }
