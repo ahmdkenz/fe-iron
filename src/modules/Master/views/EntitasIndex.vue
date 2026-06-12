@@ -180,6 +180,10 @@
           label="Keterangan"
           :value="selectedEntitas.keterangan"
         />
+        <DetailRow
+          label="Nama Direktur"
+          :value="selectedEntitas.nama_direktur"
+        />
         <DetailRow label="Status">
           <VChip
             :color="selectedEntitas.status ? 'success' : 'error'"

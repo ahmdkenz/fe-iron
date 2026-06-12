@@ -103,6 +103,19 @@
                 :error-messages="errors.keterangan"
               />
             </VCol>
+            <VCol
+              cols="12"
+              md="6"
+            >
+              <VTextField
+                v-model="form.nama_direktur"
+                label="Nama Direktur"
+                density="compact"
+                variant="outlined"
+                placeholder="Contoh: Agung Tribuwono"
+                :error-messages="errors.nama_direktur"
+              />
+            </VCol>
           </VRow>
         </VCardText>
       </VCard>
@@ -262,14 +275,14 @@ const errorMessage = ref('')
 
 const errors = reactive({
   kode_perusahaan: [], nama_perusahaan: [], nama_singkatan_perusahaan: [],
-  keterangan: [], alamat: [], kota: [], kode_pos: [], no_telp: [], email: [], no_npwp: [],
+  keterangan: [], nama_direktur: [], alamat: [], kota: [], kode_pos: [], no_telp: [], email: [], no_npwp: [],
 })
 
 const statusOptions = BOOLEAN_STATUS_OPTIONS
 
 const form = reactive({
   kode_perusahaan: '', nama_perusahaan: '', nama_singkatan_perusahaan: '',
-  keterangan: '', alamat: '', kota: '', kode_pos: '', no_telp: '', email: '', no_npwp: '', status: 1,
+  keterangan: '', nama_direktur: '', alamat: '', kota: '', kode_pos: '', no_telp: '', email: '', no_npwp: '', status: 1,
 })
 
 async function handleSubmit() {
@@ -309,6 +322,7 @@ onMounted(async () => {
     form.no_telp                   = data.no_telp                   ?? ''
     form.email                     = data.email                     ?? ''
     form.no_npwp                   = data.no_npwp                   ?? ''
+    form.nama_direktur             = data.nama_direktur             ?? ''
     form.status                    = normalizeBooleanStatus(data.status)
   }
   pageLoading.value = false
