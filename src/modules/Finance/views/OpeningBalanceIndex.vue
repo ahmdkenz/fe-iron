@@ -166,125 +166,115 @@
         </VCol>
       </VRow>
 
-      <!-- Filter Card -->
-      <VCard class="mb-4">
-        <VCardText class="pa-0">
-          <div class="d-flex align-center justify-space-between px-4 py-3">
-            <div class="d-flex align-center gap-2">
-              <VIcon icon="ri-filter-3-line" size="16" color="primary" />
-              <span class="text-body-2 font-weight-semibold">Filter</span>
-            </div>
-            <VBtn
-              variant="text"
-              color="secondary"
-              size="small"
-              prepend-icon="ri-refresh-line"
-              @click="resetFilter"
-            >
-              Reset
-            </VBtn>
-          </div>
-          <VDivider />
-          <div class="d-flex flex-wrap align-center gap-4 px-4 py-3">
-            <div style="min-width: 200px; flex: 1; max-width: 280px;">
-              <div class="text-caption text-medium-emphasis mb-2">Pencarian</div>
-              <VTextField
-                v-model="params.search"
-                placeholder="Cari no. OB / klien..."
-                clearable
-                hide-details
-                density="compact"
-                prepend-inner-icon="ri-search-line"
-                @update:model-value="debouncedFetch"
-              />
-            </div>
-            <div style="min-width: 140px; max-width: 180px;">
-              <div class="text-caption text-medium-emphasis mb-2">Status</div>
-              <VSelect
-                v-model="params.status"
-                placeholder="Semua Status"
-                clearable
-                hide-details
-                density="compact"
-                :items="statusOptions"
-                item-title="label"
-                item-value="value"
-                @update:model-value="doFetch"
-              />
-            </div>
-            <div style="min-width: 160px; max-width: 220px;">
-              <div class="text-caption text-medium-emphasis mb-2">Approval</div>
-              <VSelect
-                v-model="params.approval_status"
-                placeholder="Semua Approval"
-                clearable
-                hide-details
-                density="compact"
-                :items="approvalStatusOptions"
-                item-title="label"
-                item-value="value"
-                @update:model-value="doFetch"
-              />
-            </div>
-            <div style="min-width: 180px; flex: 1; max-width: 260px;">
-              <div class="text-caption text-medium-emphasis mb-2">Klien</div>
-              <VAutocomplete
-                v-model="params.klien_ar_id"
-                placeholder="Semua Klien"
-                clearable
-                hide-details
-                density="compact"
-                :items="klienList"
-                item-title="nama_klien"
-                item-value="id"
-                :loading="klienLoading"
-                @update:model-value="doFetch"
-              />
-            </div>
-            <VDivider vertical style="height: 40px; align-self: flex-end;" class="d-none d-sm-block" />
-            <div>
-              <div class="text-caption text-medium-emphasis mb-2">Dari</div>
-              <VTextField
-                v-model="params.tanggal_dari"
-                type="date"
-                hide-details
-                density="compact"
-                style="min-width: 150px; max-width: 170px;"
-                @update:model-value="debouncedFetch"
-              />
-            </div>
-            <div>
-              <div class="text-caption text-medium-emphasis mb-2">Sampai</div>
-              <VTextField
-                v-model="params.tanggal_sampai"
-                type="date"
-                hide-details
-                density="compact"
-                style="min-width: 150px; max-width: 170px;"
-                @update:model-value="debouncedFetch"
-              />
-            </div>
-          </div>
-        </VCardText>
-      </VCard>
-
       <!-- B2B Table (hanya untuk admin/manager/supervisor) -->
       <VCard
         v-if="canSeeAll"
         class="mb-4"
       >
-        <div class="d-flex align-center gap-2 px-4 py-3">
-          <VAvatar
-            color="warning"
-            variant="tonal"
-            size="32"
+        <div class="d-flex align-center justify-space-between px-4 py-3">
+          <div class="d-flex align-center gap-2">
+            <VAvatar
+              color="warning"
+              variant="tonal"
+              size="32"
+            >
+              <VIcon
+                icon="ri-building-line"
+                size="18"
+              />
+            </VAvatar>
+            <span class="text-subtitle-1 font-weight-semibold">Opening Balance B2B</span>
+          </div>
+          <VBtn
+            variant="text"
+            color="secondary"
+            size="small"
+            prepend-icon="ri-refresh-line"
+            @click="resetFiltersB2B"
           >
-            <VIcon
-              icon="ri-building-line"
-              size="18"
+            Reset
+          </VBtn>
+        </div>
+        <VDivider />
+        <div class="d-flex flex-wrap align-center gap-4 px-4 py-3">
+          <div style="min-width: 200px; flex: 1; max-width: 280px;">
+            <div class="text-caption text-medium-emphasis mb-2">Pencarian</div>
+            <VTextField
+              v-model="paramsB2B.search"
+              placeholder="Cari no. OB / klien..."
+              clearable
+              hide-details
+              density="compact"
+              prepend-inner-icon="ri-search-line"
+              @update:model-value="debouncedFetchB2B"
             />
-          </VAvatar>
-          <span class="text-subtitle-1 font-weight-semibold">Opening Balance B2B</span>
+          </div>
+          <div style="min-width: 140px; max-width: 180px;">
+            <div class="text-caption text-medium-emphasis mb-2">Status</div>
+            <VSelect
+              v-model="paramsB2B.status"
+              placeholder="Semua Status"
+              clearable
+              hide-details
+              density="compact"
+              :items="statusOptions"
+              item-title="label"
+              item-value="value"
+              @update:model-value="doFetchB2B"
+            />
+          </div>
+          <div style="min-width: 160px; max-width: 220px;">
+            <div class="text-caption text-medium-emphasis mb-2">Approval</div>
+            <VSelect
+              v-model="paramsB2B.approval_status"
+              placeholder="Semua Approval"
+              clearable
+              hide-details
+              density="compact"
+              :items="approvalStatusOptions"
+              item-title="label"
+              item-value="value"
+              @update:model-value="doFetchB2B"
+            />
+          </div>
+          <div style="min-width: 180px; flex: 1; max-width: 260px;">
+            <div class="text-caption text-medium-emphasis mb-2">Klien</div>
+            <VAutocomplete
+              v-model="paramsB2B.klien_ar_id"
+              placeholder="Semua Klien"
+              clearable
+              hide-details
+              density="compact"
+              :items="klienList"
+              item-title="nama_klien"
+              item-value="id"
+              :loading="klienLoading"
+              @update:model-value="doFetchB2B"
+            />
+          </div>
+          <VDivider vertical style="height: 40px; align-self: flex-end;" class="d-none d-sm-block" />
+          <div>
+            <div class="text-caption text-medium-emphasis mb-2">Dari</div>
+            <VTextField
+              v-model="paramsB2B.tanggal_dari"
+              type="date"
+              hide-details
+              density="compact"
+              style="min-width: 150px; max-width: 170px;"
+              @update:model-value="debouncedFetchB2B"
+            />
+          </div>
+          <div>
+            <div class="text-caption text-medium-emphasis mb-2">Sampai</div>
+            <VTextField
+              v-model="paramsB2B.tanggal_sampai"
+              type="date"
+              hide-details
+              density="compact"
+              style="min-width: 150px; max-width: 170px;"
+              @update:model-value="debouncedFetchB2B"
+            />
+          </div>
         </div>
         <VDivider />
         <BaseTable
@@ -427,18 +417,110 @@
 
       <!-- B2C Table -->
       <VCard>
-        <div class="d-flex align-center gap-2 px-4 py-3">
-          <VAvatar
-            color="primary"
-            variant="tonal"
-            size="32"
+        <div class="d-flex align-center justify-space-between px-4 py-3">
+          <div class="d-flex align-center gap-2">
+            <VAvatar
+              color="primary"
+              variant="tonal"
+              size="32"
+            >
+              <VIcon
+                icon="ri-user-line"
+                size="18"
+              />
+            </VAvatar>
+            <span class="text-subtitle-1 font-weight-semibold">Opening Balance B2C</span>
+          </div>
+          <VBtn
+            variant="text"
+            color="secondary"
+            size="small"
+            prepend-icon="ri-refresh-line"
+            @click="resetFiltersB2C"
           >
-            <VIcon
-              icon="ri-user-line"
-              size="18"
+            Reset
+          </VBtn>
+        </div>
+        <VDivider />
+        <div class="d-flex flex-wrap align-center gap-4 px-4 py-3">
+          <div style="min-width: 200px; flex: 1; max-width: 280px;">
+            <div class="text-caption text-medium-emphasis mb-2">Pencarian</div>
+            <VTextField
+              v-model="params.search"
+              placeholder="Cari no. OB / klien..."
+              clearable
+              hide-details
+              density="compact"
+              prepend-inner-icon="ri-search-line"
+              @update:model-value="debouncedFetchB2C"
             />
-          </VAvatar>
-          <span class="text-subtitle-1 font-weight-semibold">Opening Balance B2C</span>
+          </div>
+          <div style="min-width: 140px; max-width: 180px;">
+            <div class="text-caption text-medium-emphasis mb-2">Status</div>
+            <VSelect
+              v-model="params.status"
+              placeholder="Semua Status"
+              clearable
+              hide-details
+              density="compact"
+              :items="statusOptions"
+              item-title="label"
+              item-value="value"
+              @update:model-value="doFetchB2C"
+            />
+          </div>
+          <div style="min-width: 160px; max-width: 220px;">
+            <div class="text-caption text-medium-emphasis mb-2">Approval</div>
+            <VSelect
+              v-model="params.approval_status"
+              placeholder="Semua Approval"
+              clearable
+              hide-details
+              density="compact"
+              :items="approvalStatusOptions"
+              item-title="label"
+              item-value="value"
+              @update:model-value="doFetchB2C"
+            />
+          </div>
+          <div style="min-width: 180px; flex: 1; max-width: 260px;">
+            <div class="text-caption text-medium-emphasis mb-2">Klien</div>
+            <VAutocomplete
+              v-model="params.klien_ar_id"
+              placeholder="Semua Klien"
+              clearable
+              hide-details
+              density="compact"
+              :items="klienList"
+              item-title="nama_klien"
+              item-value="id"
+              :loading="klienLoading"
+              @update:model-value="doFetchB2C"
+            />
+          </div>
+          <VDivider vertical style="height: 40px; align-self: flex-end;" class="d-none d-sm-block" />
+          <div>
+            <div class="text-caption text-medium-emphasis mb-2">Dari</div>
+            <VTextField
+              v-model="params.tanggal_dari"
+              type="date"
+              hide-details
+              density="compact"
+              style="min-width: 150px; max-width: 170px;"
+              @update:model-value="debouncedFetchB2C"
+            />
+          </div>
+          <div>
+            <div class="text-caption text-medium-emphasis mb-2">Sampai</div>
+            <VTextField
+              v-model="params.tanggal_sampai"
+              type="date"
+              hide-details
+              density="compact"
+              style="min-width: 150px; max-width: 170px;"
+              @update:model-value="debouncedFetchB2C"
+            />
+          </div>
         </div>
         <VDivider />
         <BaseTable
@@ -1770,11 +1852,6 @@ let dirApprovalSumCtrl      = null
 let dirObController         = null
 let dirObSumCtrl            = null
 
-function clearDebounceTimer() {
-  clearTimeout(debounceTimer)
-  debounceTimer = null
-}
-
 function clearDirDebounceTimer() {
   clearTimeout(dirDebounceTimer)
   dirDebounceTimer = null
@@ -1925,30 +2002,28 @@ async function loadDirObSummary() {
 }
 
 // ── Fetch helpers: non-director ────────────────────────────────────────────
-function syncFiltersToB2B() {
-  paramsB2B.search          = params.search
-  paramsB2B.status          = params.status
-  paramsB2B.approval_status = params.approval_status
-  paramsB2B.klien_ar_id     = params.klien_ar_id
-  paramsB2B.tanggal_dari    = params.tanggal_dari
-  paramsB2B.tanggal_sampai  = params.tanggal_sampai
-}
-
-function doFetch() {
+function doFetchB2C() {
   params.page = 1
   loadList()
-  if (canSeeAll) {
-    syncFiltersToB2B()
-    paramsB2B.page = 1
-    loadListB2B()
-  }
   loadSummary()
 }
 
-let debounceTimer = null
-function debouncedFetch() {
-  clearDebounceTimer()
-  debounceTimer = setTimeout(doFetch, 400)
+function doFetchB2B() {
+  paramsB2B.page = 1
+  loadListB2B()
+}
+
+let debounceTimerB2C = null
+let debounceTimerB2B = null
+
+function debouncedFetchB2C() {
+  clearTimeout(debounceTimerB2C)
+  debounceTimerB2C = setTimeout(doFetchB2C, 400)
+}
+
+function debouncedFetchB2B() {
+  clearTimeout(debounceTimerB2B)
+  debounceTimerB2B = setTimeout(doFetchB2B, 400)
 }
 
 function onTableOptions({ page, itemsPerPage }) {
@@ -1967,14 +2042,24 @@ function onTableOptionsB2B({ page, itemsPerPage }) {
   loadListB2B()
 }
 
-function resetFilter() {
+function resetFiltersB2C() {
   params.search          = ''
   params.status          = ''
   params.approval_status = ''
   params.klien_ar_id     = null
   params.tanggal_dari    = null
   params.tanggal_sampai  = null
-  doFetch()
+  doFetchB2C()
+}
+
+function resetFiltersB2B() {
+  paramsB2B.search          = ''
+  paramsB2B.status          = ''
+  paramsB2B.approval_status = ''
+  paramsB2B.klien_ar_id     = null
+  paramsB2B.tanggal_dari    = null
+  paramsB2B.tanggal_sampai  = null
+  doFetchB2B()
 }
 
 function resetDirApprovalFilter() {
@@ -2187,14 +2272,16 @@ function initLoad() {
 onActivated(initLoad)
 
 onDeactivated(() => {
-  clearDebounceTimer()
+  clearTimeout(debounceTimerB2C)
+  clearTimeout(debounceTimerB2B)
   clearDirDebounceTimer()
   clearDirObDebounceTimer()
   abortPendingRequests()
 })
 
 onBeforeUnmount(() => {
-  clearDebounceTimer()
+  clearTimeout(debounceTimerB2C)
+  clearTimeout(debounceTimerB2B)
   clearDirDebounceTimer()
   clearDirObDebounceTimer()
   abortPendingRequests()

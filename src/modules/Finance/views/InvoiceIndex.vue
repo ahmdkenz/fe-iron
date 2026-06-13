@@ -1,7 +1,7 @@
-﻿<template>
+<template>
   <div>
-    <PageHeader 
-      title="Invoice AR" 
+    <PageHeader
+      title="Invoice AR"
       subtitle="Kelola tagihan Account Receivable"
       :breadcrumbs="[
         { title: 'Dashboard', to: { name: 'dashboard' } },
@@ -147,109 +147,99 @@
       </VCol>
     </VRow>
 
-    <!-- Filter Card -->
-    <VCard class="mb-4">
-      <VCardText class="pa-0">
-        <div class="d-flex align-center justify-space-between px-4 py-3">
-          <div class="d-flex align-center gap-2">
-            <VIcon icon="ri-filter-3-line" size="16" color="primary" />
-            <span class="text-body-2 font-weight-semibold">Filter</span>
-          </div>
-          <VBtn
-            variant="text"
-            color="secondary"
-            size="small"
-            prepend-icon="ri-refresh-line"
-            @click="resetFilter"
-          >
-            Reset
-          </VBtn>
-        </div>
-        <VDivider />
-        <div class="d-flex flex-wrap align-center gap-4 px-4 py-3">
-          <div style="min-width: 200px; flex: 1; max-width: 280px;">
-            <div class="text-caption text-medium-emphasis mb-2">Pencarian</div>
-            <VTextField
-              v-model="sharedFilters.search"
-              placeholder="Cari no. invoice / klien..."
-              clearable
-              hide-details
-              density="compact"
-              prepend-inner-icon="ri-search-line"
-              @update:model-value="debouncedFetch"
-            />
-          </div>
-          <div style="min-width: 140px; max-width: 180px;">
-            <div class="text-caption text-medium-emphasis mb-2">Status</div>
-            <VSelect
-              v-model="sharedFilters.status"
-              placeholder="Semua Status"
-              clearable
-              hide-details
-              density="compact"
-              :items="statusOptions"
-              item-title="label"
-              item-value="value"
-              @update:model-value="doFetch"
-            />
-          </div>
-          <div style="min-width: 180px; flex: 1; max-width: 260px;">
-            <div class="text-caption text-medium-emphasis mb-2">Klien</div>
-            <VAutocomplete
-              v-model="sharedFilters.klien_ar_id"
-              placeholder="Semua Klien"
-              clearable
-              hide-details
-              density="compact"
-              :items="klienList"
-              item-title="nama_klien"
-              item-value="id"
-              :loading="klienLoading"
-              @focus="ensureKlienLoaded()"
-              @update:model-value="doFetch"
-            />
-          </div>
-          <VDivider vertical style="height: 40px; align-self: flex-end;" class="d-none d-sm-block" />
-          <div>
-            <div class="text-caption text-medium-emphasis mb-2">Dari</div>
-            <VTextField
-              v-model="sharedFilters.tanggal_dari"
-              type="date"
-              hide-details
-              density="compact"
-              style="min-width: 150px; max-width: 170px;"
-              @update:model-value="debouncedFetch"
-            />
-          </div>
-          <div>
-            <div class="text-caption text-medium-emphasis mb-2">Sampai</div>
-            <VTextField
-              v-model="sharedFilters.tanggal_sampai"
-              type="date"
-              hide-details
-              density="compact"
-              style="min-width: 150px; max-width: 170px;"
-              @update:model-value="debouncedFetch"
-            />
-          </div>
-        </div>
-      </VCardText>
-    </VCard>
-
     <!-- B2B Table (hanya untuk admin/manager/supervisor) -->
     <VCard v-if="canSeeAll" class="mb-4">
-      <div class="d-flex align-center gap-2 px-4 py-3">
-        <VAvatar
-          color="warning"
-          variant="tonal"
-          size="32"
+      <div class="d-flex align-center justify-space-between px-4 py-3">
+        <div class="d-flex align-center gap-2">
+          <VAvatar
+            color="warning"
+            variant="tonal"
+            size="32"
+          >
+            <VIcon
+              icon="ri-building-line"
+              size="18"
+            />
+          </VAvatar>
+          <span class="text-subtitle-1 font-weight-semibold">Invoice B2B</span>
+        </div>
+        <VBtn
+          variant="text"
+          color="secondary"
+          size="small"
+          prepend-icon="ri-refresh-line"
+          @click="resetFiltersB2B"
         >
-          <VIcon
-            icon="ri-building-line"
-            size="18"
+          Reset
+        </VBtn>
+      </div>
+      <VDivider />
+      <div class="d-flex flex-wrap align-center gap-4 px-4 py-3">
+        <div style="min-width: 200px; flex: 1; max-width: 280px;">
+          <div class="text-caption text-medium-emphasis mb-2">Pencarian</div>
+          <VTextField
+            v-model="filtersB2B.search"
+            placeholder="Cari no. invoice / klien..."
+            clearable
+            hide-details
+            density="compact"
+            prepend-inner-icon="ri-search-line"
+            @update:model-value="debouncedFetchB2B"
           />
-        </VAvatar>
-        <span class="text-subtitle-1 font-weight-semibold">Invoice B2B</span>
+        </div>
+        <div style="min-width: 140px; max-width: 180px;">
+          <div class="text-caption text-medium-emphasis mb-2">Status</div>
+          <VSelect
+            v-model="filtersB2B.status"
+            placeholder="Semua Status"
+            clearable
+            hide-details
+            density="compact"
+            :items="statusOptions"
+            item-title="label"
+            item-value="value"
+            @update:model-value="doFetchB2B"
+          />
+        </div>
+        <div style="min-width: 180px; flex: 1; max-width: 260px;">
+          <div class="text-caption text-medium-emphasis mb-2">Klien</div>
+          <VAutocomplete
+            v-model="filtersB2B.klien_ar_id"
+            placeholder="Semua Klien"
+            clearable
+            hide-details
+            density="compact"
+            :items="klienList"
+            item-title="nama_klien"
+            item-value="id"
+            :loading="klienLoading"
+            @focus="ensureKlienLoaded()"
+            @update:model-value="doFetchB2B"
+          />
+        </div>
+        <VDivider vertical style="height: 40px; align-self: flex-end;" class="d-none d-sm-block" />
+        <div>
+          <div class="text-caption text-medium-emphasis mb-2">Dari</div>
+          <VTextField
+            v-model="filtersB2B.tanggal_dari"
+            type="date"
+            hide-details
+            density="compact"
+            style="min-width: 150px; max-width: 170px;"
+            @update:model-value="debouncedFetchB2B"
+          />
+        </div>
+        <div>
+          <div class="text-caption text-medium-emphasis mb-2">Sampai</div>
+          <VTextField
+            v-model="filtersB2B.tanggal_sampai"
+            type="date"
+            hide-details
+            density="compact"
+            style="min-width: 150px; max-width: 170px;"
+            @update:model-value="debouncedFetchB2B"
+          />
+        </div>
       </div>
       <VDivider />
       <BaseTable
@@ -373,18 +363,97 @@
 
     <!-- B2C Table -->
     <VCard>
-      <div class="d-flex align-center gap-2 px-4 py-3">
-        <VAvatar
-          color="primary"
-          variant="tonal"
-          size="32"
+      <div class="d-flex align-center justify-space-between px-4 py-3">
+        <div class="d-flex align-center gap-2">
+          <VAvatar
+            color="primary"
+            variant="tonal"
+            size="32"
+          >
+            <VIcon
+              icon="ri-user-line"
+              size="18"
+            />
+          </VAvatar>
+          <span class="text-subtitle-1 font-weight-semibold">Invoice B2C</span>
+        </div>
+        <VBtn
+          variant="text"
+          color="secondary"
+          size="small"
+          prepend-icon="ri-refresh-line"
+          @click="resetFiltersB2C"
         >
-          <VIcon
-            icon="ri-user-line"
-            size="18"
+          Reset
+        </VBtn>
+      </div>
+      <VDivider />
+      <div class="d-flex flex-wrap align-center gap-4 px-4 py-3">
+        <div style="min-width: 200px; flex: 1; max-width: 280px;">
+          <div class="text-caption text-medium-emphasis mb-2">Pencarian</div>
+          <VTextField
+            v-model="filtersB2C.search"
+            placeholder="Cari no. invoice / klien..."
+            clearable
+            hide-details
+            density="compact"
+            prepend-inner-icon="ri-search-line"
+            @update:model-value="debouncedFetchB2C"
           />
-        </VAvatar>
-        <span class="text-subtitle-1 font-weight-semibold">Invoice B2C</span>
+        </div>
+        <div style="min-width: 140px; max-width: 180px;">
+          <div class="text-caption text-medium-emphasis mb-2">Status</div>
+          <VSelect
+            v-model="filtersB2C.status"
+            placeholder="Semua Status"
+            clearable
+            hide-details
+            density="compact"
+            :items="statusOptions"
+            item-title="label"
+            item-value="value"
+            @update:model-value="doFetchB2C"
+          />
+        </div>
+        <div style="min-width: 180px; flex: 1; max-width: 260px;">
+          <div class="text-caption text-medium-emphasis mb-2">Klien</div>
+          <VAutocomplete
+            v-model="filtersB2C.klien_ar_id"
+            placeholder="Semua Klien"
+            clearable
+            hide-details
+            density="compact"
+            :items="klienList"
+            item-title="nama_klien"
+            item-value="id"
+            :loading="klienLoading"
+            @focus="ensureKlienLoaded()"
+            @update:model-value="doFetchB2C"
+          />
+        </div>
+        <VDivider vertical style="height: 40px; align-self: flex-end;" class="d-none d-sm-block" />
+        <div>
+          <div class="text-caption text-medium-emphasis mb-2">Dari</div>
+          <VTextField
+            v-model="filtersB2C.tanggal_dari"
+            type="date"
+            hide-details
+            density="compact"
+            style="min-width: 150px; max-width: 170px;"
+            @update:model-value="debouncedFetchB2C"
+          />
+        </div>
+        <div>
+          <div class="text-caption text-medium-emphasis mb-2">Sampai</div>
+          <VTextField
+            v-model="filtersB2C.tanggal_sampai"
+            type="date"
+            hide-details
+            density="compact"
+            style="min-width: 150px; max-width: 170px;"
+            @update:model-value="debouncedFetchB2C"
+          />
+        </div>
       </div>
       <VDivider />
       <BaseTable
@@ -521,6 +590,7 @@
         {{ deleteError }}
       </VAlert>
     </BaseModal>
+
     <!-- Catat Bayar Modal -->
     <PembayaranForm
       v-if="selectedForPayment"
@@ -529,6 +599,7 @@
       :sisa-tagihan="selectedForPayment.sisa_tagihan"
       @saved="onPembayaranSaved"
     />
+
     <!-- Bulk Action Bar -->
     <BulkActionBar
       :selected="selectedInvoices"
@@ -834,61 +905,53 @@ const { formatCurrency, formatDate } = useFormatter()
 
 const canSeeAll = authStore.hasAnyRole(['ADMIN', 'MANAGER', 'SUPERVISOR'])
 
-const sharedFilters = reactive({ search: '', status: '', klien_ar_id: null, tanggal_dari: null, tanggal_sampai: null })
+const filtersB2B = reactive({ search: '', status: '', klien_ar_id: null, tanggal_dari: null, tanggal_sampai: null })
+const filtersB2C = reactive({ search: '', status: '', klien_ar_id: null, tanggal_dari: null, tanggal_sampai: null })
 
 if (canSeeAll) {
   paramsB2C.segment = 'B2C'
   paramsB2B.segment = 'B2B'
 }
 
-const summary       = reactive({ total_invoice: null, total_tagihan: null, total_pembayaran: null, total_sisa: null })
-const showDelete         = ref(false)
-const deleteError        = ref('')
-const selectedInvoice    = ref(null)
-const showPembayaran     = ref(false)
-const selectedInvoices   = ref([])
-const showShareDialog    = ref(false)
+const summary          = reactive({ total_invoice: null, total_tagihan: null, total_pembayaran: null, total_sisa: null })
+const showDelete       = ref(false)
+const deleteError      = ref('')
+const selectedInvoice  = ref(null)
+const showPembayaran   = ref(false)
+const selectedInvoices = ref([])
+const showShareDialog  = ref(false)
 const shareTargetInvoices = ref([])
-const selectedForPayment = ref(null)
-const exportingExcel  = ref(false)
-const showImport      = ref(false)
-const importing       = ref(false)
-const printingId      = ref(null)
-const importFile      = ref(null)
-const importResult    = ref(null)
-const importType      = ref('b2c')
-
-function resetFilter() {
-  sharedFilters.search         = ''
-  sharedFilters.status         = ''
-  sharedFilters.klien_ar_id    = null
-  sharedFilters.tanggal_dari   = null
-  sharedFilters.tanggal_sampai = null
-  doFetch()
-}
+const selectedForPayment  = ref(null)
+const exportingExcel   = ref(false)
+const showImport       = ref(false)
+const importing        = ref(false)
+const printingId       = ref(null)
+const importFile       = ref(null)
+const importResult     = ref(null)
+const importType       = ref('b2c')
 
 const headers = [
-  { title: 'No',             key: 'no',             sortable: false, width: '60px' },
-  { title: 'No Invoice',     key: 'no_invoice',     sortable: false },
-  { title: 'Klien',          key: 'klien_ar',       sortable: false },
-  { title: 'Tanggal',        key: 'tanggal_invoice',    sortable: false, width: '115px' },
-  { title: 'Total Barang',   key: 'subtotal',        sortable: false },
-  { title: 'Sisa Tagihan',   key: 'sisa_tagihan',   sortable: false },
-  { title: 'Status',         key: 'status',         sortable: false },
-  { title: 'Aksi',           key: 'actions',        sortable: false, align: 'center', width: '160px' },
+  { title: 'No',           key: 'no',              sortable: false, width: '60px' },
+  { title: 'No Invoice',   key: 'no_invoice',      sortable: false },
+  { title: 'Klien',        key: 'klien_ar',        sortable: false },
+  { title: 'Tanggal',      key: 'tanggal_invoice', sortable: false, width: '115px' },
+  { title: 'Total Barang', key: 'subtotal',        sortable: false },
+  { title: 'Sisa Tagihan', key: 'sisa_tagihan',    sortable: false },
+  { title: 'Status',       key: 'status',          sortable: false },
+  { title: 'Aksi',         key: 'actions',         sortable: false, align: 'center', width: '160px' },
 ]
 
 const headersB2B = [
-  { title: 'No',               key: 'no',                    sortable: false, width: '60px' },
-  { title: 'No Invoice',       key: 'no_invoice',            sortable: false },
-  { title: 'Client',           key: 'klien_ar',              sortable: false },
-  { title: 'Penerima Tagihan', key: 'penerima_tagihan',      sortable: false },
-  { title: 'Tgl. Invoice',     key: 'tanggal_invoice',       sortable: false, width: '115px' },
-  { title: 'Tgl. Kirim',       key: 'tanggal_kirim_barang',  sortable: false, width: '115px' },
-  { title: 'Total Barang',     key: 'subtotal',              sortable: false },
-  { title: 'Sisa Tagihan',     key: 'sisa_tagihan',          sortable: false },
-  { title: 'Status',           key: 'status',                sortable: false },
-  { title: 'Aksi',             key: 'actions',               sortable: false, align: 'center', width: '160px' },
+  { title: 'No',               key: 'no',                   sortable: false, width: '60px' },
+  { title: 'No Invoice',       key: 'no_invoice',           sortable: false },
+  { title: 'Client',           key: 'klien_ar',             sortable: false },
+  { title: 'Penerima Tagihan', key: 'penerima_tagihan',     sortable: false },
+  { title: 'Tgl. Invoice',     key: 'tanggal_invoice',      sortable: false, width: '115px' },
+  { title: 'Tgl. Kirim',       key: 'tanggal_kirim_barang', sortable: false, width: '115px' },
+  { title: 'Total Barang',     key: 'subtotal',             sortable: false },
+  { title: 'Sisa Tagihan',     key: 'sisa_tagihan',         sortable: false },
+  { title: 'Status',           key: 'status',               sortable: false },
+  { title: 'Aksi',             key: 'actions',              sortable: false, align: 'center', width: '160px' },
 ]
 
 const statusOptions = [
@@ -898,16 +961,11 @@ const statusOptions = [
   { label: 'Lunas',    value: 'LUNAS'    },
 ]
 
-
 let listControllerB2C = null
 let listControllerB2B = null
 let summaryController = null
-let debounceTimer = null
-
-function clearDebounceTimer() {
-  clearTimeout(debounceTimer)
-  debounceTimer = null
-}
+let debounceTimerB2B  = null
+let debounceTimerB2C  = null
 
 function abortPendingRequests() {
   listControllerB2C?.abort()
@@ -916,14 +974,6 @@ function abortPendingRequests() {
   listControllerB2C = null
   listControllerB2B = null
   summaryController = null
-}
-
-function applySharedFilters(p) {
-  p.search         = sharedFilters.search
-  p.status         = sharedFilters.status
-  p.klien_ar_id    = sharedFilters.klien_ar_id
-  p.tanggal_dari   = sharedFilters.tanggal_dari
-  p.tanggal_sampai = sharedFilters.tanggal_sampai
 }
 
 async function loadListB2C() {
@@ -947,50 +997,55 @@ async function loadListB2B() {
 
 async function loadSummary() {
   summaryController?.abort()
-
   const controller = new AbortController()
-
   summaryController = controller
-
   try {
     const { data } = await api.get('/finance/invoices/summary', {
       params: {
-        tanggal_dari: sharedFilters.tanggal_dari,
-        tanggal_sampai: sharedFilters.tanggal_sampai,
-        klien_ar_id: sharedFilters.klien_ar_id,
         ...(!canSeeAll && { karyawan_id: paramsB2C.karyawan_id }),
       },
       signal: controller.signal,
     })
-
-    if (controller.signal.aborted)
-      return
-
+    if (controller.signal.aborted) return
     Object.assign(summary, data.data)
   } catch (err) {
-    if (err.code === 'ERR_CANCELED')
-      return
+    if (err.code === 'ERR_CANCELED') return
   } finally {
     if (summaryController === controller)
       summaryController = null
   }
 }
 
-function doFetch() {
-  applySharedFilters(paramsB2C)
-  paramsB2C.page = 1
-  loadListB2C()
-  if (canSeeAll) {
-    applySharedFilters(paramsB2B)
-    paramsB2B.page = 1
-    loadListB2B()
-  }
-  loadSummary()
+function doFetchB2B() {
+  Object.assign(paramsB2B, filtersB2B)
+  paramsB2B.page = 1
+  loadListB2B()
 }
 
-function debouncedFetch() {
-  clearDebounceTimer()
-  debounceTimer = setTimeout(doFetch, 400)
+function doFetchB2C() {
+  Object.assign(paramsB2C, filtersB2C)
+  paramsB2C.page = 1
+  loadListB2C()
+}
+
+function debouncedFetchB2B() {
+  clearTimeout(debounceTimerB2B)
+  debounceTimerB2B = setTimeout(doFetchB2B, 400)
+}
+
+function debouncedFetchB2C() {
+  clearTimeout(debounceTimerB2C)
+  debounceTimerB2C = setTimeout(doFetchB2C, 400)
+}
+
+function resetFiltersB2B() {
+  Object.assign(filtersB2B, { search: '', status: '', klien_ar_id: null, tanggal_dari: null, tanggal_sampai: null })
+  doFetchB2B()
+}
+
+function resetFiltersB2C() {
+  Object.assign(filtersB2C, { search: '', status: '', klien_ar_id: null, tanggal_dari: null, tanggal_sampai: null })
+  doFetchB2C()
 }
 
 function onTableOptionsB2C({ page, itemsPerPage }) {
@@ -1010,10 +1065,10 @@ async function exportExcel() {
   showLoading({ title: 'Mengeksport Data Invoice', text: 'Mohon tunggu sebentar...' })
   try {
     const query = new URLSearchParams()
-    if (sharedFilters.status)         query.set('status', sharedFilters.status)
-    if (sharedFilters.klien_ar_id)    query.set('klien_ar_id', sharedFilters.klien_ar_id)
-    if (sharedFilters.tanggal_dari)   query.set('tanggal_dari', sharedFilters.tanggal_dari)
-    if (sharedFilters.tanggal_sampai) query.set('tanggal_sampai', sharedFilters.tanggal_sampai)
+    if (filtersB2C.status)         query.set('status', filtersB2C.status)
+    if (filtersB2C.klien_ar_id)    query.set('klien_ar_id', filtersB2C.klien_ar_id)
+    if (filtersB2C.tanggal_dari)   query.set('tanggal_dari', filtersB2C.tanggal_dari)
+    if (filtersB2C.tanggal_sampai) query.set('tanggal_sampai', filtersB2C.tanggal_sampai)
 
     const res = await api.get(`/finance/invoices/export-excel?${query}`, { responseType: 'blob' })
     const url  = URL.createObjectURL(res.data)
@@ -1181,7 +1236,8 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-  clearDebounceTimer()
+  clearTimeout(debounceTimerB2B)
+  clearTimeout(debounceTimerB2C)
   abortPendingRequests()
 })
 </script>
