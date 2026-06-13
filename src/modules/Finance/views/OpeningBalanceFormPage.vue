@@ -656,7 +656,9 @@ const selectedKlien = computed(() =>
   klienList.value.find(item => item.id === form.klien_ar_id) ?? null)
 
 const selectedCompanyName = computed(() =>
-  selectedKlien.value?.perusahaan?.nama_perusahaan
+  selectedKlien.value?.karyawan_ar?.perusahaan?.nama_perusahaan
+  ?? selectedKlien.value?.perusahaan?.nama_perusahaan
+  ?? selectedKlien.value?.karyawan_ar?.perusahaan?.nama_singkatan_perusahaan
   ?? selectedKlien.value?.perusahaan?.nama_singkatan_perusahaan
   ?? '')
 
@@ -666,6 +668,32 @@ const selectedKlienMeta = computed(() => {
   return [selectedKlien.value.kode_klien, selectedKlien.value.tipe_klien]
     .filter(Boolean)
     .join(' - ')
+})
+
+function generateObNoInvoice() {
+  const singkatan = (
+    selectedKlien.value?.karyawan_ar?.perusahaan?.nama_singkatan_perusahaan
+    ?? selectedKlien.value?.perusahaan?.nama_singkatan_perusahaan
+    ?? selectedKlien.value?.kode_klien
+    ?? 'OB'
+  ).replace(/[^A-Za-z0-9]/g, '').toUpperCase()
+
+  const now  = new Date()
+  const pad  = (n, len = 2) => String(n).padStart(len, '0')
+  const dd   = pad(now.getDate())
+  const mm   = pad(now.getMonth() + 1)
+  const yyyy = now.getFullYear()
+  const hh   = pad(now.getHours())
+  const min  = pad(now.getMinutes())
+  const ss   = pad(now.getSeconds())
+  const xxx  = pad(Math.floor(Math.random() * 1000), 3)
+
+  return `OB-${singkatan}-${dd}${mm}${yyyy}${hh}${min}${ss}-${xxx}`
+}
+
+watch(() => form.klien_ar_id, (newVal) => {
+  if (newVal && !isEditing.value)
+    form.no_invoice = generateObNoInvoice()
 })
 
 const formattedSaldoAwal = computed(() => {
