@@ -189,16 +189,6 @@
         <template #item.no="{ index }">
           {{ (meta.current_page - 1) * meta.per_page + index + 1 }}
         </template>
-        <template #item.bank_type="{ item }">
-          <VChip
-            :color="bankColor(item.bank_type)"
-            size="x-small"
-            variant="tonal"
-            label
-          >
-            {{ item.bank_type ?? '-' }}
-          </VChip>
-        </template>
         <template #item.dk="{ item }">
           <VChip
             :color="item.dk === 'K' ? 'success' : 'warning'"
@@ -333,7 +323,6 @@ const headers = [
   { title: 'MUTASI',           key: 'mutasi',           sortable: false, align: 'end' },
   { title: 'SALDO',            key: 'saldo',            sortable: false, align: 'end' },
   { title: 'DESKRIPSI',        key: 'keterangan',       sortable: false, minWidth: '220px' },
-  { title: 'KETERANGAN BANK',  key: 'bank_type',        sortable: false, width:    '110px' },
   { title: 'STATUS POSTING 1', key: 'status_posting_1', sortable: false, width: '140px' },
   { title: 'DB',               key: 'no_dokumen_ar',    sortable: false },
   { title: 'SELISIH',          key: 'selisih',          sortable: false, align: 'end' },
@@ -378,11 +367,6 @@ function onTableOptions({ page, itemsPerPage }) {
   meta.current_page = page
   meta.per_page     = itemsPerPage
   doFetch(false)
-}
-
-function bankColor(type) {
-  const map = { BCA: 'info', MANDIRI: 'warning', CIMB: 'error', BSI: 'success' }
-  return map[type] ?? 'default'
 }
 
 function statusRekonClass(status) {
