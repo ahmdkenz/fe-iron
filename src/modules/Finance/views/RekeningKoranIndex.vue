@@ -189,6 +189,9 @@
         <template #item.no="{ index }">
           {{ (meta.current_page - 1) * meta.per_page + index + 1 }}
         </template>
+        <template #item.tanggal="{ item }">
+          <span style="white-space: nowrap">{{ item.tanggal }}</span>
+        </template>
         <template #item.dk="{ item }">
           <VChip
             :color="item.dk === 'K' ? 'success' : 'warning'"
