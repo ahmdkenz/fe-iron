@@ -62,9 +62,9 @@
             <VBtn
               size="x-small"
               variant="tonal"
-              color="primary"
-              icon="ri-eye-line"
-              :to="{ name: 'finance-rekonsiliasi-bank-show', params: { id: item.id } }"
+              :color="selectedId === item.id ? 'secondary' : 'primary'"
+              :icon="selectedId === item.id ? 'ri-eye-off-line' : 'ri-eye-line'"
+              @click="selectReport(item)"
             />
             <VBtn
               size="x-small"
@@ -77,6 +77,11 @@
         </template>
       </BaseTable>
     </VCard>
+
+    <!-- Detail Rekening Koran (inline) -->
+    <div v-if="selectedId" class="mt-4">
+      <RekonsiliasiBankDetail :report-id="selectedId" @close="selectedId = null" />
+    </div>
 
     <!-- Dialog Upload -->
     <VDialog v-model="dialog" max-width="480" persistent>
@@ -210,6 +215,7 @@
 import { markRaw, onMounted, reactive, ref } from 'vue'
 import { useFormatter } from '@/composables/useFormatter'
 import api from '@/utils/axios'
+import RekonsiliasiBankDetail from './RekonsiliasiBankDetail.vue'
 
 const { formatCurrency } = useFormatter()
 
@@ -226,6 +232,8 @@ const isDragging  = ref(false)
 const fileInput   = ref(null)
 
 const form = reactive({ bank_type: null, file: null })
+
+const selectedId          = ref(null)
 
 const deleteDialog        = ref(false)
 const deleteTarget        = ref(null)
@@ -256,6 +264,10 @@ const headers = [
   { title: 'Status Cocok', key: 'status',      sortable: false },
   { title: 'Aksi',         key: 'aksi',        sortable: false, width: '90px' },
 ]
+
+function selectReport(item) {
+  selectedId.value = selectedId.value === item.id ? null : item.id
+}
 
 function onTableOptions({ page: p, itemsPerPage }) {
   page.value    = p
