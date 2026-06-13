@@ -299,18 +299,119 @@ async function doUpload(force = false) {
 }
 
 async function doDownloadTemplate() {
-  const bold = (v) => ({ value: v, fontWeight: 'bold' })
-  await writeXlsxFile([
-    ['Tanggal', 'Keterangan', 'No Referensi', 'Debit', 'Kredit', 'Saldo'].map(bold),
-    [
-      { value: '01012025' },
-      { value: 'Contoh: Transfer Pembayaran Invoice' },
-      { value: 'REF001' },
-      { value: '' },
-      { value: '5000000' },
-      { value: '5000000' },
+  const c = (value, opts = {}) => ({ value, fontFamily: 'Calibri', fontSize: 10, alignVertical: 'middle', ...opts })
+  const bd = { borderStyle: 'thin', borderColor: '#B8CCE4' }
+
+  // ── Sheet 1: Template ─────────────────────────────────────────────────
+  const templateSheet = {
+    sheet: 'Template',
+    columns: [
+      { width: 14 }, { width: 42 }, { width: 22 },
+      { width: 16 }, { width: 16 }, { width: 16 },
     ],
-  ], { fileName: 'template-rekening-koran.xlsx' })
+    data: [
+      // Baris 1 — Judul (navy gelap, teks putih)
+      [c('TEMPLATE REKENING KORAN — Sistem IRON', {
+        span: 6, fontWeight: 'bold', fontSize: 14, height: 32,
+        color: '#FFFFFF', backgroundColor: '#1F3864', align: 'left',
+      })],
+      // Baris 2 — Sub-info (biru medium, teks putih)
+      [c('Isi data mulai baris ke-4  ·  Format Tanggal: DDMMYYYY  ·  Angka tanpa titik, koma, atau simbol Rp', {
+        span: 6, fontStyle: 'italic', fontSize: 9, height: 16,
+        color: '#DDEEFF', backgroundColor: '#2E75B6', align: 'left',
+      })],
+      // Baris 3 — Header kolom (biru medium-gelap, teks putih)
+      [
+        c('Tanggal',      { fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#2F5496', align: 'center', height: 22, ...bd }),
+        c('Keterangan',   { fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#2F5496', align: 'left',   height: 22, ...bd }),
+        c('No Referensi', { fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#2F5496', align: 'left',   height: 22, ...bd }),
+        c('Debit',        { fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#2F5496', align: 'right',  height: 22, ...bd }),
+        c('Kredit',       { fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#2F5496', align: 'right',  height: 22, ...bd }),
+        c('Saldo',        { fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#2F5496', align: 'right',  height: 22, ...bd }),
+      ],
+      // Baris 4 — Contoh data (biru sangat muda, teks abu gelap)
+      [
+        c('01012025',                            { backgroundColor: '#DEEAF1', align: 'center', color: '#404040', fontStyle: 'italic', height: 18, ...bd }),
+        c('Contoh: Transfer Pembayaran Invoice', { backgroundColor: '#DEEAF1', align: 'left',   color: '#404040', fontStyle: 'italic', height: 18, ...bd }),
+        c('TRF202501010001',                     { backgroundColor: '#DEEAF1', align: 'left',   color: '#404040', fontStyle: 'italic', height: 18, ...bd }),
+        c(null,                                  { backgroundColor: '#DEEAF1', align: 'right',  color: '#404040', fontStyle: 'italic', height: 18, ...bd }),
+        c('5000000',                             { backgroundColor: '#DEEAF1', align: 'right',  color: '#404040', fontStyle: 'italic', height: 18, ...bd }),
+        c('25000000',                            { backgroundColor: '#DEEAF1', align: 'right',  color: '#404040', fontStyle: 'italic', height: 18, ...bd }),
+      ],
+    ],
+  }
+
+  // ── Sheet 2: Petunjuk ──────────────────────────────────────────────────
+  const pb  = { borderStyle: 'thin', borderColor: '#B8CCE4' }
+  const row = (value, opts = {}) => c(value, { align: 'left', height: 18, ...opts })
+
+  const kolomData = [
+    ['Tanggal',      'DDMMYYYY (teks)',  'Tanggal transaksi — tulis 8 digit sebagai teks',                '01012025'],
+    ['Keterangan',   'Teks bebas',      'Deskripsi transaksi sesuai rekening koran',                     'TRANSFER MASUK - INV-2025-001'],
+    ['No Referensi', 'Teks (opsional)', 'No. referensi bank — dipakai sistem untuk auto-matching',       'TRF202501010001'],
+    ['Debit',        'Angka bulat',     'Uang keluar (tanpa titik/koma). Biarkan kosong jika tidak ada', '1500000'],
+    ['Kredit',       'Angka bulat',     'Uang masuk (tanpa titik/koma). Biarkan kosong jika tidak ada', '5000000'],
+    ['Saldo',        'Angka bulat',     'Saldo rekening setelah transaksi (tanpa titik/koma)',            '25000000'],
+  ]
+
+  const aturanData = [
+    ['1.', 'Jangan hapus atau mengubah baris 1 (judul), baris 2 (info), dan baris 3 (header kolom).'],
+    ['2.', 'Isi data transaksi mulai dari BARIS KE-4.'],
+    ['3.', 'Format tanggal wajib DDMMYYYY — contoh: 01012025 untuk tanggal 1 Januari 2025.'],
+    ['4.', 'Angka (Debit, Kredit, Saldo) diisi bilangan bulat TANPA titik ribuan, koma, atau simbol Rp.'],
+    ['5.', 'Tiap baris hanya boleh memiliki salah satu: Debit ATAU Kredit yang terisi (tidak keduanya).'],
+    ['6.', 'Kolom No Referensi opsional, namun jika diisi akan digunakan untuk pencocokan otomatis.'],
+    ['7.', 'Simpan file dalam format .xlsx atau .xls sebelum diupload ke sistem.'],
+  ]
+
+  const petunjukSheet = {
+    sheet: 'Petunjuk',
+    columns: [{ width: 18 }, { width: 18 }, { width: 52 }, { width: 22 }],
+    data: [
+      // Judul (navy gelap, teks putih)
+      [row('PETUNJUK PENGISIAN REKENING KORAN', {
+        span: 4, fontWeight: 'bold', fontSize: 14, height: 32,
+        color: '#FFFFFF', backgroundColor: '#1F3864',
+      })],
+      // Sub-judul (biru medium, italic putih)
+      [row('Template Rekening Koran — Sistem IRON', {
+        span: 4, fontStyle: 'italic', fontSize: 9, height: 16,
+        color: '#DDEEFF', backgroundColor: '#2E75B6',
+      })],
+      // Spasi
+      [row('', { span: 4, height: 8, backgroundColor: '#EBF3FB' })],
+      // Section: Penjelasan Kolom (biru medium-gelap, teks putih)
+      [row('PENJELASAN KOLOM', {
+        span: 4, fontWeight: 'bold', fontSize: 11, height: 22,
+        color: '#FFFFFF', backgroundColor: '#2F5496',
+      })],
+      // Header tabel (biru agak terang, teks putih)
+      [
+        row('Kolom',        { fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#4472C4', ...pb }),
+        row('Format',       { fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#4472C4', ...pb }),
+        row('Keterangan',   { fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#4472C4', ...pb }),
+        row('Contoh Nilai', { fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#4472C4', ...pb }),
+      ],
+      // Baris kolom — zebra biru sangat muda & putih
+      ...kolomData.map((cols, i) => cols.map(v =>
+        row(v, { backgroundColor: i % 2 === 0 ? '#DEEAF1' : '#FFFFFF', color: '#212121', ...pb }),
+      )),
+      // Spasi
+      [row('', { span: 4, height: 10 })],
+      // Section: Aturan Penting (biru medium-gelap, teks putih)
+      [row('ATURAN PENTING', {
+        span: 4, fontWeight: 'bold', fontSize: 11, height: 22,
+        color: '#FFFFFF', backgroundColor: '#2F5496',
+      })],
+      // Baris aturan — zebra biru sangat muda & putih
+      ...aturanData.map(([no, teks], i) => [
+        row(no,   { fontWeight: 'bold', color: '#1F3864', backgroundColor: i % 2 === 0 ? '#DEEAF1' : '#FFFFFF', ...pb }),
+        row(teks, { span: 3,            color: '#212121', backgroundColor: i % 2 === 0 ? '#DEEAF1' : '#FFFFFF', ...pb }),
+      ]),
+    ],
+  }
+
+  await writeXlsxFile([templateSheet, petunjukSheet]).toFile('template-rekening-koran.xlsx')
 }
 
 function confirmDelete(item) {
@@ -322,6 +423,7 @@ async function doDelete() {
   deleting.value = true
   try {
     await api.delete(`/finance/rekonsiliasi-bank/${deleteTarget.value.id}`)
+    if (selectedId.value === deleteTarget.value.id) selectedId.value = null
     deleteDialog.value = false
     fetchList()
   } finally {
