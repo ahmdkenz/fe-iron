@@ -16,7 +16,7 @@
           Upload Rekening Koran Bank
         </VBtn>
         <span class="text-caption text-medium-emphasis">
-          Dukung format file: BCA (.csv), Mandiri / CIMB / BSI (.xlsx)
+          Dukung format: .xlsx atau .xls
         </span>
       </VCardText>
     </VCard>
@@ -33,11 +33,6 @@
         :page="page"
         @update:options="onTableOptions"
       >
-        <template #item.bank_type="{ item }">
-          <VChip :color="bankColor(item.bank_type)" size="small" variant="tonal" label>
-            {{ item.bank_type }}
-          </VChip>
-        </template>
         <template #item.periode="{ item }">
           {{ item.periode_awal }} — {{ item.periode_akhir }}
         </template>
@@ -92,18 +87,8 @@
         </VCardTitle>
         <VDivider />
         <VCardText class="pt-4 d-flex flex-column gap-4">
-          <VSelect
-            v-model="form.bank_type"
-            label="Pilih Bank"
-            :items="bankOptions"
-            item-title="label"
-            item-value="value"
-            hide-details="auto"
-            :rules="[v => !!v || 'Bank wajib dipilih']"
-          />
-
           <!-- Download Template -->
-          <div v-if="form.bank_type" class="d-flex align-center gap-2">
+          <div class="d-flex align-center gap-2">
             <VIcon icon="ri-information-line" size="16" class="text-info" />
             <span class="text-caption text-medium-emphasis">
               Belum punya file format yang sesuai?
@@ -113,11 +98,10 @@
               color="info"
               size="x-small"
               density="compact"
-              :loading="downloadingTemplate"
               prepend-icon="ri-download-line"
               @click="doDownloadTemplate"
             >
-              Download Template {{ form.bank_type }}
+              Download Template
             </VBtn>
           </div>
 
@@ -136,12 +120,12 @@
             </div>
             <div v-else class="text-body-2 text-medium-emphasis text-center">
               <div>Klik atau drag & drop file di sini</div>
-              <div class="text-caption mt-1">BCA: .csv &nbsp;|&nbsp; Mandiri/CIMB/BSI: .xlsx atau .xls</div>
+              <div class="text-caption mt-1">.xlsx atau .xls</div>
             </div>
             <input
               ref="fileInput"
               type="file"
-              accept=".csv,.xlsx,.xls"
+              accept=".xlsx,.xls"
               style="display:none"
               @change="onFileChange"
             />
@@ -156,7 +140,7 @@
           <VBtn
             color="primary"
             :loading="uploading"
-            :disabled="!form.bank_type || !form.file"
+            :disabled="!form.file"
             @click="doUpload"
           >
             Upload & Proses
@@ -172,8 +156,7 @@
         <VDivider />
         <VCardText v-if="conflictData" class="pt-4">
           <p>
-            File <strong>{{ conflictData.nama_file }}</strong> untuk
-            <strong>{{ form.bank_type }}</strong> periode
+            File <strong>{{ conflictData.nama_file }}</strong> periode
             <strong>{{ conflictData.periode_awal }} – {{ conflictData.periode_akhir }}</strong>
             sudah diupload sebelumnya oleh <strong>{{ conflictData.uploaded_by }}</strong>.
           </p>
@@ -215,6 +198,7 @@
 import { markRaw, onMounted, reactive, ref } from 'vue'
 import { useFormatter } from '@/composables/useFormatter'
 import api from '@/utils/axios'
+import writeXlsxFile from 'write-excel-file/browser'
 import RekonsiliasiBankDetail from './RekonsiliasiBankDetail.vue'
 
 const { formatCurrency } = useFormatter()
@@ -231,33 +215,20 @@ const uploadError = ref('')
 const isDragging  = ref(false)
 const fileInput   = ref(null)
 
-const form = reactive({ bank_type: null, file: null })
+const form = reactive({ file: null })
 
-const selectedId          = ref(null)
+const selectedId     = ref(null)
 
-const deleteDialog        = ref(false)
-const deleteTarget        = ref(null)
-const deleting            = ref(false)
-const downloadingTemplate = ref(false)
+const deleteDialog   = ref(false)
+const deleteTarget   = ref(null)
+const deleting       = ref(false)
 
 const conflictDialog = ref(false)
 const conflictData   = ref(null)
 
-const bankOptions = [
-  { label: 'BCA', value: 'BCA' },
-  { label: 'Bank Mandiri', value: 'MANDIRI' },
-  { label: 'CIMB NIAGA', value: 'CIMB' },
-  { label: 'BSI', value: 'BSI' },
-]
-
-const bankColor = (type) => ({
-  BCA: 'info', MANDIRI: 'warning', CIMB: 'deep-purple', BSI: 'green',
-}[type] ?? 'secondary')
-
 const headers = [
   { title: 'No',           key: 'no',          sortable: false, width: '50px' },
   { title: 'Tanggal Upload', key: 'created_at', sortable: false },
-  { title: 'Bank',         key: 'bank_type',   sortable: false, width: '100px' },
   { title: 'Nama File',    key: 'nama_file',   sortable: false },
   { title: 'Periode',      key: 'periode',     sortable: false },
   { title: 'Total Kredit', key: 'total_kredit',sortable: false, align: 'end' },
@@ -298,9 +269,8 @@ function onDrop(e) {
 }
 
 function closeDialog() {
-  dialog.value     = false
-  form.bank_type   = null
-  form.file        = null
+  dialog.value      = false
+  form.file         = null
   uploadError.value = ''
   if (fileInput.value) fileInput.value.value = ''
 }
@@ -310,7 +280,6 @@ async function doUpload(force = false) {
   uploading.value   = true
   try {
     const fd = new FormData()
-    fd.append('bank_type', form.bank_type)
     fd.append('file', form.file)
     if (force) fd.append('force', '1')
     await api.post('/finance/rekonsiliasi-bank/upload', fd)
@@ -330,24 +299,18 @@ async function doUpload(force = false) {
 }
 
 async function doDownloadTemplate() {
-  if (!form.bank_type) return
-  downloadingTemplate.value = true
-  try {
-    const response = await api.get(`/finance/rekonsiliasi-bank/template/${form.bank_type}`, {
-      responseType: 'blob',
-    })
-    const ext      = 'xlsx'
-    const url      = URL.createObjectURL(new Blob([response.data]))
-    const link     = document.createElement('a')
-    link.href      = url
-    link.download  = `template-rekening-koran-${form.bank_type.toLowerCase()}.${ext}`
-    link.click()
-    URL.revokeObjectURL(url)
-  } catch {
-    // diam — error tidak kritis
-  } finally {
-    downloadingTemplate.value = false
-  }
+  const bold = (v) => ({ value: v, fontWeight: 'bold' })
+  await writeXlsxFile([
+    ['Tanggal', 'Keterangan', 'No Referensi', 'Debit', 'Kredit', 'Saldo'].map(bold),
+    [
+      { value: '01012025' },
+      { value: 'Contoh: Transfer Pembayaran Invoice' },
+      { value: 'REF001' },
+      { value: '' },
+      { value: '5000000' },
+      { value: '5000000' },
+    ],
+  ], { fileName: 'template-rekening-koran.xlsx' })
 }
 
 function confirmDelete(item) {

@@ -4,7 +4,7 @@
     <VCard class="mb-4" v-if="report.id">
       <VCardText>
         <div class="d-flex flex-wrap gap-4 align-center">
-          <VChip :color="bankColor(report.bank_type)" variant="tonal" label>
+          <VChip v-if="report.bank_type && report.bank_type !== 'GENERAL'" :color="bankColor(report.bank_type)" variant="tonal" label>
             {{ report.bank_type }}
           </VChip>
           <div>
