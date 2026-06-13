@@ -135,6 +135,8 @@
                       prepend-inner-icon="ri-hashtag"
                       :rules="[v => !!v || 'No. Opening Balance wajib diisi']"
                       :error-messages="errors.no_invoice"
+                      hint="Format: OB-{SINGKATAN}-{DDMMYYYYHHMMSS}-{XXX} — Contoh PT: OB-ABB-13062026143022-001 | Contoh RESTO: OB-MKS-13062026143022-001"
+                      persistent-hint
                     />
                   </VCol>
 
