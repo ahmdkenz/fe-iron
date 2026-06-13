@@ -126,83 +126,62 @@
 
 
 
-    <!-- Detail Drawer -->
-    <VNavigationDrawer
-      v-if="showDetail"
+    <!-- Detail Dialog -->
+    <DetailDialog
       v-model="showDetail"
-      location="right"
-      width="380"
-      temporary
+      title="Detail Brand"
     >
-      <div class="d-flex align-center justify-space-between pa-4">
-        <span class="text-h6 font-weight-semibold">Detail Brand</span>
-        <VBtn
-          icon
-          size="small"
-          variant="text"
-          @click="showDetail = false"
+      <template #hero>
+        <VAvatar
+          size="88"
+          color="primary"
+          class="mb-3"
         >
-          <VIcon icon="ri-close-line" />
-        </VBtn>
-      </div>
-      <VDivider />
-      <div
-        v-if="selectedBrand"
-        class="pa-4"
-      >
-        <div class="mb-4 text-center">
-          <VAvatar
-            size="72"
-            color="primary"
-            class="mb-3"
-          >
-            <span class="text-h5">{{ selectedBrand.nama_brand?.charAt(0)?.toUpperCase() }}</span>
-          </VAvatar>
-          <div class="text-h6 font-weight-bold">
-            {{ selectedBrand.nama_brand }}
-          </div>
-          <VChip
-            color="primary"
-            size="small"
-            variant="tonal"
-            label
-            class="mt-1"
-          >
-            {{ selectedBrand.kode_brand }}
-          </VChip>
+          <span class="text-h4 font-weight-bold text-white">{{ selectedBrand?.nama_brand?.charAt(0)?.toUpperCase() }}</span>
+        </VAvatar>
+        <div class="text-h6 font-weight-bold mb-2">
+          {{ selectedBrand?.nama_brand }}
         </div>
-        <VDivider class="mb-4" />
-        <DetailRow
-          label="Keterangan"
-          :value="selectedBrand.keterangan"
-        />
-        <DetailRow label="Status">
-          <VChip
-            :color="selectedBrand.status ? 'success' : 'error'"
-            size="small"
-            label
-          >
-            {{ selectedBrand.status ? 'Aktif' : 'Nonaktif' }}
-          </VChip>
-        </DetailRow>
-        <DetailRow
-          label="Created By"
-          :value="selectedBrand.created_by_name"
-        />
-        <DetailRow
-          label="Updated By"
-          :value="selectedBrand.updated_by_name"
-        />
-        <DetailRow
-          label="Created At"
-          :value="selectedBrand.created_at"
-        />
-        <DetailRow
-          label="Updated At"
-          :value="selectedBrand.updated_at"
-        />
-      </div>
-    </VNavigationDrawer>
+        <VChip
+          color="primary"
+          size="small"
+          variant="tonal"
+          label
+        >
+          {{ selectedBrand?.kode_brand }}
+        </VChip>
+      </template>
+
+      <DetailRow
+        label="Keterangan"
+        :value="selectedBrand?.keterangan"
+      />
+      <DetailRow label="Status">
+        <VChip
+          :color="selectedBrand?.status ? 'success' : 'error'"
+          size="small"
+          label
+        >
+          {{ selectedBrand?.status ? 'Aktif' : 'Nonaktif' }}
+        </VChip>
+      </DetailRow>
+      <DetailRow
+        label="Created By"
+        :value="selectedBrand?.created_by_name"
+      />
+      <DetailRow
+        label="Updated By"
+        :value="selectedBrand?.updated_by_name"
+      />
+      <DetailRow
+        label="Created At"
+        :value="selectedBrand?.created_at"
+      />
+      <DetailRow
+        label="Updated At"
+        :value="selectedBrand?.updated_at"
+      />
+    </DetailDialog>
 
     <!-- Confirm Delete -->
     <BaseModal
@@ -222,23 +201,30 @@
         {{ deleteError }}
       </VAlert>
     </BaseModal>
+
+    <!-- Form Tambah / Edit Brand -->
+    <BrandForm
+      v-model="showForm"
+      :brand-data="selectedForm"
+      @saved="onFormSaved"
+    />
   </div>
 </template>
 
 <script setup>
 import { nextTick, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useCrud } from '@/composables/useCrud.js'
 
-const router = useRouter()
 const { showSuccess, showError } = useSweetAlert()
 const { items, loading, meta, params, fetchList, remove } = useCrud('/master/brand')
 
 const showDelete  = ref(false)
 const showDetail  = ref(false)
+const showForm    = ref(false)
 const deleteError = ref('')
 const selectedBrand = ref(null)
+const selectedForm  = ref(null)
 
 const headers = [
   { title: 'No',          key: 'no',              sortable: false, width: '60px' },
@@ -263,8 +249,9 @@ function onTableOptions({ page, itemsPerPage }) {
   fetchList()
 }
 
-function openCreate()      { router.push({ name: 'master-brand-create' }) }
-function openEdit(b)       { router.push({ name: 'master-brand-edit', params: { id: b.id } }) }
+function openCreate()  { selectedForm.value = null; showForm.value = true }
+function openEdit(b)   { selectedForm.value = b;    showForm.value = true }
+function onFormSaved() { showForm.value = false; fetchList() }
 function openDetail(b)     { selectedBrand.value = b;    showDetail.value = true }
 function confirmDelete(b)  { selectedBrand.value = b;    deleteError.value = ''; showDelete.value = true }
 

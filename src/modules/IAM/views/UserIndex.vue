@@ -126,95 +126,72 @@
       </BaseTable>
     </VCard>
 
-    <!-- Detail Drawer -->
-    <VNavigationDrawer
-      v-if="showDetail"
+    <!-- Detail Dialog -->
+    <DetailDialog
       v-model="showDetail"
-      location="right"
-      width="380"
-      temporary
+      title="Detail User"
     >
-      <div class="d-flex align-center justify-space-between pa-4">
-        <span class="text-h6 font-weight-semibold">Detail User</span>
-        <VBtn
-          icon
-          size="small"
-          variant="text"
-          @click="showDetail = false"
+      <template #hero>
+        <VAvatar
+          size="88"
+          color="primary"
+          class="mb-3"
         >
-          <VIcon icon="ri-close-line" />
-        </VBtn>
-      </div>
-      <VDivider />
-      <div
-        v-if="selectedUser"
-        class="pa-4"
-      >
-        <div class="mb-4 text-center">
-          <VAvatar
-            size="72"
-            color="primary"
-            class="mb-3"
-          >
-            <span class="text-h5">{{ selectedUser.username?.charAt(0)?.toUpperCase() }}</span>
-          </VAvatar>
-          <div class="text-h6 font-weight-bold">
-            {{ selectedUser.username }}
-          </div>
-          <VChip
-            :color="selectedUser.status ? 'success' : 'error'"
-            size="small"
-            label
-            class="mt-1"
-          >
-            {{ selectedUser.status ? 'Aktif' : 'Nonaktif' }}
-          </VChip>
+          <span class="text-h4 font-weight-bold text-white">{{ selectedUser?.username?.charAt(0)?.toUpperCase() }}</span>
+        </VAvatar>
+        <div class="text-h6 font-weight-bold mb-2">
+          {{ selectedUser?.username }}
         </div>
-        <VDivider class="mb-4" />
-        <DetailRow
-          label="Email"
-          :value="selectedUser.email"
-        />
-        <DetailRow
-          label="No. HP"
-          :value="selectedUser.no_hp"
-        />
-        <DetailRow
-          label="Karyawan"
-          :value="selectedUser.karyawan?.nama_karyawan"
-        />
-        <DetailRow label="Role">
-          <template #default>
-            <VChip
-              v-if="selectedUser.role"
-              color="primary"
-              size="small"
-              variant="tonal"
-              label
-            >
-              {{ selectedUser.role.nama_role }}
-            </VChip>
-            <span v-else>-</span>
-          </template>
-        </DetailRow>
-        <DetailRow
-          label="Created By"
-          :value="selectedUser.created_by_name"
-        />
-        <DetailRow
-          label="Updated By"
-          :value="selectedUser.updated_by_name"
-        />
-        <DetailRow
-          label="Created At"
-          :value="selectedUser.created_at"
-        />
-        <DetailRow
-          label="Updated At"
-          :value="selectedUser.updated_at"
-        />
-      </div>
-    </VNavigationDrawer>
+        <VChip
+          :color="selectedUser?.status ? 'success' : 'error'"
+          size="small"
+          label
+        >
+          {{ selectedUser?.status ? 'Aktif' : 'Nonaktif' }}
+        </VChip>
+      </template>
+
+      <DetailRow
+        label="Email"
+        :value="selectedUser?.email"
+      />
+      <DetailRow
+        label="No. HP"
+        :value="selectedUser?.no_hp"
+      />
+      <DetailRow
+        label="Karyawan"
+        :value="selectedUser?.karyawan?.nama_karyawan"
+      />
+      <DetailRow label="Role">
+        <VChip
+          v-if="selectedUser?.role"
+          color="primary"
+          size="small"
+          variant="tonal"
+          label
+        >
+          {{ selectedUser.role.nama_role }}
+        </VChip>
+        <span v-else>-</span>
+      </DetailRow>
+      <DetailRow
+        label="Created By"
+        :value="selectedUser?.created_by_name"
+      />
+      <DetailRow
+        label="Updated By"
+        :value="selectedUser?.updated_by_name"
+      />
+      <DetailRow
+        label="Created At"
+        :value="selectedUser?.created_at"
+      />
+      <DetailRow
+        label="Updated At"
+        :value="selectedUser?.updated_at"
+      />
+    </DetailDialog>
 
     <!-- Confirm Delete -->
     <BaseModal
@@ -234,23 +211,30 @@
         {{ deleteError }}
       </VAlert>
     </BaseModal>
+
+    <!-- Form Tambah / Edit User -->
+    <UserForm
+      v-model="showForm"
+      :user-data="selectedForm"
+      @saved="onFormSaved"
+    />
   </div>
 </template>
 
 <script setup>
 import { nextTick, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useCrud } from '@/composables/useCrud.js'
 
-const router = useRouter()
 const { showSuccess, showError } = useSweetAlert()
 const { items, loading, meta, params, fetchList, remove } = useCrud('/iam/users')
 
 const showDelete = ref(false)
 const showDetail = ref(false)
+const showForm   = ref(false)
 const deleteError = ref('')
 const selectedUser = ref(null)
+const selectedForm = ref(null)
 
 const headers = [
   { title: 'No', key: 'no', sortable: false, width: '60px' },
@@ -277,13 +261,9 @@ function onTableOptions({ page, itemsPerPage }) {
   fetchList()
 }
 
-function openCreate() {
-  router.push({ name: 'iam-users-create' })
-}
-
-function openEdit(user) {
-  router.push({ name: 'iam-users-edit', params: { id: user.id } })
-}
+function openCreate() { selectedForm.value = null; showForm.value = true }
+function openEdit(user) { selectedForm.value = user; showForm.value = true }
+function onFormSaved() { showForm.value = false; fetchList() }
 
 function openDetail(user) {
   selectedUser.value = user

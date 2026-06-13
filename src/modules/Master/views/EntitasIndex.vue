@@ -126,91 +126,70 @@
 
 
 
-    <!-- Detail Drawer -->
-    <VNavigationDrawer
-      v-if="showDetail"
+    <!-- Detail Dialog -->
+    <DetailDialog
       v-model="showDetail"
-      location="right"
-      width="380"
-      temporary
+      title="Detail Entitas"
     >
-      <div class="d-flex align-center justify-space-between pa-4">
-        <span class="text-h6 font-weight-semibold">Detail Entitas</span>
-        <VBtn
-          icon
-          size="small"
-          variant="text"
-          @click="showDetail = false"
+      <template #hero>
+        <VAvatar
+          size="88"
+          color="primary"
+          class="mb-3"
         >
-          <VIcon icon="ri-close-line" />
-        </VBtn>
-      </div>
-      <VDivider />
-      <div
-        v-if="selectedEntitas"
-        class="pa-4"
-      >
-        <div class="mb-4 text-center">
-          <VAvatar
-            size="72"
-            color="primary"
-            class="mb-3"
-          >
-            <span class="text-h5">{{ selectedEntitas.nama_singkatan_perusahaan?.charAt(0) }}</span>
-          </VAvatar>
-          <div class="text-h6 font-weight-bold">
-            {{ selectedEntitas.nama_perusahaan }}
-          </div>
-          <VChip
-            color="primary"
-            size="small"
-            variant="tonal"
-            label
-            class="mt-1"
-          >
-            {{ selectedEntitas.kode_perusahaan }}
-          </VChip>
+          <span class="text-h4 font-weight-bold text-white">{{ selectedEntitas?.nama_singkatan_perusahaan?.charAt(0) }}</span>
+        </VAvatar>
+        <div class="text-h6 font-weight-bold mb-2">
+          {{ selectedEntitas?.nama_perusahaan }}
         </div>
-        <VDivider class="mb-4" />
-        <DetailRow
-          label="Singkatan"
-          :value="selectedEntitas.nama_singkatan_perusahaan"
-        />
-        <DetailRow
-          label="Keterangan"
-          :value="selectedEntitas.keterangan"
-        />
-        <DetailRow
-          label="Nama Direktur"
-          :value="selectedEntitas.nama_direktur"
-        />
-        <DetailRow label="Status">
-          <VChip
-            :color="selectedEntitas.status ? 'success' : 'error'"
-            size="small"
-            label
-          >
-            {{ selectedEntitas.status ? 'Aktif' : 'Nonaktif' }}
-          </VChip>
-        </DetailRow>
-        <DetailRow
-          label="Created By"
-          :value="selectedEntitas.created_by_name"
-        />
-        <DetailRow
-          label="Updated By"
-          :value="selectedEntitas.updated_by_name"
-        />
-        <DetailRow
-          label="Created At"
-          :value="selectedEntitas.created_at"
-        />
-        <DetailRow
-          label="Updated At"
-          :value="selectedEntitas.updated_at"
-        />
-      </div>
-    </VNavigationDrawer>
+        <VChip
+          color="primary"
+          size="small"
+          variant="tonal"
+          label
+        >
+          {{ selectedEntitas?.kode_perusahaan }}
+        </VChip>
+      </template>
+
+      <DetailRow
+        label="Singkatan"
+        :value="selectedEntitas?.nama_singkatan_perusahaan"
+      />
+      <DetailRow
+        label="Keterangan"
+        :value="selectedEntitas?.keterangan"
+      />
+      <DetailRow
+        label="Nama Direktur"
+        :value="selectedEntitas?.nama_direktur"
+      />
+      <DetailRow label="Status">
+        <VChip
+          :color="selectedEntitas?.status ? 'success' : 'error'"
+          size="small"
+          label
+        >
+          {{ selectedEntitas?.status ? 'Aktif' : 'Nonaktif' }}
+        </VChip>
+      </DetailRow>
+      <DetailRow
+        label="Created By"
+        :value="selectedEntitas?.created_by_name"
+      />
+      <DetailRow
+        label="Updated By"
+        :value="selectedEntitas?.updated_by_name"
+      />
+      <DetailRow
+        label="Created At"
+        :value="selectedEntitas?.created_at"
+      />
+      <DetailRow
+        label="Updated At"
+        :value="selectedEntitas?.updated_at"
+      />
+    </DetailDialog>
 
     <!-- Confirm Delete -->
     <BaseModal
@@ -230,23 +209,30 @@
         {{ deleteError }}
       </VAlert>
     </BaseModal>
+
+    <!-- Form Tambah / Edit Entitas -->
+    <EntitasForm
+      v-model="showForm"
+      :entitas-data="selectedForm"
+      @saved="onFormSaved"
+    />
   </div>
 </template>
 
 <script setup>
 import { nextTick, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useCrud } from '@/composables/useCrud.js'
 
-const router = useRouter()
 const { showSuccess, showError } = useSweetAlert()
 const { items, loading, meta, params, fetchList, remove } = useCrud('/master/perusahaan')
 
 const showDelete  = ref(false)
 const showDetail  = ref(false)
+const showForm    = ref(false)
 const deleteError = ref('')
 const selectedEntitas = ref(null)
+const selectedForm = ref(null)
 
 const headers = [
   { title: 'No',         key: 'no',                        sortable: false, width: '60px' },
@@ -272,8 +258,9 @@ function onTableOptions({ page, itemsPerPage }) {
   fetchList()
 }
 
-function openCreate()            { router.push({ name: 'master-perusahaan-create' }) }
-function openEdit(p)             { router.push({ name: 'master-perusahaan-edit', params: { id: p.id } }) }
+function openCreate() { selectedForm.value = null; showForm.value = true }
+function openEdit(p) { selectedForm.value = p; showForm.value = true }
+function onFormSaved() { showForm.value = false; fetchList() }
 function openDetail(p)           { selectedEntitas.value = p;     showDetail.value = true }
 function confirmDelete(p)        { selectedEntitas.value = p;     deleteError.value = ''; showDelete.value = true }
 

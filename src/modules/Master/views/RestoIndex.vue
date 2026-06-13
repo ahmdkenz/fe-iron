@@ -190,131 +190,110 @@
 
 
 
-    <!-- Detail Drawer -->
-    <VNavigationDrawer
-      v-if="showDetail"
+    <!-- Detail Dialog -->
+    <DetailDialog
       v-model="showDetail"
-      location="right"
-      width="420"
-      temporary
+      title="Detail Resto"
     >
-      <div class="d-flex align-center justify-space-between pa-4">
-        <span class="text-h6 font-weight-semibold">Detail Resto</span>
-        <VBtn
-          icon
-          size="small"
-          variant="text"
-          @click="showDetail = false"
+      <template #hero>
+        <VAvatar
+          size="88"
+          color="primary"
+          class="mb-3"
         >
-          <VIcon icon="ri-close-line" />
-        </VBtn>
-      </div>
-      <VDivider />
-      <div
-        v-if="selectedResto"
-        class="pa-4"
-      >
-        <div class="mb-4 text-center">
-          <VAvatar
-            size="72"
-            color="primary"
-            class="mb-3"
-          >
-            <span class="text-h5">{{ selectedResto.nama_resto?.charAt(0)?.toUpperCase() }}</span>
-          </VAvatar>
-          <div class="text-h6 font-weight-bold">
-            {{ selectedResto.nama_resto }}
-          </div>
-          <VChip
-            color="primary"
-            size="small"
-            variant="tonal"
-            label
-            class="mt-1"
-          >
-            {{ selectedResto.kode_resto }}
-          </VChip>
+          <span class="text-h4 font-weight-bold text-white">{{ selectedResto?.nama_resto?.charAt(0)?.toUpperCase() }}</span>
+        </VAvatar>
+        <div class="text-h6 font-weight-bold mb-2">
+          {{ selectedResto?.nama_resto }}
         </div>
-        <VDivider class="mb-4" />
-        <DetailRow
-          label="Investor"
-          :value="selectedResto.investor?.nama_investor"
-        />
-        <DetailRow
-          label="Entitas"
-          :value="selectedResto.perusahaan?.nama_perusahaan"
-        />
-        <DetailRow
-          label="Brand"
-          :value="selectedResto.brand?.nama_brand"
-        />
-        <DetailRow
-          label="PIC"
-          :value="selectedResto.pic?.nama_karyawan"
-        />
-        <DetailRow
-          label="Supervisor"
-          :value="selectedResto.supervisor"
-        />
-        <DetailRow
-          label="No. HP SPV"
-          :value="selectedResto.no_hp_supervisor"
-        />
-        <DetailRow
-          label="STOKIS"
-          :value="selectedResto.stokis"
-        />
-        <DetailRow
-          label="Area"
-          :value="selectedResto.area"
-        />
-        <DetailRow
-          label="Kota"
-          :value="selectedResto.kota"
-        />
-        <DetailRow
-          label="Alamat"
-          :value="selectedResto.alamat"
-        />
-        <DetailRow
-          label="No. Telp"
-          :value="selectedResto.no_telp"
-        />
-        <DetailRow
-          label="Tanggal Aktif"
-          :value="selectedResto.tgl_aktif ? formatDate(selectedResto.tgl_aktif) : '-'"
-        />
-        <DetailRow
-          label="Keterangan"
-          :value="selectedResto.keterangan"
-        />
-        <DetailRow label="Status">
-          <VChip
-            :color="selectedResto.status ? 'success' : 'error'"
-            size="small"
-            label
-          >
-            {{ selectedResto.status ? 'Aktif' : 'Nonaktif' }}
-          </VChip>
-        </DetailRow>
-        <DetailRow
-          label="Created By"
-          :value="selectedResto.created_by_name"
-        />
-        <DetailRow
-          label="Updated By"
-          :value="selectedResto.updated_by_name"
-        />
-        <DetailRow
-          label="Created At"
-          :value="selectedResto.created_at"
-        />
-        <DetailRow
-          label="Updated At"
-          :value="selectedResto.updated_at"
-        />
-      </div>
-    </VNavigationDrawer>
+        <VChip
+          color="primary"
+          size="small"
+          variant="tonal"
+          label
+        >
+          {{ selectedResto?.kode_resto }}
+        </VChip>
+      </template>
+
+      <DetailRow
+        label="Investor"
+        :value="selectedResto?.investor?.nama_investor"
+      />
+      <DetailRow
+        label="Entitas"
+        :value="selectedResto?.perusahaan?.nama_perusahaan"
+      />
+      <DetailRow
+        label="Brand"
+        :value="selectedResto?.brand?.nama_brand"
+      />
+      <DetailRow
+        label="PIC"
+        :value="selectedResto?.pic?.nama_karyawan"
+      />
+      <DetailRow
+        label="Supervisor"
+        :value="selectedResto?.supervisor"
+      />
+      <DetailRow
+        label="No. HP SPV"
+        :value="selectedResto?.no_hp_supervisor"
+      />
+      <DetailRow
+        label="STOKIS"
+        :value="selectedResto?.stokis"
+      />
+      <DetailRow
+        label="Area"
+        :value="selectedResto?.area"
+      />
+      <DetailRow
+        label="Kota"
+        :value="selectedResto?.kota"
+      />
+      <DetailRow
+        label="Alamat"
+        :value="selectedResto?.alamat"
+      />
+      <DetailRow
+        label="No. Telp"
+        :value="selectedResto?.no_telp"
+      />
+      <DetailRow
+        label="Tanggal Aktif"
+        :value="selectedResto?.tgl_aktif ? formatDate(selectedResto.tgl_aktif) : '-'"
+      />
+      <DetailRow
+        label="Keterangan"
+        :value="selectedResto?.keterangan"
+      />
+      <DetailRow label="Status">
+        <VChip
+          :color="selectedResto?.status ? 'success' : 'error'"
+          size="small"
+          label
+        >
+          {{ selectedResto?.status ? 'Aktif' : 'Nonaktif' }}
+        </VChip>
+      </DetailRow>
+      <DetailRow
+        label="Created By"
+        :value="selectedResto?.created_by_name"
+      />
+      <DetailRow
+        label="Updated By"
+        :value="selectedResto?.updated_by_name"
+      />
+      <DetailRow
+        label="Created At"
+        :value="selectedResto?.created_at"
+      />
+      <DetailRow
+        label="Updated At"
+        :value="selectedResto?.updated_at"
+      />
+    </DetailDialog>
 
     <!-- Confirm Delete -->
     <BaseModal
@@ -334,6 +313,13 @@
         {{ deleteError }}
       </VAlert>
     </BaseModal>
+
+    <!-- Form Tambah / Edit Resto -->
+    <RestoForm
+      v-model="showForm"
+      :resto-data="selectedForm"
+      @saved="onFormSaved"
+    />
 
     <!-- Import Modal -->
     <VDialog
@@ -466,13 +452,11 @@
 
 <script setup>
 import { nextTick, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useAuthStore } from '@/stores/auth.store'
 import { useCrud } from '@/composables/useCrud'
 import api from '@/utils/axios'
 
-const router = useRouter()
 const authStore = useAuthStore()
 const { showSuccess, showError, showLoading, closeAlert } = useSweetAlert()
 const { items, loading, meta, params, fetchList, remove } = useCrud('/master/resto')
@@ -482,8 +466,10 @@ let prevItemsPerPage = null
 
 const showDelete    = ref(false)
 const showDetail    = ref(false)
+const showForm      = ref(false)
 const deleteError   = ref('')
 const selectedResto = ref(null)
+const selectedForm  = ref(null)
 
 const exporting    = ref(false)
 const showImport   = ref(false)
@@ -540,8 +526,9 @@ function onTableOptions({ page, itemsPerPage }) {
   }
 }
 
-function openCreate()      { router.push({ name: 'master-resto-create' }) }
-function openEdit(r)       { router.push({ name: 'master-resto-edit', params: { id: r.id } }) }
+function openCreate()  { selectedForm.value = null; showForm.value = true }
+function openEdit(r)   { selectedForm.value = r;    showForm.value = true }
+function onFormSaved() { showForm.value = false; fetchList() }
 function openDetail(r)     { selectedResto.value = r;    showDetail.value = true }
 function confirmDelete(r)  { selectedResto.value = r;    deleteError.value = ''; showDelete.value = true }
 

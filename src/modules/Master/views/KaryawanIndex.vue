@@ -128,91 +128,70 @@
 
 
 
-    <!-- Detail Drawer -->
-    <VNavigationDrawer
-      v-if="showDetail"
+    <!-- Detail Dialog -->
+    <DetailDialog
       v-model="showDetail"
-      location="right"
-      width="380"
-      temporary
+      title="Detail Karyawan"
     >
-      <div class="d-flex align-center justify-space-between pa-4">
-        <span class="text-h6 font-weight-semibold">Detail Karyawan</span>
-        <VBtn
-          icon
-          size="small"
-          variant="text"
-          @click="showDetail = false"
+      <template #hero>
+        <VAvatar
+          size="88"
+          color="primary"
+          class="mb-3"
         >
-          <VIcon icon="ri-close-line" />
-        </VBtn>
-      </div>
-      <VDivider />
-      <div
-        v-if="selectedKaryawan"
-        class="pa-4"
-      >
-        <div class="mb-4 text-center">
-          <VAvatar
-            size="72"
-            color="primary"
-            class="mb-3"
-          >
-            <span class="text-h5">{{ selectedKaryawan.nama_karyawan?.charAt(0)?.toUpperCase() }}</span>
-          </VAvatar>
-          <div class="text-h6 font-weight-bold">
-            {{ selectedKaryawan.nama_karyawan }}
-          </div>
-          <VChip
-            color="secondary"
-            size="small"
-            variant="tonal"
-            label
-            class="mt-1"
-          >
-            NIK: {{ selectedKaryawan.nik }}
-          </VChip>
+          <span class="text-h4 font-weight-bold text-white">{{ selectedKaryawan?.nama_karyawan?.charAt(0)?.toUpperCase() }}</span>
+        </VAvatar>
+        <div class="text-h6 font-weight-bold mb-2">
+          {{ selectedKaryawan?.nama_karyawan }}
         </div>
-        <VDivider class="mb-4" />
-        <DetailRow
-          label="Entitas"
-          :value="selectedKaryawan.perusahaan?.nama_perusahaan"
-        />
-        <DetailRow
-          label="Singkatan"
-          :value="selectedKaryawan.perusahaan?.nama_singkatan_perusahaan"
-        />
-        <DetailRow
-          label="Keterangan"
-          :value="selectedKaryawan.keterangan"
-        />
-        <DetailRow label="Status">
-          <VChip
-            :color="selectedKaryawan.status ? 'success' : 'error'"
-            size="small"
-            label
-          >
-            {{ selectedKaryawan.status ? 'Aktif' : 'Nonaktif' }}
-          </VChip>
-        </DetailRow>
-        <DetailRow
-          label="Created By"
-          :value="selectedKaryawan.created_by_name"
-        />
-        <DetailRow
-          label="Updated By"
-          :value="selectedKaryawan.updated_by_name"
-        />
-        <DetailRow
-          label="Created At"
-          :value="selectedKaryawan.created_at"
-        />
-        <DetailRow
-          label="Updated At"
-          :value="selectedKaryawan.updated_at"
-        />
-      </div>
-    </VNavigationDrawer>
+        <VChip
+          color="secondary"
+          size="small"
+          variant="tonal"
+          label
+        >
+          NIK: {{ selectedKaryawan?.nik }}
+        </VChip>
+      </template>
+
+      <DetailRow
+        label="Entitas"
+        :value="selectedKaryawan?.perusahaan?.nama_perusahaan"
+      />
+      <DetailRow
+        label="Singkatan"
+        :value="selectedKaryawan?.perusahaan?.nama_singkatan_perusahaan"
+      />
+      <DetailRow
+        label="Keterangan"
+        :value="selectedKaryawan?.keterangan"
+      />
+      <DetailRow label="Status">
+        <VChip
+          :color="selectedKaryawan?.status ? 'success' : 'error'"
+          size="small"
+          label
+        >
+          {{ selectedKaryawan?.status ? 'Aktif' : 'Nonaktif' }}
+        </VChip>
+      </DetailRow>
+      <DetailRow
+        label="Created By"
+        :value="selectedKaryawan?.created_by_name"
+      />
+      <DetailRow
+        label="Updated By"
+        :value="selectedKaryawan?.updated_by_name"
+      />
+      <DetailRow
+        label="Created At"
+        :value="selectedKaryawan?.created_at"
+      />
+      <DetailRow
+        label="Updated At"
+        :value="selectedKaryawan?.updated_at"
+      />
+    </DetailDialog>
 
     <!-- Confirm Delete -->
     <BaseModal
@@ -232,23 +211,30 @@
         {{ deleteError }}
       </VAlert>
     </BaseModal>
+
+    <!-- Form Tambah / Edit Karyawan -->
+    <KaryawanForm
+      v-model="showForm"
+      :karyawan-data="selectedForm"
+      @saved="onFormSaved"
+    />
   </div>
 </template>
 
 <script setup>
 import { nextTick, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useCrud } from '@/composables/useCrud.js'
 
-const router = useRouter()
 const { showSuccess, showError } = useSweetAlert()
 const { items, loading, meta, params, fetchList, remove } = useCrud('/master/karyawan')
 
 const showDelete = ref(false)
 const showDetail = ref(false)
+const showForm   = ref(false)
 const deleteError = ref('')
 const selectedKaryawan = ref(null)
+const selectedForm = ref(null)
 
 const headers = [
   { title: 'No',           key: 'no',               sortable: false, width: '60px' },
@@ -274,8 +260,9 @@ function onTableOptions({ page, itemsPerPage }) {
   fetchList()
 }
 
-function openCreate()     { router.push({ name: 'master-karyawan-create' }) }
-function openEdit(k)      { router.push({ name: 'master-karyawan-edit', params: { id: k.id } }) }
+function openCreate() { selectedForm.value = null; showForm.value = true }
+function openEdit(k) { selectedForm.value = k; showForm.value = true }
+function onFormSaved() { showForm.value = false; fetchList() }
 function openDetail(k)    { selectedKaryawan.value = k;    showDetail.value = true }
 function confirmDelete(k) { selectedKaryawan.value = k;    deleteError.value = ''; showDelete.value = true }
 

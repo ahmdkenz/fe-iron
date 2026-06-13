@@ -141,98 +141,76 @@
 
 
 
-    <!-- Detail Drawer -->
-    <VNavigationDrawer
-      v-if="showDetail"
+    <!-- Detail Dialog -->
+    <DetailDialog
       v-model="showDetail"
-      location="right"
-      width="400"
-      temporary
+      title="Detail Investor"
     >
-      <div class="d-flex align-center justify-space-between pa-4">
-        <span class="text-h6 font-weight-semibold">Detail Investor</span>
-        <VBtn
-          icon
-          size="small"
-          variant="text"
-          @click="showDetail = false"
+      <template #hero>
+        <VAvatar
+          size="88"
+          color="primary"
+          class="mb-3"
         >
-          <VIcon icon="ri-close-line" />
-        </VBtn>
-      </div>
-      <VDivider />
-      <div
-        v-if="selectedInvestor"
-        class="pa-4"
-      >
-        <div class="mb-4 text-center">
-          <VAvatar
-            size="72"
-            color="primary"
-            class="mb-3"
-          >
-            <span class="text-h5">{{ selectedInvestor.nama_investor?.charAt(0)?.toUpperCase() }}</span>
-          </VAvatar>
-          <div class="text-h6 font-weight-bold">
-            {{ selectedInvestor.nama_investor }}
-          </div>
+          <span class="text-h4 font-weight-bold text-white">{{ selectedInvestor?.nama_investor?.charAt(0)?.toUpperCase() }}</span>
+        </VAvatar>
+        <div class="text-h6 font-weight-bold mb-2">
+          {{ selectedInvestor?.nama_investor }}
         </div>
-        <VDivider class="mb-4" />
-        <DetailRow
-          label="No. KTP"
-          :value="selectedInvestor.ktp"
-        />
-        <DetailRow
-          label="NPWP"
-          :value="selectedInvestor.npwp"
-        />
-        <DetailRow
-          label="No. HP"
-          :value="selectedInvestor.no_hp"
-        />
-        <DetailRow
-          label="Nama Pengelola"
-          :value="selectedInvestor.pengelola"
-        />
-        <DetailRow
-          label="No. HP Pengelola"
-          :value="selectedInvestor.no_hp_pengelola"
-        />
-        <DetailRow
-          label="Kode Cabang"
-          :value="selectedInvestor.kode_cabang"
-        />
-        <DetailRow
-          label="ID Cabang"
-          :value="selectedInvestor.id_cabang"
-        />
-        <DetailRow label="Status">
-          <VChip
-            :color="selectedInvestor.status ? 'success' : 'error'"
-            size="small"
-            label
-          >
-            {{ selectedInvestor.status ? 'Aktif' : 'Nonaktif' }}
-          </VChip>
-        </DetailRow>
-        <DetailRow
-          label="Created By"
-          :value="selectedInvestor.created_by_name"
-        />
-        <DetailRow
-          label="Updated By"
-          :value="selectedInvestor.updated_by_name"
-        />
-        <DetailRow
-          label="Created At"
-          :value="selectedInvestor.created_at"
-        />
-        <DetailRow
-          label="Updated At"
-          :value="selectedInvestor.updated_at"
-        />
-      </div>
-    </VNavigationDrawer>
+        <VChip
+          :color="selectedInvestor?.status ? 'success' : 'error'"
+          size="small"
+          label
+        >
+          {{ selectedInvestor?.status ? 'Aktif' : 'Nonaktif' }}
+        </VChip>
+      </template>
+
+      <DetailRow
+        label="No. KTP"
+        :value="selectedInvestor?.ktp"
+      />
+      <DetailRow
+        label="NPWP"
+        :value="selectedInvestor?.npwp"
+      />
+      <DetailRow
+        label="No. HP"
+        :value="selectedInvestor?.no_hp"
+      />
+      <DetailRow
+        label="Nama Pengelola"
+        :value="selectedInvestor?.pengelola"
+      />
+      <DetailRow
+        label="No. HP Pengelola"
+        :value="selectedInvestor?.no_hp_pengelola"
+      />
+      <DetailRow
+        label="Kode Cabang"
+        :value="selectedInvestor?.kode_cabang"
+      />
+      <DetailRow
+        label="ID Cabang"
+        :value="selectedInvestor?.id_cabang"
+      />
+      <DetailRow
+        label="Created By"
+        :value="selectedInvestor?.created_by_name"
+      />
+      <DetailRow
+        label="Updated By"
+        :value="selectedInvestor?.updated_by_name"
+      />
+      <DetailRow
+        label="Created At"
+        :value="selectedInvestor?.created_at"
+      />
+      <DetailRow
+        label="Updated At"
+        :value="selectedInvestor?.updated_at"
+      />
+    </DetailDialog>
 
     <!-- Confirm Delete -->
     <BaseModal
@@ -252,6 +230,13 @@
         {{ deleteError }}
       </VAlert>
     </BaseModal>
+
+    <!-- Form Tambah / Edit Investor -->
+    <InvestorForm
+      v-model="showForm"
+      :investor-data="selectedForm"
+      @saved="onFormSaved"
+    />
 
     <!-- Import Modal -->
     <VDialog
@@ -382,13 +367,11 @@
 
 <script setup>
 import { nextTick, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useAuthStore } from '@/stores/auth.store'
 import { useCrud } from '@/composables/useCrud'
 import api from '@/utils/axios'
 
-const router = useRouter()
 const authStore = useAuthStore()
 const { showSuccess, showError, showLoading, closeAlert } = useSweetAlert()
 const { items, loading, meta, params, fetchList, remove } = useCrud('/master/investor')
@@ -398,8 +381,10 @@ let prevItemsPerPage   = null
 
 const showDelete       = ref(false)
 const showDetail       = ref(false)
+const showForm         = ref(false)
 const deleteError      = ref('')
 const selectedInvestor = ref(null)
+const selectedForm     = ref(null)
 
 const exporting    = ref(false)
 const showImport   = ref(false)
@@ -440,8 +425,9 @@ function onTableOptions({ page, itemsPerPage }) {
   }
 }
 
-function openCreate()     { router.push({ name: 'master-investor-create' }) }
-function openEdit(inv)    { router.push({ name: 'master-investor-edit', params: { id: inv.id } }) }
+function openCreate()  { selectedForm.value = null; showForm.value = true }
+function openEdit(inv) { selectedForm.value = inv;  showForm.value = true }
+function onFormSaved() { showForm.value = false; fetchList() }
 function openDetail(inv)  { selectedInvestor.value = inv;  showDetail.value = true }
 function confirmDelete(inv) { selectedInvestor.value = inv; deleteError.value = ''; showDelete.value = true }
 

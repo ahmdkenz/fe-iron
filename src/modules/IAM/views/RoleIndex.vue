@@ -126,87 +126,66 @@
 
 
 
-    <!-- Detail Drawer -->
-    <VNavigationDrawer
-      v-if="showDetail"
+    <!-- Detail Dialog -->
+    <DetailDialog
       v-model="showDetail"
-      location="right"
-      width="380"
-      temporary
+      title="Detail Role"
     >
-      <div class="d-flex align-center justify-space-between pa-4">
-        <span class="text-h6 font-weight-semibold">Detail Role</span>
-        <VBtn
-          icon
-          size="small"
-          variant="text"
-          @click="showDetail = false"
+      <template #hero>
+        <VAvatar
+          size="88"
+          color="primary"
+          class="mb-3"
         >
-          <VIcon icon="ri-close-line" />
-        </VBtn>
-      </div>
-      <VDivider />
-      <div
-        v-if="selectedRole"
-        class="pa-4"
-      >
-        <div class="mb-4 text-center">
-          <VAvatar
-            size="72"
-            color="primary"
-            class="mb-3"
-          >
-            <span class="text-h5">{{ selectedRole.name?.charAt(0) }}</span>
-          </VAvatar>
-          <div class="text-h6 font-weight-bold">
-            {{ selectedRole.nama_role }}
-          </div>
-          <VChip
-            color="primary"
-            size="small"
-            variant="tonal"
-            label
-            class="mt-1"
-          >
-            {{ selectedRole.name }}
-          </VChip>
+          <span class="text-h4 font-weight-bold text-white">{{ selectedRole?.name?.charAt(0) }}</span>
+        </VAvatar>
+        <div class="text-h6 font-weight-bold mb-2">
+          {{ selectedRole?.nama_role }}
         </div>
-        <VDivider class="mb-4" />
-        <DetailRow
-          label="Keterangan"
-          :value="selectedRole.keterangan"
-        />
-        <DetailRow label="Status">
-          <VChip
-            :color="selectedRole.status ? 'success' : 'error'"
-            size="small"
-            label
-          >
-            {{ selectedRole.status ? 'Aktif' : 'Nonaktif' }}
-          </VChip>
-        </DetailRow>
-        <DetailRow
-          label="Total User"
-          :value="selectedRole.users_count?.toString()"
-        />
-        <DetailRow
-          label="Created By"
-          :value="selectedRole.created_by_name"
-        />
-        <DetailRow
-          label="Updated By"
-          :value="selectedRole.updated_by_name"
-        />
-        <DetailRow
-          label="Created At"
-          :value="selectedRole.created_at"
-        />
-        <DetailRow
-          label="Updated At"
-          :value="selectedRole.updated_at"
-        />
-      </div>
-    </VNavigationDrawer>
+        <VChip
+          color="primary"
+          size="small"
+          variant="tonal"
+          label
+        >
+          {{ selectedRole?.name }}
+        </VChip>
+      </template>
+
+      <DetailRow
+        label="Keterangan"
+        :value="selectedRole?.keterangan"
+      />
+      <DetailRow label="Status">
+        <VChip
+          :color="selectedRole?.status ? 'success' : 'error'"
+          size="small"
+          label
+        >
+          {{ selectedRole?.status ? 'Aktif' : 'Nonaktif' }}
+        </VChip>
+      </DetailRow>
+      <DetailRow
+        label="Total User"
+        :value="selectedRole?.users_count?.toString()"
+      />
+      <DetailRow
+        label="Created By"
+        :value="selectedRole?.created_by_name"
+      />
+      <DetailRow
+        label="Updated By"
+        :value="selectedRole?.updated_by_name"
+      />
+      <DetailRow
+        label="Created At"
+        :value="selectedRole?.created_at"
+      />
+      <DetailRow
+        label="Updated At"
+        :value="selectedRole?.updated_at"
+      />
+    </DetailDialog>
 
     <!-- Confirm Delete -->
     <BaseModal
@@ -226,23 +205,30 @@
         {{ deleteError }}
       </VAlert>
     </BaseModal>
+
+    <!-- Form Tambah / Edit Role -->
+    <RoleForm
+      v-model="showForm"
+      :role-data="selectedForm"
+      @saved="onFormSaved"
+    />
   </div>
 </template>
 
 <script setup>
 import { nextTick, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useCrud } from '@/composables/useCrud.js'
 
-const router = useRouter()
 const { showSuccess, showError } = useSweetAlert()
 const { items, loading, meta, params, fetchList, remove } = useCrud('/iam/roles')
 
 const showDelete = ref(false)
 const showDetail = ref(false)
+const showForm   = ref(false)
 const deleteError = ref('')
 const selectedRole = ref(null)
+const selectedForm = ref(null)
 
 const headers = [
   { title: 'No', key: 'no', sortable: false, width: '60px' },
@@ -267,13 +253,9 @@ function onTableOptions({ page, itemsPerPage }) {
   fetchList()
 }
 
-function openCreate() {
-  router.push({ name: 'iam-roles-create' })
-}
-
-function openEdit(role) {
-  router.push({ name: 'iam-roles-edit', params: { id: role.id } })
-}
+function openCreate() { selectedForm.value = null; showForm.value = true }
+function openEdit(role) { selectedForm.value = role; showForm.value = true }
+function onFormSaved() { showForm.value = false; fetchList() }
 
 function openDetail(role) {
   selectedRole.value = role
