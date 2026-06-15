@@ -596,7 +596,7 @@
       v-if="selectedForPayment"
       v-model="showPembayaran"
       :invoice-id="selectedForPayment.id"
-      :sisa-tagihan="selectedForPayment.sisa_tagihan"
+      :sisa-tagihan="Math.max(0, selectedForPayment.subtotal - selectedForPayment.total_pembayaran)"
       @saved="onPembayaranSaved"
     />
 
