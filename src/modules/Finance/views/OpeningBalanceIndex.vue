@@ -1095,120 +1095,364 @@
         </VCol>
       </VRow>
 
-      <!-- Filter Card -->
+      <!-- B2B Table -->
       <VCard class="mb-4">
-        <VCardText class="pa-0">
-          <div class="d-flex align-center justify-space-between px-4 py-3">
-            <div class="d-flex align-center gap-2">
-              <VIcon icon="ri-filter-3-line" size="16" color="primary" />
-              <span class="text-body-2 font-weight-semibold">Filter</span>
-            </div>
-            <div class="d-flex align-center gap-2">
+        <div class="d-flex align-center justify-space-between px-4 py-3">
+          <div class="d-flex align-center gap-2">
+            <VAvatar
+              color="warning"
+              variant="tonal"
+              size="32"
+            >
+              <VIcon
+                icon="ri-building-line"
+                size="18"
+              />
+            </VAvatar>
+            <span class="text-subtitle-1 font-weight-semibold">Opening Balance B2B</span>
+          </div>
+          <div class="d-flex align-center gap-2">
+            <VBtn
+              variant="text"
+              color="secondary"
+              size="small"
+              prepend-icon="ri-refresh-line"
+              @click="resetDirObFilterB2B"
+            >
+              Reset
+            </VBtn>
+            <VBtn
+              color="primary"
+              size="small"
+              prepend-icon="ri-file-excel-line"
+              :loading="isDirExportingB2B"
+              @click="exportDirExcelB2B"
+            >
+              Export
+            </VBtn>
+          </div>
+        </div>
+        <VDivider />
+        <div class="d-flex flex-wrap align-center gap-4 px-4 py-3">
+          <div style="min-width: 200px; flex: 1; max-width: 280px;">
+            <div class="text-caption text-medium-emphasis mb-2">Pencarian</div>
+            <VTextField
+              v-model="dirObParamsB2B.search"
+              placeholder="Cari no. OB / klien..."
+              clearable
+              hide-details
+              density="compact"
+              prepend-inner-icon="ri-search-line"
+              @update:model-value="debouncedDirObFetchB2B"
+            />
+          </div>
+          <div style="min-width: 140px; max-width: 180px;">
+            <div class="text-caption text-medium-emphasis mb-2">Status</div>
+            <VSelect
+              v-model="dirObParamsB2B.status"
+              placeholder="Semua Status"
+              clearable
+              hide-details
+              density="compact"
+              :items="statusOptions"
+              item-title="label"
+              item-value="value"
+              @update:model-value="doDirObFetchB2B"
+            />
+          </div>
+          <div style="min-width: 160px; max-width: 220px;">
+            <div class="text-caption text-medium-emphasis mb-2">Approval</div>
+            <VSelect
+              v-model="dirObParamsB2B.approval_status"
+              placeholder="Semua Approval"
+              clearable
+              hide-details
+              density="compact"
+              :items="approvalStatusOptions"
+              item-title="label"
+              item-value="value"
+              @update:model-value="doDirObFetchB2B"
+            />
+          </div>
+          <div style="min-width: 180px; flex: 1; max-width: 260px;">
+            <div class="text-caption text-medium-emphasis mb-2">Klien</div>
+            <VAutocomplete
+              v-model="dirObParamsB2B.klien_ar_id"
+              placeholder="Semua Klien"
+              clearable
+              hide-details
+              density="compact"
+              :items="klienList"
+              item-title="nama_klien"
+              item-value="id"
+              :loading="klienLoading"
+              @update:model-value="doDirObFetchB2B"
+            />
+          </div>
+          <VDivider vertical style="height: 40px; align-self: flex-end;" class="d-none d-sm-block" />
+          <div>
+            <div class="text-caption text-medium-emphasis mb-2">Dari</div>
+            <VTextField
+              v-model="dirObParamsB2B.tanggal_dari"
+              type="date"
+              hide-details
+              density="compact"
+              style="min-width: 150px; max-width: 170px;"
+              @update:model-value="debouncedDirObFetchB2B"
+            />
+          </div>
+          <div>
+            <div class="text-caption text-medium-emphasis mb-2">Sampai</div>
+            <VTextField
+              v-model="dirObParamsB2B.tanggal_sampai"
+              type="date"
+              hide-details
+              density="compact"
+              style="min-width: 150px; max-width: 170px;"
+              @update:model-value="debouncedDirObFetchB2B"
+            />
+          </div>
+        </div>
+        <VDivider />
+        <BaseTable
+          :headers="dirObHeadersB2B"
+          :items="dirObItemsB2B"
+          :total="dirObMetaB2B.total"
+          :loading="dirObLoadingB2B"
+          :per-page="dirObMetaB2B.per_page"
+          :page="dirObMetaB2B.current_page"
+          class="mt-2"
+          @update:options="onDirObTableOptionsB2B"
+        >
+          <template #item.no="{ index }">
+            {{ (dirObMetaB2B.current_page - 1) * dirObMetaB2B.per_page + index + 1 }}
+          </template>
+          <template #item.no_invoice="{ item }">
+            <VChip
+              color="primary"
+              size="small"
+              variant="tonal"
+              label
+            >
+              {{ item.no_invoice }}
+            </VChip>
+          </template>
+          <template #item.klien_ar="{ item }">
+            {{ item.klien_ar?.nama_klien ?? '-' }}
+          </template>
+          <template #item.tanggal_invoice="{ item }">
+            <span class="text-no-wrap">{{ formatDate(item.tanggal_invoice) }}</span>
+          </template>
+          <template #item.periode="{ item }">
+            <span class="text-no-wrap">{{ formatPeriode(item) }}</span>
+          </template>
+          <template #item.total_tagihan="{ item }">
+            {{ formatCurrency(item.total_tagihan) }}
+          </template>
+          <template #item.total_pembayaran="{ item }">
+            {{ formatCurrency(item.total_pembayaran) }}
+          </template>
+          <template #item.sisa_tagihan="{ item }">
+            <span :class="item.sisa_tagihan > 0 ? 'text-error' : 'text-success'">
+              {{ formatCurrency(item.sisa_tagihan) }}
+            </span>
+          </template>
+          <template #item.status="{ item }">
+            <InvoiceStatusBadge :status="item.status" />
+          </template>
+          <template #item.dir_ob_b2b_approval_status="{ item }">
+            <ApprovalStatusBadge :status="item.approval_status" />
+          </template>
+          <template #item.dir_ob_b2b_actions="{ item }">
+            <div class="d-flex gap-1">
               <VBtn
+                v-if="item.can_record_payment && item.status !== 'LUNAS'"
+                icon
+                size="small"
+                variant="tonal"
+                color="success"
+                @click="openCatatBayar(item)"
+              >
+                <VIcon
+                  icon="ri-money-cny-circle-line"
+                  size="18"
+                />
+                <VTooltip activator="parent">
+                  Catat Bayar
+                </VTooltip>
+              </VBtn>
+              <VBtn
+                v-if="item.can_print"
+                icon
+                size="small"
+                variant="tonal"
+                color="success"
+                @click="openShareDialog([item])"
+              >
+                <VIcon
+                  icon="ri-whatsapp-line"
+                  size="18"
+                />
+                <VTooltip activator="parent">
+                  Kirim via WhatsApp
+                </VTooltip>
+              </VBtn>
+              <VBtn
+                v-if="item.can_print"
+                icon
+                size="small"
                 variant="text"
                 color="secondary"
-                size="small"
-                prepend-icon="ri-refresh-line"
-                @click="resetDirObFilter"
+                :loading="printingId === item.id"
+                @click="printInvoice(item.id)"
               >
-                Reset
+                <VIcon
+                  icon="ri-printer-line"
+                  size="18"
+                />
+                <VTooltip activator="parent">
+                  Cetak
+                </VTooltip>
               </VBtn>
               <VBtn
-                color="primary"
+                icon
                 size="small"
-                prepend-icon="ri-file-excel-line"
-                :loading="isDirExporting"
-                @click="exportDirExcel"
+                variant="text"
+                color="info"
+                :to="{ name: 'finance-invoice-show', params: { id: item.id } }"
               >
-                Export
+                <VIcon
+                  icon="ri-eye-line"
+                  size="18"
+                />
+                <VTooltip activator="parent">
+                  Detail
+                </VTooltip>
               </VBtn>
             </div>
-          </div>
-          <VDivider />
-          <div class="d-flex flex-wrap align-center gap-4 px-4 py-3">
-            <div style="min-width: 200px; flex: 1; max-width: 280px;">
-              <div class="text-caption text-medium-emphasis mb-2">Pencarian</div>
-              <VTextField
-                v-model="dirObParams.search"
-                placeholder="Cari no. OB / klien..."
-                clearable
-                hide-details
-                density="compact"
-                prepend-inner-icon="ri-search-line"
-                @update:model-value="debouncedDirObFetch"
-              />
-            </div>
-            <div style="min-width: 140px; max-width: 180px;">
-              <div class="text-caption text-medium-emphasis mb-2">Status</div>
-              <VSelect
-                v-model="dirObParams.status"
-                placeholder="Semua Status"
-                clearable
-                hide-details
-                density="compact"
-                :items="statusOptions"
-                item-title="label"
-                item-value="value"
-                @update:model-value="doDirObFetch"
-              />
-            </div>
-            <div style="min-width: 160px; max-width: 220px;">
-              <div class="text-caption text-medium-emphasis mb-2">Approval</div>
-              <VSelect
-                v-model="dirObParams.approval_status"
-                placeholder="Semua Approval"
-                clearable
-                hide-details
-                density="compact"
-                :items="approvalStatusOptions"
-                item-title="label"
-                item-value="value"
-                @update:model-value="doDirObFetch"
-              />
-            </div>
-            <div style="min-width: 180px; flex: 1; max-width: 260px;">
-              <div class="text-caption text-medium-emphasis mb-2">Klien</div>
-              <VAutocomplete
-                v-model="dirObParams.klien_ar_id"
-                placeholder="Semua Klien"
-                clearable
-                hide-details
-                density="compact"
-                :items="klienList"
-                item-title="nama_klien"
-                item-value="id"
-                :loading="klienLoading"
-                @update:model-value="doDirObFetch"
-              />
-            </div>
-            <VDivider vertical style="height: 40px; align-self: flex-end;" class="d-none d-sm-block" />
-            <div>
-              <div class="text-caption text-medium-emphasis mb-2">Dari</div>
-              <VTextField
-                v-model="dirObParams.tanggal_dari"
-                type="date"
-                hide-details
-                density="compact"
-                style="min-width: 150px; max-width: 170px;"
-                @update:model-value="debouncedDirObFetch"
-              />
-            </div>
-            <div>
-              <div class="text-caption text-medium-emphasis mb-2">Sampai</div>
-              <VTextField
-                v-model="dirObParams.tanggal_sampai"
-                type="date"
-                hide-details
-                density="compact"
-                style="min-width: 150px; max-width: 170px;"
-                @update:model-value="debouncedDirObFetch"
-              />
-            </div>
-          </div>
-        </VCardText>
+          </template>
+        </BaseTable>
       </VCard>
 
+      <!-- B2C Table -->
       <VCard>
+        <div class="d-flex align-center justify-space-between px-4 py-3">
+          <div class="d-flex align-center gap-2">
+            <VAvatar
+              color="primary"
+              variant="tonal"
+              size="32"
+            >
+              <VIcon
+                icon="ri-user-line"
+                size="18"
+              />
+            </VAvatar>
+            <span class="text-subtitle-1 font-weight-semibold">Opening Balance B2C</span>
+          </div>
+          <div class="d-flex align-center gap-2">
+            <VBtn
+              variant="text"
+              color="secondary"
+              size="small"
+              prepend-icon="ri-refresh-line"
+              @click="resetDirObFilterB2C"
+            >
+              Reset
+            </VBtn>
+            <VBtn
+              color="primary"
+              size="small"
+              prepend-icon="ri-file-excel-line"
+              :loading="isDirExporting"
+              @click="exportDirExcel"
+            >
+              Export
+            </VBtn>
+          </div>
+        </div>
+        <VDivider />
+        <div class="d-flex flex-wrap align-center gap-4 px-4 py-3">
+          <div style="min-width: 200px; flex: 1; max-width: 280px;">
+            <div class="text-caption text-medium-emphasis mb-2">Pencarian</div>
+            <VTextField
+              v-model="dirObParams.search"
+              placeholder="Cari no. OB / klien..."
+              clearable
+              hide-details
+              density="compact"
+              prepend-inner-icon="ri-search-line"
+              @update:model-value="debouncedDirObFetch"
+            />
+          </div>
+          <div style="min-width: 140px; max-width: 180px;">
+            <div class="text-caption text-medium-emphasis mb-2">Status</div>
+            <VSelect
+              v-model="dirObParams.status"
+              placeholder="Semua Status"
+              clearable
+              hide-details
+              density="compact"
+              :items="statusOptions"
+              item-title="label"
+              item-value="value"
+              @update:model-value="doDirObFetch"
+            />
+          </div>
+          <div style="min-width: 160px; max-width: 220px;">
+            <div class="text-caption text-medium-emphasis mb-2">Approval</div>
+            <VSelect
+              v-model="dirObParams.approval_status"
+              placeholder="Semua Approval"
+              clearable
+              hide-details
+              density="compact"
+              :items="approvalStatusOptions"
+              item-title="label"
+              item-value="value"
+              @update:model-value="doDirObFetch"
+            />
+          </div>
+          <div style="min-width: 180px; flex: 1; max-width: 260px;">
+            <div class="text-caption text-medium-emphasis mb-2">Klien</div>
+            <VAutocomplete
+              v-model="dirObParams.klien_ar_id"
+              placeholder="Semua Klien"
+              clearable
+              hide-details
+              density="compact"
+              :items="klienList"
+              item-title="nama_klien"
+              item-value="id"
+              :loading="klienLoading"
+              @update:model-value="doDirObFetch"
+            />
+          </div>
+          <VDivider vertical style="height: 40px; align-self: flex-end;" class="d-none d-sm-block" />
+          <div>
+            <div class="text-caption text-medium-emphasis mb-2">Dari</div>
+            <VTextField
+              v-model="dirObParams.tanggal_dari"
+              type="date"
+              hide-details
+              density="compact"
+              style="min-width: 150px; max-width: 170px;"
+              @update:model-value="debouncedDirObFetch"
+            />
+          </div>
+          <div>
+            <div class="text-caption text-medium-emphasis mb-2">Sampai</div>
+            <VTextField
+              v-model="dirObParams.tanggal_sampai"
+              type="date"
+              hide-details
+              density="compact"
+              style="min-width: 150px; max-width: 170px;"
+              @update:model-value="debouncedDirObFetch"
+            />
+          </div>
+        </div>
+        <VDivider />
         <BaseTable
           :headers="dirObHeaders"
           :items="dirObItems"
@@ -1260,6 +1504,22 @@
           </template>
           <template #item.dir_ob_actions="{ item }">
             <div class="d-flex gap-1">
+              <VBtn
+                v-if="item.can_record_payment && item.status !== 'LUNAS'"
+                icon
+                size="small"
+                variant="tonal"
+                color="success"
+                @click="openCatatBayar(item)"
+              >
+                <VIcon
+                  icon="ri-money-cny-circle-line"
+                  size="18"
+                />
+                <VTooltip activator="parent">
+                  Catat Bayar
+                </VTooltip>
+              </VBtn>
               <VBtn
                 v-if="item.can_print"
                 icon
@@ -1566,12 +1826,21 @@ const printingId   = ref(null)
 
 // ── Director: OB list table ────────────────────────────────────────────────
 const { items: dirObItems, loading: dirObLoading, meta: dirObMeta, params: dirObParams, fetchList: fetchDirObList } = useCrud('/finance/opening-balance')
+const { items: dirObItemsB2B, loading: dirObLoadingB2B, meta: dirObMetaB2B, params: dirObParamsB2B, fetchList: fetchDirObListB2B } = useCrud('/finance/opening-balance')
 
 dirObParams.status = ''
 dirObParams.approval_status = 'APPROVED'
 dirObParams.klien_ar_id = null
 dirObParams.tanggal_dari = null
 dirObParams.tanggal_sampai = null
+dirObParams.segment = 'B2C'
+
+dirObParamsB2B.status = ''
+dirObParamsB2B.approval_status = 'APPROVED'
+dirObParamsB2B.klien_ar_id = null
+dirObParamsB2B.tanggal_dari = null
+dirObParamsB2B.tanggal_sampai = null
+dirObParamsB2B.segment = 'B2B'
 
 const dirObSummary = reactive({
   total_invoice: null,
@@ -1636,6 +1905,7 @@ function openCatatBayar(item) {
 function onPembayaranSaved() {
   if (authStore.isDirector) {
     loadDirObList()
+    loadDirObListB2B()
     loadDirObSummary()
   } else {
     loadList()
@@ -1679,7 +1949,8 @@ async function exportExcel() {
 }
 
 // ── Export (director OB list) ──────────────────────────────────────────────
-const isDirExporting = ref(false)
+const isDirExporting    = ref(false)
+const isDirExportingB2B = ref(false)
 
 async function exportDirExcel() {
   isDirExporting.value = true
@@ -1693,13 +1964,14 @@ async function exportDirExcel() {
         klien_ar_id:     dirObParams.klien_ar_id     || undefined,
         tanggal_dari:    dirObParams.tanggal_dari    || undefined,
         tanggal_sampai:  dirObParams.tanggal_sampai  || undefined,
+        segment:         'B2C',
       },
       responseType: 'blob',
     })
     const url  = URL.createObjectURL(res.data)
     const a    = document.createElement('a')
     a.href     = url
-    a.download = `Data Opening Balance-${new Date().toISOString().slice(0, 10)}.xlsx`
+    a.download = `Data Opening Balance B2C-${new Date().toISOString().slice(0, 10)}.xlsx`
     a.click()
     URL.revokeObjectURL(url)
     showSuccess({ title: 'Export Berhasil!', text: 'File berhasil diunduh.' })
@@ -1707,6 +1979,37 @@ async function exportDirExcel() {
     await showError('Gagal mengunduh data export.')
   } finally {
     isDirExporting.value = false
+    closeAlert({ onlyLoading: true })
+  }
+}
+
+async function exportDirExcelB2B() {
+  isDirExportingB2B.value = true
+  showLoading({ title: 'Mengeksport Data Opening Balance', text: 'Mohon tunggu sebentar...' })
+  try {
+    const res = await api.get('/finance/opening-balance/export', {
+      params: {
+        search:          dirObParamsB2B.search          || undefined,
+        status:          dirObParamsB2B.status          || undefined,
+        approval_status: dirObParamsB2B.approval_status || undefined,
+        klien_ar_id:     dirObParamsB2B.klien_ar_id     || undefined,
+        tanggal_dari:    dirObParamsB2B.tanggal_dari    || undefined,
+        tanggal_sampai:  dirObParamsB2B.tanggal_sampai  || undefined,
+        segment:         'B2B',
+      },
+      responseType: 'blob',
+    })
+    const url  = URL.createObjectURL(res.data)
+    const a    = document.createElement('a')
+    a.href     = url
+    a.download = `Data Opening Balance B2B-${new Date().toISOString().slice(0, 10)}.xlsx`
+    a.click()
+    URL.revokeObjectURL(url)
+    showSuccess({ title: 'Export Berhasil!', text: 'File berhasil diunduh.' })
+  } catch {
+    await showError('Gagal mengunduh data export.')
+  } finally {
+    isDirExportingB2B.value = false
     closeAlert({ onlyLoading: true })
   }
 }
@@ -1828,6 +2131,20 @@ const dirObHeaders = [
   { title: 'Aksi', key: 'dir_ob_actions', sortable: false, align: 'center', width: '120px' },
 ]
 
+const dirObHeadersB2B = [
+  { title: 'No', key: 'no', sortable: false, width: '60px' },
+  { title: 'No Opening Balance', key: 'no_invoice', sortable: false },
+  { title: 'Klien', key: 'klien_ar', sortable: false },
+  { title: 'Tanggal', key: 'tanggal_invoice', sortable: false, width: '115px' },
+  { title: 'Periode', key: 'periode', sortable: false, width: '210px' },
+  { title: 'Saldo Awal', key: 'total_tagihan', sortable: false },
+  { title: 'Total Terbayar', key: 'total_pembayaran', sortable: false },
+  { title: 'Sisa Tagihan', key: 'sisa_tagihan', sortable: false },
+  { title: 'Status', key: 'status', sortable: false },
+  { title: 'Approval', key: 'dir_ob_b2b_approval_status', sortable: false },
+  { title: 'Aksi', key: 'dir_ob_b2b_actions', sortable: false, align: 'center', width: '120px' },
+]
+
 const statusOptions = [
   { label: 'Draft', value: 'DRAFT' },
   { label: 'Terkirim', value: 'TERKIRIM' },
@@ -1850,6 +2167,7 @@ let klienController         = null
 let dirApprovalController   = null
 let dirApprovalSumCtrl      = null
 let dirObController         = null
+let dirObB2BController      = null
 let dirObSumCtrl            = null
 
 function clearDirDebounceTimer() {
@@ -1862,6 +2180,11 @@ function clearDirObDebounceTimer() {
   dirObDebounceTimer = null
 }
 
+function clearDirObDebounceTimerB2B() {
+  clearTimeout(dirObDebounceTimerB2B)
+  dirObDebounceTimerB2B = null
+}
+
 function abortPendingRequests() {
   listController?.abort()
   listControllerB2B?.abort()
@@ -1870,6 +2193,7 @@ function abortPendingRequests() {
   dirApprovalController?.abort()
   dirApprovalSumCtrl?.abort()
   dirObController?.abort()
+  dirObB2BController?.abort()
   dirObSumCtrl?.abort()
   listController        = null
   listControllerB2B     = null
@@ -1878,6 +2202,7 @@ function abortPendingRequests() {
   dirApprovalController = null
   dirApprovalSumCtrl    = null
   dirObController       = null
+  dirObB2BController    = null
   dirObSumCtrl          = null
 }
 
@@ -1974,6 +2299,14 @@ async function loadDirObList() {
   dirObController = controller
   await fetchDirObList({}, { signal: controller.signal })
   if (dirObController === controller) dirObController = null
+}
+
+async function loadDirObListB2B() {
+  dirObB2BController?.abort()
+  const controller = new AbortController()
+  dirObB2BController = controller
+  await fetchDirObListB2B({}, { signal: controller.signal })
+  if (dirObB2BController === controller) dirObB2BController = null
 }
 
 async function loadDirObSummary() {
@@ -2123,6 +2456,45 @@ function onDirObTableOptions({ page, itemsPerPage }) {
   loadDirObList()
 }
 
+function doDirObFetchB2B() {
+  dirObParamsB2B.page = 1
+  loadDirObListB2B()
+}
+
+let dirObDebounceTimerB2B = null
+function debouncedDirObFetchB2B() {
+  clearDirObDebounceTimerB2B()
+  dirObDebounceTimerB2B = setTimeout(doDirObFetchB2B, 400)
+}
+
+function onDirObTableOptionsB2B({ page, itemsPerPage }) {
+  dirObParamsB2B.page = page
+  dirObParamsB2B.per_page = itemsPerPage
+  dirObMetaB2B.current_page = page
+  dirObMetaB2B.per_page = itemsPerPage
+  loadDirObListB2B()
+}
+
+function resetDirObFilterB2B() {
+  dirObParamsB2B.search          = ''
+  dirObParamsB2B.status          = ''
+  dirObParamsB2B.approval_status = 'APPROVED'
+  dirObParamsB2B.klien_ar_id     = null
+  dirObParamsB2B.tanggal_dari    = null
+  dirObParamsB2B.tanggal_sampai  = null
+  doDirObFetchB2B()
+}
+
+function resetDirObFilterB2C() {
+  dirObParams.search          = ''
+  dirObParams.status          = ''
+  dirObParams.approval_status = 'APPROVED'
+  dirObParams.klien_ar_id     = null
+  dirObParams.tanggal_dari    = null
+  dirObParams.tanggal_sampai  = null
+  doDirObFetch()
+}
+
 // ── Helpers ────────────────────────────────────────────────────────────────
 function formatPeriode(item) {
   if (!item.periode_awal || !item.periode_akhir) return '-'
@@ -2162,6 +2534,7 @@ async function confirmApprove(item) {
     await showSuccess({ text: `Opening Balance ${item.no_invoice} berhasil disetujui.` })
     doDirFetch()
     loadDirObList()
+    loadDirObListB2B()
     loadDirObSummary()
     financeNotificationStore.fetchPendingOpeningBalanceCount()
   } catch (err) {
@@ -2235,6 +2608,7 @@ async function confirmApproveAll() {
     await showSuccess({ text: `${pending.length} Opening Balance berhasil disetujui.` })
     doDirFetch()
     loadDirObList()
+    loadDirObListB2B()
     loadDirObSummary()
     financeNotificationStore.fetchPendingOpeningBalanceCount()
   } catch (err) {
@@ -2253,6 +2627,7 @@ function initLoad() {
     loadDirApprovalList()
     loadDirApprovalSummary()
     loadDirObList()
+    loadDirObListB2B()
     loadDirObSummary()
   } else {
     const isPrivileged = authStore.isAdmin || authStore.isManager || authStore.isSupervisor
@@ -2276,6 +2651,7 @@ onDeactivated(() => {
   clearTimeout(debounceTimerB2B)
   clearDirDebounceTimer()
   clearDirObDebounceTimer()
+  clearDirObDebounceTimerB2B()
   abortPendingRequests()
 })
 
@@ -2284,6 +2660,7 @@ onBeforeUnmount(() => {
   clearTimeout(debounceTimerB2B)
   clearDirDebounceTimer()
   clearDirObDebounceTimer()
+  clearDirObDebounceTimerB2B()
   abortPendingRequests()
 })
 </script>

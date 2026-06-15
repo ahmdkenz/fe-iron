@@ -390,88 +390,353 @@
       </VCol>
     </VRow>
 
-    <VCard>
-      <VCardText class="d-flex flex-wrap gap-3 pb-0 align-center">
-        <VTextField
-          v-model="obParams.search"
-          placeholder="Cari no. OB / klien..."
-          clearable
-          hide-details
-          density="compact"
-          style="max-width: 250px"
-          prepend-inner-icon="ri-search-line"
-          @update:model-value="debouncedObFetch"
-        />
-        <VSelect
-          v-model="obParams.status"
-          placeholder="Semua Status"
-          clearable
-          hide-details
-          density="compact"
-          style="max-width: 160px"
-          :items="statusOptions"
-          item-title="label"
-          item-value="value"
-          @update:model-value="doObFetch"
-        />
-        <VSelect
-          v-model="obParams.approval_status"
-          placeholder="Semua Approval"
-          clearable
-          hide-details
-          density="compact"
-          style="max-width: 220px"
-          :items="approvalStatusOptions"
-          item-title="label"
-          item-value="value"
-          @update:model-value="doObFetch"
-        />
-        <VAutocomplete
-          v-model="obParams.klien_ar_id"
-          placeholder="Semua Klien"
-          clearable
-          hide-details
-          density="compact"
-          style="max-width: 220px"
-          :items="klienList"
-          item-title="nama_klien"
-          item-value="id"
-          :loading="klienLoading"
-          @update:model-value="doObFetch"
-        />
-        <VSelect
-          v-model="obParams.periode_bulan"
-          placeholder="Bulan"
-          clearable
-          hide-details
-          density="compact"
-          style="max-width: 140px"
-          :items="bulanOptions"
-          item-title="label"
-          item-value="value"
-          @update:model-value="doObFetch"
-        />
-        <VTextField
-          v-model="obParams.periode_tahun"
-          placeholder="Tahun"
-          clearable
-          hide-details
-          density="compact"
-          style="max-width: 100px"
-          type="number"
-          @update:model-value="debouncedObFetch"
-        />
-        <VSpacer />
-        <VBtn
-          color="primary"
-          prepend-icon="ri-file-excel-line"
-          :loading="isExporting"
-          @click="exportExcel"
-        >
-          Export
-        </VBtn>
-      </VCardText>
+    <!-- B2B Table -->
+    <VCard class="mb-4">
+      <div class="d-flex align-center justify-space-between px-4 py-3">
+        <div class="d-flex align-center gap-2">
+          <VAvatar
+            color="warning"
+            variant="tonal"
+            size="32"
+          >
+            <VIcon
+              icon="ri-building-line"
+              size="18"
+            />
+          </VAvatar>
+          <span class="text-subtitle-1 font-weight-semibold">Opening Balance B2B</span>
+        </div>
+        <div class="d-flex align-center gap-2">
+          <VBtn
+            variant="text"
+            color="secondary"
+            size="small"
+            prepend-icon="ri-refresh-line"
+            @click="resetObFiltersB2B"
+          >
+            Reset
+          </VBtn>
+          <VBtn
+            color="primary"
+            size="small"
+            prepend-icon="ri-file-excel-line"
+            :loading="isExportingB2B"
+            @click="exportExcelB2B"
+          >
+            Export
+          </VBtn>
+        </div>
+      </div>
+      <VDivider />
+      <div class="d-flex flex-wrap align-center gap-4 px-4 py-3">
+        <div style="min-width: 200px; flex: 1; max-width: 280px;">
+          <div class="text-caption text-medium-emphasis mb-2">Pencarian</div>
+          <VTextField
+            v-model="obParamsB2B.search"
+            placeholder="Cari no. OB / klien..."
+            clearable
+            hide-details
+            density="compact"
+            prepend-inner-icon="ri-search-line"
+            @update:model-value="debouncedObFetchB2B"
+          />
+        </div>
+        <div style="min-width: 140px; max-width: 180px;">
+          <div class="text-caption text-medium-emphasis mb-2">Status</div>
+          <VSelect
+            v-model="obParamsB2B.status"
+            placeholder="Semua Status"
+            clearable
+            hide-details
+            density="compact"
+            :items="statusOptions"
+            item-title="label"
+            item-value="value"
+            @update:model-value="doObFetchB2B"
+          />
+        </div>
+        <div style="min-width: 160px; max-width: 220px;">
+          <div class="text-caption text-medium-emphasis mb-2">Approval</div>
+          <VSelect
+            v-model="obParamsB2B.approval_status"
+            placeholder="Semua Approval"
+            clearable
+            hide-details
+            density="compact"
+            :items="approvalStatusOptions"
+            item-title="label"
+            item-value="value"
+            @update:model-value="doObFetchB2B"
+          />
+        </div>
+        <div style="min-width: 180px; flex: 1; max-width: 260px;">
+          <div class="text-caption text-medium-emphasis mb-2">Klien</div>
+          <VAutocomplete
+            v-model="obParamsB2B.klien_ar_id"
+            placeholder="Semua Klien"
+            clearable
+            hide-details
+            density="compact"
+            :items="klienList"
+            item-title="nama_klien"
+            item-value="id"
+            :loading="klienLoading"
+            @update:model-value="doObFetchB2B"
+          />
+        </div>
+        <div style="min-width: 130px; max-width: 160px;">
+          <div class="text-caption text-medium-emphasis mb-2">Bulan</div>
+          <VSelect
+            v-model="obParamsB2B.periode_bulan"
+            placeholder="Semua"
+            clearable
+            hide-details
+            density="compact"
+            :items="bulanOptions"
+            item-title="label"
+            item-value="value"
+            @update:model-value="doObFetchB2B"
+          />
+        </div>
+        <div style="min-width: 90px; max-width: 110px;">
+          <div class="text-caption text-medium-emphasis mb-2">Tahun</div>
+          <VTextField
+            v-model="obParamsB2B.periode_tahun"
+            placeholder="Tahun"
+            clearable
+            hide-details
+            density="compact"
+            type="number"
+            @update:model-value="debouncedObFetchB2B"
+          />
+        </div>
+      </div>
+      <VDivider />
+      <BaseTable
+        :headers="obHeadersB2B"
+        :items="obItemsB2B"
+        :total="obMetaB2B.total"
+        :loading="obLoadingB2B"
+        :per-page="obMetaB2B.per_page"
+        :page="obMetaB2B.current_page"
+        class="mt-2"
+        @update:options="onObTableOptionsB2B"
+      >
+        <template #item.no="{ index }">
+          {{ (obMetaB2B.current_page - 1) * obMetaB2B.per_page + index + 1 }}
+        </template>
+        <template #item.no_invoice="{ item }">
+          <VChip
+            color="primary"
+            size="small"
+            variant="tonal"
+            label
+          >
+            {{ item.no_invoice }}
+          </VChip>
+        </template>
+        <template #item.klien_ar="{ item }">
+          {{ item.klien_ar?.nama_klien ?? '-' }}
+        </template>
+        <template #item.tanggal_invoice="{ item }">
+          {{ formatDate(item.tanggal_invoice) }}
+        </template>
+        <template #item.periode="{ item }">
+          {{ formatPeriode(item) }}
+        </template>
+        <template #item.total_tagihan="{ item }">
+          {{ formatCurrency(item.total_tagihan) }}
+        </template>
+        <template #item.total_pembayaran="{ item }">
+          {{ formatCurrency(item.total_pembayaran) }}
+        </template>
+        <template #item.sisa_tagihan="{ item }">
+          <span :class="item.sisa_tagihan > 0 ? 'text-error' : 'text-success'">
+            {{ formatCurrency(item.sisa_tagihan) }}
+          </span>
+        </template>
+        <template #item.status="{ item }">
+          <InvoiceStatusBadge :status="item.status" />
+        </template>
+        <template #item.ob_b2b_approval_status="{ item }">
+          <ApprovalStatusBadge :status="item.approval_status" />
+        </template>
+        <template #item.ob_b2b_actions="{ item }">
+          <div class="d-flex gap-1">
+            <VBtn
+              v-if="item.can_record_payment && item.status !== 'LUNAS'"
+              icon
+              size="small"
+              variant="tonal"
+              color="success"
+              @click="openCatatBayar(item)"
+            >
+              <VIcon
+                icon="ri-money-cny-circle-line"
+                size="18"
+              />
+              <VTooltip activator="parent">
+                Catat Bayar
+              </VTooltip>
+            </VBtn>
+            <VBtn
+              v-if="item.can_print"
+              icon
+              size="small"
+              variant="text"
+              color="secondary"
+              @click="printInvoice(item.id)"
+            >
+              <VIcon
+                icon="ri-printer-line"
+                size="18"
+              />
+              <VTooltip activator="parent">
+                Cetak
+              </VTooltip>
+            </VBtn>
+            <VBtn
+              icon
+              size="small"
+              variant="text"
+              color="info"
+              :to="{ name: 'finance-invoice-show', params: { id: item.id } }"
+            >
+              <VIcon
+                icon="ri-eye-line"
+                size="18"
+              />
+              <VTooltip activator="parent">
+                Detail
+              </VTooltip>
+            </VBtn>
+          </div>
+        </template>
+      </BaseTable>
+    </VCard>
 
+    <!-- B2C Table -->
+    <VCard>
+      <div class="d-flex align-center justify-space-between px-4 py-3">
+        <div class="d-flex align-center gap-2">
+          <VAvatar
+            color="primary"
+            variant="tonal"
+            size="32"
+          >
+            <VIcon
+              icon="ri-user-line"
+              size="18"
+            />
+          </VAvatar>
+          <span class="text-subtitle-1 font-weight-semibold">Opening Balance B2C</span>
+        </div>
+        <div class="d-flex align-center gap-2">
+          <VBtn
+            variant="text"
+            color="secondary"
+            size="small"
+            prepend-icon="ri-refresh-line"
+            @click="resetObFiltersB2C"
+          >
+            Reset
+          </VBtn>
+          <VBtn
+            color="primary"
+            size="small"
+            prepend-icon="ri-file-excel-line"
+            :loading="isExporting"
+            @click="exportExcel"
+          >
+            Export
+          </VBtn>
+        </div>
+      </div>
+      <VDivider />
+      <div class="d-flex flex-wrap align-center gap-4 px-4 py-3">
+        <div style="min-width: 200px; flex: 1; max-width: 280px;">
+          <div class="text-caption text-medium-emphasis mb-2">Pencarian</div>
+          <VTextField
+            v-model="obParams.search"
+            placeholder="Cari no. OB / klien..."
+            clearable
+            hide-details
+            density="compact"
+            prepend-inner-icon="ri-search-line"
+            @update:model-value="debouncedObFetch"
+          />
+        </div>
+        <div style="min-width: 140px; max-width: 180px;">
+          <div class="text-caption text-medium-emphasis mb-2">Status</div>
+          <VSelect
+            v-model="obParams.status"
+            placeholder="Semua Status"
+            clearable
+            hide-details
+            density="compact"
+            :items="statusOptions"
+            item-title="label"
+            item-value="value"
+            @update:model-value="doObFetch"
+          />
+        </div>
+        <div style="min-width: 160px; max-width: 220px;">
+          <div class="text-caption text-medium-emphasis mb-2">Approval</div>
+          <VSelect
+            v-model="obParams.approval_status"
+            placeholder="Semua Approval"
+            clearable
+            hide-details
+            density="compact"
+            :items="approvalStatusOptions"
+            item-title="label"
+            item-value="value"
+            @update:model-value="doObFetch"
+          />
+        </div>
+        <div style="min-width: 180px; flex: 1; max-width: 260px;">
+          <div class="text-caption text-medium-emphasis mb-2">Klien</div>
+          <VAutocomplete
+            v-model="obParams.klien_ar_id"
+            placeholder="Semua Klien"
+            clearable
+            hide-details
+            density="compact"
+            :items="klienList"
+            item-title="nama_klien"
+            item-value="id"
+            :loading="klienLoading"
+            @update:model-value="doObFetch"
+          />
+        </div>
+        <div style="min-width: 130px; max-width: 160px;">
+          <div class="text-caption text-medium-emphasis mb-2">Bulan</div>
+          <VSelect
+            v-model="obParams.periode_bulan"
+            placeholder="Semua"
+            clearable
+            hide-details
+            density="compact"
+            :items="bulanOptions"
+            item-title="label"
+            item-value="value"
+            @update:model-value="doObFetch"
+          />
+        </div>
+        <div style="min-width: 90px; max-width: 110px;">
+          <div class="text-caption text-medium-emphasis mb-2">Tahun</div>
+          <VTextField
+            v-model="obParams.periode_tahun"
+            placeholder="Tahun"
+            clearable
+            hide-details
+            density="compact"
+            type="number"
+            @update:model-value="debouncedObFetch"
+          />
+        </div>
+      </div>
+      <VDivider />
       <BaseTable
         :headers="obHeaders"
         :items="obItems"
@@ -603,6 +868,7 @@ const PembayaranForm = defineAsyncComponent(() => import('../components/Pembayar
 const { items, loading, meta, params, fetchList } = useCrud('/finance/opening-balance')
 const { items: klienList, loading: klienLoading, fetchAll: fetchKlien } = useCrud('/finance/klien-ar')
 const { items: obItems, loading: obLoading, meta: obMeta, params: obParams, fetchList: fetchObList } = useCrud('/finance/opening-balance')
+const { items: obItemsB2B, loading: obLoadingB2B, meta: obMetaB2B, params: obParamsB2B, fetchList: fetchObListB2B } = useCrud('/finance/opening-balance')
 const { formatCurrency, formatDate } = useFormatter()
 const { showAlert, showSuccess, showError } = useSweetAlert()
 const authStore = useAuthStore()
@@ -623,6 +889,14 @@ obParams.approval_status = 'APPROVED'
 obParams.klien_ar_id = null
 obParams.periode_bulan = null
 obParams.periode_tahun = null
+obParams.segment = 'B2C'
+
+obParamsB2B.status = ''
+obParamsB2B.approval_status = 'APPROVED'
+obParamsB2B.klien_ar_id = null
+obParamsB2B.periode_bulan = null
+obParamsB2B.periode_tahun = null
+obParamsB2B.segment = 'B2B'
 
 // ── Summaries ──────────────────────────────────────────────────────────────
 const summary = reactive({
@@ -650,11 +924,13 @@ function openCatatBayar(item) {
 
 function onPembayaranSaved() {
   loadObList()
+  loadObListB2B()
   loadObSummary()
 }
 
 // ── Export ─────────────────────────────────────────────────────────────────
-const isExporting = ref(false)
+const isExporting    = ref(false)
+const isExportingB2B = ref(false)
 
 async function exportExcel() {
   isExporting.value = true
@@ -667,19 +943,48 @@ async function exportExcel() {
         klien_ar_id:     obParams.klien_ar_id     || undefined,
         periode_bulan:   obParams.periode_bulan   || undefined,
         periode_tahun:   obParams.periode_tahun   || undefined,
+        segment:         'B2C',
       },
       responseType: 'blob',
     })
     const url  = URL.createObjectURL(res.data)
     const a    = document.createElement('a')
     a.href     = url
-    a.download = `Data Opening Balance-${new Date().toISOString().slice(0, 10)}.xlsx`
+    a.download = `Data Opening Balance B2C-${new Date().toISOString().slice(0, 10)}.xlsx`
     a.click()
     URL.revokeObjectURL(url)
   } catch {
     window.alert('Gagal mengunduh data export.')
   } finally {
     isExporting.value = false
+  }
+}
+
+async function exportExcelB2B() {
+  isExportingB2B.value = true
+  try {
+    const res = await api.get('/finance/opening-balance/export', {
+      params: {
+        search:          obParamsB2B.search          || undefined,
+        status:          obParamsB2B.status          || undefined,
+        approval_status: obParamsB2B.approval_status || undefined,
+        klien_ar_id:     obParamsB2B.klien_ar_id     || undefined,
+        periode_bulan:   obParamsB2B.periode_bulan   || undefined,
+        periode_tahun:   obParamsB2B.periode_tahun   || undefined,
+        segment:         'B2B',
+      },
+      responseType: 'blob',
+    })
+    const url  = URL.createObjectURL(res.data)
+    const a    = document.createElement('a')
+    a.href     = url
+    a.download = `Data Opening Balance B2B-${new Date().toISOString().slice(0, 10)}.xlsx`
+    a.click()
+    URL.revokeObjectURL(url)
+  } catch {
+    window.alert('Gagal mengunduh data export.')
+  } finally {
+    isExportingB2B.value = false
   }
 }
 
@@ -723,6 +1028,20 @@ const obHeaders = [
   { title: 'Aksi', key: 'ob_actions', sortable: false, align: 'center', width: '120px' },
 ]
 
+const obHeadersB2B = [
+  { title: 'No', key: 'no', sortable: false, width: '60px' },
+  { title: 'No Opening Balance', key: 'no_invoice', sortable: false },
+  { title: 'Klien', key: 'klien_ar', sortable: false },
+  { title: 'Tanggal', key: 'tanggal_invoice', sortable: false },
+  { title: 'Periode', key: 'periode', sortable: false },
+  { title: 'Saldo Awal', key: 'total_tagihan', sortable: false },
+  { title: 'Total Terbayar', key: 'total_pembayaran', sortable: false },
+  { title: 'Sisa Tagihan', key: 'sisa_tagihan', sortable: false },
+  { title: 'Status', key: 'status', sortable: false },
+  { title: 'Approval', key: 'ob_b2b_approval_status', sortable: false },
+  { title: 'Aksi', key: 'ob_b2b_actions', sortable: false, align: 'center', width: '120px' },
+]
+
 const statusOptions = [
   { label: 'Draft', value: 'DRAFT' },
   { label: 'Terkirim', value: 'TERKIRIM' },
@@ -752,10 +1071,11 @@ const bulanOptions = [
 ]
 
 // ── Abort controllers ──────────────────────────────────────────────────────
-let listController    = null
-let summaryController = null
-let klienController   = null
+let listController      = null
+let summaryController   = null
+let klienController     = null
 let obListController    = null
+let obListB2BController = null
 let obSummaryController = null
 
 function clearDebounceTimer() {
@@ -768,16 +1088,23 @@ function clearObDebounceTimer() {
   obDebounceTimer = null
 }
 
+function clearObDebounceTimerB2B() {
+  clearTimeout(obDebounceTimerB2B)
+  obDebounceTimerB2B = null
+}
+
 function abortPendingRequests() {
   listController?.abort()
   summaryController?.abort()
   klienController?.abort()
   obListController?.abort()
+  obListB2BController?.abort()
   obSummaryController?.abort()
-  listController    = null
-  summaryController = null
-  klienController   = null
+  listController      = null
+  summaryController   = null
+  klienController     = null
   obListController    = null
+  obListB2BController = null
   obSummaryController = null
 }
 
@@ -829,6 +1156,14 @@ async function loadObList() {
   obListController = controller
   await fetchObList({}, { signal: controller.signal })
   if (obListController === controller) obListController = null
+}
+
+async function loadObListB2B() {
+  obListB2BController?.abort()
+  const controller = new AbortController()
+  obListB2BController = controller
+  await fetchObListB2B({}, { signal: controller.signal })
+  if (obListB2BController === controller) obListB2BController = null
 }
 
 async function loadObSummary() {
@@ -894,6 +1229,43 @@ function onObTableOptions({ page, itemsPerPage }) {
   loadObList()
 }
 
+function doObFetchB2B() {
+  obParamsB2B.page = 1
+  loadObListB2B()
+}
+
+let obDebounceTimerB2B = null
+function debouncedObFetchB2B() {
+  clearObDebounceTimerB2B()
+  obDebounceTimerB2B = setTimeout(doObFetchB2B, 400)
+}
+
+function onObTableOptionsB2B({ page, itemsPerPage }) {
+  obParamsB2B.page = page
+  obParamsB2B.per_page = itemsPerPage
+  loadObListB2B()
+}
+
+function resetObFiltersB2B() {
+  obParamsB2B.search = ''
+  obParamsB2B.status = ''
+  obParamsB2B.approval_status = 'APPROVED'
+  obParamsB2B.klien_ar_id = null
+  obParamsB2B.periode_bulan = null
+  obParamsB2B.periode_tahun = null
+  doObFetchB2B()
+}
+
+function resetObFiltersB2C() {
+  obParams.search = ''
+  obParams.status = ''
+  obParams.approval_status = 'APPROVED'
+  obParams.klien_ar_id = null
+  obParams.periode_bulan = null
+  obParams.periode_tahun = null
+  doObFetch()
+}
+
 // ── Helpers ────────────────────────────────────────────────────────────────
 function formatPeriode(item) {
   if (!item.periode_awal || !item.periode_akhir) return '-'
@@ -947,18 +1319,21 @@ onMounted(() => {
   loadList()
   loadSummary()
   loadObList()
+  loadObListB2B()
   loadObSummary()
 })
 
 onDeactivated(() => {
   clearDebounceTimer()
   clearObDebounceTimer()
+  clearObDebounceTimerB2B()
   abortPendingRequests()
 })
 
 onBeforeUnmount(() => {
   clearDebounceTimer()
   clearObDebounceTimer()
+  clearObDebounceTimerB2B()
   abortPendingRequests()
 })
 </script>
