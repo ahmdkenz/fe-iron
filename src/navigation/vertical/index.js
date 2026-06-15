@@ -84,7 +84,7 @@
     title: 'Rekonsiliasi Bank',
     to: { name: 'finance-rekonsiliasi-bank' },
     icon: { icon: 'ri-bank-line' },
-    roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR', 'AR'],
+    roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'],
   },
   { heading: 'LAPORAN' },
   {
