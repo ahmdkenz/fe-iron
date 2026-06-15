@@ -753,7 +753,7 @@ async function loadCarryover(klienId) {
   carryoverLoading.value = true
   try {
     const { data } = await api.get('/finance/invoices/carryover', {
-      params: { klien_ar_id: klienId },
+      params: { klien_ar_id: klienId, tanggal_invoice: form.tanggal_invoice },
     })
 
     form.tagihan_periode_sebelumnya = data.data?.carryover ?? 0
