@@ -415,16 +415,7 @@
             @click="resetObFiltersB2B"
           >
             Reset
-          </VBtn>
-          <VBtn
-            color="primary"
-            size="small"
-            prepend-icon="ri-file-excel-line"
-            :loading="isExportingB2B"
-            @click="exportExcelB2B"
-          >
-            Export
-          </VBtn>
+          </VBtn>Approval Opening Balance
         </div>
       </div>
       <VDivider />
@@ -640,15 +631,6 @@
             @click="resetObFiltersB2C"
           >
             Reset
-          </VBtn>
-          <VBtn
-            color="primary"
-            size="small"
-            prepend-icon="ri-file-excel-line"
-            :loading="isExporting"
-            @click="exportExcel"
-          >
-            Export
           </VBtn>
         </div>
       </div>

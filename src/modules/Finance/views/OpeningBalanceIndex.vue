@@ -1111,26 +1111,15 @@
             </VAvatar>
             <span class="text-subtitle-1 font-weight-semibold">Opening Balance B2B</span>
           </div>
-          <div class="d-flex align-center gap-2">
-            <VBtn
-              variant="text"
-              color="secondary"
-              size="small"
-              prepend-icon="ri-refresh-line"
-              @click="resetDirObFilterB2B"
-            >
-              Reset
-            </VBtn>
-            <VBtn
-              color="primary"
-              size="small"
-              prepend-icon="ri-file-excel-line"
-              :loading="isDirExportingB2B"
-              @click="exportDirExcelB2B"
-            >
-              Export
-            </VBtn>
-          </div>
+          <VBtn
+            variant="text"
+            color="secondary"
+            size="small"
+            prepend-icon="ri-refresh-line"
+            @click="resetDirObFilterB2B"
+          >
+            Reset
+          </VBtn>
         </div>
         <VDivider />
         <div class="d-flex flex-wrap align-center gap-4 px-4 py-3">
@@ -1350,26 +1339,15 @@
             </VAvatar>
             <span class="text-subtitle-1 font-weight-semibold">Opening Balance B2C</span>
           </div>
-          <div class="d-flex align-center gap-2">
-            <VBtn
-              variant="text"
-              color="secondary"
-              size="small"
-              prepend-icon="ri-refresh-line"
-              @click="resetDirObFilterB2C"
-            >
-              Reset
-            </VBtn>
-            <VBtn
-              color="primary"
-              size="small"
-              prepend-icon="ri-file-excel-line"
-              :loading="isDirExporting"
-              @click="exportDirExcel"
-            >
-              Export
-            </VBtn>
-          </div>
+          <VBtn
+            variant="text"
+            color="secondary"
+            size="small"
+            prepend-icon="ri-refresh-line"
+            @click="resetDirObFilterB2C"
+          >
+            Reset
+          </VBtn>
         </div>
         <VDivider />
         <div class="d-flex flex-wrap align-center gap-4 px-4 py-3">
