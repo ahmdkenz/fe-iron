@@ -53,23 +53,8 @@
             ]"
             :error-messages="errors.jumlah_pembayaran"
             prefix="Rp"
+            @update:model-value="handleJumlahInput"
           />
-        </VCol>
-
-        <!-- Warning kelebihan bayar -->
-        <VCol
-          v-if="isKelebihan"
-          cols="12"
-        >
-          <VAlert
-            type="warning"
-            variant="tonal"
-            density="compact"
-          >
-            Kelebihan bayar sebesar
-            <strong>{{ formatCurrency(form.jumlah_pembayaran - sisaTagihan) }}</strong>
-            akan dicatat dan dapat dialokasikan ke invoice lain melalui Rekonsiliasi Bank.
-          </VAlert>
         </VCol>
 
         <!-- Metode Pembayaran -->
@@ -158,7 +143,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch, computed } from 'vue'
+import { ref, reactive, watch } from 'vue'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useFormatter } from '@/composables/useFormatter.js'
 import api from '@/utils/axios.js'
@@ -176,7 +161,6 @@ const emit = defineEmits(['update:modelValue', 'saved'])
 
 const { formatCurrency } = useFormatter()
 
-const isKelebihan = computed(() => form.jumlah_pembayaran > props.sisaTagihan)
 const { showSuccess, showError, showLoading, closeAlert } = useSweetAlert()
 const saving = ref(false)
 
@@ -213,6 +197,12 @@ watch(() => props.modelValue, val => {
     Object.assign(form, defaultForm())
   }
 })
+
+function handleJumlahInput(val) {
+  if (val > props.sisaTagihan) {
+    form.jumlah_pembayaran = props.sisaTagihan
+  }
+}
 
 async function cekDuplikatReferensi() {
   const noRef = form.no_referensi?.trim()
