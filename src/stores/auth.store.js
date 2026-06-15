@@ -77,7 +77,8 @@ export const useAuthStore = defineStore('auth', {
 
     async login(username, password) {
       const { data } = await api.post('/auth/login', { username, password })
-      const { user } = data.data
+      const { user, token } = data.data
+      localStorage.setItem('auth_token', token)
       this.user = user
     },
 
@@ -88,6 +89,7 @@ export const useAuthStore = defineStore('auth', {
 
     async logout() {
       await api.post('/auth/logout').catch(() => {})
+      localStorage.removeItem('auth_token')
       this.user = null
     },
   },
