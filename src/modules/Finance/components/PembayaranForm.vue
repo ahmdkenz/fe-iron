@@ -136,7 +136,7 @@
             prepend-icon=""
             prepend-inner-icon="ri-attachment-line"
             :rules="[
-              v => !v || !v.length || v[0].size <= 10 * 1024 * 1024 || 'Ukuran file maksimal 10 MB',
+              v => { const file = Array.isArray(v) ? v[0] : v; return !file || file.size === undefined || file.size <= 10 * 1024 * 1024 || 'Ukuran file maksimal 10 MB' },
             ]"
             :error-messages="errors.bukti_pembayaran"
             hint="PDF, JPG, atau PNG — maks 10 MB"
@@ -249,7 +249,8 @@ async function handleSubmit() {
     payload.append('metode_pembayaran', form.metode_pembayaran)
     if (form.no_referensi) payload.append('no_referensi', form.no_referensi)
     if (form.keterangan)   payload.append('keterangan', form.keterangan)
-    if (form.bukti_pembayaran?.length) payload.append('bukti_pembayaran', form.bukti_pembayaran[0])
+    const buktiFile = Array.isArray(form.bukti_pembayaran) ? form.bukti_pembayaran[0] : form.bukti_pembayaran
+    if (buktiFile instanceof File) payload.append('bukti_pembayaran', buktiFile)
 
     await api.post(`/finance/invoices/${props.invoiceId}/pembayaran`, payload, {
       headers: { 'Content-Type': 'multipart/form-data' },
