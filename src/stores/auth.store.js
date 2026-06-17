@@ -64,6 +64,10 @@ export const useAuthStore = defineStore('auth', {
     canOperateOpeningBalance: state => hasAnyRole(state.user, ['MANAGER', 'SUPERVISOR', 'AR']),
     canViewOpeningBalance: state => hasAnyRole(state.user, ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR', 'AR']),
     canApproveOpeningBalance: state => normalizeRoles(state.user).includes('DIREKTUR'),
+    canViewEndingBalance: state => hasAnyRole(state.user, ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR', 'AR']),
+    canOperateEndingBalance: state => hasAnyRole(state.user, ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR']),
+    canApproveEndingBalanceSpv: state => hasAnyRole(state.user, ['ADMIN', 'SUPERVISOR']),
+    canApproveEndingBalanceManager: state => hasAnyRole(state.user, ['ADMIN', 'MANAGER']),
   },
 
   actions: {

@@ -60,6 +60,24 @@ export default [
     meta: { requiresAuth: true, roles: ['MANAGER', 'SUPERVISOR', 'AR'] },
   },
   { path: '/finance/opening-balance/approval', redirect: { name: 'finance-opening-balance' } },
+  {
+    path: '/finance/ending-balance',
+    name: 'finance-ending-balance',
+    component: () => import('@/modules/Finance/views/EndingBalanceIndex.vue'),
+    meta: { requiresAuth: true, roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR', 'AR'] },
+  },
+  {
+    path: '/finance/ending-balance/:id',
+    name: 'finance-ending-balance-show',
+    component: () => import('@/modules/Finance/views/EndingBalanceDetailPage.vue'),
+    meta: { requiresAuth: true, roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR', 'AR'] },
+  },
+  {
+    path: '/finance/ending-balance/koreksi/approval',
+    name: 'finance-ending-balance-approval',
+    component: () => import('@/modules/Finance/views/EndingBalanceApprovalIndex.vue'),
+    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR'] },
+  },
   // Halaman konsolidasi laporan
   {
     path: '/finance/laporan',

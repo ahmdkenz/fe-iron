@@ -79,6 +79,18 @@
     icon: { icon: 'ri-history-line' },
     roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR', 'AR'],
   },
+  {
+    title: 'Ending Balance',
+    to: { name: 'finance-ending-balance' },
+    icon: { icon: 'ri-scales-2-line' },
+    roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR', 'AR'],
+  },
+  {
+    title: 'Approval Koreksi EB',
+    to: { name: 'finance-ending-balance-approval' },
+    icon: { icon: 'ri-checkbox-circle-line' },
+    roles: ['ADMIN', 'MANAGER', 'SUPERVISOR'],
+  },
   { heading: 'REKONSILIASI' },
   {
     title: 'Rekonsiliasi Bank',
