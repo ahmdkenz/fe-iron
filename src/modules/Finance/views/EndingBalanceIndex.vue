@@ -8,18 +8,7 @@
         { title: 'Ending Balance', disabled: true },
       ]"
     >
-      <div class="d-flex gap-2">
-        <VBtn
-          v-if="authStore.canOperateEndingBalance"
-          color="primary"
-          prepend-icon="ri-magic-line"
-          :loading="generating"
-          @click="showGenerateDialog = true"
-        >
-          Generate EB
-        </VBtn>
-      </div>
-    </PageHeader>
+      </PageHeader>
 
     <!-- Filter -->
     <VCard class="mb-4">
@@ -174,32 +163,6 @@
       </VDataTableServer>
     </VCard>
 
-    <!-- Dialog Generate -->
-    <VDialog v-model="showGenerateDialog" max-width="440">
-      <VCard>
-        <VCardTitle class="pt-4 px-4">Generate Ending Balance</VCardTitle>
-        <VCardText>
-          <VTextField
-            v-model="genForm.periode_awal"
-            label="Dari Tanggal"
-            type="date"
-            class="mb-3"
-          />
-          <VTextField
-            v-model="genForm.periode_akhir"
-            label="Sampai Tanggal"
-            type="date"
-          />
-          <VAlert v-if="genError" type="error" class="mt-3" density="compact">{{ genError }}</VAlert>
-        </VCardText>
-        <VCardActions class="px-4 pb-4">
-          <VSpacer />
-          <VBtn variant="text" @click="showGenerateDialog = false">Batal</VBtn>
-          <VBtn color="primary" :loading="generating" @click="doGenerate">Generate</VBtn>
-        </VCardActions>
-      </VCard>
-    </VDialog>
-
     <!-- Dialog Konfirmasi Lock -->
     <VDialog v-model="showLockDialog" max-width="400">
       <VCard>
@@ -222,7 +185,6 @@
 
 <script setup>
 import { ref, reactive, onMounted, defineComponent, h } from 'vue'
-import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.store'
 import api from '@/utils/axios'
 
@@ -302,17 +264,22 @@ const EbInvoiceBreakdown = defineComponent({
 })
 
 const authStore = useAuthStore()
-const router    = useRouter()
 
 const loading  = ref(false)
 const rows     = ref([])
 const meta     = ref({ total: 0, per_page: 15 })
-const filters  = reactive({ periode_awal: '', periode_akhir: '', status: null })
 
-const generating       = ref(false)
-const showGenerateDialog = ref(false)
-const genForm          = reactive({ periode_awal: '', periode_akhir: '' })
-const genError         = ref('')
+function toDateStr(d) {
+  return d.toISOString().slice(0, 10)
+}
+const now      = new Date()
+const firstDay = new Date(now.getFullYear(), now.getMonth(), 1)
+const lastDay  = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+const filters  = reactive({
+  periode_awal:  toDateStr(firstDay),
+  periode_akhir: toDateStr(lastDay),
+  status: null,
+})
 
 const lockingId       = ref(null)
 const showLockDialog  = ref(false)
@@ -357,25 +324,6 @@ async function doFetch(page = 1) {
 function onTableOptions({ page }) {
   currentPage.value = page
   doFetch(page)
-}
-
-async function doGenerate() {
-  genError.value = ''
-  if (!genForm.periode_awal || !genForm.periode_akhir) {
-    genError.value = 'Isi periode awal dan akhir.'
-    return
-  }
-  generating.value = true
-  try {
-    const { data } = await api.post('/finance/ending-balance/generate', genForm)
-    showGenerateDialog.value = false
-    doFetch()
-    alert(`${data.message}`)
-  } catch (e) {
-    genError.value = e?.response?.data?.message ?? 'Terjadi kesalahan.'
-  } finally {
-    generating.value = false
-  }
 }
 
 async function doRecalculate(item) {
