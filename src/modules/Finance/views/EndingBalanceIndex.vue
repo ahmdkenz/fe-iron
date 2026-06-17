@@ -270,7 +270,10 @@ const rows     = ref([])
 const meta     = ref({ total: 0, per_page: 15 })
 
 function toDateStr(d) {
-  return d.toISOString().slice(0, 10)
+  const year  = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const day   = String(d.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 }
 const now      = new Date()
 const firstDay = new Date(now.getFullYear(), now.getMonth(), 1)
