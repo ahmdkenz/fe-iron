@@ -1731,6 +1731,17 @@
 <script setup>
 /* eslint-disable camelcase */
 import { defineAsyncComponent, onActivated, onBeforeUnmount, onDeactivated, reactive, ref } from 'vue'
+
+function getDefaultMonthRange() {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const lastDay = new Date(year, now.getMonth() + 1, 0).getDate()
+  return {
+    tanggal_dari:   `${year}-${month}-01`,
+    tanggal_sampai: `${year}-${month}-${String(lastDay).padStart(2, '0')}`,
+  }
+}
 import { useAuthStore } from '@/stores/auth.store'
 import { useCrud } from '@/composables/useCrud'
 import { useFormatter } from '@/composables/useFormatter'
@@ -1758,17 +1769,19 @@ const { formatCurrency, formatDate } = useFormatter()
 
 const canSeeAll = authStore.hasAnyRole(['ADMIN', 'MANAGER', 'SUPERVISOR'])
 
+const { tanggal_dari: defaultDari, tanggal_sampai: defaultSampai } = getDefaultMonthRange()
+
 params.status = ''
 params.approval_status = ''
 params.klien_ar_id = null
-params.tanggal_dari = null
-params.tanggal_sampai = null
+params.tanggal_dari = defaultDari
+params.tanggal_sampai = defaultSampai
 
 paramsB2B.status = ''
 paramsB2B.approval_status = ''
 paramsB2B.klien_ar_id = null
-paramsB2B.tanggal_dari = null
-paramsB2B.tanggal_sampai = null
+paramsB2B.tanggal_dari = defaultDari
+paramsB2B.tanggal_sampai = defaultSampai
 
 if (canSeeAll) {
   params.segment = 'B2C'
@@ -1787,8 +1800,8 @@ const { items: dirApprovalItems, loading: dirApprovalLoading, meta: dirApprovalM
 
 dirApprovalParams.approval_status = 'PENDING'
 dirApprovalParams.klien_ar_id = null
-dirApprovalParams.tanggal_dari = null
-dirApprovalParams.tanggal_sampai = null
+dirApprovalParams.tanggal_dari = defaultDari
+dirApprovalParams.tanggal_sampai = defaultSampai
 
 const dirApprovalSummary = reactive({
   total_invoice: null,
@@ -1809,15 +1822,15 @@ const { items: dirObItemsB2B, loading: dirObLoadingB2B, meta: dirObMetaB2B, para
 dirObParams.status = ''
 dirObParams.approval_status = 'APPROVED'
 dirObParams.klien_ar_id = null
-dirObParams.tanggal_dari = null
-dirObParams.tanggal_sampai = null
+dirObParams.tanggal_dari = defaultDari
+dirObParams.tanggal_sampai = defaultSampai
 dirObParams.segment = 'B2C'
 
 dirObParamsB2B.status = ''
 dirObParamsB2B.approval_status = 'APPROVED'
 dirObParamsB2B.klien_ar_id = null
-dirObParamsB2B.tanggal_dari = null
-dirObParamsB2B.tanggal_sampai = null
+dirObParamsB2B.tanggal_dari = defaultDari
+dirObParamsB2B.tanggal_sampai = defaultSampai
 dirObParamsB2B.segment = 'B2B'
 
 const dirObSummary = reactive({
@@ -2354,41 +2367,45 @@ function onTableOptionsB2B({ page, itemsPerPage }) {
 }
 
 function resetFiltersB2C() {
+  const { tanggal_dari, tanggal_sampai } = getDefaultMonthRange()
   params.search          = ''
   params.status          = ''
   params.approval_status = ''
   params.klien_ar_id     = null
-  params.tanggal_dari    = null
-  params.tanggal_sampai  = null
+  params.tanggal_dari    = tanggal_dari
+  params.tanggal_sampai  = tanggal_sampai
   doFetchB2C()
 }
 
 function resetFiltersB2B() {
+  const { tanggal_dari, tanggal_sampai } = getDefaultMonthRange()
   paramsB2B.search          = ''
   paramsB2B.status          = ''
   paramsB2B.approval_status = ''
   paramsB2B.klien_ar_id     = null
-  paramsB2B.tanggal_dari    = null
-  paramsB2B.tanggal_sampai  = null
+  paramsB2B.tanggal_dari    = tanggal_dari
+  paramsB2B.tanggal_sampai  = tanggal_sampai
   doFetchB2B()
 }
 
 function resetDirApprovalFilter() {
+  const { tanggal_dari, tanggal_sampai } = getDefaultMonthRange()
   dirApprovalParams.search          = ''
   dirApprovalParams.approval_status = 'PENDING'
   dirApprovalParams.klien_ar_id     = null
-  dirApprovalParams.tanggal_dari    = null
-  dirApprovalParams.tanggal_sampai  = null
+  dirApprovalParams.tanggal_dari    = tanggal_dari
+  dirApprovalParams.tanggal_sampai  = tanggal_sampai
   doDirFetch()
 }
 
 function resetDirObFilter() {
+  const { tanggal_dari, tanggal_sampai } = getDefaultMonthRange()
   dirObParams.search          = ''
   dirObParams.status          = ''
   dirObParams.approval_status = 'APPROVED'
   dirObParams.klien_ar_id     = null
-  dirObParams.tanggal_dari    = null
-  dirObParams.tanggal_sampai  = null
+  dirObParams.tanggal_dari    = tanggal_dari
+  dirObParams.tanggal_sampai  = tanggal_sampai
   doDirObFetch()
 }
 
@@ -2454,22 +2471,24 @@ function onDirObTableOptionsB2B({ page, itemsPerPage }) {
 }
 
 function resetDirObFilterB2B() {
+  const { tanggal_dari, tanggal_sampai } = getDefaultMonthRange()
   dirObParamsB2B.search          = ''
   dirObParamsB2B.status          = ''
   dirObParamsB2B.approval_status = 'APPROVED'
   dirObParamsB2B.klien_ar_id     = null
-  dirObParamsB2B.tanggal_dari    = null
-  dirObParamsB2B.tanggal_sampai  = null
+  dirObParamsB2B.tanggal_dari    = tanggal_dari
+  dirObParamsB2B.tanggal_sampai  = tanggal_sampai
   doDirObFetchB2B()
 }
 
 function resetDirObFilterB2C() {
+  const { tanggal_dari, tanggal_sampai } = getDefaultMonthRange()
   dirObParams.search          = ''
   dirObParams.status          = ''
   dirObParams.approval_status = 'APPROVED'
   dirObParams.klien_ar_id     = null
-  dirObParams.tanggal_dari    = null
-  dirObParams.tanggal_sampai  = null
+  dirObParams.tanggal_dari    = tanggal_dari
+  dirObParams.tanggal_sampai  = tanggal_sampai
   doDirObFetch()
 }
 

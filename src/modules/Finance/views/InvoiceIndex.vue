@@ -883,6 +883,17 @@
 
 <script setup>
 import { defineAsyncComponent, nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
+
+function getDefaultMonthRange() {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const lastDay = new Date(year, now.getMonth() + 1, 0).getDate()
+  return {
+    tanggal_dari:   `${year}-${month}-01`,
+    tanggal_sampai: `${year}-${month}-${String(lastDay).padStart(2, '0')}`,
+  }
+}
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useCrud } from '@/composables/useCrud.js'
 import { useLazyFetchAll } from '@/composables/useLazyFetchAll.js'
@@ -905,13 +916,17 @@ const { formatCurrency, formatDate } = useFormatter()
 
 const canSeeAll = authStore.hasAnyRole(['ADMIN', 'MANAGER', 'SUPERVISOR'])
 
-const filtersB2B = reactive({ search: '', status: '', klien_ar_id: null, tanggal_dari: null, tanggal_sampai: null })
-const filtersB2C = reactive({ search: '', status: '', klien_ar_id: null, tanggal_dari: null, tanggal_sampai: null })
+const { tanggal_dari: defaultDari, tanggal_sampai: defaultSampai } = getDefaultMonthRange()
+const filtersB2B = reactive({ search: '', status: '', klien_ar_id: null, tanggal_dari: defaultDari, tanggal_sampai: defaultSampai })
+const filtersB2C = reactive({ search: '', status: '', klien_ar_id: null, tanggal_dari: defaultDari, tanggal_sampai: defaultSampai })
 
 if (canSeeAll) {
   paramsB2C.segment = 'B2C'
   paramsB2B.segment = 'B2B'
 }
+
+Object.assign(paramsB2C, { tanggal_dari: defaultDari, tanggal_sampai: defaultSampai })
+Object.assign(paramsB2B, { tanggal_dari: defaultDari, tanggal_sampai: defaultSampai })
 
 const summary          = reactive({ total_invoice: null, total_tagihan: null, total_pembayaran: null, total_sisa: null })
 const showDelete       = ref(false)
@@ -1039,12 +1054,14 @@ function debouncedFetchB2C() {
 }
 
 function resetFiltersB2B() {
-  Object.assign(filtersB2B, { search: '', status: '', klien_ar_id: null, tanggal_dari: null, tanggal_sampai: null })
+  const { tanggal_dari, tanggal_sampai } = getDefaultMonthRange()
+  Object.assign(filtersB2B, { search: '', status: '', klien_ar_id: null, tanggal_dari, tanggal_sampai })
   doFetchB2B()
 }
 
 function resetFiltersB2C() {
-  Object.assign(filtersB2C, { search: '', status: '', klien_ar_id: null, tanggal_dari: null, tanggal_sampai: null })
+  const { tanggal_dari, tanggal_sampai } = getDefaultMonthRange()
+  Object.assign(filtersB2C, { search: '', status: '', klien_ar_id: null, tanggal_dari, tanggal_sampai })
   doFetchB2C()
 }
 
