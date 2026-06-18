@@ -204,7 +204,7 @@
     </VDialog>
 
     <!-- Dialog Ajukan Koreksi -->
-    <VDialog v-model="showKoreksiDialog" max-width="600" persistent>
+    <VDialog v-model="showKoreksiDialog" max-width="680" persistent>
       <VCard>
         <VCardTitle class="pt-4 px-4 text-body-1 font-weight-bold">
           Ajukan Koreksi Manual
@@ -213,32 +213,69 @@
           {{ koreksiTarget?.nama_klien }} · {{ formatDate(koreksiTarget?.periode_awal) }} – {{ formatDate(koreksiTarget?.periode_akhir) }}
         </VCardSubtitle>
         <VDivider />
-        <VCardText class="pt-4">
+
+        <!-- Context panel: ringkasan saldo -->
+        <VCard variant="tonal" class="mx-4 mt-4 mb-1" rounded="lg">
+          <VCardText class="py-3 px-4">
+            <VRow dense>
+              <VCol cols="12" sm="4">
+                <div class="text-caption text-medium-emphasis mb-1">Saldo Akhir Sistem</div>
+                <div class="text-body-1 font-weight-medium">{{ formatRp(koreksiTarget?.saldo_akhir_sistem) }}</div>
+              </VCol>
+              <VCol cols="12" sm="4">
+                <div class="text-caption text-medium-emphasis mb-1">Saldo Akhir Final (Sekarang)</div>
+                <div class="text-body-1 font-weight-bold">{{ formatRp(koreksiTarget?.saldo_akhir_final) }}</div>
+              </VCol>
+              <VCol cols="12" sm="4">
+                <div class="text-caption text-medium-emphasis mb-1">Saldo Setelah Koreksi</div>
+                <div class="text-body-1 font-weight-bold text-primary">
+                  {{ formatRp(Number(koreksiTarget?.saldo_akhir_final ?? 0) + Number(koreksiForm.nilai_koreksi || 0)) }}
+                </div>
+              </VCol>
+            </VRow>
+          </VCardText>
+        </VCard>
+
+        <VCardText class="pt-3">
           <VRow>
-            <VCol cols="12" md="5">
+            <VCol cols="12">
               <VTextField
                 v-model="koreksiForm.nilai_koreksi"
-                label="Nilai Koreksi (positif = tambah, negatif = kurang)"
+                label="Nilai Koreksi"
                 type="number"
-                :hint="koreksiTarget ? `Saldo akhir baru: ${formatRp(Number(koreksiTarget.saldo_akhir_final) + Number(koreksiForm.nilai_koreksi || 0))}` : ''"
+                hint="Masukkan nilai positif untuk menambah saldo, negatif untuk mengurangi saldo"
                 persistent-hint
               />
             </VCol>
-            <VCol cols="12" md="7">
+            <VCol cols="12">
               <VTextarea
                 v-model="koreksiForm.alasan_koreksi"
                 label="Alasan Koreksi"
-                rows="2"
+                rows="3"
                 auto-grow
+                counter="1000"
+                hint="Wajib diisi. Maks 1000 karakter."
+                persistent-hint
               />
             </VCol>
             <VCol cols="12">
               <VTextField
                 v-model="koreksiForm.dokumen_url"
                 label="URL Dokumen Pendukung (opsional)"
+                hint="Lampirkan link Google Drive, SharePoint, atau URL lainnya"
+                persistent-hint
               />
             </VCol>
           </VRow>
+          <VAlert
+            type="info"
+            density="compact"
+            variant="tonal"
+            icon="ri-shield-check-line"
+            class="mt-4"
+          >
+            Koreksi ini memerlukan persetujuan dua tahap: <strong>SPV</strong> terlebih dahulu, kemudian <strong>Manager</strong>. Saldo tidak akan berubah sampai keduanya menyetujui.
+          </VAlert>
           <VAlert v-if="koreksiError" type="error" class="mt-2" density="compact">{{ koreksiError }}</VAlert>
         </VCardText>
         <VCardActions class="px-4 pb-4">
