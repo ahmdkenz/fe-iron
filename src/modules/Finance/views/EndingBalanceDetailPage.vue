@@ -88,48 +88,6 @@
         </VCardText>
       </VCard>
 
-      <!-- Form Submit Koreksi -->
-      <VCard
-        v-if="eb.status === 'LOCKED' && authStore.canOperateEndingBalance && !eb.has_active_koreksi"
-        class="mb-4"
-      >
-        <VCardTitle class="pt-4 px-4 text-body-1 font-weight-bold">Ajukan Koreksi Manual</VCardTitle>
-        <VCardText>
-          <VRow>
-            <VCol cols="12" md="4">
-              <VTextField
-                v-model="koreksiForm.nilai_koreksi"
-                label="Nilai Koreksi (positif = tambah, negatif = kurang)"
-                type="number"
-                :hint="`Saldo akhir baru: ${formatRp(Number(eb.saldo_akhir_final) + Number(koreksiForm.nilai_koreksi || 0))}`"
-                persistent-hint
-              />
-            </VCol>
-            <VCol cols="12" md="8">
-              <VTextarea
-                v-model="koreksiForm.alasan_koreksi"
-                label="Alasan Koreksi"
-                rows="2"
-                auto-grow
-              />
-            </VCol>
-            <VCol cols="12" md="6">
-              <VTextField
-                v-model="koreksiForm.dokumen_url"
-                label="URL Dokumen Pendukung (opsional)"
-              />
-            </VCol>
-          </VRow>
-          <VAlert v-if="koreksiError" type="error" class="mt-2" density="compact">{{ koreksiError }}</VAlert>
-        </VCardText>
-        <VCardActions class="px-4 pb-4">
-          <VSpacer />
-          <VBtn color="primary" :loading="submittingKoreksi" @click="submitKoreksi">
-            Ajukan Koreksi
-          </VBtn>
-        </VCardActions>
-      </VCard>
-
       <VAlert
         v-if="eb.has_active_koreksi"
         type="info"
@@ -208,7 +166,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.store'
 import api from '@/utils/axios'
@@ -222,10 +180,6 @@ const eb       = ref(null)
 const recalculating  = ref(false)
 const locking        = ref(false)
 const showLockDialog = ref(false)
-
-const koreksiForm      = reactive({ nilai_koreksi: '', alasan_koreksi: '', dokumen_url: '' })
-const submittingKoreksi = ref(false)
-const koreksiError      = ref('')
 
 function formatRp(val) {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val ?? 0)
@@ -274,26 +228,6 @@ async function doLock() {
     alert(e?.response?.data?.message ?? 'Gagal mengunci.')
   } finally {
     locking.value = false
-  }
-}
-
-async function submitKoreksi() {
-  koreksiError.value = ''
-  if (!koreksiForm.nilai_koreksi || !koreksiForm.alasan_koreksi) {
-    koreksiError.value = 'Nilai koreksi dan alasan wajib diisi.'
-    return
-  }
-  submittingKoreksi.value = true
-  try {
-    await api.post(`/finance/ending-balance/${eb.value.id}/koreksi`, koreksiForm)
-    koreksiForm.nilai_koreksi  = ''
-    koreksiForm.alasan_koreksi = ''
-    koreksiForm.dokumen_url    = ''
-    fetchEb()
-  } catch (e) {
-    koreksiError.value = e?.response?.data?.message ?? 'Gagal mengajukan koreksi.'
-  } finally {
-    submittingKoreksi.value = false
   }
 }
 

@@ -62,15 +62,12 @@
         </template>
 
         <template #item.nama_klien="{ item }">
-          <div>
-            <div class="font-weight-medium">{{ item.nama_klien }}</div>
-            <div class="text-caption text-medium-emphasis">{{ item.kode_klien }} · {{ item.perusahaan }}</div>
-          </div>
+          <div class="font-weight-medium text-no-wrap">{{ item.nama_klien }}</div>
         </template>
 
         <template #item.periode="{ item }">
-          <div class="text-caption">
-            {{ formatDate(item.periode_awal) }} –<br>{{ formatDate(item.periode_akhir) }}
+          <div class="text-caption text-no-wrap">
+            {{ formatDate(item.periode_awal) }} – {{ formatDate(item.periode_akhir) }}
           </div>
         </template>
 
@@ -93,6 +90,20 @@
           <div v-if="item.saldo_akhir_sistem !== item.saldo_akhir_final" class="text-caption text-medium-emphasis">
             (sistem: {{ formatRp(item.saldo_akhir_sistem) }})
           </div>
+        </template>
+
+        <template #item.outstanding="{ item }">
+          <div :class="item.outstanding > 0 ? 'font-weight-medium' : 'text-medium-emphasis'">
+            {{ formatRp(item.outstanding) }}
+          </div>
+          <div class="text-caption text-medium-emphasis">{{ item.outstanding_count }} Invoice</div>
+        </template>
+
+        <template #item.overdue="{ item }">
+          <div :class="item.overdue > 0 ? 'text-error font-weight-medium' : 'text-medium-emphasis'">
+            {{ formatRp(item.overdue) }}
+          </div>
+          <div class="text-caption text-medium-emphasis">{{ item.overdue_count }} Invoice</div>
         </template>
 
         <template #item.status="{ item }">
@@ -132,7 +143,18 @@
               :to="{ name: 'finance-ending-balance-show', params: { id: item.id } }"
             >
               <VIcon icon="ri-eye-line" />
-              <VTooltip activator="parent">Detail & Koreksi</VTooltip>
+              <VTooltip activator="parent">Detail</VTooltip>
+            </VBtn>
+            <VBtn
+              v-if="item.status === 'LOCKED' && authStore.canOperateEndingBalance && !item.has_active_koreksi"
+              icon
+              size="x-small"
+              variant="tonal"
+              color="info"
+              @click="openKoreksiDialog(item)"
+            >
+              <VIcon icon="ri-pencil-line" />
+              <VTooltip activator="parent">Ajukan Koreksi</VTooltip>
             </VBtn>
             <VBtn
               v-if="item.status === 'DRAFT' && authStore.canOperateEndingBalance"
@@ -177,6 +199,52 @@
           <VSpacer />
           <VBtn variant="text" @click="showLockDialog = false">Batal</VBtn>
           <VBtn color="success" :loading="lockingId !== null" @click="doLock">Kunci</VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
+
+    <!-- Dialog Ajukan Koreksi -->
+    <VDialog v-model="showKoreksiDialog" max-width="600" persistent>
+      <VCard>
+        <VCardTitle class="pt-4 px-4 text-body-1 font-weight-bold">
+          Ajukan Koreksi Manual
+        </VCardTitle>
+        <VCardSubtitle class="px-4 pb-2 text-caption">
+          {{ koreksiTarget?.nama_klien }} · {{ formatDate(koreksiTarget?.periode_awal) }} – {{ formatDate(koreksiTarget?.periode_akhir) }}
+        </VCardSubtitle>
+        <VDivider />
+        <VCardText class="pt-4">
+          <VRow>
+            <VCol cols="12" md="5">
+              <VTextField
+                v-model="koreksiForm.nilai_koreksi"
+                label="Nilai Koreksi (positif = tambah, negatif = kurang)"
+                type="number"
+                :hint="koreksiTarget ? `Saldo akhir baru: ${formatRp(Number(koreksiTarget.saldo_akhir_final) + Number(koreksiForm.nilai_koreksi || 0))}` : ''"
+                persistent-hint
+              />
+            </VCol>
+            <VCol cols="12" md="7">
+              <VTextarea
+                v-model="koreksiForm.alasan_koreksi"
+                label="Alasan Koreksi"
+                rows="2"
+                auto-grow
+              />
+            </VCol>
+            <VCol cols="12">
+              <VTextField
+                v-model="koreksiForm.dokumen_url"
+                label="URL Dokumen Pendukung (opsional)"
+              />
+            </VCol>
+          </VRow>
+          <VAlert v-if="koreksiError" type="error" class="mt-2" density="compact">{{ koreksiError }}</VAlert>
+        </VCardText>
+        <VCardActions class="px-4 pb-4">
+          <VSpacer />
+          <VBtn variant="text" :disabled="submittingKoreksi" @click="showKoreksiDialog = false">Batal</VBtn>
+          <VBtn color="primary" :loading="submittingKoreksi" @click="submitKoreksiDialog">Ajukan Koreksi</VBtn>
         </VCardActions>
       </VCard>
     </VDialog>
@@ -236,6 +304,7 @@ const EbInvoiceBreakdown = defineComponent({
             h('tr', {}, [
               h('th', { class: `${thClass} text-start` }, 'No Invoice'),
               h('th', { class: `${thClass} text-start` }, 'Tanggal'),
+              h('th', { class: `${thClass} text-start` }, 'Jatuh Tempo'),
               h('th', { class: `${thClass} text-end` }, 'Tagihan'),
               h('th', { class: `${thClass} text-end` }, 'Dibayar'),
               h('th', { class: `${thClass} text-end` }, 'Sisa'),
@@ -250,6 +319,7 @@ const EbInvoiceBreakdown = defineComponent({
                 inv.is_opening_balance ? h('VChip', { size: 'x-small', color: 'secondary', label: true, class: 'ml-2', style: 'font-size:10px' }, { default: () => 'OB' }) : null,
               ]),
               h('td', { class: `${tdClass} text-medium-emphasis` }, fmtDate(inv.tanggal_invoice)),
+              h('td', { class: `${tdClass} ${inv.tanggal_jatuh_tempo && inv.sisa_tagihan > 0 && inv.tanggal_jatuh_tempo < new Date().toISOString().slice(0,10) ? 'text-error' : 'text-medium-emphasis'}` }, fmtDate(inv.tanggal_jatuh_tempo)),
               h('td', { class: `${tdClass} text-end` }, fmt(inv.subtotal)),
               h('td', { class: `${tdClass} text-end text-success` }, fmt(inv.total_pembayaran)),
               h('td', { class: `${tdClass} text-end font-weight-bold ${sisaSubtotal > 0 ? 'text-warning' : 'text-success'}` }, fmt(sisaSubtotal)),
@@ -292,14 +362,22 @@ const recalcId        = ref(null)
 const expanded        = ref([])
 const currentPage     = ref(1)
 
+const showKoreksiDialog = ref(false)
+const koreksiTarget     = ref(null)
+const koreksiForm       = reactive({ nilai_koreksi: '', alasan_koreksi: '', dokumen_url: '' })
+const submittingKoreksi = ref(false)
+const koreksiError      = ref('')
+
 const headers = [
   { title: 'No',             key: 'no',                sortable: false, width: '60px' },
   { title: 'Client',         key: 'nama_klien',        sortable: false },
-  { title: 'Periode',        key: 'periode',           sortable: false },
+  { title: 'Periode',        key: 'periode',           sortable: false, width: '210px' },
   { title: 'Saldo Awal',     key: 'saldo_awal',        sortable: false, align: 'end' },
   { title: 'Invoice Masuk',  key: 'invoice_masuk',     sortable: false, align: 'end' },
   { title: 'Pembayaran',     key: 'pembayaran',        sortable: false, align: 'end' },
   { title: 'Saldo Akhir',    key: 'saldo_akhir_final', sortable: false, align: 'end' },
+  { title: 'Outstanding',    key: 'outstanding',       sortable: false, align: 'end' },
+  { title: 'Overdue',        key: 'overdue',           sortable: false, align: 'end' },
   { title: 'Status',         key: 'status',            sortable: false },
   { title: 'Aksi',           key: 'actions',           sortable: false, align: 'end' },
 ]
@@ -360,6 +438,34 @@ async function doLock() {
   } finally {
     lockingId.value = null
     lockTarget.value = null
+  }
+}
+
+function openKoreksiDialog(item) {
+  koreksiTarget.value        = item
+  koreksiForm.nilai_koreksi  = ''
+  koreksiForm.alasan_koreksi = ''
+  koreksiForm.dokumen_url    = ''
+  koreksiError.value         = ''
+  showKoreksiDialog.value    = true
+}
+
+async function submitKoreksiDialog() {
+  koreksiError.value = ''
+  if (!koreksiForm.nilai_koreksi || !koreksiForm.alasan_koreksi) {
+    koreksiError.value = 'Nilai koreksi dan alasan wajib diisi.'
+    return
+  }
+  submittingKoreksi.value = true
+  try {
+    await api.post(`/finance/ending-balance/${koreksiTarget.value.id}/koreksi`, koreksiForm)
+    showKoreksiDialog.value = false
+    const idx = rows.value.findIndex(r => r.id === koreksiTarget.value.id)
+    if (idx !== -1) rows.value[idx] = { ...rows.value[idx], has_active_koreksi: true }
+  } catch (e) {
+    koreksiError.value = e?.response?.data?.message ?? 'Gagal mengajukan koreksi.'
+  } finally {
+    submittingKoreksi.value = false
   }
 }
 
