@@ -117,6 +117,11 @@
             {{ item.metode_pembayaran }}
           </VChip>
         </template>
+        <template #item.jenis="{ item }">
+          <VChip v-if="item.jenis === 'ALO'" size="x-small" color="info" label>ALO</VChip>
+          <VChip v-else-if="item.jenis === 'PDM'" size="x-small" color="secondary" label>PDM</VChip>
+          <span v-else class="text-caption text-medium-emphasis">—</span>
+        </template>
       </BaseTable>
     </VCard>
   </div>
@@ -152,6 +157,7 @@ const headers = [
   { title: 'Jumlah',      key: 'jumlah_pembayaran',  sortable: false },
   { title: 'Metode',      key: 'metode_pembayaran',  sortable: false },
   { title: 'No Referensi',key: 'no_referensi',       sortable: false },
+  { title: 'Jenis',       key: 'jenis',              sortable: false },
   { title: 'Dicatat oleh',key: 'created_by_name',   sortable: false },
 ]
 

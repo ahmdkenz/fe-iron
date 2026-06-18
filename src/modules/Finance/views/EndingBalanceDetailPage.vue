@@ -219,18 +219,33 @@
                 <th class="text-end">Jumlah</th>
                 <th>Metode</th>
                 <th>No Referensi</th>
+                <th>Jenis</th>
                 <th>Keterangan</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="p in payments" :key="p.id">
-                <td class="font-weight-medium text-no-wrap">{{ p.no_invoice }}</td>
+              <tr v-for="p in payments" :key="p.id" :class="p.jenis === 'ALO_CROSS' ? 'bg-surface-variant' : ''">
+                <td class="font-weight-medium text-no-wrap">
+                  {{ p.no_invoice }}
+                </td>
                 <td class="text-caption text-medium-emphasis text-no-wrap">{{ formatDate(p.tanggal_pembayaran) }}</td>
-                <td class="text-end text-no-wrap font-weight-bold text-success">{{ formatRp(p.jumlah_pembayaran) }}</td>
+                <td class="text-end text-no-wrap font-weight-bold" :class="p.jenis === 'ALO_CROSS' ? 'text-medium-emphasis' : 'text-success'">
+                  {{ formatRp(p.jumlah_pembayaran) }}
+                </td>
                 <td>
                   <VChip size="x-small" :color="metodeColor(p.metode_pembayaran)" label>{{ p.metode_pembayaran }}</VChip>
                 </td>
                 <td class="text-caption text-medium-emphasis">{{ p.no_referensi || '—' }}</td>
+                <td>
+                  <VChip v-if="p.jenis === 'ALO'" size="x-small" color="info" label>ALO</VChip>
+                  <VChip v-else-if="p.jenis === 'PDM'" size="x-small" color="secondary" label>PDM</VChip>
+                  <VTooltip v-else-if="p.jenis === 'ALO_CROSS'" :text="`Dialokasikan ke: ${p.nama_klien_tujuan}`">
+                    <template #activator="{ props }">
+                      <VChip v-bind="props" size="x-small" color="warning" label>ALO → Klien Lain</VChip>
+                    </template>
+                  </VTooltip>
+                  <span v-else class="text-caption text-medium-emphasis">—</span>
+                </td>
                 <td class="text-caption text-medium-emphasis" style="max-width: 200px; white-space: normal;">{{ p.keterangan || '—' }}</td>
               </tr>
             </tbody>
