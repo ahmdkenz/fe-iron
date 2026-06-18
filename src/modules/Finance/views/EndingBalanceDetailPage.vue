@@ -393,7 +393,7 @@
             <VCol cols="12" sm="4">
               <div class="text-caption text-medium-emphasis mb-1">Saldo Setelah Koreksi</div>
               <div class="text-body-1 font-weight-bold text-primary">
-                {{ formatRp(Number(eb?.saldo_akhir_final ?? 0) + Number(koreksiForm.nilai_koreksi || 0)) }}
+                {{ formatRp(Number(eb?.saldo_akhir_final ?? 0) + nilaiKoreksiComputed) }}
               </div>
             </VCol>
           </VRow>
@@ -403,11 +403,25 @@
       <VCardText class="pt-3">
         <VRow>
           <VCol cols="12">
+            <div class="text-caption text-medium-emphasis mb-2">Jenis Koreksi</div>
+            <VBtnToggle
+              v-model="koreksiForm.tipe_koreksi"
+              mandatory
+              density="compact"
+              variant="outlined"
+              color="primary"
+              class="mb-4"
+              style="width: 100%"
+            >
+              <VBtn value="tambah" style="flex: 1" prepend-icon="ri-add-line">Tambah Saldo</VBtn>
+              <VBtn value="kurangi" style="flex: 1" prepend-icon="ri-subtract-line">Kurangi Saldo</VBtn>
+            </VBtnToggle>
             <VTextField
-              v-model="koreksiForm.nilai_koreksi"
-              label="Nilai Koreksi"
+              v-model="koreksiForm.jumlah_koreksi"
+              label="Jumlah Koreksi"
               type="number"
-              hint="Masukkan nilai positif untuk menambah saldo, negatif untuk mengurangi saldo"
+              min="0"
+              :hint="`Saldo akan ${koreksiForm.tipe_koreksi === 'tambah' ? 'bertambah' : 'berkurang'} sebesar jumlah ini`"
               persistent-hint
             />
           </VCol>
@@ -473,9 +487,14 @@ const paymentsError   = ref('')
 
 // Koreksi dialog
 const showKoreksiDialog = ref(false)
-const koreksiForm       = reactive({ nilai_koreksi: '', alasan_koreksi: '', dokumen_url: '' })
+const koreksiForm       = reactive({ tipe_koreksi: 'tambah', jumlah_koreksi: '', alasan_koreksi: '', dokumen_url: '' })
 const submittingKoreksi = ref(false)
 const koreksiError      = ref('')
+
+const nilaiKoreksiComputed = computed(() => {
+  const jumlah = Number(koreksiForm.jumlah_koreksi || 0)
+  return koreksiForm.tipe_koreksi === 'tambah' ? jumlah : -jumlah
+})
 
 // Net koreksi yang sudah disetujui (saldo_akhir_final - saldo_akhir_sistem)
 const koreksiNet = computed(() => (eb.value?.saldo_akhir_final ?? 0) - (eb.value?.saldo_akhir_sistem ?? 0))
@@ -576,7 +595,8 @@ async function doLock() {
 }
 
 function openKoreksiDialog() {
-  koreksiForm.nilai_koreksi  = ''
+  koreksiForm.tipe_koreksi   = 'tambah'
+  koreksiForm.jumlah_koreksi = ''
   koreksiForm.alasan_koreksi = ''
   koreksiForm.dokumen_url    = ''
   koreksiError.value         = ''
@@ -585,13 +605,18 @@ function openKoreksiDialog() {
 
 async function submitKoreksiDialog() {
   koreksiError.value = ''
-  if (!koreksiForm.nilai_koreksi || !koreksiForm.alasan_koreksi) {
-    koreksiError.value = 'Nilai koreksi dan alasan wajib diisi.'
+  if (!koreksiForm.jumlah_koreksi || !koreksiForm.alasan_koreksi) {
+    koreksiError.value = 'Jumlah koreksi dan alasan wajib diisi.'
     return
   }
   submittingKoreksi.value = true
   try {
-    await api.post(`/finance/ending-balance/${eb.value.id}/koreksi`, koreksiForm)
+    const payload = {
+      nilai_koreksi:  nilaiKoreksiComputed.value,
+      alasan_koreksi: koreksiForm.alasan_koreksi,
+      dokumen_url:    koreksiForm.dokumen_url,
+    }
+    await api.post(`/finance/ending-balance/${eb.value.id}/koreksi`, payload)
     showKoreksiDialog.value = false
     eb.value = { ...eb.value, has_active_koreksi: true }
   } catch (e) {
