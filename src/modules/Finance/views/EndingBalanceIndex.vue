@@ -242,21 +242,22 @@ const EbInvoiceBreakdown = defineComponent({
               h('th', { class: `${thClass} text-center` }, 'Status'),
             ]),
           ]),
-          h('tbody', {}, rows.value.map(inv =>
-            h('tr', { key: inv.id, class: 'eb-table__row' }, [
+          h('tbody', {}, rows.value.map(inv => {
+            const sisaSubtotal = Math.max(0, (inv.subtotal ?? 0) - (inv.total_pembayaran ?? 0))
+            return h('tr', { key: inv.id, class: 'eb-table__row' }, [
               h('td', { class: `${tdClass} font-weight-medium` }, [
                 h('span', {}, inv.no_invoice),
                 inv.is_opening_balance ? h('VChip', { size: 'x-small', color: 'secondary', label: true, class: 'ml-2', style: 'font-size:10px' }, { default: () => 'OB' }) : null,
               ]),
               h('td', { class: `${tdClass} text-medium-emphasis` }, fmtDate(inv.tanggal_invoice)),
-              h('td', { class: `${tdClass} text-end` }, fmt(inv.total_tagihan)),
+              h('td', { class: `${tdClass} text-end` }, fmt(inv.subtotal)),
               h('td', { class: `${tdClass} text-end text-success` }, fmt(inv.total_pembayaran)),
-              h('td', { class: `${tdClass} text-end font-weight-bold ${inv.sisa_tagihan > 0 ? 'text-warning' : 'text-success'}` }, fmt(inv.sisa_tagihan)),
+              h('td', { class: `${tdClass} text-end font-weight-bold ${sisaSubtotal > 0 ? 'text-warning' : 'text-success'}` }, fmt(sisaSubtotal)),
               h('td', { class: `${tdClass} text-center` }, [
                 h('VChip', { size: 'x-small', color: statusColor(inv.status), label: true }, { default: () => inv.status }),
               ]),
             ])
-          )),
+          })),
         ]),
       ])
     }
