@@ -164,18 +164,6 @@
               v-if="item.status === 'DRAFT' && authStore.canOperateEndingBalance"
               icon
               size="x-small"
-              variant="text"
-              color="warning"
-              :loading="recalcId === item.id"
-              @click="doRecalculate(item)"
-            >
-              <VIcon icon="ri-refresh-line" />
-              <VTooltip activator="parent">Hitung Ulang</VTooltip>
-            </VBtn>
-            <VBtn
-              v-if="item.status === 'DRAFT' && authStore.canOperateEndingBalance"
-              icon
-              size="x-small"
               variant="tonal"
               color="success"
               :loading="lockingId === item.id"
@@ -304,18 +292,6 @@
             >
               <VIcon icon="ri-pencil-line" />
               <VTooltip activator="parent">{{ item.status === 'LOCKED' ? 'Ajukan Koreksi' : 'Penyesuaian Invoice' }}</VTooltip>
-            </VBtn>
-            <VBtn
-              v-if="item.status === 'DRAFT' && authStore.canOperateEndingBalance"
-              icon
-              size="x-small"
-              variant="text"
-              color="warning"
-              :loading="recalcId === item.id"
-              @click="doRecalculate(item)"
-            >
-              <VIcon icon="ri-refresh-line" />
-              <VTooltip activator="parent">Hitung Ulang</VTooltip>
             </VBtn>
             <VBtn
               v-if="item.status === 'DRAFT' && authStore.canOperateEndingBalance"
@@ -599,8 +575,6 @@ const filters  = reactive({
 const lockingId       = ref(null)
 const showLockDialog  = ref(false)
 const lockTarget      = ref(null)
-const recalcId        = ref(null)
-
 const showKoreksiDialog = ref(false)
 const koreksiTarget     = ref(null)
 const koreksiForm       = reactive({ tipe_koreksi: 'tambah', jumlah_koreksi: '', alasan_koreksi: '', dokumen_url: '', invoice_id: null })
@@ -699,21 +673,6 @@ function onTableOptions({ page }) {
 function onTableOptionsB2B({ page }) {
   currentPageB2B.value = page
   doFetchB2B(page)
-}
-
-async function doRecalculate(item) {
-  recalcId.value = item.id
-  try {
-    const { data } = await api.patch(`/finance/ending-balance/${item.id}/recalculate`)
-    const idx = rows.value.findIndex(r => r.id === item.id)
-    if (idx !== -1) rows.value[idx] = data.data
-    const idxB2B = rowsB2B.value.findIndex(r => r.id === item.id)
-    if (idxB2B !== -1) rowsB2B.value[idxB2B] = data.data
-  } catch (e) {
-    alert(e?.response?.data?.message ?? 'Gagal menghitung ulang.')
-  } finally {
-    recalcId.value = null
-  }
 }
 
 function confirmLock(item) {

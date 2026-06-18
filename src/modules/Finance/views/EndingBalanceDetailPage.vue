@@ -80,9 +80,6 @@
             Periode ini masih <strong>DRAFT</strong>. Setelah data diverifikasi, tutup periode untuk mengunci nilai.
           </div>
           <div class="d-flex gap-2">
-            <VBtn variant="outlined" color="warning" prepend-icon="ri-refresh-line" :loading="recalculating" @click="doRecalculate">
-              Hitung Ulang
-            </VBtn>
             <VBtn color="success" prepend-icon="ri-lock-line" :loading="locking" @click="showLockDialog = true">
               Tutup Periode
             </VBtn>
@@ -476,7 +473,6 @@ const authStore = useAuthStore()
 const loading  = ref(false)
 const eb       = ref(null)
 
-const recalculating  = ref(false)
 const locking        = ref(false)
 const showLockDialog = ref(false)
 
@@ -571,18 +567,6 @@ async function fetchPayments() {
     paymentsError.value = e?.response?.data?.message ?? 'Gagal memuat data pembayaran.'
   } finally {
     paymentsLoading.value = false
-  }
-}
-
-async function doRecalculate() {
-  recalculating.value = true
-  try {
-    const { data } = await api.patch(`/finance/ending-balance/${eb.value.id}/recalculate`)
-    eb.value = data.data
-  } catch (e) {
-    alert(e?.response?.data?.message ?? 'Gagal menghitung ulang.')
-  } finally {
-    recalculating.value = false
   }
 }
 
