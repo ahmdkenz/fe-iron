@@ -267,6 +267,7 @@
           <thead>
             <tr>
               <th class="text-no-wrap">Nilai Koreksi</th>
+              <th class="text-no-wrap">Invoice</th>
               <th>Alasan</th>
               <th class="text-no-wrap">Status</th>
               <th class="text-no-wrap">Pengaju</th>
@@ -278,6 +279,10 @@
             <tr v-for="k in eb.koreksi" :key="k.id">
               <td class="font-weight-bold text-no-wrap" :class="k.nilai_koreksi >= 0 ? 'text-success' : 'text-error'">
                 {{ k.nilai_koreksi >= 0 ? '+' : '' }}{{ formatRp(k.nilai_koreksi) }}
+              </td>
+              <td class="text-caption text-no-wrap">
+                <span v-if="k.no_invoice">{{ k.no_invoice }}</span>
+                <span v-else class="text-medium-emphasis">—</span>
               </td>
               <td style="max-width: 240px; white-space: normal;">{{ k.alasan_koreksi }}</td>
               <td>
