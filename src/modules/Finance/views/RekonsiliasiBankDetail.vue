@@ -335,6 +335,21 @@
 
           <div v-if="invoiceB2CList.length > 0" class="d-flex flex-column gap-2 mb-3">
             <div
+              class="d-flex align-center px-1 mb-1"
+              @click.stop="toggleAllB2C"
+            >
+              <VCheckbox
+                :model-value="allB2CSelected"
+                :indeterminate="someB2CSelected && !allB2CSelected"
+                color="primary"
+                density="compact"
+                hide-details
+                readonly
+                class="flex-0-0 mt-0"
+              />
+              <span class="text-body-2 ms-1 cursor-pointer">Pilih Semua</span>
+            </div>
+            <div
               v-for="inv in invoiceB2CList"
               :key="inv.id"
               class="rounded-lg cursor-pointer"
@@ -404,6 +419,21 @@
           </VAlert>
 
           <div v-if="invoiceB2BList.length > 0" class="d-flex flex-column gap-2 mb-3">
+            <div
+              class="d-flex align-center px-1 mb-1"
+              @click.stop="toggleAllB2B"
+            >
+              <VCheckbox
+                :model-value="allB2BSelected"
+                :indeterminate="someB2BSelected && !allB2BSelected"
+                color="primary"
+                density="compact"
+                hide-details
+                readonly
+                class="flex-0-0 mt-0"
+              />
+              <span class="text-body-2 ms-1 cursor-pointer">Pilih Semua</span>
+            </div>
             <div
               v-for="inv in invoiceB2BList"
               :key="inv.id"
@@ -649,6 +679,21 @@ const sisaRemaining = computed(() =>
   (kelebihanItem.value?.kelebihan_bayar?.sisa ?? 0) - totalAlokasi.value,
 )
 
+const allB2CSelected = computed(() =>
+  invoiceB2CList.value.length > 0 &&
+  invoiceB2CList.value.every(inv => !!selectedInvoices.value[inv.id]),
+)
+const someB2CSelected = computed(() =>
+  invoiceB2CList.value.some(inv => !!selectedInvoices.value[inv.id]),
+)
+const allB2BSelected = computed(() =>
+  invoiceB2BList.value.length > 0 &&
+  invoiceB2BList.value.every(inv => !!selectedInvoices.value[inv.id]),
+)
+const someB2BSelected = computed(() =>
+  invoiceB2BList.value.some(inv => !!selectedInvoices.value[inv.id]),
+)
+
 const filteredRows = computed(() => {
   if (filterStatus.value === 'SEMUA') return report.details
   return report.details.filter(d => d.status_cocok === filterStatus.value)
@@ -844,6 +889,30 @@ async function openKelebihanDialog(item) {
     invoiceB2CLoading.value = false
     invoiceB2BLoading.value = false
   }
+}
+
+function toggleAllB2C() {
+  const next = { ...selectedInvoices.value }
+  if (allB2CSelected.value) {
+    invoiceB2CList.value.forEach(inv => delete next[inv.id])
+  } else {
+    invoiceB2CList.value.forEach(inv => {
+      next[inv.id] = { jumlah: inv.sisa_tagihan, keterangan: '' }
+    })
+  }
+  selectedInvoices.value = next
+}
+
+function toggleAllB2B() {
+  const next = { ...selectedInvoices.value }
+  if (allB2BSelected.value) {
+    invoiceB2BList.value.forEach(inv => delete next[inv.id])
+  } else {
+    invoiceB2BList.value.forEach(inv => {
+      next[inv.id] = { jumlah: inv.sisa_tagihan, keterangan: '' }
+    })
+  }
+  selectedInvoices.value = next
 }
 
 function toggleInvoice(inv) {
