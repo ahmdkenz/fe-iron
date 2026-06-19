@@ -192,61 +192,94 @@
       </BaseTable>
     </VCard>
 
-    <!-- ── Dialog: Pilih Pembayaran Manual ── -->
-    <VDialog v-model="matchDialog" max-width="750" persistent>
+    <!-- ── Dialog: Cocokkan ke Invoice (Catat Bayar Otomatis) ── -->
+    <VDialog v-model="matchDialog" max-width="680" persistent scrollable>
       <VCard>
-        <VCardTitle class="pa-4 pb-2"><span class="text-h6">Cocokkan Transaksi Manual</span></VCardTitle>
+        <VCardTitle class="pa-4 pb-2"><span class="text-h6">Cocokkan Transaksi</span></VCardTitle>
         <VDivider />
-        <VCardText class="pa-4">
+        <VCardText class="pa-4" style="max-height: 70vh">
+          <!-- Info bank yang akan otomatis jadi data pembayaran -->
           <VCard variant="tonal" color="primary" class="mb-4 pa-3">
-            <div class="text-caption text-medium-emphasis mb-1">Transaksi Bank</div>
+            <div class="text-caption text-medium-emphasis mb-2 font-weight-medium">Data Pembayaran Otomatis dari Bank</div>
             <div class="d-flex gap-4 flex-wrap">
-              <div><span class="text-caption text-medium-emphasis">Tanggal: </span><span class="text-body-2 font-weight-medium">{{ formatDate(selectedItem?.tanggal) }}</span></div>
-              <div><span class="text-caption text-medium-emphasis">Kredit: </span><span class="text-body-2 font-weight-medium text-success">{{ formatCurrency(selectedItem?.kredit ?? 0) }}</span></div>
-              <div class="flex-1-1"><span class="text-caption text-medium-emphasis">Keterangan: </span><span class="text-body-2">{{ selectedItem?.keterangan }}</span></div>
+              <div>
+                <div class="text-caption text-medium-emphasis">Tanggal Bayar</div>
+                <div class="text-body-2 font-weight-medium">{{ formatDate(selectedItem?.tanggal) }}</div>
+              </div>
+              <div>
+                <div class="text-caption text-medium-emphasis">No Referensi</div>
+                <div class="text-body-2 font-weight-medium text-primary">{{ selectedItem?.no_referensi || '-' }}</div>
+              </div>
+              <div>
+                <div class="text-caption text-medium-emphasis">Jumlah</div>
+                <div class="text-body-2 font-weight-medium text-success">{{ formatCurrency(selectedItem?.kredit ?? 0) }}</div>
+              </div>
+              <div>
+                <div class="text-caption text-medium-emphasis">Metode</div>
+                <div class="text-body-2 font-weight-medium">TRANSFER</div>
+              </div>
             </div>
           </VCard>
-          <div class="text-body-2 font-weight-medium mb-2">Pilih Pembayaran yang Cocok:</div>
-          <VProgressLinear v-if="kandidatLoading" indeterminate color="primary" class="mb-2" />
-          <VAlert v-if="!kandidatLoading && kandidatList.length === 0" type="info" variant="tonal" class="mb-2">
-            Tidak ada pembayaran TRANSFER yang tersedia untuk dicocokkan.
+
+          <div class="text-body-2 font-weight-medium mb-2">Pilih Invoice yang Akan Dibayarkan:</div>
+          <VTextField
+            v-model="invoiceCandSearch"
+            placeholder="Cari no invoice atau nama klien..."
+            density="compact"
+            variant="outlined"
+            prepend-inner-icon="ri-search-line"
+            clearable
+            class="mb-3"
+            hide-details
+            @input="onInvoiceCandSearchInput"
+            @click:clear="invoiceCandSearch = ''; fetchInvoiceCandidates()"
+          />
+
+          <VProgressLinear v-if="invoiceCandLoading" indeterminate color="primary" class="mb-2" rounded />
+          <VAlert v-if="!invoiceCandLoading && invoiceCandidates.length === 0" type="info" variant="tonal" density="compact" class="mb-2">
+            Tidak ada invoice yang terbuka. Coba ubah kata kunci pencarian.
           </VAlert>
-          <div v-if="kandidatList.length > 0">
+
+          <div v-if="invoiceCandidates.length > 0" class="d-flex flex-column gap-2">
             <VCard
-              v-for="k in kandidatList"
-              :key="k.id"
-              :variant="selectedPembayaranId === k.id ? 'tonal' : 'outlined'"
-              :color="selectedPembayaranId === k.id ? 'primary' : undefined"
-              class="mb-2 cursor-pointer"
-              @click="selectedPembayaranId = k.id"
+              v-for="inv in invoiceCandidates"
+              :key="inv.id"
+              :variant="selectedInvoiceId === inv.id ? 'tonal' : 'outlined'"
+              :color="selectedInvoiceId === inv.id ? 'primary' : undefined"
+              class="cursor-pointer"
+              @click="selectedInvoiceId = inv.id"
             >
               <VCardText class="pa-3">
                 <div class="d-flex align-center gap-2">
-                  <VIcon :color="selectedPembayaranId === k.id ? 'primary' : 'grey'" size="18">
-                    {{ selectedPembayaranId === k.id ? 'ri-radio-button-fill' : 'ri-checkbox-blank-circle-line' }}
+                  <VIcon :color="selectedInvoiceId === inv.id ? 'primary' : 'grey'" size="18">
+                    {{ selectedInvoiceId === inv.id ? 'ri-radio-button-fill' : 'ri-checkbox-blank-circle-line' }}
                   </VIcon>
-                  <div class="flex-1-1">
-                    <div class="d-flex flex-wrap gap-x-4 gap-y-1">
-                      <div><span class="text-caption text-medium-emphasis">Klien: </span><span class="text-body-2 font-weight-medium">{{ k.klien ?? '-' }}</span></div>
-                      <div><span class="text-caption text-medium-emphasis">No Invoice: </span><span class="text-body-2">{{ k.no_invoice ?? '-' }}</span></div>
-                      <div><span class="text-caption text-medium-emphasis">Tgl Bayar: </span><span class="text-body-2">{{ formatDate(k.tanggal_pembayaran) }}</span></div>
-                      <div><span class="text-caption text-medium-emphasis">No Ref: </span><span class="text-body-2">{{ k.no_referensi || '-' }}</span></div>
-                      <div><span class="text-caption text-medium-emphasis">Nominal: </span><span class="text-body-2 font-weight-medium text-success">{{ formatCurrency(k.jumlah_pembayaran) }}</span></div>
+                  <div class="flex-1-1 min-width-0">
+                    <div class="d-flex align-center gap-2 flex-wrap mb-1">
+                      <span class="text-body-2 font-weight-semibold">{{ inv.no_invoice }}</span>
+                      <VChip :color="statusInvoiceColor(inv.status)" size="x-small" variant="tonal">{{ inv.status }}</VChip>
+                      <VChip v-if="inv.is_opening_balance" color="deep-purple" size="x-small" variant="tonal">OB</VChip>
                     </div>
-                    <div v-if="k.keterangan" class="text-caption text-medium-emphasis mt-1">{{ k.keterangan }}</div>
+                    <div class="d-flex flex-wrap gap-x-3 gap-y-0">
+                      <span class="text-caption text-medium-emphasis">{{ inv.nama_klien ?? '-' }}</span>
+                      <span class="text-caption text-medium-emphasis">Tgl: {{ formatDate(inv.tanggal) }}</span>
+                      <span class="text-caption text-medium-emphasis">Total: {{ formatCurrency(inv.total_tagihan) }}</span>
+                      <span class="text-caption font-weight-medium text-warning">Sisa: {{ formatCurrency(inv.sisa_tagihan) }}</span>
+                    </div>
                   </div>
                 </div>
               </VCardText>
             </VCard>
           </div>
-          <VAlert v-if="matchError" type="error" variant="tonal" class="mt-3">{{ matchError }}</VAlert>
+
+          <VAlert v-if="matchError" type="error" variant="tonal" class="mt-3" density="compact">{{ matchError }}</VAlert>
         </VCardText>
         <VDivider />
         <VCardActions class="pa-4">
           <VSpacer />
           <VBtn variant="text" @click="closeMatchDialog">Batal</VBtn>
-          <VBtn color="primary" variant="tonal" :disabled="!selectedPembayaranId || kandidatLoading" :loading="matchSaving" @click="doManualMatch">
-            Simpan Cocok
+          <VBtn color="primary" variant="tonal" :disabled="!selectedInvoiceId || invoiceCandLoading" :loading="matchSaving" @click="doManualMatch">
+            <VIcon start size="16">ri-link-m</VIcon>Cocokkan
           </VBtn>
         </VCardActions>
       </VCard>
@@ -637,13 +670,15 @@ const matchLoading    = ref(null)
 const unmatchLoading  = ref(null)
 
 // ── Match dialog ──
-const matchDialog          = ref(false)
-const selectedItem         = ref(null)
-const selectedPembayaranId = ref(null)
-const kandidatList         = ref([])
-const kandidatLoading      = ref(false)
-const matchSaving          = ref(false)
-const matchError           = ref(null)
+const matchDialog        = ref(false)
+const selectedItem       = ref(null)
+const selectedInvoiceId  = ref(null)
+const invoiceCandidates  = ref([])
+const invoiceCandSearch  = ref('')
+const invoiceCandLoading = ref(false)
+const matchSaving        = ref(false)
+const matchError         = ref(null)
+let   invoiceCandTimer   = null
 
 // ── Unmatch dialog ──
 const unmatchDialog  = ref(false)
@@ -761,39 +796,55 @@ async function doAbaikan(item) {
 
 // ── Manual Match ──
 async function openMatchDialog(item) {
-  selectedItem.value         = item
-  selectedPembayaranId.value = null
-  kandidatList.value         = []
-  matchError.value           = null
-  matchDialog.value          = true
-  matchLoading.value         = item.id
+  selectedItem.value       = item
+  selectedInvoiceId.value  = null
+  invoiceCandidates.value  = []
+  invoiceCandSearch.value  = ''
+  matchError.value         = null
+  matchDialog.value        = true
+  matchLoading.value       = item.id
 
-  kandidatLoading.value = true
-  try {
-    const { data } = await api.get(`/finance/rekonsiliasi-bank/detail/${item.id}/kandidat`)
-    kandidatList.value = data.data ?? []
-  } finally {
-    kandidatLoading.value = false
-    matchLoading.value    = null
-  }
+  await fetchInvoiceCandidates(item.id)
+  matchLoading.value = null
 }
 
 function closeMatchDialog() {
-  matchDialog.value          = false
-  selectedItem.value         = null
-  selectedPembayaranId.value = null
-  kandidatList.value         = []
-  matchError.value           = null
+  matchDialog.value       = false
+  selectedItem.value      = null
+  selectedInvoiceId.value = null
+  invoiceCandidates.value = []
+  invoiceCandSearch.value = ''
+  matchError.value        = null
+  clearTimeout(invoiceCandTimer)
+}
+
+async function fetchInvoiceCandidates(detailId) {
+  const id = detailId ?? selectedItem.value?.id
+  if (!id) return
+  invoiceCandLoading.value = true
+  try {
+    const { data } = await api.get(`/finance/rekonsiliasi-bank/detail/${id}/invoice-candidates`, {
+      params: { search: invoiceCandSearch.value || undefined },
+    })
+    invoiceCandidates.value = data.data ?? []
+  } finally {
+    invoiceCandLoading.value = false
+  }
+}
+
+function onInvoiceCandSearchInput() {
+  clearTimeout(invoiceCandTimer)
+  invoiceCandTimer = setTimeout(() => fetchInvoiceCandidates(), 400)
 }
 
 async function doManualMatch() {
-  if (!selectedPembayaranId.value || !selectedItem.value) return
+  if (!selectedInvoiceId.value || !selectedItem.value) return
   matchSaving.value = true
   matchError.value  = null
   try {
-    const { data } = await api.patch(
-      `/finance/rekonsiliasi-bank/detail/${selectedItem.value.id}/match`,
-      { pembayaran_ar_id: selectedPembayaranId.value },
+    const { data } = await api.post(
+      `/finance/rekonsiliasi-bank/detail/${selectedItem.value.id}/catat-bayar`,
+      { invoice_id: selectedInvoiceId.value },
     )
     const updated = data.data
     const row = report.details.find(d => d.id === selectedItem.value.id)
