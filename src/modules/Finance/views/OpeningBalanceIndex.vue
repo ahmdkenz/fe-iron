@@ -2048,6 +2048,7 @@ async function doImport() {
     formData.append('file', importFile.value)
     const res = await api.post('/finance/opening-balance/import', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 300000,
     })
     importResult.value = res.data.data
     importFile.value   = null

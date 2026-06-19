@@ -1146,6 +1146,7 @@ async function doImport() {
 
     const res = await api.post('/finance/invoices/import', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 300000,
     })
 
     importResult.value = res.data.data
