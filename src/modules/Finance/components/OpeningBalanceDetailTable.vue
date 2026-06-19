@@ -587,6 +587,21 @@ function removeItem(detailIndex, itemIndex) {
   emitRows()
 }
 
+function mapInvoiceItems(invItems) {
+  if (!invItems?.length) return []
+  return invItems.map(item => ({
+    ...createItem(),
+    barang_id:    item.barang_id ?? null,
+    kode_barang:  item.kode_barang ?? '',
+    nama_barang:  item.nama_barang ?? '',
+    qty:          item.qty ?? 1,
+    satuan:       item.satuan ?? 'pcs',
+    harga_satuan: item.harga_satuan ?? 0,
+    subtotal:     item.subtotal ?? 0,
+    keterangan:   item.keterangan ?? '',
+  }))
+}
+
 function handleInvoiceSelect(rowIndex, noInvoice) {
   const inv = props.outstandingInvoices.find(i => i.no_invoice === noInvoice)
   if (!inv) { emitRows(); return }
@@ -598,6 +613,7 @@ function handleInvoiceSelect(rowIndex, noInvoice) {
   row.sisa_tagihan_asal    = inv.sisa_tagihan
   row.deskripsi            = `Sisa tagihan ${inv.no_invoice}`
   row.keterangan           = inv.keterangan ?? ''
+  row.items                = mapInvoiceItems(inv.items)
   emitRows()
 }
 
@@ -611,6 +627,7 @@ function loadAllOutstanding() {
     jumlah_tagihan_asal:  inv.total_tagihan,
     sisa_tagihan_asal:    inv.sisa_tagihan,
     keterangan:           inv.keterangan ?? '',
+    items:                mapInvoiceItems(inv.items),
   }))
   emitRows()
 }
