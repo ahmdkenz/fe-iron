@@ -20,15 +20,28 @@
         </VChip>
       </div>
 
-      <VBtn
-        size="small"
-        color="primary"
-        variant="tonal"
-        prepend-icon="ri-add-line"
-        @click="addRow"
-      >
-        Tambah Invoice Asal
-      </VBtn>
+      <div class="d-flex align-center gap-2 flex-wrap">
+        <VBtn
+          v-if="outstandingInvoices.length > 0"
+          size="small"
+          color="success"
+          variant="tonal"
+          prepend-icon="ri-download-2-line"
+          :loading="loadingOutstanding"
+          @click="loadAllOutstanding"
+        >
+          Muat Semua ({{ outstandingInvoices.length }})
+        </VBtn>
+        <VBtn
+          size="small"
+          color="primary"
+          variant="tonal"
+          prepend-icon="ri-add-line"
+          @click="addRow"
+        >
+          Tambah Invoice Asal
+        </VBtn>
+      </div>
     </div>
 
     <VAlert
@@ -126,16 +139,47 @@
               cols="12"
               sm="4"
             >
-              <VTextField
+              <VCombobox
                 v-model="row.no_invoice_asal"
                 label="No. Invoice Asal"
                 density="compact"
                 variant="outlined"
-                placeholder="Contoh: INV-2024-001"
+                :items="outstandingInvoices"
+                item-title="no_invoice"
+                item-value="no_invoice"
+                :return-object="false"
+                :loading="loadingOutstanding"
+                :no-data-text="loadingOutstanding ? 'Memuat...' : 'Tidak ada invoice outstanding — ketik manual'"
+                placeholder="Pilih atau ketik no. invoice"
                 :rules="[v => !!v || 'No. invoice wajib diisi']"
                 hide-details="auto"
-                @input="emitRows"
-              />
+                clearable
+                @update:model-value="v => handleInvoiceSelect(i, v)"
+              >
+                <template #item="{ props: p, item }">
+                  <VListItem
+                    v-bind="p"
+                    :title="item.raw.no_invoice"
+                  >
+                    <template #subtitle>
+                      <div class="d-flex gap-3 text-caption mt-1 flex-wrap">
+                        <span>{{ formatDate(item.raw.tanggal_invoice) }}</span>
+                        <VChip
+                          size="x-small"
+                          :color="item.raw.status === 'SEBAGIAN' ? 'warning' : 'secondary'"
+                          variant="tonal"
+                          label
+                        >
+                          {{ item.raw.status }}
+                        </VChip>
+                        <span class="text-error font-weight-medium">
+                          Sisa: {{ formatCurrency(item.raw.sisa_tagihan) }}
+                        </span>
+                      </div>
+                    </template>
+                  </VListItem>
+                </template>
+              </VCombobox>
             </VCol>
 
             <VCol
@@ -460,6 +504,14 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  outstandingInvoices: {
+    type: Array,
+    default: () => [],
+  },
+  loadingOutstanding: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const emit = defineEmits(['update:details'])
@@ -532,6 +584,34 @@ function updateItem(detailIndex, itemIndex, value) {
 function removeItem(detailIndex, itemIndex) {
   rows.value[detailIndex].items.splice(itemIndex, 1)
   rows.value[detailIndex].jumlah_tagihan_asal = calcItemsTotal(rows.value[detailIndex].items)
+  emitRows()
+}
+
+function handleInvoiceSelect(rowIndex, noInvoice) {
+  const inv = props.outstandingInvoices.find(i => i.no_invoice === noInvoice)
+  if (!inv) { emitRows(); return }
+
+  const row = rows.value[rowIndex]
+  row.no_invoice_asal      = inv.no_invoice
+  row.tanggal_invoice_asal = inv.tanggal_invoice ?? ''
+  row.jumlah_tagihan_asal  = inv.total_tagihan
+  row.sisa_tagihan_asal    = inv.sisa_tagihan
+  row.deskripsi            = `Sisa tagihan ${inv.no_invoice}`
+  row.keterangan           = inv.keterangan ?? ''
+  emitRows()
+}
+
+function loadAllOutstanding() {
+  if (!props.outstandingInvoices.length) return
+  rows.value = props.outstandingInvoices.map(inv => ({
+    ...createRow(),
+    no_invoice_asal:      inv.no_invoice,
+    tanggal_invoice_asal: inv.tanggal_invoice ?? '',
+    deskripsi:            `Sisa tagihan ${inv.no_invoice}`,
+    jumlah_tagihan_asal:  inv.total_tagihan,
+    sisa_tagihan_asal:    inv.sisa_tagihan,
+    keterangan:           inv.keterangan ?? '',
+  }))
   emitRows()
 }
 

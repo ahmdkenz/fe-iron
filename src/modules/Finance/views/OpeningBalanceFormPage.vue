@@ -381,6 +381,8 @@
                     :saldo-awal="Number(form.saldo_awal) || 0"
                     :barang-list="barangList"
                     :barang-loading="barangLoading"
+                    :outstanding-invoices="outstandingInvoices"
+                    :loading-outstanding="loadingOutstanding"
                     @update:details="form.details = $event"
                   />
                 </VCard>
@@ -587,6 +589,24 @@ const pageLoading = ref(false)
 const errorMessage = ref('')
 const saving = ref(false)
 
+const outstandingInvoices = ref([])
+const loadingOutstanding  = ref(false)
+
+async function fetchOutstandingInvoices(klienArId) {
+  if (!klienArId) { outstandingInvoices.value = []; return }
+  loadingOutstanding.value = true
+  try {
+    const { data } = await api.get('/finance/invoices/outstanding', {
+      params: { klien_ar_id: klienArId, tanggal: form.tanggal },
+    })
+    outstandingInvoices.value = data.data ?? []
+  } catch {
+    outstandingInvoices.value = []
+  } finally {
+    loadingOutstanding.value = false
+  }
+}
+
 const errors = reactive({
   no_invoice: [], klien_ar_id: [], tanggal: [], saldo_awal: [], periode_awal: [], periode_akhir: [], keterangan: [], details: [],
 })
@@ -694,6 +714,11 @@ function generateObNoInvoice() {
 watch(() => form.klien_ar_id, (newVal) => {
   if (newVal && !isEditing.value)
     form.no_invoice = generateObNoInvoice()
+  fetchOutstandingInvoices(newVal)
+})
+
+watch(() => form.tanggal, () => {
+  if (form.klien_ar_id) fetchOutstandingInvoices(form.klien_ar_id)
 })
 
 const formattedSaldoAwal = computed(() => {
