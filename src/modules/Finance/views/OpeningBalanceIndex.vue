@@ -9,7 +9,7 @@
       ]"
     >
       <div
-        v-if="authStore.canViewOpeningBalance"
+        v-if="!authStore.canApproveOpeningBalance"
         class="d-flex gap-2"
       >
         <VBtn
@@ -36,19 +36,6 @@
           :to="{ name: 'finance-opening-balance-create' }"
         >
           Ajukan Opening Balance
-        </VBtn>
-      </div>
-      <div
-        v-if="authStore.canApproveOpeningBalance"
-        class="d-flex gap-2"
-      >
-        <VBtn
-          color="success"
-          prepend-icon="ri-check-double-line"
-          :loading="approvingAll"
-          @click="confirmApproveAll"
-        >
-          Approve Semua
         </VBtn>
       </div>
     </PageHeader>
@@ -680,6 +667,10 @@
     <!-- ── Director View ──────────────────────────────────────────────────── -->
     <template v-if="authStore.canApproveOpeningBalance">
       <!-- Section 1: Approval table -->
+      <div class="mb-4">
+        <span class="text-h6 font-weight-semibold">Persetujuan Opening Balance</span>
+      </div>
+
       <VRow class="mb-4">
         <VCol
           cols="12"
@@ -890,6 +881,18 @@
           class="mt-2"
           @update:options="onDirApprovalTableOptions"
         >
+          <template #top>
+            <div class="d-flex justify-end pa-3">
+              <VBtn
+                color="success"
+                prepend-icon="ri-check-double-line"
+                :loading="approvingAll"
+                @click="confirmApproveAll"
+              >
+                Approve Semua
+              </VBtn>
+            </div>
+          </template>
           <template #item.no="{ index }">
             {{ (dirApprovalMeta.current_page - 1) * dirApprovalMeta.per_page + index + 1 }}
           </template>
@@ -982,6 +985,33 @@
       <div class="d-flex align-center gap-3 mt-6 mb-4">
         <span class="text-h6 font-weight-semibold">List Opening Balance</span>
         <VDivider />
+        <div class="d-flex gap-2">
+          <VBtn
+            v-if="authStore.canViewOpeningBalance"
+            color="primary"
+            prepend-icon="ri-file-excel-line"
+            :loading="isExporting"
+            @click="exportExcel"
+          >
+            Export
+          </VBtn>
+          <VBtn
+            v-if="authStore.canOperateOpeningBalance"
+            color="primary"
+            prepend-icon="ri-upload-line"
+            @click="openImport"
+          >
+            Import
+          </VBtn>
+          <VBtn
+            v-if="authStore.canOperateOpeningBalance"
+            color="primary"
+            prepend-icon="ri-add-line"
+            :to="{ name: 'finance-opening-balance-create' }"
+          >
+            Ajukan Opening Balance
+          </VBtn>
+        </div>
       </div>
 
       <VRow class="mb-4">
