@@ -192,7 +192,7 @@ function onTableOptions({ page, itemsPerPage }) {
 }
 
 onMounted(() => {
-  const isPrivileged = authStore.isAdmin || authStore.isManager || authStore.isSupervisor || authStore.isDirector
+  const isPrivileged = authStore.isAdmin || authStore.isManager || authStore.isSupervisor
   if (!isPrivileged && authStore.user?.karyawan_id) {
     params.karyawan_id = authStore.user.karyawan_id
   }

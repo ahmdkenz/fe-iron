@@ -373,7 +373,7 @@ const authStore = useAuthStore()
 const { formatCurrency, formatDate } = useFormatter()
 
 const canSeeAll = computed(() =>
-  authStore.isAdmin || authStore.isDirector || authStore.isManager || authStore.isSupervisor
+  authStore.isAdmin || authStore.isManager || authStore.isSupervisor
 )
 
 const { items, loading, meta, params, fetchList } = useCrud('/finance/jurnal-pic')

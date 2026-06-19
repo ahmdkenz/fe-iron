@@ -15,13 +15,13 @@ export default [
     path: '/master/investor',
     name: 'master-investor',
     component: () => import('@/modules/Master/views/InvestorIndex.vue'),
-    meta: { requiresAuth: true, roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR', 'AR'] },
+    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'] },
   },
   {
     path: '/master/resto',
     name: 'master-resto',
     component: () => import('@/modules/Master/views/RestoIndex.vue'),
-    meta: { requiresAuth: true, roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR', 'AR'] },
+    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'] },
   },
   {
     path: '/master/brand',
@@ -33,7 +33,7 @@ export default [
     path: '/master/barang',
     name: 'master-barang',
     component: () => import('@/modules/Master/views/BarangIndex.vue'),
-    meta: { requiresAuth: true, roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR', 'AR'] },
+    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'] },
   },
   {
     path: '/master/karyawan/create',

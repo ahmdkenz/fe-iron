@@ -229,7 +229,7 @@ const route     = useRoute()
 const { formatCurrency, formatDate } = useFormatter()
 
 const canSeeAll = computed(() =>
-  authStore.isAdmin || authStore.isDirector || authStore.isManager || authStore.isSupervisor
+  authStore.isAdmin || authStore.isManager || authStore.isSupervisor
 )
 
 const { items: karyawanList, loading: karyawanLoading, fetchAll: fetchKaryawan } = useCrud('/master/karyawan')

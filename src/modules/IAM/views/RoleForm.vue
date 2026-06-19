@@ -57,7 +57,7 @@
                 label="Kode Role"
                 density="compact"
                 variant="outlined"
-                hint="Bisa uppercase atau lowercase. Contoh: ADMIN, DIREKTUR, MANAGER, SUPERVISOR, AR, AP"
+                hint="Bisa uppercase atau lowercase. Contoh: ADMIN, MANAGER, SUPERVISOR, AR, AP"
                 persistent-hint
                 :rules="[v => !!v || 'Kode wajib diisi']"
                 :error-messages="errors.name"

@@ -18,7 +18,7 @@
           Export
         </VBtn>
         <VBtn
-          v-if="!authStore.isDirectorOnly && !authStore.isArOnly"
+          v-if="!authStore.isArOnly"
           color="primary"
           prepend-icon="ri-upload-line"
           @click="openImport"
@@ -26,7 +26,6 @@
           Import
         </VBtn>
         <VBtn
-          v-if="!authStore.isDirectorOnly"
           color="primary"
           prepend-icon="ri-add-line"
           @click="openCreate"
@@ -168,7 +167,6 @@
               </VTooltip>
             </VBtn>
             <VBtn
-              v-if="!authStore.isDirectorOnly"
               icon
               size="small"
               variant="text"
@@ -184,7 +182,6 @@
               </VTooltip>
             </VBtn>
             <VBtn
-              v-if="!authStore.isDirectorOnly"
               icon
               size="small"
               variant="text"
@@ -300,7 +297,6 @@
               </VTooltip>
             </VBtn>
             <VBtn
-              v-if="!authStore.isDirectorOnly"
               icon
               size="small"
               variant="text"
@@ -316,7 +312,6 @@
               </VTooltip>
             </VBtn>
             <VBtn
-              v-if="!authStore.isDirectorOnly"
               icon
               size="small"
               variant="text"
@@ -606,7 +601,7 @@ const { showSuccess, showError, showLoading, closeAlert } = useSweetAlert()
 const { items: itemsB2C, loading: loadingB2C, meta: metaB2C, params: paramsB2C, fetchList: fetchListB2C, remove } = useCrud('/finance/klien-ar')
 const { items: itemsB2B, loading: loadingB2B, meta: metaB2B, params: paramsB2B, fetchList: fetchListB2B } = useCrud('/finance/klien-ar')
 
-const canSeeAll = authStore.hasAnyRole(['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR'])
+const canSeeAll = authStore.hasAnyRole(['ADMIN', 'MANAGER', 'SUPERVISOR'])
 
 if (!canSeeAll) {
   paramsB2C.karyawan_ar_id = authStore.user?.karyawan?.id

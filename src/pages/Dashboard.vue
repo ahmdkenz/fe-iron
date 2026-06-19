@@ -1,11 +1,9 @@
 <template>
   <PicArDashboardSection v-if="authStore.isArOnly" />
 
-  <DirectorDashboardSection v-else-if="authStore.isDirector && !authStore.isAdmin" />
+  <ManagerDashboardSection v-else-if="authStore.isManager && !authStore.isAdmin" />
 
-  <ManagerDashboardSection v-else-if="authStore.isManager && !authStore.isAdmin && !authStore.isDirector" />
-
-  <SupervisorDashboardSection v-else-if="authStore.isSupervisor && !authStore.isAdmin && !authStore.isDirector && !authStore.isManager" />
+  <SupervisorDashboardSection v-else-if="authStore.isSupervisor && !authStore.isAdmin && !authStore.isManager" />
 
   <div v-else>
     <PageHeader
@@ -206,7 +204,6 @@ import { useTheme } from 'vuetify'
 import { useAuthStore } from '@/stores/auth.store'
 import DeferredApexChart from '@/components/shared/DeferredApexChart.vue'
 import PicArDashboardSection from '@/modules/Finance/components/PicArDashboardSection.vue'
-import DirectorDashboardSection from '@/modules/Finance/components/DirectorDashboardSection.vue'
 import ManagerDashboardSection from '@/modules/Finance/components/ManagerDashboardSection.vue'
 import SupervisorDashboardSection from '@/modules/Finance/components/SupervisorDashboardSection.vue'
 import InvoiceStatusBadge from '@/modules/Finance/components/InvoiceStatusBadge.vue'

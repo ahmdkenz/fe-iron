@@ -271,7 +271,7 @@ async function doFetch() {
 }
 
 onMounted(() => {
-  const isPrivileged = authStore.isAdmin || authStore.isManager || authStore.isSupervisor || authStore.isDirector
+  const isPrivileged = authStore.isAdmin || authStore.isManager || authStore.isSupervisor
   if (!isPrivileged && authStore.user?.karyawan_id) {
     filters.karyawan_ar_id = authStore.user.karyawan_id
   }

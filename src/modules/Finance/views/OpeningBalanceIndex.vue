@@ -2,14 +2,14 @@
   <div>
     <PageHeader
       title="Opening Balance"
-      :subtitle="authStore.isDirector ? 'Tinjau dan proses opening balance yang memerlukan persetujuan' : 'Kelola saldo awal piutang klien'"
+      :subtitle="authStore.canApproveOpeningBalance ? 'Tinjau dan proses opening balance yang memerlukan persetujuan' : 'Kelola saldo awal piutang klien'"
       :breadcrumbs="[
         { title: 'Dashboard', to: { name: 'dashboard' } },
         { title: 'Opening Balance', disabled: true },
       ]"
     >
       <div
-        v-if="!authStore.isDirector"
+        v-if="authStore.canViewOpeningBalance"
         class="d-flex gap-2"
       >
         <VBtn
@@ -39,7 +39,7 @@
         </VBtn>
       </div>
       <div
-        v-if="authStore.isDirector"
+        v-if="authStore.canApproveOpeningBalance"
         class="d-flex gap-2"
       >
         <VBtn
@@ -53,8 +53,8 @@
       </div>
     </PageHeader>
 
-    <!-- ── Non-Director View ──────────────────────────────────────────────── -->
-    <template v-if="!authStore.isDirector">
+    <!-- ── Operator View (buat/kelola OB) — non-approver ──────────────────── -->
+    <template v-if="!authStore.canApproveOpeningBalance">
       <VRow class="mb-4">
         <VCol
           cols="12"
@@ -662,9 +662,9 @@
       </VCard>
     </template>
 
-    <!-- Bulk Action Bar (non-director) -->
+    <!-- Bulk Action Bar (operator view only) -->
     <BulkActionBar
-      v-if="!authStore.isDirector"
+      v-if="!authStore.canApproveOpeningBalance"
       :selected="selectedInvoices"
       @share="openShareDialog(selectedInvoices)"
       @delete="doBulkDelete"
@@ -678,7 +678,7 @@
     />
 
     <!-- ── Director View ──────────────────────────────────────────────────── -->
-    <template v-if="authStore.isDirector">
+    <template v-if="authStore.canApproveOpeningBalance">
       <!-- Section 1: Approval table -->
       <VRow class="mb-4">
         <VCol
@@ -1561,9 +1561,9 @@
       @saved="onPembayaranSaved"
     />
 
-    <!-- Import Dialog (non-director only) -->
+    <!-- Import Dialog (operator only) -->
     <VDialog
-      v-if="!authStore.isDirector"
+      v-if="authStore.canOperateOpeningBalance"
       v-model="showImport"
       max-width="600"
       persistent
@@ -1623,7 +1623,7 @@
                 (bukan tanggal hari ini). Contoh: invoice Mei 2026 belum lunas → isi <code>2026-05-01</code> s/d <code>2026-05-31</code>.
               </li>
               <li>Semua tanggal diisi format <strong>YYYY-MM-DD</strong> (contoh: <code>2024-01-15</code>).</li>
-              <li>Data berhasil diimport berstatus <strong>DRAFT</strong> dan perlu persetujuan Direktur.</li>
+              <li>Data berhasil diimport berstatus <strong>DRAFT</strong> dan perlu persetujuan Manager.</li>
             </ul>
           </VAlert>
 
@@ -1894,7 +1894,7 @@ function openCatatBayar(item) {
 }
 
 function onPembayaranSaved() {
-  if (authStore.isDirector) {
+  if (authStore.canApproveOpeningBalance) {
     loadDirObList()
     loadDirObListB2B()
     loadDirObSummary()
@@ -2621,7 +2621,7 @@ async function confirmApproveAll() {
 // ── Lifecycle ──────────────────────────────────────────────────────────────
 function initLoad() {
   loadKlien()
-  if (authStore.isDirector) {
+  if (authStore.canApproveOpeningBalance) {
     loadDirApprovalList()
     loadDirApprovalSummary()
     loadDirObList()

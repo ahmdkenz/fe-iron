@@ -36,20 +36,12 @@ export const useAuthStore = defineStore('auth', {
     hasRole: state => role => normalizeRoles(state.user).includes(role),
     hasAnyRole: state => targetRoles => hasAnyRole(state.user, targetRoles),
     isAdmin: state => normalizeRoles(state.user).includes('ADMIN'),
-    isDirector: state => normalizeRoles(state.user).includes('DIREKTUR'),
-    isDirectorOnly: state => normalizeRoles(state.user).includes('DIREKTUR')
-      && !normalizeRoles(state.user).includes('ADMIN')
-      && !normalizeRoles(state.user).includes('MANAGER')
-      && !normalizeRoles(state.user).includes('SUPERVISOR')
-      && !normalizeRoles(state.user).includes('AR')
-      && !normalizeRoles(state.user).includes('AP'),
     isManager: state => normalizeRoles(state.user).includes('MANAGER'),
     isSupervisor: state => normalizeRoles(state.user).includes('SUPERVISOR'),
     isArOnly: state => (state.user?.role?.name === 'AR')
       || (
         normalizeRoles(state.user).includes('AR')
         && !normalizeRoles(state.user).includes('ADMIN')
-        && !normalizeRoles(state.user).includes('DIREKTUR')
         && !normalizeRoles(state.user).includes('MANAGER')
         && !normalizeRoles(state.user).includes('SUPERVISOR')
       ),
@@ -57,14 +49,13 @@ export const useAuthStore = defineStore('auth', {
       || (
         normalizeRoles(state.user).includes('AR')
         && !normalizeRoles(state.user).includes('ADMIN')
-        && !normalizeRoles(state.user).includes('DIREKTUR')
         && !normalizeRoles(state.user).includes('MANAGER')
         && !normalizeRoles(state.user).includes('SUPERVISOR')
       ),
     canOperateOpeningBalance: state => hasAnyRole(state.user, ['MANAGER', 'SUPERVISOR', 'AR']),
-    canViewOpeningBalance: state => hasAnyRole(state.user, ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR', 'AR']),
-    canApproveOpeningBalance: state => normalizeRoles(state.user).includes('DIREKTUR'),
-    canViewEndingBalance: state => hasAnyRole(state.user, ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR', 'AR']),
+    canViewOpeningBalance: state => hasAnyRole(state.user, ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR']),
+    canApproveOpeningBalance: state => normalizeRoles(state.user).includes('MANAGER'),
+    canViewEndingBalance: state => hasAnyRole(state.user, ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR']),
     canOperateEndingBalance: state => hasAnyRole(state.user, ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR']),
     canApproveEndingBalanceSpv: state => hasAnyRole(state.user, ['ADMIN', 'SUPERVISOR']),
     canApproveEndingBalanceManager: state => hasAnyRole(state.user, ['ADMIN', 'MANAGER']),

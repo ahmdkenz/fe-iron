@@ -9,7 +9,7 @@
       ]"
     >
       <VBtn
-        v-if="!authStore.isArOnly && !authStore.isDirectorOnly"
+        v-if="!authStore.isArOnly"
         color="primary"
         prepend-icon="ri-add-line"
         @click="openCreate"
@@ -119,7 +119,7 @@
               </VTooltip>
             </VBtn>
             <VBtn
-              v-if="!authStore.isArOnly && !authStore.isDirectorOnly"
+              v-if="!authStore.isArOnly"
               icon
               size="small"
               variant="text"
@@ -135,7 +135,7 @@
               </VTooltip>
             </VBtn>
             <VBtn
-              v-if="!authStore.isArOnly && !authStore.isDirectorOnly"
+              v-if="!authStore.isArOnly"
               icon
               size="small"
               variant="text"

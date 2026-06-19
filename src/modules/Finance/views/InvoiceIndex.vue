@@ -18,7 +18,6 @@
           Export
         </VBtn>
         <VBtn
-          v-if="!authStore.isDirectorOnly"
           color="primary"
           prepend-icon="ri-upload-line"
           @click="openImport"

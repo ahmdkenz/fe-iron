@@ -8,7 +8,7 @@
     title: 'Export Data',
     to: { name: 'finance-export-data' },
     icon: { icon: 'ri-download-2-line' },
-    roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR'],
+    roles: ['ADMIN', 'MANAGER', 'SUPERVISOR'],
   },
   { heading: 'USER MANAGEMENT' },
   {
@@ -40,13 +40,13 @@
     title: 'Data Investor',
     to: { name: 'master-investor' },
     icon: { icon: 'ri-money-dollar-circle-line' },
-    roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR', 'AR'],
+    roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'],
   },
   {
     title: 'Data Resto',
     to: { name: 'master-resto' },
     icon: { icon: 'ri-store-2-line' },
-    roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR', 'AR'],
+    roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'],
   },
   {
     title: 'Data Brand',
@@ -58,14 +58,14 @@
     title: 'Data Barang',
     to: { name: 'master-barang' },
     icon: { icon: 'ri-box-3-line' },
-    roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR', 'AR'],
+    roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'],
   },
   { heading: 'ACCOUNT RECEIVABLE' },
   {
     title: 'Client',
     to: { name: 'finance-klien-ar' },
     icon: { icon: 'ri-building-4-line' },
-    roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR', 'AR'],
+    roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'],
   },
   {
     title: 'Invoice',
@@ -77,13 +77,13 @@
     title: 'Opening Balance',
     to: { name: 'finance-opening-balance' },
     icon: { icon: 'ri-history-line' },
-    roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR', 'AR'],
+    roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'],
   },
   {
     title: 'Ending Balance',
     to: { name: 'finance-ending-balance' },
     icon: { icon: 'ri-scales-2-line' },
-    roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR', 'AR'],
+    roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'],
   },
   {
     title: 'Approval Koreksi EB',
@@ -103,6 +103,6 @@
     title: 'Laporan',
     to: { name: 'finance-laporan' },
     icon: { icon: 'ri-file-chart-line' },
-    roles: ['ADMIN', 'DIREKTUR', 'MANAGER', 'SUPERVISOR', 'AR'],
+    roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'],
   },
 ]

@@ -23,7 +23,6 @@ declare module 'vue' {
     DetailDialog: typeof import('./src/components/shared/DetailDialog.vue')['default']
     DetailRow: typeof import('./src/components/shared/DetailRow.vue')['default']
     DialogCloseBtn: typeof import('./src/@core/components/DialogCloseBtn.vue')['default']
-    DirectorDashboardSection: typeof import('./src/modules/Finance/components/DirectorDashboardSection.vue')['default']
     DropZone: typeof import('./src/@core/components/DropZone.vue')['default']
     EntitasForm: typeof import('./src/modules/Master/components/EntitasForm.vue')['default']
     I18n: typeof import('./src/@core/components/I18n.vue')['default']

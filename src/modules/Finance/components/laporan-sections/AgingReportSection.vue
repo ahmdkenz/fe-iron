@@ -159,7 +159,7 @@ const { items: karyawanList, loading: karyawanLoading, fetchAll: fetchKaryawan }
 const { ensureLoaded: ensureKaryawanLoaded } = useLazyFetchAll(fetchKaryawan)
 
 const isPrivileged = computed(() =>
-  authStore.isAdmin || authStore.isManager || authStore.isSupervisor || authStore.isDirector
+  authStore.isAdmin || authStore.isManager || authStore.isSupervisor
 )
 
 const loading  = ref(false)
