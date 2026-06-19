@@ -692,8 +692,7 @@ const selectedKlienMeta = computed(() => {
 
 function generateObNoInvoice() {
   const singkatan = (
-    selectedKlien.value?.karyawan_ar?.perusahaan?.nama_singkatan_perusahaan
-    ?? selectedKlien.value?.perusahaan?.nama_singkatan_perusahaan
+    selectedKlien.value?.perusahaan?.nama_singkatan_perusahaan
     ?? selectedKlien.value?.kode_klien
     ?? 'OB'
   ).replace(/[^A-Za-z0-9]/g, '').toUpperCase()
