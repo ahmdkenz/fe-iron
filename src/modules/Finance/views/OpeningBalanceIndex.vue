@@ -2050,7 +2050,13 @@ function openImport() {
 function closeImport() {
   showImport.value = false
   if (importResult.value?.inserted_ob > 0) {
-    doFetch()
+    if (authStore.canApproveOpeningBalance) {
+      doDirFetch()
+      financeNotificationStore.fetchPendingOpeningBalanceCount()
+    } else {
+      doFetchB2C()
+      doFetchB2B()
+    }
   }
 }
 
