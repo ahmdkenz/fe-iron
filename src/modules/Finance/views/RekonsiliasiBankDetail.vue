@@ -221,28 +221,32 @@
             </div>
           </VCard>
 
-          <div class="text-body-2 font-weight-medium mb-2">Pilih Invoice yang Akan Dibayarkan:</div>
+          <!-- ── Section: Invoice Opening Balance ── -->
+          <div class="d-flex align-center gap-2 mb-2">
+            <VIcon size="18" color="deep-purple">ri-bookmark-line</VIcon>
+            <span class="text-body-2 font-weight-medium">Invoice Opening Balance</span>
+          </div>
           <VTextField
-            v-model="invoiceCandSearch"
-            placeholder="Cari no invoice atau nama klien..."
+            v-model="obSearch"
+            placeholder="Cari no invoice OB atau nama klien..."
             density="compact"
             variant="outlined"
             prepend-inner-icon="ri-search-line"
             clearable
             class="mb-3"
             hide-details
-            @input="onInvoiceCandSearchInput"
-            @click:clear="invoiceCandSearch = ''; fetchInvoiceCandidates()"
+            @input="onObSearchInput"
+            @click:clear="obSearch = ''; fetchCandidates('ob')"
           />
 
-          <VProgressLinear v-if="invoiceCandLoading" indeterminate color="primary" class="mb-2" rounded />
-          <VAlert v-if="!invoiceCandLoading && invoiceCandidates.length === 0" type="info" variant="tonal" density="compact" class="mb-2">
-            Tidak ada invoice yang terbuka. Coba ubah kata kunci pencarian.
+          <VProgressLinear v-if="obLoading" indeterminate color="primary" class="mb-2" rounded />
+          <VAlert v-if="!obLoading && obCandidates.length === 0" type="info" variant="tonal" density="compact" class="mb-2">
+            Tidak ada invoice Opening Balance yang terbuka.
           </VAlert>
 
-          <div v-if="invoiceCandidates.length > 0" class="d-flex flex-column gap-2">
+          <div v-if="obCandidates.length > 0" class="d-flex flex-column gap-2">
             <VCard
-              v-for="inv in invoiceCandidates"
+              v-for="inv in obCandidates"
               :key="inv.id"
               :variant="selectedInvoiceId === inv.id ? 'tonal' : 'outlined'"
               :color="selectedInvoiceId === inv.id ? 'primary' : undefined"
@@ -272,13 +276,69 @@
             </VCard>
           </div>
 
+          <VDivider class="my-4" />
+
+          <!-- ── Section: Invoice Reguler ── -->
+          <div class="d-flex align-center gap-2 mb-2">
+            <VIcon size="18" color="primary">ri-file-list-3-line</VIcon>
+            <span class="text-body-2 font-weight-medium">Invoice Reguler</span>
+          </div>
+          <VTextField
+            v-model="regularSearch"
+            placeholder="Cari no invoice atau nama klien..."
+            density="compact"
+            variant="outlined"
+            prepend-inner-icon="ri-search-line"
+            clearable
+            class="mb-3"
+            hide-details
+            @input="onRegularSearchInput"
+            @click:clear="regularSearch = ''; fetchCandidates('regular')"
+          />
+
+          <VProgressLinear v-if="regularLoading" indeterminate color="primary" class="mb-2" rounded />
+          <VAlert v-if="!regularLoading && regularCandidates.length === 0" type="info" variant="tonal" density="compact" class="mb-2">
+            Tidak ada invoice reguler yang terbuka. Coba ubah kata kunci pencarian.
+          </VAlert>
+
+          <div v-if="regularCandidates.length > 0" class="d-flex flex-column gap-2">
+            <VCard
+              v-for="inv in regularCandidates"
+              :key="inv.id"
+              :variant="selectedInvoiceId === inv.id ? 'tonal' : 'outlined'"
+              :color="selectedInvoiceId === inv.id ? 'primary' : undefined"
+              class="cursor-pointer"
+              @click="selectedInvoiceId = inv.id"
+            >
+              <VCardText class="pa-3">
+                <div class="d-flex align-center gap-2">
+                  <VIcon :color="selectedInvoiceId === inv.id ? 'primary' : 'grey'" size="18">
+                    {{ selectedInvoiceId === inv.id ? 'ri-radio-button-fill' : 'ri-checkbox-blank-circle-line' }}
+                  </VIcon>
+                  <div class="flex-1-1 min-width-0">
+                    <div class="d-flex align-center gap-2 flex-wrap mb-1">
+                      <span class="text-body-2 font-weight-semibold">{{ inv.no_invoice }}</span>
+                      <VChip :color="statusInvoiceColor(inv.status)" size="x-small" variant="tonal">{{ inv.status }}</VChip>
+                    </div>
+                    <div class="d-flex flex-wrap gap-x-3 gap-y-0">
+                      <span class="text-caption text-medium-emphasis">{{ inv.nama_klien ?? '-' }}</span>
+                      <span class="text-caption text-medium-emphasis">Tgl: {{ formatDate(inv.tanggal) }}</span>
+                      <span class="text-caption text-medium-emphasis">Total: {{ formatCurrency(inv.total_tagihan) }}</span>
+                      <span class="text-caption font-weight-medium text-warning">Sisa: {{ formatCurrency(inv.sisa_tagihan) }}</span>
+                    </div>
+                  </div>
+                </div>
+              </VCardText>
+            </VCard>
+          </div>
+
           <VAlert v-if="matchError" type="error" variant="tonal" class="mt-3" density="compact">{{ matchError }}</VAlert>
         </VCardText>
         <VDivider />
         <VCardActions class="pa-4">
           <VSpacer />
           <VBtn variant="text" @click="closeMatchDialog">Batal</VBtn>
-          <VBtn color="primary" variant="tonal" :disabled="!selectedInvoiceId || invoiceCandLoading" :loading="matchSaving" @click="doManualMatch">
+          <VBtn color="primary" variant="tonal" :disabled="!selectedInvoiceId || obLoading || regularLoading" :loading="matchSaving" @click="doManualMatch">
             <VIcon start size="16">ri-link-m</VIcon>Cocokkan
           </VBtn>
         </VCardActions>
@@ -673,12 +733,20 @@ const unmatchLoading  = ref(null)
 const matchDialog        = ref(false)
 const selectedItem       = ref(null)
 const selectedInvoiceId  = ref(null)
-const invoiceCandidates  = ref([])
-const invoiceCandSearch  = ref('')
-const invoiceCandLoading = ref(false)
 const matchSaving        = ref(false)
 const matchError         = ref(null)
-let   invoiceCandTimer   = null
+
+// Section: Invoice Opening Balance
+const obCandidates = ref([])
+const obSearch     = ref('')
+const obLoading    = ref(false)
+let   obTimer      = null
+
+// Section: Invoice Reguler
+const regularCandidates = ref([])
+const regularSearch     = ref('')
+const regularLoading    = ref(false)
+let   regularTimer      = null
 
 // ── Unmatch dialog ──
 const unmatchDialog  = ref(false)
@@ -798,13 +866,18 @@ async function doAbaikan(item) {
 async function openMatchDialog(item) {
   selectedItem.value       = item
   selectedInvoiceId.value  = null
-  invoiceCandidates.value  = []
-  invoiceCandSearch.value  = ''
+  obCandidates.value       = []
+  obSearch.value           = ''
+  regularCandidates.value  = []
+  regularSearch.value      = ''
   matchError.value         = null
   matchDialog.value        = true
   matchLoading.value       = item.id
 
-  await fetchInvoiceCandidates(item.id)
+  await Promise.all([
+    fetchCandidates('ob', item.id),
+    fetchCandidates('regular', item.id),
+  ])
   matchLoading.value = null
 }
 
@@ -812,29 +885,42 @@ function closeMatchDialog() {
   matchDialog.value       = false
   selectedItem.value      = null
   selectedInvoiceId.value = null
-  invoiceCandidates.value = []
-  invoiceCandSearch.value = ''
+  obCandidates.value      = []
+  obSearch.value          = ''
+  regularCandidates.value = []
+  regularSearch.value     = ''
   matchError.value        = null
-  clearTimeout(invoiceCandTimer)
+  clearTimeout(obTimer)
+  clearTimeout(regularTimer)
 }
 
-async function fetchInvoiceCandidates(detailId) {
+async function fetchCandidates(type, detailId) {
   const id = detailId ?? selectedItem.value?.id
   if (!id) return
-  invoiceCandLoading.value = true
+  const isOb = type === 'ob'
+  const search = isOb ? obSearch.value : regularSearch.value
+  if (isOb) obLoading.value = true
+  else regularLoading.value = true
   try {
     const { data } = await api.get(`/finance/rekonsiliasi-bank/detail/${id}/invoice-candidates`, {
-      params: { search: invoiceCandSearch.value || undefined },
+      params: { search: search || undefined, type },
     })
-    invoiceCandidates.value = data.data ?? []
+    if (isOb) obCandidates.value = data.data ?? []
+    else regularCandidates.value = data.data ?? []
   } finally {
-    invoiceCandLoading.value = false
+    if (isOb) obLoading.value = false
+    else regularLoading.value = false
   }
 }
 
-function onInvoiceCandSearchInput() {
-  clearTimeout(invoiceCandTimer)
-  invoiceCandTimer = setTimeout(() => fetchInvoiceCandidates(), 400)
+function onObSearchInput() {
+  clearTimeout(obTimer)
+  obTimer = setTimeout(() => fetchCandidates('ob'), 400)
+}
+
+function onRegularSearchInput() {
+  clearTimeout(regularTimer)
+  regularTimer = setTimeout(() => fetchCandidates('regular'), 400)
 }
 
 async function doManualMatch() {

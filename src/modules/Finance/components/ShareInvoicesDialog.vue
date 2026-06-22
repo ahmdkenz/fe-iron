@@ -106,6 +106,32 @@
             <span class="text-body-2">Tidak ada invoice yang bisa dibagikan</span>
           </div>
 
+          <!-- Select all -->
+          <div
+            v-if="obInvoices.length || regularInvoices.length"
+            class="select-all-row"
+            @click="toggleAll"
+          >
+            <VCheckbox
+              :model-value="allChecked"
+              :indeterminate="someChecked && !allChecked"
+              hide-details
+              density="compact"
+              color="primary"
+              class="flex-shrink-0"
+              style="pointer-events: none;"
+            />
+            <span class="text-body-2 font-weight-semibold">Pilih Semua</span>
+            <VChip
+              size="x-small"
+              color="primary"
+              variant="tonal"
+              class="ms-1"
+            >
+              {{ allInvoices.length }}
+            </VChip>
+          </div>
+
           <!-- Opening Balance section -->
           <div v-if="obInvoices.length">
             <div class="section-label px-5 pt-4 pb-2">
@@ -330,10 +356,20 @@ const grandTotal = computed(() =>
     .reduce((sum, inv) => sum + (inv.subtotal ?? 0), 0)
 )
 
+const allChecked = computed(() =>
+  allInvoices.value.length > 0 && checkedIds.value.length === allInvoices.value.length
+)
+const someChecked = computed(() => checkedIds.value.length > 0)
+
 function toggleCheck(id) {
   const idx = checkedIds.value.indexOf(id)
   if (idx === -1) checkedIds.value.push(id)
   else checkedIds.value.splice(idx, 1)
+}
+
+function toggleAll() {
+  if (allChecked.value) checkedIds.value = []
+  else checkedIds.value = allInvoices.value.map(inv => inv.id)
 }
 
 watch(isOpen, async open => {
@@ -463,6 +499,24 @@ async function doSend() {
   border: 1px solid rgba(var(--v-theme-primary), 0.15);
   border-radius: 10px;
   padding: 10px 14px;
+}
+
+.select-all-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 16px 0;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(var(--v-theme-primary), 0.2);
+  background: rgba(var(--v-theme-primary), 0.04);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.select-all-row:hover {
+  border-color: rgba(var(--v-theme-primary), 0.4);
+  background: rgba(var(--v-theme-primary), 0.07);
 }
 
 .section-label {

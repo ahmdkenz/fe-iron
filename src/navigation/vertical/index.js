@@ -86,7 +86,7 @@
     roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'],
   },
   {
-    title: 'Approval Koreksi EB',
+    title: 'Ending Balance Approval',
     to: { name: 'finance-ending-balance-approval' },
     icon: { icon: 'ri-checkbox-circle-line' },
     roles: ['ADMIN', 'MANAGER', 'SUPERVISOR'],
