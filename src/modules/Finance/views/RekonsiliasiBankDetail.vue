@@ -276,6 +276,60 @@
             </VCard>
           </div>
 
+          <!-- ── OB: pilih invoice reguler periode sebelumnya yang ikut dilunaskan ── -->
+          <div v-if="selectedIsOb" class="mt-3">
+            <VCard variant="outlined" color="deep-purple" class="pa-3">
+              <div class="d-flex align-center justify-space-between mb-1">
+                <span class="text-body-2 font-weight-medium">Lunaskan Invoice Reguler Periode Sebelumnya</span>
+                <VBtn
+                  v-if="settleableInvoices.length"
+                  size="x-small"
+                  variant="text"
+                  color="primary"
+                  @click="toggleSelectAllSettle"
+                >
+                  {{ selectedSettleIds.length === settleableInvoices.length ? 'Hapus semua' : 'Pilih semua' }}
+                </VBtn>
+              </div>
+              <div class="text-caption text-medium-emphasis mb-2">
+                Invoice reguler yang tercantum di rincian OB ini akan otomatis LUNAS sesuai nominalnya.
+              </div>
+
+              <VProgressLinear v-if="settleableLoading" indeterminate color="primary" class="mb-2" rounded />
+              <VAlert v-else-if="!settleableInvoices.length" type="info" variant="tonal" density="compact">
+                Tidak ada invoice reguler yang bisa dilunaskan otomatis untuk OB ini.
+              </VAlert>
+              <template v-else>
+                <div style="max-height: 200px; overflow-y: auto;">
+                  <VCheckbox
+                    v-for="inv in settleableInvoices"
+                    :key="inv.id"
+                    v-model="selectedSettleIds"
+                    :value="inv.id"
+                    density="compact"
+                    hide-details
+                  >
+                    <template #label>
+                      <div class="d-flex flex-column">
+                        <span class="text-body-2">{{ inv.no_invoice }}</span>
+                        <span class="text-caption text-medium-emphasis">
+                          {{ formatDate(inv.tanggal_invoice) }} · Sisa {{ formatCurrency(inv.sisa_tagihan) }}
+                        </span>
+                      </div>
+                    </template>
+                  </VCheckbox>
+                </div>
+                <div class="d-flex justify-space-between text-caption mt-2">
+                  <span>Total dipilih:</span>
+                  <strong :class="settleExceeds ? 'text-error' : 'text-success'">{{ formatCurrency(selectedSettleTotal) }}</strong>
+                </div>
+                <VAlert v-if="settleExceeds" type="warning" variant="tonal" density="compact" class="mt-2">
+                  Total invoice yang dipilih melebihi jumlah transaksi bank ({{ formatCurrency(selectedItem?.kredit ?? 0) }}).
+                </VAlert>
+              </template>
+            </VCard>
+          </div>
+
           <VDivider class="my-4" />
 
           <!-- ── Section: Invoice Reguler ── -->
@@ -702,6 +756,7 @@
 <script setup>
 import { computed, reactive, ref, watch } from 'vue'
 import { useFormatter } from '@/composables/useFormatter'
+import { useSweetAlert } from '@/composables/useSweetAlert'
 import api from '@/utils/axios'
 
 const props = defineProps({
@@ -711,6 +766,7 @@ const props = defineProps({
 const emit = defineEmits(['close'])
 
 const { formatCurrency, formatDate, formatDateTime } = useFormatter()
+const { showSuccess, showError } = useSweetAlert()
 
 const loading = ref(false)
 const report  = reactive({
@@ -747,6 +803,58 @@ const regularCandidates = ref([])
 const regularSearch     = ref('')
 const regularLoading    = ref(false)
 let   regularTimer      = null
+
+// OB: pelunasan invoice reguler periode sebelumnya
+const settleableLoading  = ref(false)
+const settleableInvoices = ref([])
+const selectedSettleIds  = ref([])
+
+const selectedIsOb = computed(() =>
+  obCandidates.value.some(inv => inv.id === selectedInvoiceId.value),
+)
+
+const selectedSettleTotal = computed(() =>
+  settleableInvoices.value
+    .filter(inv => selectedSettleIds.value.includes(inv.id))
+    .reduce((sum, inv) => sum + Number(inv.sisa_tagihan || 0), 0),
+)
+
+const settleExceeds = computed(() =>
+  selectedSettleTotal.value > Number(selectedItem.value?.kredit || 0) + 0.01,
+)
+
+function toggleSelectAllSettle() {
+  selectedSettleIds.value = selectedSettleIds.value.length === settleableInvoices.value.length
+    ? []
+    : settleableInvoices.value.map(inv => inv.id)
+}
+
+async function loadSettleableOriginals(obInvoiceId) {
+  settleableInvoices.value = []
+  selectedSettleIds.value  = []
+  if (!obInvoiceId) return
+
+  settleableLoading.value = true
+  try {
+    const { data } = await api.get(`/finance/invoices/${obInvoiceId}/settleable-originals`)
+    settleableInvoices.value = data?.data?.invoices ?? []
+    selectedSettleIds.value  = settleableInvoices.value.map(inv => inv.id)
+  } catch {
+    settleableInvoices.value = []
+    selectedSettleIds.value  = []
+  } finally {
+    settleableLoading.value = false
+  }
+}
+
+watch(selectedInvoiceId, id => {
+  if (id && selectedIsOb.value) {
+    loadSettleableOriginals(id)
+  } else {
+    settleableInvoices.value = []
+    selectedSettleIds.value  = []
+  }
+})
 
 // ── Unmatch dialog ──
 const unmatchDialog  = ref(false)
@@ -890,6 +998,8 @@ function closeMatchDialog() {
   regularCandidates.value = []
   regularSearch.value     = ''
   matchError.value        = null
+  settleableInvoices.value = []
+  selectedSettleIds.value  = []
   clearTimeout(obTimer)
   clearTimeout(regularTimer)
 }
@@ -925,12 +1035,20 @@ function onRegularSearchInput() {
 
 async function doManualMatch() {
   if (!selectedInvoiceId.value || !selectedItem.value) return
+  if (selectedIsOb.value && settleExceeds.value) {
+    matchError.value = 'Total invoice reguler yang dipilih melebihi jumlah transaksi bank.'
+    return
+  }
   matchSaving.value = true
   matchError.value  = null
   try {
+    const payload = { invoice_id: selectedInvoiceId.value }
+    if (selectedIsOb.value) {
+      payload.settle_original_invoice_ids = selectedSettleIds.value
+    }
     const { data } = await api.post(
       `/finance/rekonsiliasi-bank/detail/${selectedItem.value.id}/catat-bayar`,
-      { invoice_id: selectedInvoiceId.value },
+      payload,
     )
     const updated = data.data
     const row = report.details.find(d => d.id === selectedItem.value.id)
@@ -945,8 +1063,17 @@ async function doManualMatch() {
       if (wasUnmatched) report.jumlah_unmatched = Math.max(0, report.jumlah_unmatched - 1)
     }
     closeMatchDialog()
+    showSuccess('Pembayaran berhasil dicatat.')
   } catch (err) {
-    matchError.value = err?.response?.data?.message ?? 'Terjadi kesalahan, coba lagi.'
+    if (!err?.response || err?.code === 'ECONNABORTED') {
+      // Koneksi terputus/timeout: server mungkin sudah menyimpan. Muat ulang data
+      // otoritatif agar tidak salah lapor "gagal" padahal pembayaran sudah tercatat.
+      closeMatchDialog()
+      await fetchDetail()
+      showError('Koneksi terputus saat menyimpan. Data telah dimuat ulang — silakan periksa status transaksi.')
+    } else {
+      matchError.value = err?.response?.data?.message ?? 'Terjadi kesalahan, coba lagi.'
+    }
   } finally {
     matchSaving.value = false
   }
@@ -976,6 +1103,18 @@ async function doUnmatch() {
     }
     unmatchDialog.value  = false
     unmatchItem.value    = null
+    showSuccess('Pencocokan berhasil dibatalkan.')
+  } catch (err) {
+    unmatchDialog.value = false
+    unmatchItem.value   = null
+    if (!err?.response || err?.code === 'ECONNABORTED') {
+      // Koneksi terputus/timeout: server mungkin sudah memproses. Muat ulang data
+      // otoritatif agar status baris sesuai kondisi sebenarnya.
+      await fetchDetail()
+      showError('Koneksi terputus. Data telah dimuat ulang — silakan periksa status transaksi.')
+    } else {
+      showError(err?.response?.data?.message ?? 'Gagal membatalkan pencocokan, coba lagi.')
+    }
   } finally {
     unmatchSaving.value  = false
     unmatchLoading.value = null
@@ -1028,28 +1167,56 @@ async function openKelebihanDialog(item) {
   }
 }
 
-function toggleAllB2C() {
-  const next = { ...selectedInvoices.value }
-  if (allB2CSelected.value) {
-    invoiceB2CList.value.forEach(inv => delete next[inv.id])
-  } else {
-    invoiceB2CList.value.forEach(inv => {
-      next[inv.id] = { jumlah: inv.sisa_tagihan, keterangan: '' }
-    })
+// Distribusi floating/waterfall: alokasikan sisa kelebihan berurutan ke tiap
+// invoice sebesar min(sisa_tagihan, sisa kelebihan tersisa). Invoice yang tidak
+// kebagian (kelebihan sudah habis) tidak dimasukkan -> tidak tercentang.
+function distributeAll(list, currentSelected, totalSisaKelebihan) {
+  const next = { ...currentSelected }
+
+  // hapus dulu entri list ini agar perhitungan ulang bersih
+  list.forEach(inv => delete next[inv.id])
+
+  // sisa kelebihan setelah dikurangi alokasi invoice DI LUAR list ini
+  const allocatedOthers = Object.values(next)
+    .reduce((s, v) => s + (Number(v.jumlah) || 0), 0)
+  let remaining = totalSisaKelebihan - allocatedOthers
+
+  for (const inv of list) {
+    if (remaining <= 0) break
+    const give = Math.min(inv.sisa_tagihan, remaining)
+    if (give <= 0) continue
+    next[inv.id] = { jumlah: give, keterangan: '' }
+    remaining -= give
   }
-  selectedInvoices.value = next
+  return next
+}
+
+function toggleAllB2C() {
+  if (allB2CSelected.value) {
+    const next = { ...selectedInvoices.value }
+    invoiceB2CList.value.forEach(inv => delete next[inv.id])
+    selectedInvoices.value = next
+    return
+  }
+  selectedInvoices.value = distributeAll(
+    invoiceB2CList.value,
+    selectedInvoices.value,
+    kelebihanItem.value?.kelebihan_bayar?.sisa ?? 0,
+  )
 }
 
 function toggleAllB2B() {
-  const next = { ...selectedInvoices.value }
   if (allB2BSelected.value) {
+    const next = { ...selectedInvoices.value }
     invoiceB2BList.value.forEach(inv => delete next[inv.id])
-  } else {
-    invoiceB2BList.value.forEach(inv => {
-      next[inv.id] = { jumlah: inv.sisa_tagihan, keterangan: '' }
-    })
+    selectedInvoices.value = next
+    return
   }
-  selectedInvoices.value = next
+  selectedInvoices.value = distributeAll(
+    invoiceB2BList.value,
+    selectedInvoices.value,
+    kelebihanItem.value?.kelebihan_bayar?.sisa ?? 0,
+  )
 }
 
 function toggleInvoice(inv) {

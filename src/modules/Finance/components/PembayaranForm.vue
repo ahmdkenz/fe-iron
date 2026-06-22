@@ -110,6 +110,82 @@
           />
         </VCol>
 
+        <!-- OB: pilih invoice reguler periode sebelumnya yang ikut dilunaskan -->
+        <VCol
+          v-if="isOpeningBalance"
+          cols="12"
+        >
+          <VDivider class="mb-3" />
+          <div class="d-flex align-center justify-space-between mb-1">
+            <span class="text-subtitle-2 font-weight-semibold">
+              Lunaskan Invoice Reguler Periode Sebelumnya
+            </span>
+            <VBtn
+              v-if="settleableInvoices.length"
+              size="x-small"
+              variant="text"
+              color="primary"
+              @click="toggleSelectAllSettle"
+            >
+              {{ selectedSettleIds.length === settleableInvoices.length ? 'Hapus semua' : 'Pilih semua' }}
+            </VBtn>
+          </div>
+          <div class="text-caption text-medium-emphasis mb-2">
+            Invoice reguler yang tercantum di rincian OB ini akan otomatis LUNAS sesuai nominalnya.
+          </div>
+
+          <div
+            v-if="settleableLoading"
+            class="text-caption text-medium-emphasis py-2"
+          >
+            Memuat daftar invoice…
+          </div>
+          <VAlert
+            v-else-if="!settleableInvoices.length"
+            type="info"
+            variant="tonal"
+            density="compact"
+          >
+            Tidak ada invoice reguler yang bisa dilunaskan otomatis untuk OB ini.
+          </VAlert>
+          <template v-else>
+            <div class="border rounded pa-1" style="max-height: 220px; overflow-y: auto;">
+              <VCheckbox
+                v-for="inv in settleableInvoices"
+                :key="inv.id"
+                v-model="selectedSettleIds"
+                :value="inv.id"
+                density="compact"
+                hide-details
+              >
+                <template #label>
+                  <div class="d-flex flex-column">
+                    <span class="text-body-2">{{ inv.no_invoice }}</span>
+                    <span class="text-caption text-medium-emphasis">
+                      {{ inv.tanggal_invoice }} · Sisa {{ formatCurrency(inv.sisa_tagihan) }}
+                    </span>
+                  </div>
+                </template>
+              </VCheckbox>
+            </div>
+            <div class="d-flex justify-space-between text-caption mt-2">
+              <span>Total dipilih:</span>
+              <strong :class="settleExceeds ? 'text-error' : 'text-success'">
+                {{ formatCurrency(selectedSettleTotal) }}
+              </strong>
+            </div>
+            <VAlert
+              v-if="settleExceeds"
+              type="warning"
+              variant="tonal"
+              density="compact"
+              class="mt-2"
+            >
+              Total invoice yang dipilih melebihi jumlah pembayaran ({{ formatCurrency(form.jumlah_pembayaran || 0) }}).
+            </VAlert>
+          </template>
+        </VCol>
+
         <!-- Bukti Pembayaran -->
         <VCol cols="12">
           <VFileInput
@@ -143,7 +219,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch } from 'vue'
+import { computed, ref, reactive, watch } from 'vue'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useFormatter } from '@/composables/useFormatter.js'
 import api from '@/utils/axios.js'
@@ -155,6 +231,7 @@ const props = defineProps({
   modelValue: Boolean,
   invoiceId: { type: [Number, String], default: null },
   sisaTagihan: { type: Number, default: 0 },
+  isOpeningBalance: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['update:modelValue', 'saved'])
@@ -189,12 +266,53 @@ const defaultForm = () => ({
 
 const form = reactive(defaultForm())
 
+// ── OB: pelunasan invoice reguler periode sebelumnya ──────────────────────
+const settleableLoading  = ref(false)
+const settleableInvoices = ref([])
+const selectedSettleIds  = ref([])
+
+const selectedSettleTotal = computed(() =>
+  settleableInvoices.value
+    .filter(inv => selectedSettleIds.value.includes(inv.id))
+    .reduce((sum, inv) => sum + Number(inv.sisa_tagihan || 0), 0),
+)
+
+const settleExceeds = computed(() =>
+  selectedSettleTotal.value > Number(form.jumlah_pembayaran || 0) + 0.01,
+)
+
+function toggleSelectAllSettle() {
+  selectedSettleIds.value = selectedSettleIds.value.length === settleableInvoices.value.length
+    ? []
+    : settleableInvoices.value.map(inv => inv.id)
+}
+
+async function loadSettleableOriginals() {
+  settleableInvoices.value = []
+  selectedSettleIds.value  = []
+  if (!props.isOpeningBalance || !props.invoiceId) return
+
+  settleableLoading.value = true
+  try {
+    const res = await api.get(`/finance/invoices/${props.invoiceId}/settleable-originals`)
+    settleableInvoices.value = res.data?.data?.invoices ?? []
+    // default: semua tercentang (pembayaran penuh = lunaskan semua)
+    selectedSettleIds.value = settleableInvoices.value.map(inv => inv.id)
+  } catch {
+    settleableInvoices.value = []
+    selectedSettleIds.value  = []
+  } finally {
+    settleableLoading.value = false
+  }
+}
+
 watch(() => props.modelValue, val => {
   if (val) {
     Object.keys(errors).forEach(k => (errors[k] = []))
     errorMessage.value = ''
     duplikatInfo.value = null
     Object.assign(form, defaultForm())
+    loadSettleableOriginals()
   }
 })
 
@@ -224,6 +342,12 @@ async function handleSubmit() {
   const { valid } = await formRef.value.validate()
   if (!valid) return
 
+  if (props.isOpeningBalance && settleExceeds.value) {
+    errorMessage.value = 'Total invoice reguler yang dipilih melebihi jumlah pembayaran.'
+    await showError(errorMessage.value)
+    return
+  }
+
   errorMessage.value = ''
   Object.keys(errors).forEach(k => (errors[k] = []))
   saving.value = true
@@ -241,6 +365,9 @@ async function handleSubmit() {
     if (form.keterangan)   payload.append('keterangan', form.keterangan)
     const buktiFile = Array.isArray(form.bukti_pembayaran) ? form.bukti_pembayaran[0] : form.bukti_pembayaran
     if (buktiFile instanceof File) payload.append('bukti_pembayaran', buktiFile)
+    if (props.isOpeningBalance) {
+      selectedSettleIds.value.forEach(id => payload.append('settle_original_invoice_ids[]', id))
+    }
 
     await api.post(`/finance/invoices/${props.invoiceId}/pembayaran`, payload, {
       headers: { 'Content-Type': 'multipart/form-data' },

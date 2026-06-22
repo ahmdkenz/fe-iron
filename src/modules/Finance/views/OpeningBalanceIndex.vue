@@ -1588,6 +1588,7 @@
       v-model="showPembayaran"
       :invoice-id="selectedForPayment.id"
       :sisa-tagihan="selectedForPayment.sisa_tagihan"
+      :is-opening-balance="true"
       @saved="onPembayaranSaved"
     />
 
