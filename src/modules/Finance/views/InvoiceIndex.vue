@@ -807,8 +807,34 @@
             density="compact"
             :clearable="true"
             hide-details="auto"
+            :disabled="importing"
             @update:model-value="importResult = null"
           />
+
+          <!-- Progress saat import berjalan di latar belakang -->
+          <div
+            v-if="importing && importProgress"
+            class="mt-4"
+          >
+            <div class="d-flex align-center justify-space-between text-caption mb-1">
+              <span>
+                {{ importProgress.status === 'queued' ? 'Menunggu antrian…' : 'Memproses data…' }}
+              </span>
+              <span v-if="importProgress.progress_total > 0">
+                {{ importProgress.processed }} / {{ importProgress.progress_total }} baris
+              </span>
+            </div>
+            <VProgressLinear
+              :model-value="importProgress.progress_total > 0 ? (importProgress.processed / importProgress.progress_total) * 100 : 0"
+              :indeterminate="importProgress.status === 'queued' || !importProgress.progress_total"
+              color="warning"
+              height="8"
+              rounded
+            />
+            <div class="text-caption text-medium-emphasis mt-1">
+              Anda boleh menutup dialog ini — proses tetap berjalan di latar belakang.
+            </div>
+          </div>
 
           <div
             v-if="importResult"
@@ -943,6 +969,8 @@ const printingId       = ref(null)
 const importFile       = ref(null)
 const importResult     = ref(null)
 const importType       = ref('b2c')
+const importProgress   = ref(null)
+let   importPollTimer  = null
 
 const headers = [
   { title: 'No',           key: 'no',              sortable: false, width: '60px' },
@@ -1103,14 +1131,19 @@ async function exportExcel() {
 }
 
 function openImport() {
-  importFile.value   = null
-  importResult.value = null
-  importType.value   = 'b2c'
-  showImport.value   = true
+  importFile.value     = null
+  importResult.value   = null
+  importProgress.value = null
+  importType.value     = 'b2c'
+  showImport.value     = true
 }
 
 function closeImport() {
   showImport.value = false
+  // Job tetap berjalan di server meski dialog ditutup; hanya polling yang dihentikan.
+  stopImportPolling()
+  importing.value      = false
+  importProgress.value = null
   if (importResult.value?.inserted > 0) {
     loadListB2C()
     if (canSeeAll) loadListB2B()
@@ -1132,11 +1165,18 @@ async function downloadTemplate(type = 'b2c') {
   }
 }
 
+function stopImportPolling() {
+  if (importPollTimer) {
+    clearTimeout(importPollTimer)
+    importPollTimer = null
+  }
+}
+
 async function doImport() {
   if (!importFile.value) return
-  importing.value    = true
-  importResult.value = null
-  showLoading({ title: 'Mengimport Data Invoice', text: 'Mohon tunggu sebentar...' })
+  importing.value      = true
+  importResult.value   = null
+  importProgress.value = { status: 'queued', processed: 0, progress_total: 0 }
 
   try {
     const formData = new FormData()
@@ -1145,18 +1185,45 @@ async function doImport() {
 
     const res = await api.post('/finance/invoices/import', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
-      timeout: 300000,
     })
 
-    importResult.value = res.data.data
-    importFile.value   = null
+    const batchId = res.data?.data?.batch_id
+    if (!batchId) throw new Error('Batch import tidak valid.')
+
+    importFile.value = null
+    pollImportStatus(batchId)
   } catch (err) {
     const message = err?.response?.data?.message || 'Gagal mengimport data.'
+    importing.value      = false
+    importProgress.value = null
     await showError(message)
-  } finally {
-    importing.value = false
-    closeAlert({ onlyLoading: true })
   }
+}
+
+function pollImportStatus(batchId) {
+  stopImportPolling()
+  importPollTimer = setTimeout(async () => {
+    try {
+      const res  = await api.get(`/finance/invoices/import/${batchId}/status`)
+      const data = res.data?.data
+      importProgress.value = data
+
+      if (data.status === 'completed' || data.status === 'failed') {
+        importing.value = false
+        if (data.status === 'failed') {
+          importProgress.value = null
+          await showError(data.message || 'Import gagal diproses.')
+        } else {
+          importResult.value = data
+        }
+        return
+      }
+      pollImportStatus(batchId)
+    } catch {
+      // Lanjutkan polling; gangguan jaringan sementara tidak menghentikan proses server.
+      pollImportStatus(batchId)
+    }
+  }, 1500)
 }
 
 function confirmDelete(inv) { selectedInvoice.value = inv; deleteError.value = ''; showDelete.value = true }
@@ -1255,6 +1322,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   clearTimeout(debounceTimerB2B)
   clearTimeout(debounceTimerB2C)
+  stopImportPolling()
   abortPendingRequests()
 })
 </script>
