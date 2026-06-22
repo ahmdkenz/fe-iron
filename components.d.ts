@@ -38,6 +38,7 @@ declare module 'vue' {
     MutasiPiutangSection: typeof import('./src/modules/Finance/components/laporan-sections/MutasiPiutangSection.vue')['default']
     OpeningBalanceDetailItemRow: typeof import('./src/modules/Finance/components/OpeningBalanceDetailItemRow.vue')['default']
     OpeningBalanceDetailTable: typeof import('./src/modules/Finance/components/OpeningBalanceDetailTable.vue')['default']
+    OutstandingInvoicePickerDialog: typeof import('./src/modules/Finance/components/OutstandingInvoicePickerDialog.vue')['default']
     PageHeader: typeof import('./src/components/shared/PageHeader.vue')['default']
     PembayaranArSection: typeof import('./src/modules/Finance/components/laporan-sections/PembayaranArSection.vue')['default']
     PembayaranForm: typeof import('./src/modules/Finance/components/PembayaranForm.vue')['default']

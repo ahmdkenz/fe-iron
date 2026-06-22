@@ -28,9 +28,9 @@
           variant="tonal"
           prepend-icon="ri-download-2-line"
           :loading="loadingOutstanding"
-          @click="loadAllOutstanding"
+          @click="pickerOpen = true"
         >
-          Muat Semua ({{ outstandingInvoices.length }})
+          Muat Data ({{ outstandingInvoices.length }})
         </VBtn>
         <VBtn
           size="small"
@@ -474,6 +474,14 @@
         <span class="text-body-1 font-weight-bold text-primary">{{ formatCurrency(totalSisa) }}</span>
       </div>
     </template>
+
+    <OutstandingInvoicePickerDialog
+      v-model="pickerOpen"
+      :invoices="outstandingInvoices"
+      :loading="loadingOutstanding"
+      :preselected-nos="rows.map(r => r.no_invoice_asal).filter(Boolean)"
+      @confirm="loadSelectedOutstanding"
+    />
   </div>
 </template>
 
@@ -482,6 +490,7 @@
 import { computed, ref, watch } from 'vue'
 import { useFormatter } from '@/composables/useFormatter'
 import OpeningBalanceDetailItemRow from './OpeningBalanceDetailItemRow.vue'
+import OutstandingInvoicePickerDialog from './OutstandingInvoicePickerDialog.vue'
 
 const props = defineProps({
   details: {
@@ -539,6 +548,7 @@ const createItem = () => ({
 })
 
 const rows = ref(props.details.map(d => ({ items: [], ...d })))
+const pickerOpen = ref(false)
 
 watch(() => props.details, val => {
   rows.value = val.map(d => ({ items: [], ...d }))
@@ -609,7 +619,7 @@ function handleInvoiceSelect(rowIndex, noInvoice) {
   const row = rows.value[rowIndex]
   row.no_invoice_asal      = inv.no_invoice
   row.tanggal_invoice_asal = inv.tanggal_invoice ?? ''
-  row.jumlah_tagihan_asal  = inv.total_tagihan
+  row.jumlah_tagihan_asal  = inv.subtotal
   row.sisa_tagihan_asal    = inv.sisa_tagihan
   row.deskripsi            = `Sisa tagihan ${inv.no_invoice}`
   row.keterangan           = inv.keterangan ?? ''
@@ -617,14 +627,14 @@ function handleInvoiceSelect(rowIndex, noInvoice) {
   emitRows()
 }
 
-function loadAllOutstanding() {
-  if (!props.outstandingInvoices.length) return
-  rows.value = props.outstandingInvoices.map(inv => ({
+function loadSelectedOutstanding(selected) {
+  if (!selected?.length) return
+  rows.value = selected.map(inv => ({
     ...createRow(),
     no_invoice_asal:      inv.no_invoice,
     tanggal_invoice_asal: inv.tanggal_invoice ?? '',
     deskripsi:            `Sisa tagihan ${inv.no_invoice}`,
-    jumlah_tagihan_asal:  inv.total_tagihan,
+    jumlah_tagihan_asal:  inv.subtotal,
     sisa_tagihan_asal:    inv.sisa_tagihan,
     keterangan:           inv.keterangan ?? '',
     items:                mapInvoiceItems(inv.items),
