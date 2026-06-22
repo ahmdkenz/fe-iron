@@ -378,8 +378,34 @@
             density="compact"
             :clearable="true"
             hide-details="auto"
+            :disabled="importing"
             @update:model-value="importResult = null"
           />
+
+          <!-- Progress saat import berjalan di latar belakang -->
+          <div
+            v-if="importing && importProgress"
+            class="mt-4"
+          >
+            <div class="d-flex align-center justify-space-between text-caption mb-1">
+              <span>
+                {{ importProgress.status === 'queued' ? 'Menunggu antrian…' : 'Memproses data…' }}
+              </span>
+              <span v-if="importProgress.progress_total > 0">
+                {{ importProgress.processed }} / {{ importProgress.progress_total }} baris
+              </span>
+            </div>
+            <VProgressLinear
+              :model-value="importProgress.progress_total > 0 ? (importProgress.processed / importProgress.progress_total) * 100 : 0"
+              :indeterminate="importProgress.status === 'queued' || !importProgress.progress_total"
+              color="warning"
+              height="8"
+              rounded
+            />
+            <div class="text-caption text-medium-emphasis mt-1">
+              Anda boleh menutup dialog ini — proses tetap berjalan di latar belakang.
+            </div>
+          </div>
 
           <div
             v-if="importResult"
@@ -451,7 +477,7 @@
 </template>
 
 <script setup>
-import { nextTick, onMounted, ref } from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useAuthStore } from '@/stores/auth.store'
 import { useCrud } from '@/composables/useCrud'
@@ -471,11 +497,13 @@ const deleteError   = ref('')
 const selectedResto = ref(null)
 const selectedForm  = ref(null)
 
-const exporting    = ref(false)
-const showImport   = ref(false)
-const importing    = ref(false)
-const importFile   = ref(null)
-const importResult = ref(null)
+const exporting      = ref(false)
+const showImport     = ref(false)
+const importing      = ref(false)
+const importFile     = ref(null)
+const importResult   = ref(null)
+const importProgress = ref(null)
+let importPollTimer  = null
 
 const headers = [
   { title: 'No',            key: 'no',              sortable: false, width: '60px' },
@@ -533,14 +561,26 @@ function openDetail(r)     { selectedResto.value = r;    showDetail.value = true
 function confirmDelete(r)  { selectedResto.value = r;    deleteError.value = ''; showDelete.value = true }
 
 function openImport() {
-  importFile.value   = null
-  importResult.value = null
-  showImport.value   = true
+  importFile.value     = null
+  importResult.value   = null
+  importProgress.value = null
+  showImport.value     = true
 }
 
 function closeImport() {
   showImport.value = false
-  fetchList()
+  // Job tetap berjalan di server meski dialog ditutup; hanya polling yang dihentikan.
+  stopImportPolling()
+  importing.value      = false
+  importProgress.value = null
+  if ((importResult.value?.inserted > 0) || (importResult.value?.updated > 0)) fetchList()
+}
+
+function stopImportPolling() {
+  if (importPollTimer) {
+    clearTimeout(importPollTimer)
+    importPollTimer = null
+  }
 }
 
 async function exportCsv() {
@@ -583,9 +623,9 @@ async function downloadTemplate() {
 
 async function doImport() {
   if (!importFile.value) return
-  importing.value    = true
-  importResult.value = null
-  showLoading({ title: 'Mengimport Data Resto', text: 'Mohon tunggu sebentar...' })
+  importing.value      = true
+  importResult.value   = null
+  importProgress.value = { status: 'queued', processed: 0, progress_total: 0 }
 
   try {
     const formData = new FormData()
@@ -595,16 +635,44 @@ async function doImport() {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
 
-    importResult.value = res.data.data
-    importFile.value   = null
-    if ((importResult.value?.inserted > 0) || (importResult.value?.updated > 0)) fetchList()
+    const batchId = res.data?.data?.batch_id
+    if (!batchId) throw new Error('Batch import tidak valid.')
+
+    importFile.value = null
+    pollImportStatus(batchId)
   } catch (err) {
     const message = err?.response?.data?.message || 'Gagal mengimport data.'
+    importing.value      = false
+    importProgress.value = null
     await showError(message)
-  } finally {
-    importing.value = false
-    closeAlert({ onlyLoading: true })
   }
+}
+
+function pollImportStatus(batchId) {
+  stopImportPolling()
+  importPollTimer = setTimeout(async () => {
+    try {
+      const res  = await api.get(`/master/resto/import/${batchId}/status`)
+      const data = res.data?.data
+      importProgress.value = data
+
+      if (data.status === 'completed' || data.status === 'failed') {
+        importing.value = false
+        if (data.status === 'failed') {
+          importProgress.value = null
+          await showError(data.message || 'Import gagal diproses.')
+        } else {
+          importResult.value = data
+          if ((data.inserted > 0) || (data.updated > 0)) fetchList()
+        }
+        return
+      }
+      pollImportStatus(batchId)
+    } catch {
+      // Lanjutkan polling; gangguan jaringan sementara tidak menghentikan proses server.
+      pollImportStatus(batchId)
+    }
+  }, 1500)
 }
 
 async function doDelete() {
@@ -631,5 +699,9 @@ onMounted(() => {
     params.karyawan_id = authStore.user.karyawan_id
   }
   fetchList()
+})
+
+onBeforeUnmount(() => {
+  stopImportPolling()
 })
 </script>
