@@ -196,9 +196,11 @@
                 label="Kode Klien"
                 density="compact"
                 variant="outlined"
-                :rules="[v => !!v || 'Kode klien wajib diisi']"
+                :readonly="true"
+                :loading="kodeLoading"
                 :error-messages="errors.kode_klien"
-                :readonly="isEditing"
+                hint="Digenerate otomatis oleh sistem"
+                persistent-hint
               />
             </VCol>
             <VCol
@@ -499,7 +501,7 @@
             <!-- Tab B2C -->
             <VTabsWindowItem value="b2c">
               <VAlert type="success" variant="tonal" density="compact" class="mb-4">
-                <strong>B2C (RESTO)</strong> — Penagihan ke pengelola outlet secara langsung. Kode: <code>AR-B2C-xxx</code>
+                <strong>B2C (RESTO)</strong> — Penagihan ke pengelola outlet secara langsung. Kode: <code>CLxxx</code> (otomatis)
               </VAlert>
 
               <VTable density="compact" class="rounded border mb-4">
@@ -545,7 +547,7 @@
             <!-- Tab B2B -->
             <VTabsWindowItem value="b2b">
               <VAlert type="primary" variant="tonal" density="compact" class="mb-4">
-                <strong>B2B (PT)</strong> — Penagihan langsung ke perusahaan/PT. Kode: <code>AR-B2B-xxx</code>
+                <strong>B2B (PT)</strong> — Penagihan langsung ke perusahaan/PT. Kode: <code>CLxxx</code> (otomatis)
               </VAlert>
 
               <VTable density="compact" class="rounded border mb-4">
@@ -665,6 +667,7 @@ const { ensureLoaded: ensurePerusahaanLoaded } = useLazyFetchAll(fetchPerusahaan
 
 const formRef           = ref(null)
 const pageLoading       = ref(!!id)
+const kodeLoading       = ref(false)
 const errorMessage      = ref('')
 const showPanduan       = ref(false)
 const panduanTab        = ref('b2c')
@@ -795,10 +798,16 @@ onMounted(async () => {
   const restoLoadOpts = { force: true }
 
   if (!isEditing.value) {
-    await Promise.all([
+    kodeLoading.value = true
+    const [, , previewRes] = await Promise.allSettled([
       ensureRestoLoaded(restoLoadOpts),
       ensurePerusahaanLoaded(),
+      api.get('/finance/klien-ar/preview-kode'),
     ])
+    if (previewRes.status === 'fulfilled') {
+      form.kode_klien = previewRes.value?.data?.data?.kode_klien ?? ''
+    }
+    kodeLoading.value = false
     pageLoading.value = false
 
     return
