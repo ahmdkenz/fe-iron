@@ -13,7 +13,7 @@
           color="primary"
           prepend-icon="ri-file-excel-line"
           :loading="exportingExcel"
-          @click="exportExcel"
+          @click="showExportModal = true"
         >
           Export
         </VBtn>
@@ -587,6 +587,22 @@
       </VAlert>
     </BaseModal>
 
+    <!-- Export Modal -->
+    <BaseModal
+      v-if="showExportModal"
+      v-model="showExportModal"
+      title="Export Invoice"
+      @confirm="exportExcel"
+    >
+      <VTextField
+        v-model="exportMonth"
+        type="month"
+        label="Pilih Bulan"
+        variant="outlined"
+        density="compact"
+      />
+    </BaseModal>
+
     <!-- Catat Bayar Modal -->
     <PembayaranForm
       v-if="selectedForPayment"
@@ -1034,6 +1050,8 @@ const showShareDialog  = ref(false)
 const shareTargetInvoices = ref([])
 const selectedForPayment  = ref(null)
 const exportingExcel   = ref(false)
+const showExportModal  = ref(false)
+const exportMonth      = ref(new Date().toISOString().slice(0, 7))
 const showImport        = ref(false)
 const importing         = ref(false)
 const printingId        = ref(null)
@@ -1175,15 +1193,26 @@ function onTableOptionsB2B({ page, itemsPerPage }) {
   loadListB2B()
 }
 
+function monthToRange(ym) {
+  const [year, month] = ym.split('-').map(Number)
+  const lastDay = new Date(year, month, 0).getDate()
+  return {
+    tanggal_dari:   `${ym}-01`,
+    tanggal_sampai: `${ym}-${String(lastDay).padStart(2, '0')}`,
+  }
+}
+
 async function exportExcel() {
+  showExportModal.value = false
   exportingExcel.value = true
   showLoading({ title: 'Mengeksport Data Invoice', text: 'Mohon tunggu sebentar...' })
   try {
+    const { tanggal_dari, tanggal_sampai } = monthToRange(exportMonth.value)
     const query = new URLSearchParams()
-    if (filtersB2C.status)         query.set('status', filtersB2C.status)
-    if (filtersB2C.klien_ar_id)    query.set('klien_ar_id', filtersB2C.klien_ar_id)
-    if (filtersB2C.tanggal_dari)   query.set('tanggal_dari', filtersB2C.tanggal_dari)
-    if (filtersB2C.tanggal_sampai) query.set('tanggal_sampai', filtersB2C.tanggal_sampai)
+    if (filtersB2C.status)      query.set('status', filtersB2C.status)
+    if (filtersB2C.klien_ar_id) query.set('klien_ar_id', filtersB2C.klien_ar_id)
+    query.set('tanggal_dari', tanggal_dari)
+    query.set('tanggal_sampai', tanggal_sampai)
 
     const res = await api.get(`/finance/invoices/export-excel?${query}`, { responseType: 'blob' })
     const url  = URL.createObjectURL(res.data)

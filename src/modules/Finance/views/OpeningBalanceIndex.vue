@@ -17,7 +17,7 @@
           color="primary"
           prepend-icon="ri-file-excel-line"
           :loading="isExporting"
-          @click="exportExcel"
+          @click="showExportModal = true"
         >
           Export
         </VBtn>
@@ -1742,6 +1742,22 @@
         </VCardActions>
       </VCard>
     </VDialog>
+
+    <!-- Export Modal -->
+    <BaseModal
+      v-if="showExportModal"
+      v-model="showExportModal"
+      title="Export Opening Balance"
+      @confirm="exportExcel"
+    >
+      <VTextField
+        v-model="exportMonth"
+        type="month"
+        label="Pilih Bulan"
+        variant="outlined"
+        density="compact"
+      />
+    </BaseModal>
   </div>
 </template>
 
@@ -1923,12 +1939,25 @@ function onPembayaranSaved() {
 }
 
 // ── Export (non-director) ──────────────────────────────────────────────────
-const isExporting = ref(false)
+const isExporting     = ref(false)
+const showExportModal = ref(false)
+const exportMonth     = ref(new Date().toISOString().slice(0, 7))
+
+function monthToRange(ym) {
+  const [year, month] = ym.split('-').map(Number)
+  const lastDay = new Date(year, month, 0).getDate()
+  return {
+    tanggal_dari:   `${ym}-01`,
+    tanggal_sampai: `${ym}-${String(lastDay).padStart(2, '0')}`,
+  }
+}
 
 async function exportExcel() {
+  showExportModal.value = false
   isExporting.value = true
   showLoading({ title: 'Mengeksport Data Opening Balance', text: 'Mohon tunggu sebentar...' })
   try {
+    const { tanggal_dari, tanggal_sampai } = monthToRange(exportMonth.value)
     const res = await api.get('/finance/opening-balance/export', {
       params: {
         search:          params.search          || undefined,
@@ -1936,8 +1965,8 @@ async function exportExcel() {
         approval_status: params.approval_status || undefined,
         klien_ar_id:     params.klien_ar_id     || undefined,
         karyawan_id:     params.karyawan_id     || undefined,
-        tanggal_dari:    params.tanggal_dari    || undefined,
-        tanggal_sampai:  params.tanggal_sampai  || undefined,
+        tanggal_dari,
+        tanggal_sampai,
       },
       responseType: 'blob',
     })
