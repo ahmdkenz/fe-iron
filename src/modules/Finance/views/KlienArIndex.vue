@@ -507,20 +507,24 @@
             @update:model-value="importResult = null"
           />
 
-          <!-- Loading indicator saat import berjalan -->
+          <!-- Progress saat import berjalan di latar belakang -->
           <div
-            v-if="importing"
+            v-if="importing && importProgress"
             class="mt-4"
           >
+            <div class="text-caption text-medium-emphasis mb-1">
+              {{ importProgress.status === 'queued' ? 'Menunggu antrian…' : 'Memproses data…' }}
+              <span v-if="importProgress.progress_total > 0">
+                ({{ importProgress.processed }} / {{ importProgress.progress_total }} baris)
+              </span>
+            </div>
             <VProgressLinear
-              indeterminate
+              :model-value="importProgress.progress_total > 0 ? (importProgress.processed / importProgress.progress_total) * 100 : 0"
+              :indeterminate="importProgress.status === 'queued' || !importProgress.progress_total"
               color="primary"
               height="8"
               rounded
             />
-            <div class="text-caption text-medium-emphasis mt-1">
-              Sedang mengimport data, mohon tunggu…
-            </div>
           </div>
 
           <div
@@ -671,7 +675,7 @@
 </template>
 
 <script setup>
-import { nextTick, onMounted, ref } from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 
 import { useRouter } from 'vue-router'
 import { useSweetAlert } from '@/composables/useSweetAlert'
@@ -704,7 +708,9 @@ const showImport        = ref(false)
 const importing         = ref(false)
 const importFile        = ref(null)
 const importResult      = ref(null)
+const importProgress    = ref(null)
 const isImportMinimized = ref(false)
+let importPollTimer     = null
 
 const headers = [
   { title: 'No',             key: 'no',          sortable: false, width: '60px' },
@@ -772,6 +778,9 @@ function openImport() {
 function closeImport() {
   showImport.value        = false
   isImportMinimized.value = false
+  stopImportPolling()
+  importing.value      = false
+  importProgress.value = null
   if ((importResult.value?.inserted > 0) || (importResult.value?.updated > 0)) {
     loadListB2C()
     loadListB2B()
@@ -826,10 +835,18 @@ async function downloadTemplate() {
   }
 }
 
+function stopImportPolling() {
+  if (importPollTimer) {
+    clearTimeout(importPollTimer)
+    importPollTimer = null
+  }
+}
+
 async function doImport() {
   if (!importFile.value) return
-  importing.value    = true
-  importResult.value = null
+  importing.value      = true
+  importResult.value   = null
+  importProgress.value = { status: 'queued', processed: 0, progress_total: 0 }
 
   try {
     const formData = new FormData()
@@ -839,15 +856,53 @@ async function doImport() {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
 
-    importResult.value = res.data.data
-    importFile.value   = null
+    const batchId = res.data?.data?.batch_id
+    if (!batchId) throw new Error('Batch import tidak valid.')
+
+    importFile.value = null
+    pollImportStatus(batchId)
   } catch (err) {
     const message = err?.response?.data?.message || 'Gagal mengimport data.'
+    importing.value      = false
+    importProgress.value = null
     await showError(message)
-  } finally {
-    importing.value = false
   }
 }
+
+function pollImportStatus(batchId) {
+  stopImportPolling()
+  importPollTimer = setTimeout(async () => {
+    try {
+      const res  = await api.get(`/finance/klien-ar/import/${batchId}/status`)
+      const data = res.data?.data
+      importProgress.value = data
+
+      if (data.status === 'completed' || data.status === 'failed') {
+        importing.value = false
+        if (data.status === 'failed') {
+          importProgress.value    = null
+          await showError(data.message || 'Import gagal diproses.')
+          isImportMinimized.value = false
+        } else {
+          importResult.value = data
+          if ((data.inserted > 0) || (data.updated > 0)) {
+            loadListB2C()
+            loadListB2B()
+          }
+        }
+        return
+      }
+      pollImportStatus(batchId)
+    } catch {
+      // Lanjutkan polling; gangguan jaringan sementara tidak menghentikan proses server.
+      pollImportStatus(batchId)
+    }
+  }, 1500)
+}
+
+onBeforeUnmount(() => {
+  stopImportPolling()
+})
 
 async function doDelete() {
   deleteError.value = ''
