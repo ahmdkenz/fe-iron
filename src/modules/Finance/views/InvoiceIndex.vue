@@ -622,14 +622,26 @@
       <VCard>
         <VCardTitle class="d-flex align-center justify-space-between pa-4">
           <span>Import Invoice AR</span>
-          <VBtn
-            icon
-            size="small"
-            variant="text"
-            @click="closeImport"
-          >
-            <VIcon icon="ri-close-line" />
-          </VBtn>
+          <div class="d-flex ga-1">
+            <VBtn
+              v-if="importing"
+              icon
+              size="small"
+              variant="text"
+              title="Minimize ke latar belakang"
+              @click="minimizeImport"
+            >
+              <VIcon icon="ri-subtract-line" />
+            </VBtn>
+            <VBtn
+              icon
+              size="small"
+              variant="text"
+              @click="closeImport"
+            >
+              <VIcon icon="ri-close-line" />
+            </VBtn>
+          </div>
         </VCardTitle>
         <VDivider />
         <VCardText class="pt-4">
@@ -903,6 +915,68 @@
         </VCardActions>
       </VCard>
     </VDialog>
+
+    <!-- Floating Import Progress Widget (saat modal di-minimize) -->
+    <Transition name="slide-up">
+      <VCard
+        v-if="isImportMinimized"
+        elevation="8"
+        rounded="lg"
+        style="position: fixed; bottom: 24px; right: 24px; z-index: 2400; width: 300px; cursor: pointer;"
+        @click="restoreImport"
+      >
+        <VCardText class="pa-3">
+          <div class="d-flex align-center justify-space-between mb-2">
+            <div class="d-flex align-center ga-2">
+              <VIcon
+                :icon="importing ? 'ri-loader-4-line' : 'ri-checkbox-circle-line'"
+                :color="importing ? 'warning' : 'success'"
+                size="18"
+              />
+              <span class="text-subtitle-2 font-weight-medium">
+                Import Invoice ({{ importType.toUpperCase() }})
+              </span>
+            </div>
+            <VBtn
+              icon
+              size="x-small"
+              variant="text"
+              @click.stop="closeImport"
+            >
+              <VIcon icon="ri-close-line" size="16" />
+            </VBtn>
+          </div>
+
+          <template v-if="importing && importProgress">
+            <VProgressLinear
+              :model-value="importProgress.progress_total > 0
+                ? (importProgress.processed / importProgress.progress_total) * 100
+                : 0"
+              :indeterminate="importProgress.status === 'queued' || !importProgress.progress_total"
+              color="warning"
+              height="6"
+              rounded
+              class="mb-1"
+            />
+            <div class="text-caption text-medium-emphasis">
+              {{ importProgress.status === 'queued'
+                ? 'Menunggu antrian…'
+                : `${importProgress.processed} / ${importProgress.progress_total} baris diproses` }}
+            </div>
+          </template>
+
+          <template v-else-if="importResult">
+            <div class="text-caption">
+              <strong>{{ importResult.inserted }}</strong> ditambahkan,
+              <strong>{{ importResult.failed }}</strong> gagal
+            </div>
+            <div class="text-caption text-primary mt-1">
+              Klik untuk lihat detail →
+            </div>
+          </template>
+        </VCardText>
+      </VCard>
+    </Transition>
   </div>
 </template>
 
@@ -963,14 +1037,15 @@ const showShareDialog  = ref(false)
 const shareTargetInvoices = ref([])
 const selectedForPayment  = ref(null)
 const exportingExcel   = ref(false)
-const showImport       = ref(false)
-const importing        = ref(false)
-const printingId       = ref(null)
-const importFile       = ref(null)
-const importResult     = ref(null)
-const importType       = ref('b2c')
-const importProgress   = ref(null)
-let   importPollTimer  = null
+const showImport        = ref(false)
+const importing         = ref(false)
+const printingId        = ref(null)
+const importFile        = ref(null)
+const importResult      = ref(null)
+const importType        = ref('b2c')
+const importProgress    = ref(null)
+const isImportMinimized = ref(false)
+let   importPollTimer   = null
 
 const headers = [
   { title: 'No',           key: 'no',              sortable: false, width: '60px' },
@@ -1139,8 +1214,8 @@ function openImport() {
 }
 
 function closeImport() {
-  showImport.value = false
-  // Job tetap berjalan di server meski dialog ditutup; hanya polling yang dihentikan.
+  showImport.value        = false
+  isImportMinimized.value = false
   stopImportPolling()
   importing.value      = false
   importProgress.value = null
@@ -1149,6 +1224,16 @@ function closeImport() {
     if (canSeeAll) loadListB2B()
     loadSummary()
   }
+}
+
+function minimizeImport() {
+  showImport.value        = false
+  isImportMinimized.value = true
+}
+
+function restoreImport() {
+  showImport.value        = true
+  isImportMinimized.value = false
 }
 
 async function downloadTemplate(type = 'b2c') {
@@ -1211,8 +1296,9 @@ function pollImportStatus(batchId) {
       if (data.status === 'completed' || data.status === 'failed') {
         importing.value = false
         if (data.status === 'failed') {
-          importProgress.value = null
+          importProgress.value    = null
           await showError(data.message || 'Import gagal diproses.')
+          isImportMinimized.value = false
         } else {
           importResult.value = data
         }
@@ -1326,3 +1412,15 @@ onBeforeUnmount(() => {
   abortPendingRequests()
 })
 </script>
+
+<style scoped>
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+.slide-up-enter-from,
+.slide-up-leave-to {
+  transform: translateY(16px);
+  opacity: 0;
+}
+</style>
