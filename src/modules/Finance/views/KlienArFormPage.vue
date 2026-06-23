@@ -337,22 +337,23 @@
               </VAlert>
             </VCol>
 
-            <VCol cols="12">
+            <VCol
+              v-if="!isB2B"
+              cols="12"
+            >
               <VAutocomplete
                 v-model="form.resto_id"
-                :label="isB2B ? 'Resto (Opsional untuk B2B)' : 'Resto (Wajib)'"
+                label="Resto (Wajib)"
                 density="compact"
                 variant="outlined"
                 :items="filteredRestoList"
                 item-title="nama_resto"
                 item-value="id"
                 clearable
-                :rules="[v => isB2B || !!v || 'Resto wajib dipilih untuk tipe B2C']"
+                :rules="[v => !!v || 'Resto wajib dipilih untuk tipe B2C']"
                 :error-messages="errors.resto_id"
                 :loading="restoLoading"
                 :readonly="isArEditMode"
-                :persistent-hint="isB2B"
-                :hint="isB2B ? 'Untuk tipe PT/STOKIS, semua Resto di bawah PT ini ditagih ke Client ini.' : ''"
                 @focus="ensureRestoLoaded()"
                 @update:model-value="onRestoChange"
               >
