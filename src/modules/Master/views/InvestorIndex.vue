@@ -48,6 +48,20 @@
           prepend-inner-icon="ri-search-line"
           @update:model-value="debouncedFetch"
         />
+        <VBtn
+          icon
+          variant="tonal"
+          color="primary"
+          density="compact"
+          class="ms-auto"
+          :loading="loading"
+          @click="fetchList"
+        >
+          <VIcon icon="ri-refresh-line" />
+          <VTooltip activator="parent">
+            Refresh
+          </VTooltip>
+        </VBtn>
       </VCardText>
 
       <BaseTable
