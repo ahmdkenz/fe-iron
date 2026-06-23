@@ -95,7 +95,7 @@
       </div>
       <VDivider />
       <BaseTable
-        :headers="headers"
+        :headers="headersB2B"
         :items="itemsB2B"
         :total="metaB2B.total"
         :loading="loadingB2B"
@@ -116,30 +116,6 @@
           >
             {{ item.kode_klien }}
           </VChip>
-        </template>
-        <template #item.resto="{ item }">
-          <span v-if="item.resto">{{ item.resto.nama_resto }}</span>
-          <span
-            v-else
-            class="text-medium-emphasis"
-          >-</span>
-        </template>
-        <template #item.investor="{ item }">
-          <div v-if="item.resto?.investor">
-            <div class="text-body-2">
-              {{ item.resto.investor.nama_investor }}
-            </div>
-            <div
-              v-if="item.resto.investor.pengelola && item.resto.investor.pengelola !== item.resto.investor.nama_investor"
-              class="text-caption text-medium-emphasis"
-            >
-              Pengelola: {{ item.resto.investor.pengelola }}
-            </div>
-          </div>
-          <span
-            v-else
-            class="text-medium-emphasis"
-          >-</span>
         </template>
         <template #item.karyawan_ar="{ item }">
           {{ item.karyawan_ar?.nama_karyawan ?? '-' }}
@@ -265,7 +241,7 @@
       </div>
       <VDivider />
       <BaseTable
-        :headers="headers"
+        :headers="headersB2C"
         :items="itemsB2C"
         :total="metaB2C.total"
         :loading="loadingB2C"
@@ -759,15 +735,24 @@ const importProgress    = ref(null)
 const isImportMinimized = ref(false)
 let importPollTimer     = null
 
-const headers = [
-  { title: 'No',             key: 'no',          sortable: false, width: '60px' },
-  { title: 'Kode Client',    key: 'kode_klien',  sortable: false, minWidth: '140px' },
-  { title: 'Nama Billing',   key: 'nama_klien',  sortable: false, minWidth: '200px' },
-  { title: 'Resto',          key: 'resto',        sortable: false, minWidth: '160px' },
-  { title: 'Investor / Pengelola', key: 'investor', sortable: false, minWidth: '180px' },
-  { title: 'PIC AR',         key: 'karyawan_ar', sortable: false, minWidth: '160px' },
-  { title: 'Status',         key: 'status',      sortable: false, minWidth: '90px' },
-  { title: 'Aksi',           key: 'actions',     sortable: false, align: 'center', width: '120px' },
+const headersB2B = [
+  { title: 'No',           key: 'no',          sortable: false, width: '60px' },
+  { title: 'Kode Client',  key: 'kode_klien',  sortable: false, minWidth: '140px' },
+  { title: 'Nama Billing', key: 'nama_klien',  sortable: false, minWidth: '200px' },
+  { title: 'PIC AR',       key: 'karyawan_ar', sortable: false, minWidth: '160px' },
+  { title: 'Status',       key: 'status',      sortable: false, minWidth: '90px' },
+  { title: 'Aksi',         key: 'actions',     sortable: false, align: 'center', width: '120px' },
+]
+
+const headersB2C = [
+  { title: 'No',                   key: 'no',          sortable: false, width: '60px' },
+  { title: 'Kode Client',          key: 'kode_klien',  sortable: false, minWidth: '140px' },
+  { title: 'Nama Billing',         key: 'nama_klien',  sortable: false, minWidth: '200px' },
+  { title: 'Resto',                key: 'resto',        sortable: false, minWidth: '160px' },
+  { title: 'Investor / Pengelola', key: 'investor',    sortable: false, minWidth: '180px' },
+  { title: 'PIC AR',               key: 'karyawan_ar', sortable: false, minWidth: '160px' },
+  { title: 'Status',               key: 'status',      sortable: false, minWidth: '90px' },
+  { title: 'Aksi',                 key: 'actions',     sortable: false, align: 'center', width: '120px' },
 ]
 
 const statusOptions = [
