@@ -274,9 +274,6 @@
         <template #item.tanggal_invoice="{ item }">
           <span class="text-no-wrap">{{ formatDate(item.tanggal_invoice) }}</span>
         </template>
-        <template #item.tanggal_kirim_barang="{ item }">
-          <span class="text-no-wrap">{{ item.tanggal_kirim_barang ? formatDate(item.tanggal_kirim_barang) : '-' }}</span>
-        </template>
         <template #item.subtotal="{ item }">
           {{ formatCurrency(item.subtotal) }}
         </template>
@@ -765,7 +762,7 @@
               Template B2C — 2 Sheet:
             </div>
             <div class="text-caption">
-              <strong>Sheet 1 (Invoice):</strong> no_urut · no_invoice · nama_klien · tanggal_invoice · tanggal_jatuh_tempo · periode_awal · periode_akhir · no_surat_jalan · keterangan
+              <strong>Sheet 1 (Invoice):</strong> no_urut · no_invoice · nama_klien · tanggal_invoice · tanggal_jatuh_tempo · no_surat_jalan · keterangan
             </div>
             <div class="text-caption mt-1">
               <strong>Sheet 2 (Item Invoice):</strong> no_urut_invoice · kode_barang · nama_barang · qty · satuan · harga_satuan
@@ -785,8 +782,8 @@
               Template B2B — 2 Sheet (Data Invoice + Item Invoice):
             </div>
             <div class="text-caption">
-              <strong>Sheet 1 — Kolom A–G (Data Invoice):</strong>
-              no_urut · nama_klien · <strong>tanggal_kirim_barang</strong> · no_surat_jalan (opt) · tanggal_jatuh_tempo (opt) · periode_awal (opt) · periode_akhir (opt)
+              <strong>Sheet 1 — Kolom A–E (Data Invoice):</strong>
+              no_urut · nama_klien · no_surat_jalan (opt) · tanggal_jatuh_tempo (opt)
             </div>
             <div class="text-caption mt-1">
               <strong>Sheet 2 — Kolom A–I (Item Invoice):</strong>
@@ -1064,7 +1061,6 @@ const headersB2B = [
   { title: 'Client',           key: 'klien_ar',             sortable: false },
   { title: 'Penerima Tagihan', key: 'penerima_tagihan',     sortable: false },
   { title: 'Tgl. Invoice',     key: 'tanggal_invoice',      sortable: false, width: '115px' },
-  { title: 'Tgl. Kirim',       key: 'tanggal_kirim_barang', sortable: false, width: '115px' },
   { title: 'Total Barang',     key: 'subtotal',             sortable: false },
   { title: 'Sisa Tagihan',     key: 'sisa_tagihan',         sortable: false },
   { title: 'Status',           key: 'status',               sortable: false },

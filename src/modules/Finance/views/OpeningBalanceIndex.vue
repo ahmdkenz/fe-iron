@@ -295,9 +295,6 @@
           <template #item.tanggal_invoice="{ item }">
             <span class="text-no-wrap">{{ formatDate(item.tanggal_invoice) }}</span>
           </template>
-          <template #item.periode="{ item }">
-            <span class="text-no-wrap">{{ formatPeriode(item) }}</span>
-          </template>
           <template #item.total_tagihan="{ item }">
             {{ formatCurrency(item.total_tagihan) }}
           </template>
@@ -540,9 +537,6 @@
           </template>
           <template #item.tanggal_invoice="{ item }">
             <span class="text-no-wrap">{{ formatDate(item.tanggal_invoice) }}</span>
-          </template>
-          <template #item.periode="{ item }">
-            <span class="text-no-wrap">{{ formatPeriode(item) }}</span>
           </template>
           <template #item.total_tagihan="{ item }">
             {{ formatCurrency(item.total_tagihan) }}
@@ -1262,9 +1256,6 @@
           <template #item.tanggal_invoice="{ item }">
             <span class="text-no-wrap">{{ formatDate(item.tanggal_invoice) }}</span>
           </template>
-          <template #item.periode="{ item }">
-            <span class="text-no-wrap">{{ formatPeriode(item) }}</span>
-          </template>
           <template #item.total_tagihan="{ item }">
             {{ formatCurrency(item.total_tagihan) }}
           </template>
@@ -1490,9 +1481,6 @@
           <template #item.tanggal_invoice="{ item }">
             <span class="text-no-wrap">{{ formatDate(item.tanggal_invoice) }}</span>
           </template>
-          <template #item.periode="{ item }">
-            <span class="text-no-wrap">{{ formatPeriode(item) }}</span>
-          </template>
           <template #item.total_tagihan="{ item }">
             {{ formatCurrency(item.total_tagihan) }}
           </template>
@@ -1650,8 +1638,6 @@
               <li>Kolom <strong>nama_klien</strong> harus cocok persis dengan nama klien di sistem.</li>
               <li>
                 Kolom <strong>tanggal</strong> = tanggal pengajuan OB (hari ini).
-                Kolom <strong>periode_awal</strong> dan <strong>periode_akhir</strong> = rentang waktu invoice historis yang belum lunas
-                (bukan tanggal hari ini). Contoh: invoice Mei 2026 belum lunas → isi <code>2026-05-01</code> s/d <code>2026-05-31</code>.
               </li>
               <li>Semua tanggal diisi format <strong>YYYY-MM-DD</strong> (contoh: <code>2024-01-15</code>).</li>
               <li>Data berhasil diimport berstatus <strong>DRAFT</strong> dan perlu persetujuan Manager.</li>
@@ -2124,7 +2110,6 @@ const headers = [
   { title: 'No Opening Balance', key: 'no_invoice', sortable: false },
   { title: 'Klien', key: 'klien_ar', sortable: false },
   { title: 'Tanggal', key: 'tanggal_invoice', sortable: false, width: '115px' },
-  { title: 'Periode', key: 'periode', sortable: false, width: '210px' },
   { title: 'Saldo Awal', key: 'total_tagihan', sortable: false },
   { title: 'Total Terbayar', key: 'total_pembayaran', sortable: false },
   { title: 'Sisa Tagihan', key: 'sisa_tagihan', sortable: false },
@@ -2151,7 +2136,6 @@ const dirObHeaders = [
   { title: 'No Opening Balance', key: 'no_invoice', sortable: false },
   { title: 'Klien', key: 'klien_ar', sortable: false },
   { title: 'Tanggal', key: 'tanggal_invoice', sortable: false, width: '115px' },
-  { title: 'Periode', key: 'periode', sortable: false, width: '210px' },
   { title: 'Saldo Awal', key: 'total_tagihan', sortable: false },
   { title: 'Total Terbayar', key: 'total_pembayaran', sortable: false },
   { title: 'Sisa Tagihan', key: 'sisa_tagihan', sortable: false },
@@ -2165,7 +2149,6 @@ const dirObHeadersB2B = [
   { title: 'No Opening Balance', key: 'no_invoice', sortable: false },
   { title: 'Klien', key: 'klien_ar', sortable: false },
   { title: 'Tanggal', key: 'tanggal_invoice', sortable: false, width: '115px' },
-  { title: 'Periode', key: 'periode', sortable: false, width: '210px' },
   { title: 'Saldo Awal', key: 'total_tagihan', sortable: false },
   { title: 'Total Terbayar', key: 'total_pembayaran', sortable: false },
   { title: 'Sisa Tagihan', key: 'sisa_tagihan', sortable: false },
@@ -2531,11 +2514,6 @@ function resetDirObFilterB2C() {
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
-function formatPeriode(item) {
-  if (!item.periode_awal || !item.periode_akhir) return '-'
-
-  return `${formatDate(item.periode_awal)} - ${formatDate(item.periode_akhir)}`
-}
 
 function formatDateTime(value) {
   if (!value) return '-'

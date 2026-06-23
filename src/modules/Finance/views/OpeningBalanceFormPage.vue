@@ -74,10 +74,6 @@
                     <span class="hero-stat__label">Saldo Awal</span>
                     <strong class="hero-stat__value">{{ formattedSaldoAwal }}</strong>
                   </div>
-                  <div class="hero-stat">
-                    <span class="hero-stat__label">Periode</span>
-                    <strong class="hero-stat__value">{{ periodLabel }}</strong>
-                  </div>
                 </div>
               </div>
             </VCardText>
@@ -242,10 +238,10 @@
                 <div class="form-section__header">
                   <div>
                     <h4 class="text-subtitle-1 font-weight-bold mb-1">
-                      Tanggal dan Periode
+                      Tanggal
                     </h4>
                     <p class="text-body-2 text-medium-emphasis mb-0">
-                      Isi <strong>Tanggal</strong> dengan tanggal pengajuan hari ini. Isi <strong>Periode Awal–Akhir</strong> sesuai rentang waktu invoice historis yang belum lunas — bukan tanggal hari ini.
+                      Isi <strong>Tanggal</strong> dengan tanggal pengajuan hari ini.
                     </p>
                   </div>
                 </div>
@@ -261,10 +257,6 @@
                     <strong>Kapan menggunakan Opening Balance?</strong>
                     Hanya untuk piutang <em>historis</em> yang berasal dari luar sistem (spreadsheet, sistem lama, atau manual).
                     Jika invoice sudah pernah diinput di sistem ini, sisa tagihan sudah otomatis terbawa — tidak perlu Opening Balance.
-                  </div>
-                  <div class="text-body-2 mt-1">
-                    <strong>Contoh:</strong> Ada tagihan dari Mei 2026 yang belum lunas dan belum ada di sistem →
-                    isi Periode <code>01-05-2026</code> s/d <code>31-05-2026</code>, lalu daftarkan setiap invoice-nya di bagian Rincian.
                   </div>
                 </VAlert>
 
@@ -283,42 +275,6 @@
                       :rules="[v => !!v || 'Tanggal wajib diisi']"
                       :error-messages="errors.tanggal"
                       hint="Tanggal pengajuan Opening Balance (hari ini)"
-                      persistent-hint
-                    />
-                  </VCol>
-
-                  <VCol
-                    cols="12"
-                    md="4"
-                  >
-                    <VTextField
-                      v-model="form.periode_awal"
-                      label="Periode Awal"
-                      density="compact"
-                      variant="outlined"
-                      type="date"
-                      prepend-inner-icon="ri-calendar-event-line"
-                      :rules="[v => !!v || 'Periode awal wajib diisi']"
-                      :error-messages="errors.periode_awal"
-                      hint="Tanggal awal dari invoice historis yang belum lunas"
-                      persistent-hint
-                    />
-                  </VCol>
-
-                  <VCol
-                    cols="12"
-                    md="4"
-                  >
-                    <VTextField
-                      v-model="form.periode_akhir"
-                      label="Periode Akhir"
-                      density="compact"
-                      variant="outlined"
-                      type="date"
-                      prepend-inner-icon="ri-calendar-check-line"
-                      :rules="[v => !!v || 'Periode akhir wajib diisi']"
-                      :error-messages="errors.periode_akhir"
-                      hint="Tanggal akhir periode — biasanya akhir bulan invoice yang belum lunas"
                       persistent-hint
                     />
                   </VCol>
@@ -499,10 +455,6 @@
                   <strong class="summary-list__value">{{ formattedTanggal }}</strong>
                 </div>
 
-                <div class="summary-list__item">
-                  <span class="summary-list__label">Periode</span>
-                  <strong class="summary-list__value">{{ periodLabel }}</strong>
-                </div>
               </div>
             </VCardText>
           </VCard>
@@ -608,7 +560,7 @@ async function fetchOutstandingInvoices(klienArId) {
 }
 
 const errors = reactive({
-  no_invoice: [], klien_ar_id: [], tanggal: [], saldo_awal: [], periode_awal: [], periode_akhir: [], keterangan: [], details: [],
+  no_invoice: [], klien_ar_id: [], tanggal: [], saldo_awal: [], keterangan: [], details: [],
 })
 
 const form = reactive({
@@ -616,8 +568,6 @@ const form = reactive({
   klien_ar_id: null,
   tanggal: new Date().toISOString().slice(0, 10),
   saldo_awal: null,
-  periode_awal: '',
-  periode_akhir: '',
   keterangan: '',
   details: [],
 })
@@ -734,18 +684,11 @@ watch(() => form.details, newDetails => {
 
 const formattedTanggal = computed(() => form.tanggal ? formatDate(form.tanggal) : '-')
 
-const periodLabel = computed(() => {
-  if (!form.periode_awal || !form.periode_akhir)
-    return 'Pilih periode awal dan akhir'
-
-  return `${formatDate(form.periode_awal)} - ${formatDate(form.periode_akhir)}`
-})
 
 const checklistItems = computed(() => [
   { label: 'No. Opening Balance', done: !!form.no_invoice },
   { label: 'Client', done: !!form.klien_ar_id },
   { label: 'Tanggal', done: !!form.tanggal },
-  { label: 'Periode', done: !!form.periode_awal && !!form.periode_akhir },
   { label: 'Saldo awal', done: Number(form.saldo_awal) > 0 },
 ])
 
@@ -769,8 +712,6 @@ async function loadOpeningBalance() {
       klien_ar_id: data.klien_ar_id ?? null,
       tanggal: toISODate(data.tanggal_invoice) || new Date().toISOString().slice(0, 10),
       saldo_awal: data.subtotal ?? null,
-      periode_awal: toISODate(data.periode_awal) ?? '',
-      periode_akhir: toISODate(data.periode_akhir) ?? '',
       keterangan: data.keterangan ?? '',
       details: data.opening_balance_details ?? [],
     })

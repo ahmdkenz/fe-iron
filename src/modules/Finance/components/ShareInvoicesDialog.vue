@@ -239,8 +239,7 @@
                     <span class="text-body-2 font-weight-semibold">{{ inv.no_invoice }}</span>
                   </div>
                   <div class="text-caption text-medium-emphasis">
-                    Periode: {{ inv.periode_awal }} s/d {{ inv.periode_akhir }}
-                    · Total: <strong>{{ formatCurrency(inv.subtotal) }}</strong>
+                    Total: <strong>{{ formatCurrency(inv.subtotal) }}</strong>
                   </div>
                 </div>
               </div>
@@ -430,8 +429,7 @@ function buildMessage(selected) {
     return (
       `Halo, berikut kami kirimkan Invoice *${inv.no_invoice}*.\n\n` +
       `Klien: ${klien}\n` +
-      `Total Tagihan: Rp ${t}\n` +
-      `Periode: ${inv.periode_awal} s/d ${inv.periode_akhir}\n\n` +
+      `Total Tagihan: Rp ${t}\n\n` +
       `Silakan akses dan unduh invoice di:\n${inv.share_url}`
     )
   }
@@ -450,7 +448,7 @@ function buildMessage(selected) {
     msg += '\n*Invoice Reguler:*\n'
     for (const inv of regList) {
       const t = new Intl.NumberFormat('id-ID').format(inv.subtotal)
-      msg += `- ${inv.no_invoice} | Periode: ${inv.periode_awal} s/d ${inv.periode_akhir} | Rp ${t}\n  ${inv.share_url}\n`
+      msg += `- ${inv.no_invoice} | Rp ${t}\n  ${inv.share_url}\n`
     }
   }
 

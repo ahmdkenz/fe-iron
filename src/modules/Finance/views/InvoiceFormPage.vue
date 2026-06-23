@@ -153,22 +153,6 @@
                   md="6"
                 >
                   <VTextField
-                    v-model="form.tanggal_kirim_barang"
-                    label="Tanggal Kirim Barang"
-                    density="compact"
-                    variant="outlined"
-                    type="date"
-                    prepend-inner-icon="ri-truck-line"
-                    :hint="isB2B ? 'Tanggal pengiriman barang ke seluruh resto' : 'Tanggal pengiriman barang'"
-                    persistent-hint
-                    clearable
-                  />
-                </VCol>
-                <VCol
-                  cols="12"
-                  md="6"
-                >
-                  <VTextField
                     v-model="form.no_surat_jalan"
                     label="No. Surat Jalan"
                     density="compact"
@@ -300,45 +284,6 @@
                   </VAutocomplete>
                 </VCol>
 
-                <VCol cols="12">
-                  <div class="text-caption text-medium-emphasis mb-2 d-flex align-center gap-1">
-                    <VIcon
-                      icon="ri-calendar-2-line"
-                      size="13"
-                    />
-                    Rentang Periode Tagihan
-                  </div>
-                  <VRow>
-                    <VCol
-                      cols="12"
-                      md="6"
-                    >
-                      <VTextField
-                        v-model="form.periode_awal"
-                        label="Periode Awal"
-                        density="compact"
-                        variant="outlined"
-                        type="date"
-                        prepend-inner-icon="ri-calendar-event-line"
-                        :rules="[v => !!v || 'Periode awal wajib diisi']"
-                      />
-                    </VCol>
-                    <VCol
-                      cols="12"
-                      md="6"
-                    >
-                      <VTextField
-                        v-model="form.periode_akhir"
-                        label="Periode Akhir"
-                        density="compact"
-                        variant="outlined"
-                        type="date"
-                        prepend-inner-icon="ri-calendar-event-fill"
-                        :rules="[v => !!v || 'Periode akhir wajib diisi']"
-                      />
-                    </VCol>
-                  </VRow>
-                </VCol>
               </VRow>
             </VCardText>
           </VCard>
@@ -643,10 +588,7 @@ const selectedKlien    = ref(null)
 const form = reactive({
   no_invoice: '',
   tanggal_invoice: new Date().toISOString().slice(0, 10),
-  tanggal_kirim_barang: '',
   tanggal_jatuh_tempo: '',
-  periode_awal: '',
-  periode_akhir: '',
   klien_ar_id: null,
   resto_id: null,
   no_surat_jalan: '',
@@ -841,10 +783,7 @@ onMounted(async () => {
   Object.assign(form, {
     no_invoice:                  data.no_invoice,
     tanggal_invoice:             toISODate(data.tanggal_invoice),
-    tanggal_kirim_barang:        toISODate(data.tanggal_kirim_barang) ?? '',
     tanggal_jatuh_tempo:         toISODate(data.tanggal_jatuh_tempo) ?? '',
-    periode_awal:                toISODate(data.periode_awal),
-    periode_akhir:               toISODate(data.periode_akhir),
     klien_ar_id:                 data.klien_ar_id,
     resto_id:                    data.resto_id ?? null,
     no_surat_jalan:              data.no_surat_jalan ?? '',

@@ -532,9 +532,6 @@
         <template #item.tanggal_invoice="{ item }">
           {{ formatDate(item.tanggal_invoice) }}
         </template>
-        <template #item.periode="{ item }">
-          {{ formatPeriode(item) }}
-        </template>
         <template #item.total_tagihan="{ item }">
           {{ formatCurrency(item.total_tagihan) }}
         </template>
@@ -747,9 +744,6 @@
         </template>
         <template #item.tanggal_invoice="{ item }">
           {{ formatDate(item.tanggal_invoice) }}
-        </template>
-        <template #item.periode="{ item }">
-          {{ formatPeriode(item) }}
         </template>
         <template #item.total_tagihan="{ item }">
           {{ formatCurrency(item.total_tagihan) }}
@@ -1002,7 +996,6 @@ const obHeaders = [
   { title: 'No Opening Balance', key: 'no_invoice', sortable: false },
   { title: 'Klien', key: 'klien_ar', sortable: false },
   { title: 'Tanggal', key: 'tanggal_invoice', sortable: false },
-  { title: 'Periode', key: 'periode', sortable: false },
   { title: 'Saldo Awal', key: 'total_tagihan', sortable: false },
   { title: 'Total Terbayar', key: 'total_pembayaran', sortable: false },
   { title: 'Sisa Tagihan', key: 'sisa_tagihan', sortable: false },
@@ -1016,7 +1009,6 @@ const obHeadersB2B = [
   { title: 'No Opening Balance', key: 'no_invoice', sortable: false },
   { title: 'Klien', key: 'klien_ar', sortable: false },
   { title: 'Tanggal', key: 'tanggal_invoice', sortable: false },
-  { title: 'Periode', key: 'periode', sortable: false },
   { title: 'Saldo Awal', key: 'total_tagihan', sortable: false },
   { title: 'Total Terbayar', key: 'total_pembayaran', sortable: false },
   { title: 'Sisa Tagihan', key: 'sisa_tagihan', sortable: false },
@@ -1250,10 +1242,6 @@ function resetObFiltersB2C() {
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
-function formatPeriode(item) {
-  if (!item.periode_awal || !item.periode_akhir) return '-'
-  return `${formatDate(item.periode_awal)} - ${formatDate(item.periode_akhir)}`
-}
 
 function formatDateTime(value) {
   if (!value) return '-'

@@ -211,12 +211,6 @@
                       :value="formatDate(invoice.tanggal_invoice)"
                     />
                     <DetailRow
-                      v-if="invoice.tanggal_kirim_barang"
-                      label="Tanggal Kirim Barang"
-                    >
-                      <span class="font-weight-semibold text-info">{{ formatDate(invoice.tanggal_kirim_barang) }}</span>
-                    </DetailRow>
-                    <DetailRow
                       v-if="invoice.tanggal_jatuh_tempo"
                       label="Jatuh Tempo"
                     >
@@ -233,9 +227,6 @@
                           Lewat Jatuh Tempo
                         </VChip>
                       </span>
-                    </DetailRow>
-                    <DetailRow label="Periode">
-                      <span>{{ formatDate(invoice.periode_awal) }} - {{ formatDate(invoice.periode_akhir) }}</span>
                     </DetailRow>
                     <DetailRow
                       label="No. Surat Jalan"
@@ -806,12 +797,6 @@
                     >
                       Konsolidasi
                     </VChip>
-                    <div
-                      v-if="invoice.tanggal_kirim_barang"
-                      class="text-caption text-medium-emphasis mt-1"
-                    >
-                      Tgl kirim: <strong>{{ formatDate(invoice.tanggal_kirim_barang) }}</strong>
-                    </div>
                   </template>
                 </div>
                 <div v-if="invoice.karyawan?.perusahaan?.nama_perusahaan">
