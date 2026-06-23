@@ -35,59 +35,63 @@
       </div>
     </PageHeader>
 
-    <!-- Filter Card -->
-    <VCard class="mb-4">
-      <VCardText class="pa-0">
-        <div class="d-flex align-center justify-space-between px-4 py-3">
-          <div class="d-flex align-center gap-2">
-            <VIcon icon="ri-filter-3-line" size="16" color="primary" />
-            <span class="text-body-2 font-weight-semibold">Filter</span>
-          </div>
-          <VBtn
-            variant="text"
-            color="secondary"
-            size="small"
-            prepend-icon="ri-refresh-line"
-            @click="resetFilter"
-          >
-            Reset
-          </VBtn>
-        </div>
-        <VDivider />
-        <div class="d-flex flex-wrap align-center gap-4 px-4 py-3">
-          <div style="min-width: 260px; flex: 1; max-width: 360px;">
-            <div class="text-caption text-medium-emphasis mb-2">Pencarian</div>
-            <VTextField
-              v-model="search"
-              placeholder="Cari kode / nama klien..."
-              clearable
-              hide-details
-              density="compact"
-              prepend-inner-icon="ri-search-line"
-              @update:model-value="debouncedFetch"
-            />
-          </div>
-        </div>
-      </VCardText>
-    </VCard>
-
     <!-- B2B Table (canSeeAll only) -->
     <VCard
       v-if="canSeeAll"
       class="mb-4"
     >
-      <div class="d-flex align-center gap-2 px-4 py-3">
-        <VAvatar
-          color="warning"
-          variant="tonal"
-          size="32"
+      <div class="d-flex align-center justify-space-between px-4 py-3">
+        <div class="d-flex align-center gap-2">
+          <VAvatar
+            color="warning"
+            variant="tonal"
+            size="32"
+          >
+            <VIcon
+              icon="ri-building-line"
+              size="18"
+            />
+          </VAvatar>
+          <span class="text-subtitle-1 font-weight-semibold">Client B2B</span>
+        </div>
+        <VBtn
+          variant="text"
+          color="secondary"
+          size="small"
+          prepend-icon="ri-refresh-line"
+          @click="resetFilterB2B"
         >
-          <VIcon
-            icon="ri-building-line"
-            size="18"
+          Reset
+        </VBtn>
+      </div>
+      <VDivider />
+      <div class="d-flex flex-wrap align-center gap-4 px-4 py-3">
+        <div style="min-width: 260px; flex: 1; max-width: 360px;">
+          <div class="text-caption text-medium-emphasis mb-2">Pencarian</div>
+          <VTextField
+            v-model="searchB2B"
+            placeholder="Cari kode / nama klien..."
+            clearable
+            hide-details
+            density="compact"
+            prepend-inner-icon="ri-search-line"
+            @update:model-value="debouncedFetchB2B"
           />
-        </VAvatar>
-        <span class="text-subtitle-1 font-weight-semibold">Client B2B</span>
+        </div>
+        <div style="min-width: 140px; max-width: 180px;">
+          <div class="text-caption text-medium-emphasis mb-2">Status</div>
+          <VSelect
+            v-model="statusB2B"
+            placeholder="Semua Status"
+            clearable
+            hide-details
+            density="compact"
+            :items="statusOptions"
+            item-title="label"
+            item-value="value"
+            @update:model-value="debouncedFetchB2B"
+          />
+        </div>
       </div>
       <VDivider />
       <BaseTable
@@ -205,21 +209,61 @@
     <VCard>
       <div
         v-if="canSeeAll"
-        class="d-flex align-center gap-2 px-4 py-3"
+        class="d-flex align-center justify-space-between px-4 py-3"
       >
-        <VAvatar
-          color="primary"
-          variant="tonal"
-          size="32"
+        <div class="d-flex align-center gap-2">
+          <VAvatar
+            color="primary"
+            variant="tonal"
+            size="32"
+          >
+            <VIcon
+              icon="ri-user-line"
+              size="18"
+            />
+          </VAvatar>
+          <span class="text-subtitle-1 font-weight-semibold">Client B2C</span>
+        </div>
+        <VBtn
+          variant="text"
+          color="secondary"
+          size="small"
+          prepend-icon="ri-refresh-line"
+          @click="resetFilterB2C"
         >
-          <VIcon
-            icon="ri-user-line"
-            size="18"
-          />
-        </VAvatar>
-        <span class="text-subtitle-1 font-weight-semibold">Client B2C</span>
+          Reset
+        </VBtn>
       </div>
       <VDivider v-if="canSeeAll" />
+      <div class="d-flex flex-wrap align-center gap-4 px-4 py-3">
+        <div style="min-width: 260px; flex: 1; max-width: 360px;">
+          <div class="text-caption text-medium-emphasis mb-2">Pencarian</div>
+          <VTextField
+            v-model="searchB2C"
+            placeholder="Cari kode / nama klien..."
+            clearable
+            hide-details
+            density="compact"
+            prepend-inner-icon="ri-search-line"
+            @update:model-value="debouncedFetchB2C"
+          />
+        </div>
+        <div style="min-width: 140px; max-width: 180px;">
+          <div class="text-caption text-medium-emphasis mb-2">Status</div>
+          <VSelect
+            v-model="statusB2C"
+            placeholder="Semua Status"
+            clearable
+            hide-details
+            density="compact"
+            :items="statusOptions"
+            item-title="label"
+            item-value="value"
+            @update:model-value="debouncedFetchB2C"
+          />
+        </div>
+      </div>
+      <VDivider />
       <BaseTable
         :headers="headers"
         :items="itemsB2C"
@@ -696,7 +740,10 @@ if (!canSeeAll) {
   paramsB2C.karyawan_ar_id = authStore.user?.karyawan?.id
 }
 
-const search = ref('')
+const searchB2B = ref('')
+const statusB2B = ref(null)
+const searchB2C = ref('')
+const statusB2C = ref(null)
 
 const showDelete      = ref(false)
 const showDetail      = ref(false)
@@ -723,22 +770,41 @@ const headers = [
   { title: 'Aksi',           key: 'actions',     sortable: false, align: 'center', width: '120px' },
 ]
 
-function applySearch() {
-  paramsB2C.search = search.value
-  if (canSeeAll) paramsB2B.search = search.value
+const statusOptions = [
+  { label: 'Aktif',    value: 1 },
+  { label: 'Nonaktif', value: 0 },
+]
+
+function applyFilterB2C() {
+  paramsB2C.search = searchB2C.value
+  paramsB2C.status = statusB2C.value ?? ''
+}
+
+function applyFilterB2B() {
+  paramsB2B.search = searchB2B.value
+  paramsB2B.status = statusB2B.value ?? ''
 }
 
 function loadListB2C() { fetchListB2C({ segment: canSeeAll ? 'B2C' : undefined }) }
 function loadListB2B() { if (canSeeAll) fetchListB2B({ segment: 'B2B' }) }
 
-let debounceTimer = null
-function debouncedFetch() {
-  clearTimeout(debounceTimer)
-  debounceTimer = setTimeout(() => {
-    applySearch()
+let debounceTimerB2C = null
+let debounceTimerB2B = null
+
+function debouncedFetchB2C() {
+  clearTimeout(debounceTimerB2C)
+  debounceTimerB2C = setTimeout(() => {
+    applyFilterB2C()
     paramsB2C.page = 1
-    if (canSeeAll) paramsB2B.page = 1
     loadListB2C()
+  }, 400)
+}
+
+function debouncedFetchB2B() {
+  clearTimeout(debounceTimerB2B)
+  debounceTimerB2B = setTimeout(() => {
+    applyFilterB2B()
+    paramsB2B.page = 1
     loadListB2B()
   }, 400)
 }
@@ -755,12 +821,19 @@ function onTableOptionsB2B({ page, itemsPerPage }) {
   loadListB2B()
 }
 
-function resetFilter() {
-  search.value  = ''
-  applySearch()
-  paramsB2C.page = 1
-  if (canSeeAll) paramsB2B.page = 1
+function resetFilterB2C() {
+  searchB2C.value = ''
+  statusB2C.value = null
+  applyFilterB2C()
+  paramsB2C.page  = 1
   loadListB2C()
+}
+
+function resetFilterB2B() {
+  searchB2B.value = ''
+  statusB2B.value = null
+  applyFilterB2B()
+  paramsB2B.page  = 1
   loadListB2B()
 }
 
@@ -802,7 +875,6 @@ async function exportExcel() {
   showLoading({ title: 'Mengeksport Data Klien AR', text: 'Mohon tunggu sebentar...' })
   try {
     const query = new URLSearchParams()
-    if (search.value) query.set('search', search.value)
     if (paramsB2C.karyawan_ar_id) query.set('karyawan_ar_id', paramsB2C.karyawan_ar_id)
 
     const res  = await api.get(`/finance/klien-ar/export?${query}`, { responseType: 'blob' })
@@ -902,6 +974,8 @@ function pollImportStatus(batchId) {
 
 onBeforeUnmount(() => {
   stopImportPolling()
+  clearTimeout(debounceTimerB2C)
+  clearTimeout(debounceTimerB2B)
 })
 
 async function doDelete() {
