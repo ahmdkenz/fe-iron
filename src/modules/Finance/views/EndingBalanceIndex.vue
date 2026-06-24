@@ -538,6 +538,7 @@ const EbInvoiceBreakdown = defineComponent({
               h('th', { class: `${thClass} text-start` }, 'Tanggal'),
               h('th', { class: `${thClass} text-start` }, 'Jatuh Tempo'),
               h('th', { class: `${thClass} text-end` }, 'Tagihan'),
+              h('th', { class: `${thClass} text-end` }, 'CN/DN'),
               h('th', { class: `${thClass} text-end` }, 'Dibayar'),
               h('th', { class: `${thClass} text-end` }, 'Sisa'),
               h('th', { class: `${thClass} text-center` }, 'Status'),
@@ -554,6 +555,15 @@ const EbInvoiceBreakdown = defineComponent({
               h('td', { class: `${tdClass} text-medium-emphasis` }, fmtDate(inv.tanggal_invoice)),
               h('td', { class: `${tdClass} ${inv.tanggal_jatuh_tempo && inv.sisa_tagihan > 0 && inv.tanggal_jatuh_tempo < new Date().toISOString().slice(0,10) ? 'text-error' : 'text-medium-emphasis'}` }, fmtDate(inv.tanggal_jatuh_tempo)),
               h('td', { class: `${tdClass} text-end` }, fmt(inv.subtotal)),
+              h('td', { class: `${tdClass} text-end` }, (() => {
+                const hasCN = (inv.total_cn ?? 0) > 0
+                const hasDN = (inv.total_dn ?? 0) > 0
+                if (!hasCN && !hasDN) return '—'
+                const lines = []
+                if (hasDN) lines.push(h('div', { class: 'text-success' }, `+ ${fmt(inv.total_dn)}`))
+                if (hasCN) lines.push(h('div', { class: 'text-error'   }, `− ${fmt(inv.total_cn)}`))
+                return lines
+              })()),
               h('td', { class: `${tdClass} text-end text-success` }, fmt(inv.total_pembayaran)),
               h('td', { class: `${tdClass} text-end font-weight-bold ${sisaSubtotal > 0 ? 'text-warning' : 'text-success'}` }, fmt(sisaSubtotal)),
               h('td', { class: `${tdClass} text-center` }, [
