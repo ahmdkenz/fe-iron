@@ -855,9 +855,9 @@ function tipeLabel(tipe) {
   return { CREDIT_NOTE: 'CN', DEBIT_NOTE: 'DN', KOREKSI_QTY_HARGA: 'Koreksi Item', KOREKSI_SALDO: 'Koreksi Saldo' }[tipe] ?? tipe
 }
 function sisaPerInvoice(inv) {
-  return inv.subtotal === 0
-    ? inv.sisa_tagihan
-    : Math.max(0, inv.subtotal - inv.total_pembayaran)
+  if (inv.subtotal === 0) return inv.sisa_tagihan
+  const net = inv.subtotal - inv.total_pembayaran - (inv.total_cn ?? 0) + (inv.total_dn ?? 0)
+  return Math.max(0, net)
 }
 function isOverdue(inv) {
   return inv.tanggal_jatuh_tempo
