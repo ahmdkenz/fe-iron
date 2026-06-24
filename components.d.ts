@@ -19,6 +19,7 @@ declare module 'vue' {
     BaseTable: typeof import('./src/components/base/BaseTable.vue')['default']
     BrandForm: typeof import('./src/modules/Master/components/BrandForm.vue')['default']
     BulkActionBar: typeof import('./src/modules/Finance/components/BulkActionBar.vue')['default']
+    BulkDeleteBar: typeof import('./src/components/base/BulkDeleteBar.vue')['default']
     DeferredApexChart: typeof import('./src/components/shared/DeferredApexChart.vue')['default']
     DetailDialog: typeof import('./src/components/shared/DetailDialog.vue')['default']
     DetailRow: typeof import('./src/components/shared/DetailRow.vue')['default']

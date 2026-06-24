@@ -38,6 +38,8 @@
         :loading="loading"
         :per-page="meta.per_page"
         :page="meta.current_page"
+        show-select
+        v-model:selected="selectedItems"
         class="mt-2"
         @update:options="onTableOptions"
       >
@@ -216,6 +218,12 @@
       :entitas-data="selectedForm"
       @saved="onFormSaved"
     />
+
+    <BulkDeleteBar
+      :selected="selectedItems"
+      @delete="doBulkDelete"
+      @clear="selectedItems = []"
+    />
   </div>
 </template>
 
@@ -223,8 +231,10 @@
 import { nextTick, onMounted, ref } from 'vue'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useCrud } from '@/composables/useCrud.js'
+import api from '@/utils/axios'
+import BulkDeleteBar from '@/components/base/BulkDeleteBar.vue'
 
-const { showSuccess, showError } = useSweetAlert()
+const { showSuccess, showError, showLoading, closeAlert, confirmDelete: swalConfirmDelete } = useSweetAlert()
 const { items, loading, meta, params, fetchList, remove } = useCrud('/master/perusahaan')
 
 const showDelete  = ref(false)
@@ -233,6 +243,7 @@ const showForm    = ref(false)
 const deleteError = ref('')
 const selectedEntitas = ref(null)
 const selectedForm = ref(null)
+const selectedItems = ref([])
 
 const headers = [
   { title: 'No',         key: 'no',                        sortable: false, width: '60px' },
@@ -280,6 +291,24 @@ async function doDelete() {
   } else {
     deleteError.value = res.message || 'Gagal menghapus data'
     await showError(deleteError.value)
+  }
+}
+
+async function doBulkDelete() {
+  if (!selectedItems.value.length) return
+  const { isConfirmed } = await swalConfirmDelete(`Sebanyak ${selectedItems.value.length} data yang dipilih akan dihapus.`)
+  if (!isConfirmed) return
+  showLoading({ title: 'Menghapus Data', text: 'Mohon tunggu...' })
+  try {
+    const res = await api.delete('/master/perusahaan/bulk', { data: { ids: selectedItems.value.map(i => i.id) } })
+    const deleted = res.data?.data?.deleted ?? selectedItems.value.length
+    selectedItems.value = []
+    fetchList()
+    await showSuccess(`${deleted} entitas berhasil dihapus.`)
+  } catch (err) {
+    await showError(err.response?.data?.message ?? 'Gagal menghapus data')
+  } finally {
+    closeAlert({ onlyLoading: true })
   }
 }
 

@@ -102,6 +102,8 @@
         :per-page="metaB2B.per_page"
         :page="metaB2B.current_page"
         wrap-text
+        show-select
+        v-model:selected="selectedB2B"
         @update:options="onTableOptionsB2B"
       >
         <template #item.no="{ index }">
@@ -248,6 +250,8 @@
         :per-page="metaB2C.per_page"
         :page="metaB2C.current_page"
         wrap-text
+        show-select
+        v-model:selected="selectedB2C"
         @update:options="onTableOptionsB2C"
       >
         <template #item.no="{ index }">
@@ -636,6 +640,12 @@
       </VAlert>
     </BaseModal>
 
+    <BulkDeleteBar
+      :selected="selectedKlienAll"
+      @delete="doBulkDelete"
+      @clear="clearAllSelected"
+    />
+
     <!-- Floating Import Loading Widget (saat modal di-minimize) -->
     <Transition name="slide-up">
       <VCard
@@ -695,17 +705,18 @@
 </template>
 
 <script setup>
-import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 
 import { useRouter } from 'vue-router'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useAuthStore } from '@/stores/auth.store'
 import { useCrud } from '@/composables/useCrud'
 import api from '@/utils/axios'
+import BulkDeleteBar from '@/components/base/BulkDeleteBar.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
-const { showSuccess, showError, showLoading, closeAlert } = useSweetAlert()
+const { showSuccess, showError, showLoading, closeAlert, confirmDelete: swalConfirmDelete } = useSweetAlert()
 
 const { items: itemsB2C, loading: loadingB2C, meta: metaB2C, params: paramsB2C, fetchList: fetchListB2C, remove } = useCrud('/finance/klien-ar')
 const { items: itemsB2B, loading: loadingB2B, meta: metaB2B, params: paramsB2B, fetchList: fetchListB2B } = useCrud('/finance/klien-ar')
@@ -725,6 +736,15 @@ const showDelete      = ref(false)
 const showDetail      = ref(false)
 const deleteError     = ref('')
 const selectedKlien   = ref(null)
+
+const selectedB2B     = ref([])
+const selectedB2C     = ref([])
+const selectedKlienAll = computed(() => [...selectedB2B.value, ...selectedB2C.value])
+
+function clearAllSelected() {
+  selectedB2B.value = []
+  selectedB2C.value = []
+}
 
 const exporting         = ref(false)
 const showImport        = ref(false)
@@ -955,6 +975,25 @@ function pollImportStatus(batchId) {
       pollImportStatus(batchId)
     }
   }, 1500)
+}
+
+async function doBulkDelete() {
+  if (!selectedKlienAll.value.length) return
+  const { isConfirmed } = await swalConfirmDelete(`Sebanyak ${selectedKlienAll.value.length} data yang dipilih akan dihapus.`)
+  if (!isConfirmed) return
+  showLoading({ title: 'Menghapus Data', text: 'Mohon tunggu...' })
+  try {
+    const res = await api.delete('/finance/klien-ar/bulk', { data: { ids: selectedKlienAll.value.map(i => i.id) } })
+    const deleted = res.data?.data?.deleted ?? selectedKlienAll.value.length
+    clearAllSelected()
+    loadListB2C()
+    loadListB2B()
+    await showSuccess(`${deleted} client berhasil dihapus.`)
+  } catch (err) {
+    await showError(err.response?.data?.message ?? 'Gagal menghapus data')
+  } finally {
+    closeAlert({ onlyLoading: true })
+  }
 }
 
 onBeforeUnmount(() => {

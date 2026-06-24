@@ -72,6 +72,8 @@
         :per-page="meta.per_page"
         :page="meta.current_page"
         wrap-text
+        show-select
+        v-model:selected="selectedItems"
         class="mt-2"
         @update:options="onTableOptions"
       >
@@ -415,6 +417,13 @@
       </VCard>
     </VDialog>
 
+    <BulkDeleteBar
+      v-if="!authStore.isArOnly"
+      :selected="selectedItems"
+      @delete="doBulkDelete"
+      @clear="selectedItems = []"
+    />
+
     <!-- Floating Import Progress Widget (saat modal di-minimize) -->
     <Transition name="slide-up">
       <VCard
@@ -484,9 +493,10 @@ import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useAuthStore } from '@/stores/auth.store'
 import { useCrud } from '@/composables/useCrud'
 import api from '@/utils/axios'
+import BulkDeleteBar from '@/components/base/BulkDeleteBar.vue'
 
 const authStore = useAuthStore()
-const { showSuccess, showError, showLoading, closeAlert } = useSweetAlert()
+const { showSuccess, showError, showLoading, closeAlert, confirmDelete: swalConfirmDelete } = useSweetAlert()
 const { items, loading, meta, params, fetchList, remove } = useCrud('/master/investor')
 
 const tableCard        = ref(null)
@@ -498,6 +508,7 @@ const showForm         = ref(false)
 const deleteError      = ref('')
 const selectedInvestor = ref(null)
 const selectedForm     = ref(null)
+const selectedItems    = ref([])
 
 const exporting         = ref(false)
 const showImport        = ref(false)
@@ -690,6 +701,24 @@ async function doDelete() {
   } else {
     deleteError.value = res.message || 'Gagal menghapus data'
     await showError(deleteError.value)
+  }
+}
+
+async function doBulkDelete() {
+  if (!selectedItems.value.length) return
+  const { isConfirmed } = await swalConfirmDelete(`Sebanyak ${selectedItems.value.length} data yang dipilih akan dihapus.`)
+  if (!isConfirmed) return
+  showLoading({ title: 'Menghapus Data', text: 'Mohon tunggu...' })
+  try {
+    const res = await api.delete('/master/investor/bulk', { data: { ids: selectedItems.value.map(i => i.id) } })
+    const deleted = res.data?.data?.deleted ?? selectedItems.value.length
+    selectedItems.value = []
+    fetchList()
+    await showSuccess(`${deleted} investor berhasil dihapus.`)
+  } catch (err) {
+    await showError(err.response?.data?.message ?? 'Gagal menghapus data')
+  } finally {
+    closeAlert({ onlyLoading: true })
   }
 }
 
