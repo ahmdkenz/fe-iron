@@ -461,16 +461,20 @@
                 variant="outlined"
                 :color="koreksiForm.tipe === 'CREDIT_NOTE' ? 'error' : undefined"
                 class="tipe-card cursor-pointer"
+                :class="{ 'tipe-card--selected': koreksiForm.tipe === 'CREDIT_NOTE' }"
                 @click="koreksiForm.tipe = 'CREDIT_NOTE'"
               >
-                <VCardText class="pa-3 d-flex align-center gap-3">
-                  <VIcon icon="ri-arrow-down-circle-line" color="error" size="28" />
-                  <div>
+                <VCardText class="pa-4 d-flex align-center gap-3">
+                  <VAvatar size="44" color="error" variant="tonal" rounded="lg">
+                    <VIcon icon="ri-arrow-down-circle-line" size="22" />
+                  </VAvatar>
+                  <div class="flex-grow-1">
                     <div class="font-weight-bold text-error">Credit Note</div>
                     <div class="text-caption text-medium-emphasis">Pengurangan tagihan klien</div>
                   </div>
-                  <VSpacer />
-                  <VIcon v-if="koreksiForm.tipe === 'CREDIT_NOTE'" icon="ri-checkbox-circle-fill" color="error" />
+                  <VAvatar v-if="koreksiForm.tipe === 'CREDIT_NOTE'" size="22" color="error">
+                    <VIcon icon="ri-check-line" size="14" color="white" />
+                  </VAvatar>
                 </VCardText>
               </VCard>
             </VCol>
@@ -479,16 +483,20 @@
                 variant="outlined"
                 :color="koreksiForm.tipe === 'DEBIT_NOTE' ? 'info' : undefined"
                 class="tipe-card cursor-pointer"
+                :class="{ 'tipe-card--selected': koreksiForm.tipe === 'DEBIT_NOTE' }"
                 @click="koreksiForm.tipe = 'DEBIT_NOTE'"
               >
-                <VCardText class="pa-3 d-flex align-center gap-3">
-                  <VIcon icon="ri-arrow-up-circle-line" color="info" size="28" />
-                  <div>
+                <VCardText class="pa-4 d-flex align-center gap-3">
+                  <VAvatar size="44" color="info" variant="tonal" rounded="lg">
+                    <VIcon icon="ri-arrow-up-circle-line" size="22" />
+                  </VAvatar>
+                  <div class="flex-grow-1">
                     <div class="font-weight-bold text-info">Debit Note</div>
                     <div class="text-caption text-medium-emphasis">Penambahan tagihan klien</div>
                   </div>
-                  <VSpacer />
-                  <VIcon v-if="koreksiForm.tipe === 'DEBIT_NOTE'" icon="ri-checkbox-circle-fill" color="info" />
+                  <VAvatar v-if="koreksiForm.tipe === 'DEBIT_NOTE'" size="22" color="info">
+                    <VIcon icon="ri-check-line" size="14" color="white" />
+                  </VAvatar>
                 </VCardText>
               </VCard>
             </VCol>
@@ -497,16 +505,20 @@
                 variant="outlined"
                 :color="koreksiForm.tipe === 'KOREKSI_QTY_HARGA' ? 'warning' : undefined"
                 class="tipe-card cursor-pointer"
+                :class="{ 'tipe-card--selected': koreksiForm.tipe === 'KOREKSI_QTY_HARGA' }"
                 @click="koreksiForm.tipe = 'KOREKSI_QTY_HARGA'"
               >
-                <VCardText class="pa-3 d-flex align-center gap-3">
-                  <VIcon icon="ri-edit-box-line" color="warning" size="28" />
-                  <div>
+                <VCardText class="pa-4 d-flex align-center gap-3">
+                  <VAvatar size="44" color="warning" variant="tonal" rounded="lg">
+                    <VIcon icon="ri-edit-box-line" size="22" />
+                  </VAvatar>
+                  <div class="flex-grow-1">
                     <div class="font-weight-bold" style="color: rgb(var(--v-theme-warning))">Koreksi Qty & Harga</div>
                     <div class="text-caption text-medium-emphasis">Perbaiki item invoice (qty/harga)</div>
                   </div>
-                  <VSpacer />
-                  <VIcon v-if="koreksiForm.tipe === 'KOREKSI_QTY_HARGA'" icon="ri-checkbox-circle-fill" color="warning" />
+                  <VAvatar v-if="koreksiForm.tipe === 'KOREKSI_QTY_HARGA'" size="22" color="warning">
+                    <VIcon icon="ri-check-line" size="14" color="white" />
+                  </VAvatar>
                 </VCardText>
               </VCard>
             </VCol>
@@ -515,16 +527,20 @@
                 variant="outlined"
                 :color="koreksiForm.tipe === 'KOREKSI_SALDO' ? 'secondary' : undefined"
                 class="tipe-card cursor-pointer"
+                :class="{ 'tipe-card--selected': koreksiForm.tipe === 'KOREKSI_SALDO' }"
                 @click="koreksiForm.tipe = 'KOREKSI_SALDO'"
               >
-                <VCardText class="pa-3 d-flex align-center gap-3">
-                  <VIcon icon="ri-funds-line" color="secondary" size="28" />
-                  <div>
+                <VCardText class="pa-4 d-flex align-center gap-3">
+                  <VAvatar size="44" color="secondary" variant="tonal" rounded="lg">
+                    <VIcon icon="ri-funds-line" size="22" />
+                  </VAvatar>
+                  <div class="flex-grow-1">
                     <div class="font-weight-bold text-secondary">Koreksi Saldo</div>
                     <div class="text-caption text-medium-emphasis">Penyesuaian saldo tanpa invoice</div>
                   </div>
-                  <VSpacer />
-                  <VIcon v-if="koreksiForm.tipe === 'KOREKSI_SALDO'" icon="ri-checkbox-circle-fill" color="secondary" />
+                  <VAvatar v-if="koreksiForm.tipe === 'KOREKSI_SALDO'" size="22" color="secondary">
+                    <VIcon icon="ri-check-line" size="14" color="white" />
+                  </VAvatar>
                 </VCardText>
               </VCard>
             </VCol>
@@ -543,14 +559,39 @@
           <template v-if="koreksiForm.tipe === 'CREDIT_NOTE' || koreksiForm.tipe === 'DEBIT_NOTE'">
             <VRow>
               <VCol cols="12">
-                <VSelect
-                  v-model="koreksiForm.invoice_id"
-                  :items="invoiceOptions"
-                  item-value="id"
-                  item-title="label"
-                  :label="`Pilih Invoice yang di-${koreksiForm.tipe === 'CREDIT_NOTE' ? 'kurangi' : 'tambah'}`"
-                  clearable
-                />
+                <div class="text-caption font-weight-medium text-medium-emphasis mb-2">
+                  Pilih Invoice yang di-{{ koreksiForm.tipe === 'CREDIT_NOTE' ? 'kurangi' : 'tambah' }}
+                </div>
+                <div v-if="!invoices.length" class="text-center py-4 text-medium-emphasis text-caption">
+                  Tidak ada invoice tersedia.
+                </div>
+                <div v-else class="koreksi-invoice-list">
+                  <div
+                    v-for="inv in invoices"
+                    :key="inv.id"
+                    class="koreksi-invoice-row"
+                    :class="{ 'koreksi-invoice-row--selected': koreksiForm.invoice_id === inv.id }"
+                    @click="koreksiForm.invoice_id = inv.id"
+                  >
+                    <div class="flex-grow-1 min-w-0">
+                      <div class="d-flex align-center gap-2 mb-1 flex-wrap">
+                        <span class="text-body-2 font-weight-bold">{{ inv.no_invoice }}</span>
+                        <VChip size="x-small" :color="invoiceStatusColor(inv.status)" variant="tonal" label>{{ inv.status }}</VChip>
+                        <VChip v-if="isOverdue(inv)" size="x-small" color="error" variant="tonal" label>Jatuh Tempo</VChip>
+                      </div>
+                      <div class="text-caption text-medium-emphasis">
+                        {{ formatDate(inv.tanggal_invoice) }} · JT: {{ formatDate(inv.tanggal_jatuh_tempo) || '-' }}
+                      </div>
+                      <div class="text-caption mt-1">
+                        Sisa: <span class="font-weight-bold text-error">{{ formatRp(sisaPerInvoice(inv)) }}</span>
+                        <span class="text-medium-emphasis ms-2">/ {{ formatRp(inv.subtotal) }}</span>
+                      </div>
+                    </div>
+                    <VAvatar v-if="koreksiForm.invoice_id === inv.id" size="24" color="primary" class="flex-shrink-0">
+                      <VIcon icon="ri-check-line" size="14" color="white" />
+                    </VAvatar>
+                  </div>
+                </div>
               </VCol>
               <VCol cols="12">
                 <VTextField
@@ -587,15 +628,37 @@
           <template v-else-if="koreksiForm.tipe === 'KOREKSI_QTY_HARGA'">
             <VRow>
               <VCol cols="12">
-                <VSelect
-                  v-model="koreksiForm.invoice_id"
-                  :items="invoiceOptions"
-                  item-value="id"
-                  item-title="label"
-                  label="Pilih Invoice"
-                  clearable
-                  @update:model-value="onInvoiceSelectedForKoreksiItem"
-                />
+                <div class="text-caption font-weight-medium text-medium-emphasis mb-2">Pilih Invoice</div>
+                <div v-if="!invoices.length" class="text-center py-4 text-medium-emphasis text-caption">
+                  Tidak ada invoice tersedia.
+                </div>
+                <div v-else class="koreksi-invoice-list">
+                  <div
+                    v-for="inv in invoices"
+                    :key="inv.id"
+                    class="koreksi-invoice-row"
+                    :class="{ 'koreksi-invoice-row--selected': koreksiForm.invoice_id === inv.id }"
+                    @click="koreksiForm.invoice_id = inv.id; onInvoiceSelectedForKoreksiItem(inv.id)"
+                  >
+                    <div class="flex-grow-1 min-w-0">
+                      <div class="d-flex align-center gap-2 mb-1 flex-wrap">
+                        <span class="text-body-2 font-weight-bold">{{ inv.no_invoice }}</span>
+                        <VChip size="x-small" :color="invoiceStatusColor(inv.status)" variant="tonal" label>{{ inv.status }}</VChip>
+                        <VChip v-if="isOverdue(inv)" size="x-small" color="error" variant="tonal" label>Jatuh Tempo</VChip>
+                      </div>
+                      <div class="text-caption text-medium-emphasis">
+                        {{ formatDate(inv.tanggal_invoice) }} · JT: {{ formatDate(inv.tanggal_jatuh_tempo) || '-' }}
+                      </div>
+                      <div class="text-caption mt-1">
+                        Sisa: <span class="font-weight-bold text-error">{{ formatRp(sisaPerInvoice(inv)) }}</span>
+                        <span class="text-medium-emphasis ms-2">/ {{ formatRp(inv.subtotal) }}</span>
+                      </div>
+                    </div>
+                    <VAvatar v-if="koreksiForm.invoice_id === inv.id" size="24" color="primary" class="flex-shrink-0">
+                      <VIcon icon="ri-check-line" size="14" color="white" />
+                    </VAvatar>
+                  </div>
+                </div>
               </VCol>
             </VRow>
 
@@ -1085,10 +1148,42 @@ onMounted(() => {
 }
 
 .tipe-card {
-  transition: box-shadow 0.15s;
+  transition: box-shadow 0.15s, background 0.15s;
+  min-height: 80px;
 }
 .tipe-card:hover {
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+}
+.tipe-card--selected {
+  background: rgba(var(--v-theme-on-surface), 0.04) !important;
+}
+
+.koreksi-invoice-list {
+  max-height: 260px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-right: 2px;
+}
+.koreksi-invoice-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  background: rgb(var(--v-theme-surface));
+  transition: border-color 0.15s, background 0.15s;
+}
+.koreksi-invoice-row:hover {
+  border-color: rgba(var(--v-theme-primary), 0.4);
+  background: rgba(var(--v-theme-primary), 0.03);
+}
+.koreksi-invoice-row--selected {
+  border-color: rgba(var(--v-theme-primary), 0.6);
+  background: rgba(var(--v-theme-primary), 0.07);
 }
 
 .cursor-pointer {
