@@ -8,6 +8,7 @@ import { themeConfig } from '@themeConfig'
 // Components
 import Footer from '@/layouts/components/Footer.vue'
 import NavbarThemeSwitcher from '@/layouts/components/NavbarThemeSwitcher.vue'
+import NavSidebarProfile from '@/layouts/components/NavSidebarProfile.vue'
 import UserProfile from '@/layouts/components/UserProfile.vue'
 import NavBarI18n from '@core/components/I18n.vue'
 
@@ -106,6 +107,11 @@ watch([
 
 <template>
   <VerticalNavLayout :nav-items="filteredNavItems">
+    <!-- 👉 Sidebar header: profil karyawan -->
+    <template #vertical-nav-header="{ toggleOverlay }">
+      <NavSidebarProfile :toggle-overlay="toggleOverlay" />
+    </template>
+
     <!-- 👉 navbar -->
     <template #navbar="{ toggleVerticalOverlayNavActive }">
       <div class="d-flex h-100 align-center">
