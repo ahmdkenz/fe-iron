@@ -10,46 +10,42 @@
     >
       </PageHeader>
 
-    <!-- Filter -->
-    <VCard class="mb-4">
-      <VCardText class="d-flex flex-wrap gap-3">
-        <VTextField
-          v-model="filters.periode_awal"
-          label="Dari Periode"
-          type="date"
-          density="compact"
-          hide-details
-          style="max-width: 180px"
-          @update:model-value="() => { doFetch(1); doFetchB2B(1) }"
-        />
-        <VTextField
-          v-model="filters.periode_akhir"
-          label="Sampai Periode"
-          type="date"
-          density="compact"
-          hide-details
-          style="max-width: 180px"
-          @update:model-value="() => { doFetch(1); doFetchB2B(1) }"
-        />
-        <VSelect
-          v-model="filters.status"
-          label="Status"
-          density="compact"
-          hide-details
-          clearable
-          style="max-width: 160px"
-          :items="[{ title: 'Draft', value: 'DRAFT' }, { title: 'Locked', value: 'LOCKED' }]"
-          @update:model-value="() => { doFetch(1); doFetchB2B(1) }"
-        />
-      </VCardText>
-    </VCard>
-
     <!-- Tabel B2B -->
     <VCard class="mb-4">
       <VCardTitle class="px-4 pt-4 pb-0 text-body-1 font-weight-bold d-flex align-center gap-2">
         <VIcon icon="ri-building-line" size="20" color="primary" />
         Ending Balance B2B
       </VCardTitle>
+      <VCardText class="d-flex flex-wrap gap-3 pb-0">
+        <VTextField
+          v-model="filtersB2B.periode_awal"
+          label="Dari Periode"
+          type="date"
+          density="compact"
+          hide-details
+          style="max-width: 180px"
+          @update:model-value="doFetchB2B(1)"
+        />
+        <VTextField
+          v-model="filtersB2B.periode_akhir"
+          label="Sampai Periode"
+          type="date"
+          density="compact"
+          hide-details
+          style="max-width: 180px"
+          @update:model-value="doFetchB2B(1)"
+        />
+        <VSelect
+          v-model="filtersB2B.status"
+          label="Status"
+          density="compact"
+          hide-details
+          clearable
+          style="max-width: 160px"
+          :items="[{ title: 'Draft', value: 'DRAFT' }, { title: 'Locked', value: 'LOCKED' }]"
+          @update:model-value="doFetchB2B(1)"
+        />
+      </VCardText>
       <VDataTableServer
         :headers="headers"
         :items="rowsB2B"
@@ -183,6 +179,36 @@
         <VIcon icon="ri-store-line" size="20" color="secondary" />
         Ending Balance B2C
       </VCardTitle>
+      <VCardText class="d-flex flex-wrap gap-3 pb-0">
+        <VTextField
+          v-model="filtersB2C.periode_awal"
+          label="Dari Periode"
+          type="date"
+          density="compact"
+          hide-details
+          style="max-width: 180px"
+          @update:model-value="doFetch(1)"
+        />
+        <VTextField
+          v-model="filtersB2C.periode_akhir"
+          label="Sampai Periode"
+          type="date"
+          density="compact"
+          hide-details
+          style="max-width: 180px"
+          @update:model-value="doFetch(1)"
+        />
+        <VSelect
+          v-model="filtersB2C.status"
+          label="Status"
+          density="compact"
+          hide-details
+          clearable
+          style="max-width: 160px"
+          :items="[{ title: 'Draft', value: 'DRAFT' }, { title: 'Locked', value: 'LOCKED' }]"
+          @update:model-value="doFetch(1)"
+        />
+      </VCardText>
       <VDataTableServer
         :headers="headers"
         :items="rows"
@@ -566,7 +592,13 @@ function toDateStr(d) {
 const now      = new Date()
 const firstDay = new Date(now.getFullYear(), now.getMonth(), 1)
 const lastDay  = new Date(now.getFullYear(), now.getMonth() + 1, 0)
-const filters  = reactive({
+const filtersB2B = reactive({
+  periode_awal:  toDateStr(firstDay),
+  periode_akhir: toDateStr(lastDay),
+  status: null,
+})
+
+const filtersB2C = reactive({
   periode_awal:  toDateStr(firstDay),
   periode_akhir: toDateStr(lastDay),
   status: null,
@@ -641,7 +673,7 @@ async function doFetch(page = 1) {
   loading.value = true
   try {
     const { data } = await api.get('/finance/ending-balance', {
-      params: { ...filters, segment: 'B2C', page },
+      params: { ...filtersB2C, segment: 'B2C', page },
       timeout: 60000,
     })
     rows.value = data.data ?? []
@@ -655,7 +687,7 @@ async function doFetchB2B(page = 1) {
   loadingB2B.value = true
   try {
     const { data } = await api.get('/finance/ending-balance', {
-      params: { ...filters, segment: 'B2B', page },
+      params: { ...filtersB2B, segment: 'B2B', page },
       timeout: 60000,
     })
     rowsB2B.value = data.data ?? []

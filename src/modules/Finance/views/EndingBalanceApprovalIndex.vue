@@ -28,20 +28,23 @@
         no-data-text="Tidak ada koreksi B2B yang menunggu persetujuan Anda."
         density="comfortable"
       >
+        <template #item.tipe="{ item }">
+          <VChip size="x-small" :color="tipeBadgeColor(item.tipe)" label>{{ tipeLabel(item.tipe) }}</VChip>
+        </template>
+        <template #item.no_dokumen="{ item }">
+          <span class="text-caption font-weight-medium">{{ item.no_dokumen || '—' }}</span>
+        </template>
         <template #item.nama_klien="{ item }">
           <span class="font-weight-medium">{{ item.nama_klien }}</span>
         </template>
-
         <template #item.nilai_koreksi="{ item }">
           <span class="font-weight-bold" :class="item.nilai_koreksi >= 0 ? 'text-success' : 'text-error'">
             {{ item.nilai_koreksi >= 0 ? '+' : '' }}{{ formatRp(item.nilai_koreksi) }}
           </span>
         </template>
-
         <template #item.submitted_at="{ item }">
           <span class="text-caption">{{ formatDatetime(item.submitted_at) }}</span>
         </template>
-
         <template #item.actions="{ item }">
           <div class="d-flex gap-1 justify-center">
             <VBtn icon size="small" variant="text" color="primary"
@@ -78,20 +81,23 @@
         no-data-text="Tidak ada koreksi B2C yang menunggu persetujuan Anda."
         density="comfortable"
       >
+        <template #item.tipe="{ item }">
+          <VChip size="x-small" :color="tipeBadgeColor(item.tipe)" label>{{ tipeLabel(item.tipe) }}</VChip>
+        </template>
+        <template #item.no_dokumen="{ item }">
+          <span class="text-caption font-weight-medium">{{ item.no_dokumen || '—' }}</span>
+        </template>
         <template #item.nama_klien="{ item }">
           <span class="font-weight-medium">{{ item.nama_klien }}</span>
         </template>
-
         <template #item.nilai_koreksi="{ item }">
           <span class="font-weight-bold" :class="item.nilai_koreksi >= 0 ? 'text-success' : 'text-error'">
             {{ item.nilai_koreksi >= 0 ? '+' : '' }}{{ formatRp(item.nilai_koreksi) }}
           </span>
         </template>
-
         <template #item.submitted_at="{ item }">
           <span class="text-caption">{{ formatDatetime(item.submitted_at) }}</span>
         </template>
-
         <template #item.actions="{ item }">
           <div class="d-flex gap-1 justify-center">
             <VBtn icon size="small" variant="text" color="primary"
@@ -128,28 +134,29 @@
         no-data-text="Belum ada koreksi B2B yang disetujui."
         density="comfortable"
       >
+        <template #item.tipe="{ item }">
+          <VChip size="x-small" :color="tipeBadgeColor(item.tipe)" label>{{ tipeLabel(item.tipe) }}</VChip>
+        </template>
+        <template #item.no_dokumen="{ item }">
+          <span class="text-caption font-weight-medium">{{ item.no_dokumen || '—' }}</span>
+        </template>
         <template #item.nama_klien="{ item }">
           <span class="font-weight-medium">{{ item.nama_klien }}</span>
         </template>
-
         <template #item.nilai_koreksi="{ item }">
           <span class="font-weight-bold" :class="item.nilai_koreksi >= 0 ? 'text-success' : 'text-error'">
             {{ item.nilai_koreksi >= 0 ? '+' : '' }}{{ formatRp(item.nilai_koreksi) }}
           </span>
         </template>
-
         <template #item.saldo_sebelum="{ item }">
           <span class="text-body-2">{{ formatRp(item.saldo_sebelum) }}</span>
         </template>
-
         <template #item.saldo_sesudah="{ item }">
           <span class="text-body-2 font-weight-semibold">{{ formatRp(item.saldo_sesudah) }}</span>
         </template>
-
         <template #item.manager_actioned_at="{ item }">
           <span class="text-caption">{{ formatDatetime(item.manager_actioned_at) }}</span>
         </template>
-
         <template #item.actions="{ item }">
           <VBtn icon size="small" variant="text" color="primary"
             :to="{ name: 'finance-ending-balance-show', params: { id: item.ending_balance_id } }">
@@ -176,28 +183,29 @@
         no-data-text="Belum ada koreksi B2C yang disetujui."
         density="comfortable"
       >
+        <template #item.tipe="{ item }">
+          <VChip size="x-small" :color="tipeBadgeColor(item.tipe)" label>{{ tipeLabel(item.tipe) }}</VChip>
+        </template>
+        <template #item.no_dokumen="{ item }">
+          <span class="text-caption font-weight-medium">{{ item.no_dokumen || '—' }}</span>
+        </template>
         <template #item.nama_klien="{ item }">
           <span class="font-weight-medium">{{ item.nama_klien }}</span>
         </template>
-
         <template #item.nilai_koreksi="{ item }">
           <span class="font-weight-bold" :class="item.nilai_koreksi >= 0 ? 'text-success' : 'text-error'">
             {{ item.nilai_koreksi >= 0 ? '+' : '' }}{{ formatRp(item.nilai_koreksi) }}
           </span>
         </template>
-
         <template #item.saldo_sebelum="{ item }">
           <span class="text-body-2">{{ formatRp(item.saldo_sebelum) }}</span>
         </template>
-
         <template #item.saldo_sesudah="{ item }">
           <span class="text-body-2 font-weight-semibold">{{ formatRp(item.saldo_sesudah) }}</span>
         </template>
-
         <template #item.manager_actioned_at="{ item }">
           <span class="text-caption">{{ formatDatetime(item.manager_actioned_at) }}</span>
         </template>
-
         <template #item.actions="{ item }">
           <VBtn icon size="small" variant="text" color="primary"
             :to="{ name: 'finance-ending-balance-show', params: { id: item.ending_balance_id } }">
@@ -272,6 +280,20 @@
                 {{ (dialog.koreksi?.nilai_koreksi ?? 0) >= 0 ? '+' : '' }}{{ formatRp(dialog.koreksi?.nilai_koreksi) }}
               </span>
             </div>
+            <div class="d-flex justify-space-between align-center mb-3">
+              <span class="info-label d-flex align-center gap-1">
+                <VIcon icon="ri-price-tag-3-line" size="15" />
+                Tipe
+              </span>
+              <VChip size="x-small" :color="tipeBadgeColor(dialog.koreksi?.tipe)" label>{{ tipeLabel(dialog.koreksi?.tipe) }}</VChip>
+            </div>
+            <div v-if="dialog.koreksi?.no_dokumen" class="d-flex justify-space-between align-center mb-3">
+              <span class="info-label d-flex align-center gap-1">
+                <VIcon icon="ri-file-text-line" size="15" />
+                No Dokumen
+              </span>
+              <span class="text-body-2 font-weight-semibold">{{ dialog.koreksi?.no_dokumen }}</span>
+            </div>
             <div class="d-flex justify-space-between align-start gap-4">
               <span class="info-label d-flex align-center gap-1 flex-shrink-0">
                 <VIcon icon="ri-chat-1-line" size="15" />
@@ -280,6 +302,35 @@
               <span class="text-body-2 text-right">{{ dialog.koreksi?.alasan_koreksi ?? '-' }}</span>
             </div>
           </div>
+
+          <!-- Detail item untuk KOREKSI_QTY_HARGA -->
+          <template v-if="dialog.koreksi?.tipe === 'KOREKSI_QTY_HARGA' && dialog.koreksi?.items?.length">
+            <div class="text-caption text-medium-emphasis font-weight-bold mb-1 mt-3">Detail Perubahan Item:</div>
+            <VTable density="compact" class="mb-3" style="font-size: 0.78rem">
+              <thead>
+                <tr>
+                  <th>Barang</th>
+                  <th class="text-end">Qty Lama</th>
+                  <th class="text-end">Qty Baru</th>
+                  <th class="text-end">Harga Lama</th>
+                  <th class="text-end">Harga Baru</th>
+                  <th class="text-end">Selisih</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="item in dialog.koreksi.items" :key="item.id">
+                  <td>{{ item.nama_barang }}</td>
+                  <td class="text-end">{{ item.qty_lama }}</td>
+                  <td class="text-end">{{ item.qty_baru }}</td>
+                  <td class="text-end">{{ formatRp(item.harga_satuan_lama) }}</td>
+                  <td class="text-end">{{ formatRp(item.harga_satuan_baru) }}</td>
+                  <td class="text-end font-weight-bold" :class="item.selisih >= 0 ? 'text-success' : 'text-error'">
+                    {{ item.selisih >= 0 ? '+' : '' }}{{ formatRp(item.selisih) }}
+                  </td>
+                </tr>
+              </tbody>
+            </VTable>
+          </template>
 
           <!-- Keterangan -->
           <VTextarea
@@ -322,8 +373,10 @@ const loading = ref(false)
 const rows    = ref([])
 
 const headers = [
+  { title: 'TIPE',             key: 'tipe',          sortable: false },
+  { title: 'NO DOKUMEN',       key: 'no_dokumen',    sortable: false },
   { title: 'CLIENT',           key: 'nama_klien',    sortable: false },
-  { title: 'NOMINAL PENYESUAIAN', key: 'nilai_koreksi', sortable: false },
+  { title: 'NOMINAL',          key: 'nilai_koreksi', sortable: false },
   { title: 'ALASAN',           key: 'alasan_koreksi',sortable: false },
   { title: 'DIAJUKAN OLEH',    key: 'submitted_by',  sortable: false },
   { title: 'TANGGAL DIAJUKAN', key: 'submitted_at',  sortable: false },
@@ -337,8 +390,10 @@ const loadingApproved = ref(false)
 const approvedRows    = ref([])
 
 const approvedHeaders = [
+  { title: 'TIPE',              key: 'tipe',               sortable: false },
+  { title: 'NO DOKUMEN',        key: 'no_dokumen',         sortable: false },
   { title: 'CLIENT',            key: 'nama_klien',         sortable: false },
-  { title: 'NOMINAL PENYESUAIAN', key: 'nilai_koreksi',    sortable: false },
+  { title: 'NOMINAL',           key: 'nilai_koreksi',      sortable: false },
   { title: 'SALDO SEBELUM',     key: 'saldo_sebelum',      sortable: false },
   { title: 'SALDO SESUDAH',     key: 'saldo_sesudah',      sortable: false },
   { title: 'ALASAN',            key: 'alasan_koreksi',     sortable: false },
@@ -368,6 +423,14 @@ function formatRp(val) {
 function formatDatetime(d) {
   if (!d) return '-'
   return new Date(d).toLocaleString('id-ID')
+}
+
+function tipeBadgeColor(tipe) {
+  return { CREDIT_NOTE: 'error', DEBIT_NOTE: 'info', KOREKSI_QTY_HARGA: 'warning', KOREKSI_SALDO: 'secondary' }[tipe] ?? 'default'
+}
+
+function tipeLabel(tipe) {
+  return { CREDIT_NOTE: 'CN', DEBIT_NOTE: 'DN', KOREKSI_QTY_HARGA: 'Koreksi Item', KOREKSI_SALDO: 'Koreksi Saldo' }[tipe] ?? (tipe || '—')
 }
 
 async function fetchPending() {
