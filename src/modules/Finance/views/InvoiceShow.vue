@@ -589,6 +589,111 @@
               </VTable>
             </VCard>
 
+            <VCard
+              v-if="koreksiList.length"
+              class="rounded-xl elevation-2 border"
+            >
+              <VCardTitle
+                class="pa-4 pb-2 font-weight-bold d-flex align-center"
+                :class="isB2B ? 'text-info' : 'text-primary'"
+              >
+                <VIcon
+                  icon="ri-edit-2-line"
+                  class="me-2"
+                />
+                Riwayat Penyesuaian (Credit Note / Debit Note / Koreksi)
+                <VChip
+                  size="x-small"
+                  color="info"
+                  variant="tonal"
+                  label
+                  class="ms-2"
+                >
+                  {{ koreksiList.length }}
+                </VChip>
+              </VCardTitle>
+              <VDivider />
+              <VTable
+                density="compact"
+                class="invoice-table"
+              >
+                <thead>
+                  <tr>
+                    <th>Tipe</th>
+                    <th>No Dokumen</th>
+                    <th class="text-right">
+                      Nilai
+                    </th>
+                    <th>Status</th>
+                    <th>Alasan</th>
+                    <th>Penyetuju</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="k in koreksiList"
+                    :key="k.id"
+                  >
+                    <td>
+                      <VChip
+                        size="x-small"
+                        :color="koreksiTipeColor(k.tipe)"
+                        variant="tonal"
+                        label
+                      >
+                        {{ koreksiTipeLabel(k.tipe) }}
+                      </VChip>
+                    </td>
+                    <td class="text-no-wrap">
+                      {{ k.no_dokumen ?? '—' }}
+                    </td>
+                    <td
+                      class="text-right text-no-wrap font-weight-bold"
+                      :class="k.nilai_koreksi >= 0 ? 'text-success' : 'text-error'"
+                    >
+                      {{ k.nilai_koreksi >= 0 ? '+' : '' }}{{ formatCurrency(k.nilai_koreksi) }}
+                    </td>
+                    <td>
+                      <VChip
+                        size="x-small"
+                        :color="koreksiStatusColor(k.status)"
+                        variant="tonal"
+                        label
+                      >
+                        {{ koreksiStatusLabel(k.status) }}
+                      </VChip>
+                    </td>
+                    <td style="max-width: 220px; white-space: normal;">
+                      {{ k.alasan_koreksi }}
+                    </td>
+                    <td class="text-caption text-no-wrap">
+                      <template v-if="k.manager">
+                        <span class="font-weight-medium">{{ k.manager }}</span><br>
+                        <span class="text-medium-emphasis">{{ formatDateTime(k.manager_actioned_at) }}</span>
+                      </template>
+                      <span
+                        v-else
+                        class="text-medium-emphasis"
+                      >—</span>
+                    </td>
+                    <td>
+                      <VBtn
+                        v-if="canPrintKoreksi && (k.tipe === 'CREDIT_NOTE' || k.tipe === 'DEBIT_NOTE')"
+                        size="x-small"
+                        variant="tonal"
+                        color="primary"
+                        prepend-icon="ri-printer-line"
+                        @click="openKoreksiPrint(k)"
+                      >
+                        Cetak
+                      </VBtn>
+                    </td>
+                  </tr>
+                </tbody>
+              </VTable>
+            </VCard>
+
             <VCard class="rounded-xl elevation-2 border">
               <VCardTitle
                 class="pa-4 pb-2 font-weight-bold d-flex align-center justify-space-between"
@@ -715,6 +820,12 @@
                   label="Total Terbayar"
                   :value="formatCurrency(invoice.total_pembayaran)"
                 />
+                <DetailRow
+                  v-if="(invoice.total_penyesuaian ?? 0) !== 0"
+                  label="Penyesuaian (CN/DN)"
+                >
+                  <span class="text-error">− {{ formatCurrency(invoice.total_penyesuaian) }}</span>
+                </DetailRow>
                 <VDivider class="my-2" />
                 <div class="d-flex py-2">
                   <span
@@ -723,9 +834,9 @@
                   >Sisa Tagihan</span>
                   <span
                     class="text-body-1 font-weight-bold"
-                    :class="Math.max(0, invoice.subtotal - invoice.total_pembayaran) > 0 ? 'text-error' : 'text-success'"
+                    :class="sisaTagihan > 0 ? 'text-error' : 'text-success'"
                   >
-                    {{ formatCurrency(Math.max(0, invoice.subtotal - invoice.total_pembayaran)) }}
+                    {{ formatCurrency(sisaTagihan) }}
                   </span>
                 </div>
               </VCardText>
@@ -1016,6 +1127,7 @@
       v-model="showShareDialog"
       :pre-selected="invoice ? [invoice] : []"
     />
+
   </div>
 </template>
 
@@ -1061,6 +1173,37 @@ const pageErrorMessage = ref('')
 const actionMessage = ref('')
 const actionErrorMessage = ref('')
 let loadInvoiceController = null
+
+const koreksiList = computed(() => invoice.value?.koreksi ?? [])
+const canPrintKoreksi = computed(() => authStore.canOperateEndingBalance)
+const sisaTagihan = computed(() => {
+  const inv = invoice.value
+  if (!inv) return 0
+  return Math.max(0, inv.subtotal - inv.total_pembayaran - (inv.total_penyesuaian ?? 0))
+})
+
+function koreksiTipeLabel(tipe) {
+  return { CREDIT_NOTE: 'CN', DEBIT_NOTE: 'DN', KOREKSI_QTY_HARGA: 'Koreksi Item', KOREKSI_SALDO: 'Koreksi Saldo' }[tipe] ?? tipe
+}
+function koreksiTipeColor(tipe) {
+  return { CREDIT_NOTE: 'error', DEBIT_NOTE: 'info', KOREKSI_QTY_HARGA: 'warning', KOREKSI_SALDO: 'secondary' }[tipe] ?? 'secondary'
+}
+function koreksiStatusLabel(s) {
+  return { PENDING_SPV: 'Menunggu SPV', PENDING_MANAGER: 'Menunggu Manager', APPROVED: 'Disetujui', REJECTED: 'Ditolak' }[s] ?? s
+}
+function koreksiStatusColor(s) {
+  return { PENDING_SPV: 'warning', PENDING_MANAGER: 'info', APPROVED: 'success', REJECTED: 'error' }[s] ?? 'secondary'
+}
+async function openKoreksiPrint(k) {
+  try {
+    const res = await api.get(`/finance/ending-balance/koreksi/${k.id}/print`, { responseType: 'blob' })
+    const blobUrl = URL.createObjectURL(res.data)
+    window.open(blobUrl, '_blank')
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 30_000)
+  } catch {
+    await showError('Gagal membuka dokumen cetak')
+  }
+}
 
 const statusTransitions = {
   TERKIRIM: [{ label: 'Lunas', value: 'LUNAS' }],

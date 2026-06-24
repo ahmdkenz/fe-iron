@@ -278,8 +278,8 @@
           {{ formatCurrency(item.subtotal) }}
         </template>
         <template #item.sisa_tagihan="{ item }">
-          <span :class="Math.max(0, item.subtotal - item.total_pembayaran) > 0 ? 'text-error' : 'text-success'">
-            {{ formatCurrency(Math.max(0, item.subtotal - item.total_pembayaran)) }}
+          <span :class="Math.max(0, item.subtotal - item.total_pembayaran - (item.total_penyesuaian ?? 0)) > 0 ? 'text-error' : 'text-success'">
+            {{ formatCurrency(Math.max(0, item.subtotal - item.total_pembayaran - (item.total_penyesuaian ?? 0))) }}
           </span>
         </template>
         <template #item.status="{ item }">
@@ -486,8 +486,8 @@
           {{ formatCurrency(item.subtotal) }}
         </template>
         <template #item.sisa_tagihan="{ item }">
-          <span :class="Math.max(0, item.subtotal - item.total_pembayaran) > 0 ? 'text-error' : 'text-success'">
-            {{ formatCurrency(Math.max(0, item.subtotal - item.total_pembayaran)) }}
+          <span :class="Math.max(0, item.subtotal - item.total_pembayaran - (item.total_penyesuaian ?? 0)) > 0 ? 'text-error' : 'text-success'">
+            {{ formatCurrency(Math.max(0, item.subtotal - item.total_pembayaran - (item.total_penyesuaian ?? 0))) }}
           </span>
         </template>
         <template #item.status="{ item }">

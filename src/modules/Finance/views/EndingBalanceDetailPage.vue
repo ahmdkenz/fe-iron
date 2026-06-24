@@ -760,67 +760,6 @@
     </VCard>
   </VDialog>
 
-  <!-- Dialog Cetak CN/DN -->
-  <VDialog v-model="showPrintDialog" max-width="600">
-    <VCard v-if="printData">
-      <VCardTitle class="pt-4 px-4 d-flex align-center gap-2">
-        <VChip :color="printData.tipe === 'CREDIT_NOTE' ? 'error' : 'info'" label>{{ printData.tipe_label }}</VChip>
-        <span class="text-body-1 font-weight-bold">{{ printData.no_dokumen }}</span>
-        <VSpacer />
-        <VBtn size="small" variant="tonal" prepend-icon="ri-printer-line" @click="doPrint">Cetak</VBtn>
-      </VCardTitle>
-      <VDivider />
-      <VCardText id="print-area" class="pa-6">
-        <div class="text-center mb-6">
-          <div class="text-h5 font-weight-bold">{{ printData.tipe_label }}</div>
-          <div class="text-body-2 text-medium-emphasis">{{ printData.no_dokumen }}</div>
-          <div class="text-caption text-medium-emphasis">Tanggal: {{ printData.tanggal ? formatDate(printData.tanggal) : '—' }}</div>
-        </div>
-
-        <div class="mb-4">
-          <div class="text-caption text-medium-emphasis">Kepada Yth.</div>
-          <div class="font-weight-bold">{{ printData.klien?.nama }}</div>
-          <div class="text-caption">{{ printData.klien?.kode }}</div>
-        </div>
-
-        <div class="mb-4">
-          <div class="text-caption text-medium-emphasis">Referensi Invoice</div>
-          <div class="font-weight-medium">{{ printData.invoice?.no_invoice || '—' }}</div>
-          <div class="text-caption">{{ printData.invoice?.tanggal_invoice ? formatDate(printData.invoice.tanggal_invoice) : '' }}</div>
-        </div>
-
-        <div class="mb-4">
-          <div class="text-caption text-medium-emphasis">Keterangan</div>
-          <div>{{ printData.alasan_koreksi }}</div>
-        </div>
-
-        <VDivider class="my-4" />
-        <div class="d-flex justify-space-between align-center">
-          <div class="text-body-1">{{ printData.tipe === 'CREDIT_NOTE' ? 'Nilai Pengurangan Tagihan' : 'Nilai Penambahan Tagihan' }}</div>
-          <div class="text-h6 font-weight-bold" :class="printData.tipe === 'CREDIT_NOTE' ? 'text-error' : 'text-info'">
-            {{ formatRp(printData.nilai_koreksi) }}
-          </div>
-        </div>
-        <VDivider class="my-4" />
-
-        <div v-if="printData.manager_name" class="mt-6 text-caption text-medium-emphasis">
-          Disetujui oleh: <strong>{{ printData.manager_name }}</strong> pada {{ printData.manager_actioned_at ? formatDate(printData.manager_actioned_at) : '—' }}
-        </div>
-        <div v-else class="mt-6 text-caption text-warning">
-          Belum disetujui Manager.
-        </div>
-      </VCardText>
-      <VCardActions class="px-4 pb-4">
-        <VSpacer />
-        <VBtn variant="text" @click="showPrintDialog = false">Tutup</VBtn>
-      </VCardActions>
-    </VCard>
-    <VCard v-else-if="printLoading">
-      <VCardText class="text-center pa-8">
-        <VProgressCircular indeterminate />
-      </VCardText>
-    </VCard>
-  </VDialog>
 </template>
 
 <script setup>
@@ -872,11 +811,6 @@ const totalSelisihItems = computed(() =>
 
 // Expand koreksi item baris
 const expandedKoreksiId = ref(null)
-
-// Print dialog
-const showPrintDialog = ref(false)
-const printData       = ref(null)
-const printLoading    = ref(false)
 
 // Net koreksi yang sudah disetujui
 const koreksiNet = computed(() => (eb.value?.saldo_akhir_final ?? 0) - (eb.value?.saldo_akhir_sistem ?? 0))
@@ -1096,22 +1030,14 @@ function toggleKoreksiExpand(id) {
 }
 
 async function openPrintDialog(k) {
-  showPrintDialog.value = true
-  printData.value       = null
-  printLoading.value    = true
   try {
-    const { data } = await api.get(`/finance/ending-balance/koreksi/${k.id}/print`)
-    printData.value = data.data
+    const res = await api.get(`/finance/ending-balance/koreksi/${k.id}/print`, { responseType: 'blob' })
+    const blobUrl = URL.createObjectURL(res.data)
+    window.open(blobUrl, '_blank')
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 30_000)
   } catch (e) {
-    alert(e?.response?.data?.message ?? 'Gagal memuat data dokumen.')
-    showPrintDialog.value = false
-  } finally {
-    printLoading.value = false
+    alert(e?.response?.data?.message ?? 'Gagal membuka dokumen cetak.')
   }
-}
-
-function doPrint() {
-  window.print()
 }
 
 onMounted(() => {
