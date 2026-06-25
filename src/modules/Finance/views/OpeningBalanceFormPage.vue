@@ -131,7 +131,7 @@
                       prepend-inner-icon="ri-hashtag"
                       :rules="[v => !!v || 'No. Opening Balance wajib diisi']"
                       :error-messages="errors.no_invoice"
-                      hint="Format: OB-{SINGKATAN}-{DDMMYYYYHHMMSS}-{XXX} — Contoh PT: OB-ABB-13062026143022-001 | Contoh RESTO: OB-MKS-13062026143022-001"
+                      hint="Format: OB-{SINGKATAN}-{DDMMYYYYHHMMSSmmm} — Contoh PT: OB-ABB-13062026143022479 | Contoh RESTO: OB-MKS-13062026143022479"
                       persistent-hint
                     />
                   </VCol>
@@ -655,9 +655,9 @@ function generateObNoInvoice() {
   const hh   = pad(now.getHours())
   const min  = pad(now.getMinutes())
   const ss   = pad(now.getSeconds())
-  const xxx  = pad(Math.floor(Math.random() * 1000), 3)
+  const ms   = pad(now.getMilliseconds(), 3)
 
-  return `OB-${singkatan}-${dd}${mm}${yyyy}${hh}${min}${ss}-${xxx}`
+  return `OB-${singkatan}-${dd}${mm}${yyyy}${hh}${min}${ss}${ms}`
 }
 
 watch(() => form.klien_ar_id, (newVal) => {

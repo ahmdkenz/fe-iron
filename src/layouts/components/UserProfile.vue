@@ -122,6 +122,15 @@ async function doLogout() {
 
       <VDivider class="my-1" />
 
+      <VListItem
+        prepend-icon="ri-settings-3-line"
+        title="Pengaturan Profil"
+        :to="{ name: 'profile-settings' }"
+        @click="isMenuOpen = false"
+      />
+
+      <VDivider class="my-1" />
+
       <VListItem class="px-4 pb-3">
         <VBtn
           block

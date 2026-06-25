@@ -157,7 +157,7 @@
               <VTooltip activator="parent">{{ item.status === 'LOCKED' ? 'Ajukan Koreksi' : 'Penyesuaian Invoice' }}</VTooltip>
             </VBtn>
             <VBtn
-              v-if="item.status === 'DRAFT' && authStore.canOperateEndingBalance"
+              v-if="item.status === 'DRAFT' && authStore.canLockEndingBalance"
               icon
               size="x-small"
               variant="tonal"
@@ -167,6 +167,18 @@
             >
               <VIcon icon="ri-lock-line" />
               <VTooltip activator="parent">Kunci Periode</VTooltip>
+            </VBtn>
+            <VBtn
+              v-if="item.status === 'LOCKED' && authStore.canLockEndingBalance"
+              icon
+              size="x-small"
+              variant="tonal"
+              color="warning"
+              :loading="unlockingId === item.id"
+              @click="confirmUnlock(item)"
+            >
+              <VIcon icon="ri-lock-unlock-line" />
+              <VTooltip activator="parent">Buka Periode</VTooltip>
             </VBtn>
           </div>
         </template>
@@ -320,7 +332,7 @@
               <VTooltip activator="parent">{{ item.status === 'LOCKED' ? 'Ajukan Koreksi' : 'Penyesuaian Invoice' }}</VTooltip>
             </VBtn>
             <VBtn
-              v-if="item.status === 'DRAFT' && authStore.canOperateEndingBalance"
+              v-if="item.status === 'DRAFT' && authStore.canLockEndingBalance"
               icon
               size="x-small"
               variant="tonal"
@@ -330,6 +342,18 @@
             >
               <VIcon icon="ri-lock-line" />
               <VTooltip activator="parent">Kunci Periode</VTooltip>
+            </VBtn>
+            <VBtn
+              v-if="item.status === 'LOCKED' && authStore.canLockEndingBalance"
+              icon
+              size="x-small"
+              variant="tonal"
+              color="warning"
+              :loading="unlockingId === item.id"
+              @click="confirmUnlock(item)"
+            >
+              <VIcon icon="ri-lock-unlock-line" />
+              <VTooltip activator="parent">Buka Periode</VTooltip>
             </VBtn>
           </div>
         </template>
@@ -350,6 +374,27 @@
           <VSpacer />
           <VBtn variant="text" @click="showLockDialog = false">Batal</VBtn>
           <VBtn color="success" :loading="lockingId !== null" @click="doLock">Kunci</VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
+
+    <!-- Dialog Konfirmasi Unlock -->
+    <VDialog v-model="showUnlockDialog" max-width="420">
+      <VCard>
+        <VCardTitle class="pt-4 px-4">Buka Kunci Periode</VCardTitle>
+        <VCardText>
+          Buka kunci ending balance <strong>{{ unlockTarget?.nama_klien }}</strong> untuk periode
+          {{ formatDate(unlockTarget?.periode_awal) }} – {{ formatDate(unlockTarget?.periode_akhir) }}?
+          <br><br>
+          Setelah dibuka, invoice dalam periode ini dapat diubah kembali via import.
+          <VAlert type="warning" variant="tonal" density="compact" class="mt-3">
+            Pastikan data yang akan diubah sudah dikonfirmasi sebelum mengunci ulang.
+          </VAlert>
+        </VCardText>
+        <VCardActions class="px-4 pb-4">
+          <VSpacer />
+          <VBtn variant="text" @click="showUnlockDialog = false">Batal</VBtn>
+          <VBtn color="warning" :loading="unlockingId !== null" @click="doUnlock">Buka Kunci</VBtn>
         </VCardActions>
       </VCard>
     </VDialog>
@@ -617,6 +662,9 @@ const filtersB2C = reactive({
 const lockingId       = ref(null)
 const showLockDialog  = ref(false)
 const lockTarget      = ref(null)
+const unlockingId     = ref(null)
+const showUnlockDialog = ref(false)
+const unlockTarget    = ref(null)
 const showKoreksiDialog = ref(false)
 const koreksiTarget     = ref(null)
 const koreksiForm       = reactive({ tipe_koreksi: 'tambah', jumlah_koreksi: '', alasan_koreksi: '', dokumen_url: '', invoice_id: null })
@@ -735,6 +783,27 @@ async function doLock() {
   } finally {
     lockingId.value = null
     lockTarget.value = null
+  }
+}
+
+function confirmUnlock(item) {
+  unlockTarget.value    = item
+  showUnlockDialog.value = true
+}
+
+async function doUnlock() {
+  if (!unlockTarget.value) return
+  unlockingId.value = unlockTarget.value.id
+  try {
+    await api.patch(`/finance/ending-balance/${unlockTarget.value.id}/unlock`)
+    showUnlockDialog.value = false
+    doFetch(currentPage.value)
+    doFetchB2B(currentPageB2B.value)
+  } catch (e) {
+    alert(e?.response?.data?.message ?? 'Gagal membuka kunci periode.')
+  } finally {
+    unlockingId.value  = null
+    unlockTarget.value = null
   }
 }
 

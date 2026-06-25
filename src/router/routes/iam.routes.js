@@ -41,4 +41,10 @@ export default [
     component: () => import('@/modules/IAM/views/RoleForm.vue'),
     meta: { requiresAuth: true, roles: ['ADMIN'] },
   },
+  {
+    path: '/profile',
+    name: 'profile-settings',
+    component: () => import('@/modules/IAM/views/ProfileSettings.vue'),
+    meta: { requiresAuth: true },
+  },
 ]

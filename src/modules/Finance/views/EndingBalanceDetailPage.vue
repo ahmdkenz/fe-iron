@@ -74,14 +74,14 @@
       </VAlert>
 
       <!-- Aksi DRAFT -->
-      <VCard v-if="eb.status === 'DRAFT' && authStore.canOperateEndingBalance" class="mb-4">
+      <VCard v-if="eb.status === 'DRAFT'" class="mb-4">
         <VCardText class="d-flex align-center justify-space-between flex-wrap gap-3">
           <div class="text-body-2 text-medium-emphasis">
             Periode ini masih <strong>DRAFT</strong>. Setelah data diverifikasi, tutup periode untuk mengunci nilai.
           </div>
           <div class="d-flex gap-2">
-            <VBtn color="info" variant="tonal" prepend-icon="ri-pencil-line" @click="openKoreksiDialog">Ajukan Koreksi</VBtn>
-            <VBtn color="success" prepend-icon="ri-lock-line" :loading="locking" @click="showLockDialog = true">
+            <VBtn v-if="authStore.canOperateEndingBalance" color="info" variant="tonal" prepend-icon="ri-pencil-line" @click="openKoreksiDialog">Ajukan Koreksi</VBtn>
+            <VBtn v-if="authStore.canLockEndingBalance" color="success" prepend-icon="ri-lock-line" :loading="locking" @click="showLockDialog = true">
               Tutup Periode
             </VBtn>
           </div>
@@ -93,13 +93,28 @@
         Terdapat koreksi yang sedang dalam proses persetujuan. Koreksi baru bisa diajukan setelah selesai.
       </VAlert>
 
-      <!-- Aksi Koreksi (LOCKED) -->
-      <VCard v-if="eb.status === 'LOCKED' && authStore.canOperateEndingBalance && !eb.has_active_koreksi" class="mb-4">
+      <!-- Aksi Koreksi + Unlock (LOCKED) -->
+      <VCard v-if="eb.status === 'LOCKED'" class="mb-4">
         <VCardText class="d-flex align-center justify-space-between flex-wrap gap-3">
           <div class="text-body-2 text-medium-emphasis">
-            Periode ini sudah <strong>TERKUNCI</strong>. Jika ada perbedaan nilai, ajukan koreksi untuk diproses melalui persetujuan SPV dan Manager.
+            Periode ini sudah <strong>TERKUNCI</strong>. Jika ada perbedaan nilai, ajukan koreksi atau buka kunci untuk re-import.
           </div>
-          <VBtn color="info" prepend-icon="ri-pencil-line" @click="openKoreksiDialog">Ajukan Koreksi</VBtn>
+          <div class="d-flex gap-2">
+            <VBtn
+              v-if="authStore.canOperateEndingBalance && !eb.has_active_koreksi"
+              color="info"
+              prepend-icon="ri-pencil-line"
+              @click="openKoreksiDialog"
+            >Ajukan Koreksi</VBtn>
+            <VBtn
+              v-if="authStore.canLockEndingBalance"
+              color="warning"
+              variant="tonal"
+              prepend-icon="ri-lock-unlock-line"
+              :loading="unlocking"
+              @click="showUnlockDialog = true"
+            >Buka Periode</VBtn>
+          </div>
         </VCardText>
       </VCard>
 
@@ -315,28 +330,30 @@
                   <span v-else class="text-medium-emphasis">{{ k.spv ? 'Menunggu' : '—' }}</span>
                 </td>
                 <td class="text-no-wrap">
-                  <!-- Tombol cetak untuk CN/DN -->
-                  <VBtn
-                    v-if="k.tipe === 'CREDIT_NOTE' || k.tipe === 'DEBIT_NOTE'"
-                    size="x-small"
-                    variant="tonal"
-                    color="primary"
-                    prepend-icon="ri-printer-line"
-                    @click="openPrintDialog(k)"
-                  >Cetak</VBtn>
-                  <!-- Toggle expand untuk KOREKSI_QTY_HARGA -->
-                  <VBtn
-                    v-if="k.tipe === 'KOREKSI_QTY_HARGA' && k.items?.length"
-                    size="x-small"
-                    variant="tonal"
-                    color="secondary"
-                    :prepend-icon="expandedKoreksiId === k.id ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'"
-                    @click="toggleKoreksiExpand(k.id)"
-                  >{{ expandedKoreksiId === k.id ? 'Tutup' : 'Detail Item' }}</VBtn>
+                  <div class="d-flex gap-1 flex-wrap">
+                    <!-- Tombol cetak untuk CN/DN -->
+                    <VBtn
+                      v-if="k.tipe === 'CREDIT_NOTE' || k.tipe === 'DEBIT_NOTE'"
+                      size="x-small"
+                      variant="tonal"
+                      color="primary"
+                      prepend-icon="ri-printer-line"
+                      @click="openPrintDialog(k)"
+                    >Cetak</VBtn>
+                    <!-- Toggle expand untuk koreksi yang punya items -->
+                    <VBtn
+                      v-if="k.items?.length"
+                      size="x-small"
+                      variant="tonal"
+                      color="secondary"
+                      :prepend-icon="expandedKoreksiId === k.id ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'"
+                      @click="toggleKoreksiExpand(k.id)"
+                    >{{ expandedKoreksiId === k.id ? 'Tutup' : 'Detail Item' }}</VBtn>
+                  </div>
                 </td>
               </tr>
-              <!-- Expandable: detail item KOREKSI_QTY_HARGA -->
-              <tr v-if="k.tipe === 'KOREKSI_QTY_HARGA' && expandedKoreksiId === k.id && k.items?.length">
+              <!-- Expandable: detail item (KOREKSI_QTY_HARGA, CN/DN dengan items) -->
+              <tr v-if="k.items?.length && expandedKoreksiId === k.id">
                 <td colspan="10" class="pa-0">
                   <div class="bg-surface-variant pa-3">
                     <div class="text-caption text-medium-emphasis font-weight-bold mb-2">Detail Perubahan Item</div>
@@ -434,6 +451,27 @@
         <VSpacer />
         <VBtn variant="text" @click="showLockDialog = false">Batal</VBtn>
         <VBtn color="success" :loading="locking" @click="doLock">Kunci</VBtn>
+      </VCardActions>
+    </VCard>
+  </VDialog>
+
+  <!-- Dialog Konfirmasi Unlock -->
+  <VDialog v-model="showUnlockDialog" max-width="420">
+    <VCard>
+      <VCardTitle class="pt-4 px-4">Buka Kunci Periode</VCardTitle>
+      <VCardText>
+        Buka kunci ending balance <strong>{{ eb?.nama_klien }}</strong> untuk periode
+        {{ formatDate(eb?.periode_awal) }} – {{ formatDate(eb?.periode_akhir) }}?
+        <br><br>
+        Setelah dibuka, invoice dalam periode ini dapat diubah kembali via import.
+        <VAlert type="warning" variant="tonal" density="compact" class="mt-3">
+          Pastikan data yang akan diubah sudah dikonfirmasi sebelum mengunci ulang.
+        </VAlert>
+      </VCardText>
+      <VCardActions class="px-4 pb-4">
+        <VSpacer />
+        <VBtn variant="text" @click="showUnlockDialog = false">Batal</VBtn>
+        <VBtn color="warning" :loading="unlocking" @click="doUnlock">Buka Kunci</VBtn>
       </VCardActions>
     </VCard>
   </VDialog>
@@ -571,7 +609,7 @@
                     :key="inv.id"
                     class="koreksi-invoice-row"
                     :class="{ 'koreksi-invoice-row--selected': koreksiForm.invoice_id === inv.id }"
-                    @click="koreksiForm.invoice_id = inv.id"
+                    @click="koreksiForm.invoice_id = inv.id; onInvoiceSelectedForKoreksiItem(inv.id)"
                   >
                     <div class="flex-grow-1 min-w-0">
                       <div class="d-flex align-center gap-2 mb-1 flex-wrap">
@@ -593,35 +631,134 @@
                   </div>
                 </div>
               </VCol>
-              <VCol cols="12">
-                <VTextField
-                  v-model="koreksiForm.nilai"
-                  :label="koreksiForm.tipe === 'CREDIT_NOTE' ? 'Nilai Pengurangan (Rp)' : 'Nilai Penambahan (Rp)'"
-                  type="number"
-                  min="0"
-                  :hint="koreksiForm.tipe === 'CREDIT_NOTE' ? 'Tagihan klien akan berkurang sebesar nilai ini' : 'Tagihan klien akan bertambah sebesar nilai ini'"
-                  persistent-hint
-                />
-              </VCol>
-              <VCol cols="12">
-                <VTextarea
-                  v-model="koreksiForm.alasan_koreksi"
-                  label="Alasan"
-                  rows="3"
-                  auto-grow
-                  counter="1000"
-                  persistent-hint
-                />
-              </VCol>
-              <VCol cols="12">
-                <VTextField
-                  v-model="koreksiForm.dokumen_url"
-                  label="URL Dokumen Pendukung (opsional)"
-                  hint="Link Google Drive, SharePoint, atau URL lainnya"
-                  persistent-hint
-                />
-              </VCol>
             </VRow>
+
+            <div v-if="itemsLoading" class="text-center py-4">
+              <VProgressCircular indeterminate size="24" />
+              <span class="text-caption ml-2">Memuat item invoice...</span>
+            </div>
+
+            <template v-else-if="koreksiForm.invoice_id && koreksiItems.length">
+              <div class="text-caption text-medium-emphasis mb-2 mt-3">
+                Edit qty dan harga baru (kosongkan jika tidak berubah):
+              </div>
+              <VTable density="compact" class="eb-item-edit-table mb-3">
+                <thead>
+                  <tr>
+                    <th>Barang</th>
+                    <th class="text-end">Qty Lama</th>
+                    <th class="text-end">Harga Lama</th>
+                    <th class="text-end">Subtotal Lama</th>
+                    <th class="text-end" style="min-width: 110px">Qty Baru</th>
+                    <th class="text-end" style="min-width: 130px">Harga Baru</th>
+                    <th class="text-end">Subtotal Baru</th>
+                    <th class="text-end">Selisih</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(item, idx) in koreksiItems" :key="item.id">
+                    <td class="text-caption font-weight-medium">{{ item.nama_barang }}</td>
+                    <td class="text-end text-caption">{{ item.qty }}</td>
+                    <td class="text-end text-caption">{{ formatRp(item.harga_satuan) }}</td>
+                    <td class="text-end text-caption">{{ formatRp(item.subtotalLama) }}</td>
+                    <td class="text-end">
+                      <VTextField
+                        v-model="item.qty_baru"
+                        type="number"
+                        min="0"
+                        density="compact"
+                        variant="outlined"
+                        hide-details
+                        style="min-width: 90px"
+                        @update:model-value="recalcSelisih(idx)"
+                      />
+                    </td>
+                    <td class="text-end">
+                      <VTextField
+                        v-model="item.harga_baru"
+                        type="number"
+                        min="0"
+                        density="compact"
+                        variant="outlined"
+                        hide-details
+                        style="min-width: 110px"
+                        @update:model-value="recalcSelisih(idx)"
+                      />
+                    </td>
+                    <td class="text-end text-caption" :class="item.subtotalBaru != null ? (item.subtotalBaru < item.subtotalLama ? 'text-error' : 'text-success') : 'text-medium-emphasis'">
+                      {{ item.subtotalBaru != null ? formatRp(item.subtotalBaru) : '—' }}
+                    </td>
+                    <td class="text-end font-weight-bold text-caption" :class="(item.selisih ?? 0) >= 0 ? 'text-success' : 'text-error'">
+                      {{ item.selisih != null ? ((item.selisih >= 0 ? '+' : '') + formatRp(item.selisih)) : '—' }}
+                    </td>
+                  </tr>
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td colspan="7" class="text-end font-weight-bold text-caption">
+                      {{ koreksiForm.tipe === 'CREDIT_NOTE' ? 'Total Pengurangan:' : 'Total Penambahan:' }}
+                    </td>
+                    <td class="text-end font-weight-bold" :class="totalSelisihItems >= 0 ? 'text-success' : 'text-error'">
+                      {{ (totalSelisihItems >= 0 ? '+' : '') + formatRp(totalSelisihItems) }}
+                    </td>
+                  </tr>
+                </tfoot>
+              </VTable>
+              <VRow>
+                <VCol cols="12">
+                  <VTextarea
+                    v-model="koreksiForm.alasan_koreksi"
+                    label="Alasan"
+                    rows="3"
+                    auto-grow
+                    counter="1000"
+                    persistent-hint
+                  />
+                </VCol>
+                <VCol cols="12">
+                  <VTextField
+                    v-model="koreksiForm.dokumen_url"
+                    label="URL Dokumen Pendukung (opsional)"
+                    hint="Link Google Drive, SharePoint, atau URL lainnya"
+                    persistent-hint
+                  />
+                </VCol>
+              </VRow>
+            </template>
+
+            <!-- Fallback: invoice dipilih tapi tidak ada items (invoice tanpa line item) -->
+            <template v-else-if="koreksiForm.invoice_id && !itemsLoading">
+              <VRow class="mt-2">
+                <VCol cols="12">
+                  <VTextField
+                    v-model="koreksiForm.nilai"
+                    :label="koreksiForm.tipe === 'CREDIT_NOTE' ? 'Nilai Pengurangan (Rp)' : 'Nilai Penambahan (Rp)'"
+                    type="number"
+                    min="0"
+                    :hint="koreksiForm.tipe === 'CREDIT_NOTE' ? 'Tagihan klien akan berkurang sebesar nilai ini' : 'Tagihan klien akan bertambah sebesar nilai ini'"
+                    persistent-hint
+                  />
+                </VCol>
+                <VCol cols="12">
+                  <VTextarea
+                    v-model="koreksiForm.alasan_koreksi"
+                    label="Alasan"
+                    rows="3"
+                    auto-grow
+                    counter="1000"
+                    persistent-hint
+                  />
+                </VCol>
+                <VCol cols="12">
+                  <VTextField
+                    v-model="koreksiForm.dokumen_url"
+                    label="URL Dokumen Pendukung (opsional)"
+                    hint="Link Google Drive, SharePoint, atau URL lainnya"
+                    persistent-hint
+                  />
+                </VCol>
+              </VRow>
+            </template>
           </template>
 
           <!-- ── Form Koreksi Qty & Harga ── -->
@@ -675,8 +812,10 @@
                     <th>Barang</th>
                     <th class="text-end">Qty Lama</th>
                     <th class="text-end">Harga Lama</th>
+                    <th class="text-end">Subtotal Lama</th>
                     <th class="text-end" style="min-width: 110px">Qty Baru</th>
                     <th class="text-end" style="min-width: 130px">Harga Baru</th>
+                    <th class="text-end">Subtotal Baru</th>
                     <th class="text-end">Selisih</th>
                   </tr>
                 </thead>
@@ -685,6 +824,7 @@
                     <td class="text-caption font-weight-medium">{{ item.nama_barang }}</td>
                     <td class="text-end text-caption">{{ item.qty }}</td>
                     <td class="text-end text-caption">{{ formatRp(item.harga_satuan) }}</td>
+                    <td class="text-end text-caption">{{ formatRp(item.subtotalLama) }}</td>
                     <td class="text-end">
                       <VTextField
                         v-model="item.qty_baru"
@@ -709,6 +849,9 @@
                         @update:model-value="recalcSelisih(idx)"
                       />
                     </td>
+                    <td class="text-end text-caption" :class="item.subtotalBaru != null ? (item.subtotalBaru < item.subtotalLama ? 'text-error' : 'text-success') : 'text-medium-emphasis'">
+                      {{ item.subtotalBaru != null ? formatRp(item.subtotalBaru) : '—' }}
+                    </td>
                     <td class="text-end font-weight-bold text-caption" :class="(item.selisih ?? 0) >= 0 ? 'text-success' : 'text-error'">
                       {{ item.selisih != null ? ((item.selisih >= 0 ? '+' : '') + formatRp(item.selisih)) : '—' }}
                     </td>
@@ -716,7 +859,7 @@
                 </tbody>
                 <tfoot>
                   <tr>
-                    <td colspan="5" class="text-end font-weight-bold text-caption">Total Selisih:</td>
+                    <td colspan="7" class="text-end font-weight-bold text-caption">Total Selisih:</td>
                     <td class="text-end font-weight-bold" :class="totalSelisihItems >= 0 ? 'text-success' : 'text-error'">
                       {{ (totalSelisihItems >= 0 ? '+' : '') + formatRp(totalSelisihItems) }}
                     </td>
@@ -837,8 +980,10 @@ const authStore = useAuthStore()
 const loading  = ref(false)
 const eb       = ref(null)
 
-const locking        = ref(false)
-const showLockDialog = ref(false)
+const locking          = ref(false)
+const showLockDialog   = ref(false)
+const unlocking        = ref(false)
+const showUnlockDialog = ref(false)
 
 // Invoice
 const invoices        = ref([])
@@ -979,6 +1124,19 @@ async function doLock() {
   }
 }
 
+async function doUnlock() {
+  unlocking.value = true
+  try {
+    const { data } = await api.patch(`/finance/ending-balance/${eb.value.id}/unlock`)
+    eb.value = data.data
+    showUnlockDialog.value = false
+  } catch (e) {
+    alert(e?.response?.data?.message ?? 'Gagal membuka kunci periode.')
+  } finally {
+    unlocking.value = false
+  }
+}
+
 // ─── Koreksi dialog ─────────────────────────────────────────────────────────
 
 function openKoreksiDialog() {
@@ -1012,8 +1170,10 @@ async function onInvoiceSelectedForKoreksiItem(invoiceId) {
       nama_barang:  i.nama_barang,
       qty:          Number(i.qty),
       harga_satuan: Number(i.harga_satuan),
+      subtotalLama: Math.round(Number(i.qty) * Number(i.harga_satuan) * 100) / 100,
       qty_baru:     '',
       harga_baru:   '',
+      subtotalBaru: null,
       selisih:      null,
     }))
   } catch {
@@ -1027,9 +1187,8 @@ function recalcSelisih(idx) {
   const item = koreksiItems.value[idx]
   const qtyBaru    = Number(item.qty_baru) || item.qty
   const hargaBaru  = Number(item.harga_baru) || item.harga_satuan
-  const subBaru    = qtyBaru * hargaBaru
-  const subLama    = item.qty * item.harga_satuan
-  item.selisih     = Math.round((subBaru - subLama) * 100) / 100
+  item.subtotalBaru = Math.round(qtyBaru * hargaBaru * 100) / 100
+  item.selisih      = Math.round((item.subtotalBaru - item.subtotalLama) * 100) / 100
 }
 
 async function submitKoreksiDialog() {
@@ -1045,17 +1204,32 @@ async function submitKoreksiDialog() {
 
   let payload = { tipe, alasan_koreksi: koreksiForm.alasan_koreksi, dokumen_url: koreksiForm.dokumen_url || null }
 
-  if (tipe === 'CREDIT_NOTE') {
+  if (tipe === 'CREDIT_NOTE' || tipe === 'DEBIT_NOTE') {
     if (!koreksiForm.invoice_id) { koreksiError.value = 'Invoice wajib dipilih.'; return }
-    if (!koreksiForm.nilai || Number(koreksiForm.nilai) <= 0) { koreksiError.value = 'Nilai pengurangan wajib diisi (> 0).'; return }
-    payload.invoice_id    = koreksiForm.invoice_id
-    payload.nilai_koreksi = -Math.abs(Number(koreksiForm.nilai))
+    payload.invoice_id = koreksiForm.invoice_id
 
-  } else if (tipe === 'DEBIT_NOTE') {
-    if (!koreksiForm.invoice_id) { koreksiError.value = 'Invoice wajib dipilih.'; return }
-    if (!koreksiForm.nilai || Number(koreksiForm.nilai) <= 0) { koreksiError.value = 'Nilai penambahan wajib diisi (> 0).'; return }
-    payload.invoice_id    = koreksiForm.invoice_id
-    payload.nilai_koreksi = Math.abs(Number(koreksiForm.nilai))
+    const changedItems = koreksiItems.value.filter(i => i.qty_baru !== '' || i.harga_baru !== '')
+    if (changedItems.length > 0) {
+      if (itemsLoading.value) { koreksiError.value = 'Tunggu item invoice selesai dimuat.'; return }
+      const total = changedItems.reduce((s, i) => s + (i.selisih ?? 0), 0)
+      if (tipe === 'CREDIT_NOTE' && total >= 0) {
+        koreksiError.value = 'Credit Note harus menghasilkan pengurangan tagihan (total selisih harus negatif).'; return
+      }
+      if (tipe === 'DEBIT_NOTE' && total <= 0) {
+        koreksiError.value = 'Debit Note harus menghasilkan penambahan tagihan (total selisih harus positif).'; return
+      }
+      payload.items = changedItems.map(i => ({
+        invoice_item_id:   i.id,
+        qty_baru:          Number(i.qty_baru) || i.qty,
+        harga_satuan_baru: Number(i.harga_baru) || i.harga_satuan,
+      }))
+    } else {
+      if (!koreksiForm.nilai || Number(koreksiForm.nilai) <= 0) {
+        koreksiError.value = tipe === 'CREDIT_NOTE' ? 'Nilai pengurangan wajib diisi (> 0).' : 'Nilai penambahan wajib diisi (> 0).'
+        return
+      }
+      payload.nilai_koreksi = tipe === 'CREDIT_NOTE' ? -Math.abs(Number(koreksiForm.nilai)) : Math.abs(Number(koreksiForm.nilai))
+    }
 
   } else if (tipe === 'KOREKSI_QTY_HARGA') {
     if (!koreksiForm.invoice_id) { koreksiError.value = 'Invoice wajib dipilih.'; return }
