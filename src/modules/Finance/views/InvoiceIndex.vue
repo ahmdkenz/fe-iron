@@ -256,14 +256,24 @@
           {{ (metaB2B.current_page - 1) * metaB2B.per_page + index + 1 }}
         </template>
         <template #item.no_invoice="{ item }">
-          <VChip
-            color="primary"
-            size="small"
-            variant="tonal"
-            label
-          >
-            {{ item.no_invoice }}
-          </VChip>
+          <div class="d-flex align-center gap-1">
+            <VChip
+              color="primary"
+              size="small"
+              variant="tonal"
+              label
+            >
+              {{ item.no_invoice }}
+            </VChip>
+            <VIcon
+              v-if="item.is_eb_locked"
+              icon="ri-lock-line"
+              size="14"
+              color="warning"
+            >
+              <VTooltip activator="parent">Periode invoice ini sudah dikunci di Ending Balance — tidak dapat diubah via import</VTooltip>
+            </VIcon>
+          </div>
         </template>
         <template #item.klien_ar="{ item }">
           {{ item.klien_ar?.nama_klien ?? '-' }}
@@ -467,14 +477,24 @@
           {{ (metaB2C.current_page - 1) * metaB2C.per_page + index + 1 }}
         </template>
         <template #item.no_invoice="{ item }">
-          <VChip
-            color="primary"
-            size="small"
-            variant="tonal"
-            label
-          >
-            {{ item.no_invoice }}
-          </VChip>
+          <div class="d-flex align-center gap-1">
+            <VChip
+              color="primary"
+              size="small"
+              variant="tonal"
+              label
+            >
+              {{ item.no_invoice }}
+            </VChip>
+            <VIcon
+              v-if="item.is_eb_locked"
+              icon="ri-lock-line"
+              size="14"
+              color="warning"
+            >
+              <VTooltip activator="parent">Periode invoice ini sudah dikunci di Ending Balance — tidak dapat diubah via import</VTooltip>
+            </VIcon>
+          </div>
         </template>
         <template #item.klien_ar="{ item }">
           {{ item.klien_ar?.nama_klien ?? '-' }}
@@ -872,6 +892,7 @@
             >
               Import selesai:
               <strong>{{ importResult.inserted }}</strong> ditambahkan,
+              <strong>{{ importResult.updated }}</strong> diperbarui,
               <strong>{{ importResult.failed }}</strong> gagal
               (total {{ importResult.total }} baris).
             </VAlert>
@@ -981,6 +1002,7 @@
           <template v-else-if="importResult">
             <div class="text-caption">
               <strong>{{ importResult.inserted }}</strong> ditambahkan,
+              <strong>{{ importResult.updated }}</strong> diperbarui,
               <strong>{{ importResult.failed }}</strong> gagal
             </div>
             <div class="text-caption text-primary mt-1">
@@ -1244,7 +1266,7 @@ function closeImport() {
   stopImportPolling()
   importing.value      = false
   importProgress.value = null
-  if (importResult.value?.inserted > 0) {
+  if (importResult.value?.inserted > 0 || importResult.value?.updated > 0) {
     loadListB2C()
     if (canSeeAll) loadListB2B()
     loadSummary()
