@@ -6,6 +6,12 @@ export default [
     meta: { layout: 'blank', requiresGuest: true },
   },
   {
+    path: '/reset-password',
+    name: 'reset-password',
+    component: () => import('@/modules/IAM/views/ResetPasswordView.vue'),
+    meta: { layout: 'blank', requiresGuest: true },
+  },
+  {
     path: '/iam/users',
     name: 'iam-users',
     component: () => import('@/modules/IAM/views/UserIndex.vue'),

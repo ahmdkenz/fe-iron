@@ -93,6 +93,27 @@
                     :error-messages="errors.email"
                     @input="errors.email = []"
                   />
+                  <div class="email-verify-row mt-2 d-flex align-center gap-x-2">
+                    <VChip
+                      :color="emailVerified ? 'success' : 'warning'"
+                      size="small"
+                      variant="tonal"
+                      :prepend-icon="emailVerified ? 'ri-shield-check-line' : 'ri-error-warning-line'"
+                    >
+                      {{ emailVerified ? 'Terverifikasi' : 'Belum Diverifikasi' }}
+                    </VChip>
+                    <VBtn
+                      v-if="!emailVerified && authStore.user?.email"
+                      size="x-small"
+                      variant="text"
+                      color="warning"
+                      :loading="sendingVerification"
+                      prepend-icon="ri-mail-send-line"
+                      @click="handleSendVerification"
+                    >
+                      Kirim Ulang Verifikasi
+                    </VBtn>
+                  </div>
                 </VCol>
                 <VCol cols="12">
                   <VTextField
@@ -288,10 +309,12 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth.store'
 import { useSweetAlert } from '@/composables/useSweetAlert'
+import { useRoute } from 'vue-router'
 import api from '@/utils/axios'
 import PageHeader from '@/components/shared/PageHeader.vue'
 
 const authStore = useAuthStore()
+const route     = useRoute()
 const { showSuccess, showError, showLoading, closeAlert } = useSweetAlert()
 
 const namaKaryawan = computed(() =>
@@ -302,6 +325,23 @@ const namaRole = computed(() =>
   authStore.user?.role?.nama_role ?? authStore.user?.role?.name ?? authStore.user?.roles?.[0] ?? '-'
 )
 
+const emailVerified = computed(() => !!authStore.user?.email_verified_at)
+
+// ── Email Verification ──
+const sendingVerification = ref(false)
+
+async function handleSendVerification() {
+  sendingVerification.value = true
+  try {
+    await api.post('/auth/email/send-verification')
+    showSuccess({ title: 'Email Terkirim', text: 'Link verifikasi dikirim ke ' + authStore.user?.email + '. Cek inbox Anda.' })
+  } catch (err) {
+    showError({ title: 'Gagal', text: err.response?.data?.message ?? 'Gagal mengirim email verifikasi.' })
+  } finally {
+    sendingVerification.value = false
+  }
+}
+
 // ── Profile form ──
 const profileFormRef = ref(null)
 const savingProfile  = ref(false)
@@ -309,10 +349,20 @@ const savingProfile  = ref(false)
 const form   = reactive({ username: '', email: '', no_hp: '' })
 const errors = reactive({ username: [], email: [], no_hp: [] })
 
-onMounted(() => {
+onMounted(async () => {
   form.username = authStore.user?.username ?? ''
   form.email    = authStore.user?.email    ?? ''
   form.no_hp    = authStore.user?.no_hp    ?? ''
+
+  const verified = route.query.email_verified
+  if (verified === 'success') {
+    await authStore.fetchMe()
+    showSuccess({ title: 'Email Terverifikasi!', text: 'Alamat email Anda berhasil diverifikasi.' })
+  } else if (verified === 'already') {
+    showSuccess({ title: 'Sudah Terverifikasi', text: 'Email ini sudah terverifikasi sebelumnya.' })
+  } else if (verified === 'failed') {
+    showError({ title: 'Verifikasi Gagal', text: 'Link verifikasi tidak valid atau telah kedaluwarsa.' })
+  }
 })
 
 async function handleUpdateProfile() {
@@ -327,14 +377,14 @@ async function handleUpdateProfile() {
   showLoading({ title: 'Menyimpan Profil...', text: 'Perubahan sedang diproses.' })
 
   try {
-    await api.put('/auth/profile', {
+    const { data } = await api.put('/auth/profile', {
       username: form.username,
       email:    form.email,
       no_hp:    form.no_hp,
     })
     await authStore.fetchMe()
     closeAlert({ onlyLoading: true })
-    showSuccess({ title: 'Berhasil', text: 'Profil berhasil diperbarui.' })
+    showSuccess({ title: 'Berhasil', text: data?.message ?? 'Profil berhasil diperbarui.' })
   } catch (err) {
     closeAlert({ onlyLoading: true })
     const serverErrors = err.response?.data?.errors ?? {}

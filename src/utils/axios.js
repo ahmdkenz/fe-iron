@@ -23,13 +23,70 @@ api.interceptors.request.use(config => {
   return config
 })
 
-// Handle 401 globally.
-// Skip redirect for /auth/me — that endpoint is called during bootstrap to check
-// if a token exists; a 401 there just means the user is not logged in yet.
+// Flag untuk mencegah loop tak terbatas jika refresh juga gagal
+let _isRefreshing = false
+let _refreshQueue = []
+
+function processQueue(error, token = null) {
+  _refreshQueue.forEach(({ resolve, reject }) => {
+    if (error) reject(error)
+    else resolve(token)
+  })
+  _refreshQueue = []
+}
+
 api.interceptors.response.use(
   response => response,
-  error => {
-    if (error.response?.status === 401 && !error.config?.url?.endsWith('/auth/me')) {
+  async error => {
+    const originalRequest = error.config
+
+    // Skip redirect untuk /auth/me (bootstrap check) dan /auth/refresh (hindari loop)
+    const isAuthMe      = originalRequest?.url?.endsWith('/auth/me')
+    const isAuthRefresh = originalRequest?.url?.endsWith('/auth/refresh')
+
+    if (error.response?.status === 401 && !isAuthMe && !isAuthRefresh && !originalRequest._retry) {
+      // Coba refresh token terlebih dahulu
+      const refreshToken = localStorage.getItem('refresh_token')
+
+      if (refreshToken) {
+        if (_isRefreshing) {
+          // Antrekan request yang datang saat refresh sedang berlangsung
+          return new Promise((resolve, reject) => {
+            _refreshQueue.push({ resolve, reject })
+          }).then(token => {
+            originalRequest.headers.Authorization = `Bearer ${token}`
+            return api(originalRequest)
+          })
+        }
+
+        originalRequest._retry = true
+        _isRefreshing = true
+
+        try {
+          const { data } = await api.post('/auth/refresh', { refresh_token: refreshToken })
+          const newToken        = data.data.token
+          const newRefreshToken = data.data.refresh_token
+
+          localStorage.setItem('auth_token', newToken)
+          if (newRefreshToken) {
+            localStorage.setItem('refresh_token', newRefreshToken)
+          }
+
+          processQueue(null, newToken)
+          originalRequest.headers.Authorization = `Bearer ${newToken}`
+          return api(originalRequest)
+        } catch (refreshError) {
+          processQueue(refreshError, null)
+          localStorage.removeItem('auth_token')
+          localStorage.removeItem('refresh_token')
+          window.location.href = '/login'
+          return Promise.reject(refreshError)
+        } finally {
+          _isRefreshing = false
+        }
+      }
+
+      // Tidak ada refresh token — langsung ke login
       window.location.href = '/login'
     }
 
