@@ -7,7 +7,53 @@
     @confirm="handleSubmit"
   >
     <VForm ref="formRef">
-      <VRow>
+      <!-- Hero Banner -->
+      <div
+        class="d-flex align-center gap-3 pa-3 rounded-lg mb-4"
+        style="background: rgba(var(--v-theme-primary), 0.06); border: 1px solid rgba(var(--v-theme-primary), 0.15)"
+      >
+        <VAvatar
+          :color="isEditing ? 'warning' : 'primary'"
+          size="44"
+          rounded="lg"
+        >
+          <VIcon
+            :icon="isEditing ? 'ri-building-line' : 'ri-building-4-line'"
+            size="22"
+          />
+        </VAvatar>
+        <div class="flex-grow-1 min-width-0">
+          <div class="text-subtitle-2 font-weight-bold text-truncate">
+            {{ isEditing ? (form.nama_perusahaan || 'Edit Entitas') : 'Entitas Baru' }}
+          </div>
+          <div class="text-caption text-medium-emphasis">
+            {{ isEditing ? 'Perbarui data perusahaan/entitas' : 'Isi detail entitas yang akan ditambahkan' }}
+          </div>
+        </div>
+        <VChip
+          v-if="form.kode_perusahaan"
+          color="primary"
+          size="small"
+          variant="tonal"
+          label
+          class="font-weight-bold flex-shrink-0"
+        >
+          {{ form.kode_perusahaan }}
+        </VChip>
+      </div>
+
+      <!-- Section: Identitas Entitas -->
+      <div
+        class="text-caption font-weight-bold text-uppercase d-flex align-center gap-1 mb-2"
+        style="color: rgb(var(--v-theme-primary))"
+      >
+        <VIcon
+          icon="ri-building-4-line"
+          size="13"
+        />
+        Identitas Entitas
+      </div>
+      <VRow dense>
         <VCol
           cols="12"
           md="6"
@@ -17,6 +63,7 @@
             label="Kode Entitas"
             density="compact"
             variant="outlined"
+            prepend-inner-icon="ri-barcode-line"
             hint="Contoh: PT-ABC, CV-XYZ"
             persistent-hint
             :rules="[v => !!v || 'Kode wajib diisi']"
@@ -34,6 +81,7 @@
             label="Singkatan Entitas"
             density="compact"
             variant="outlined"
+            prepend-inner-icon="ri-text"
             hint="Contoh: ABC, XYZ"
             persistent-hint
             :error-messages="errors.nama_singkatan_perusahaan"
@@ -46,6 +94,7 @@
             label="Nama Entitas"
             density="compact"
             variant="outlined"
+            prepend-inner-icon="ri-building-4-line"
             :rules="[v => !!v || 'Nama entitas wajib diisi']"
             :error-messages="errors.nama_perusahaan"
           />
@@ -56,15 +105,31 @@
             label="Keterangan"
             density="compact"
             variant="outlined"
+            prepend-inner-icon="ri-sticky-note-line"
             :error-messages="errors.keterangan"
           />
         </VCol>
+      </VRow>
+
+      <!-- Section: Kontak & Lokasi -->
+      <div
+        class="text-caption font-weight-bold text-uppercase d-flex align-center gap-1 mt-3 mb-2"
+        style="color: rgb(var(--v-theme-info))"
+      >
+        <VIcon
+          icon="ri-map-pin-line"
+          size="13"
+        />
+        Kontak &amp; Lokasi
+      </div>
+      <VRow dense>
         <VCol cols="12">
           <VTextField
             v-model="form.alamat"
             label="Alamat"
             density="compact"
             variant="outlined"
+            prepend-inner-icon="ri-map-pin-line"
             :error-messages="errors.alamat"
           />
         </VCol>
@@ -77,6 +142,7 @@
             label="Kota"
             density="compact"
             variant="outlined"
+            prepend-inner-icon="ri-building-2-line"
             :error-messages="errors.kota"
           />
         </VCol>
@@ -89,6 +155,7 @@
             label="Kode POS"
             density="compact"
             variant="outlined"
+            prepend-inner-icon="ri-map-2-line"
             :error-messages="errors.kode_pos"
           />
         </VCol>
@@ -101,6 +168,7 @@
             label="No. Telepon"
             density="compact"
             variant="outlined"
+            prepend-inner-icon="ri-phone-line"
             :error-messages="errors.no_telp"
           />
         </VCol>
@@ -114,6 +182,7 @@
             density="compact"
             variant="outlined"
             type="email"
+            prepend-inner-icon="ri-mail-line"
             :error-messages="errors.email"
           />
         </VCol>
@@ -123,30 +192,48 @@
             label="NPWP"
             density="compact"
             variant="outlined"
+            prepend-inner-icon="ri-file-paper-line"
             hint="Contoh: 12.345.678.9-012.000"
             persistent-hint
             :error-messages="errors.no_npwp"
           />
         </VCol>
-        <VCol
-          cols="12"
-          md="6"
-        >
-          <BaseSelect
-            v-model="form.status"
-            label="Status"
-            :items="statusOptions"
-            item-title="label"
-            item-value="value"
-          />
-        </VCol>
       </VRow>
+
+      <!-- Status Toggle -->
+      <div
+        class="d-flex align-center justify-space-between pa-3 rounded-lg mt-3"
+        style="border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity))"
+      >
+        <div class="d-flex align-center gap-2">
+          <VIcon
+            :icon="form.status ? 'ri-checkbox-circle-line' : 'ri-close-circle-line'"
+            :color="form.status ? 'success' : 'error'"
+            size="20"
+          />
+          <div>
+            <div class="text-body-2 font-weight-medium">Status Entitas</div>
+            <div class="text-caption text-medium-emphasis">
+              {{ form.status ? 'Aktif — entitas dapat digunakan' : 'Nonaktif — entitas dinonaktifkan' }}
+            </div>
+          </div>
+        </div>
+        <VSwitch
+          v-model="form.status"
+          :true-value="1"
+          :false-value="0"
+          color="success"
+          hide-details
+          density="compact"
+          inset
+        />
+      </div>
 
       <VAlert
         v-if="errorMessage"
         type="error"
         variant="tonal"
-        class="mt-2"
+        class="mt-3"
       >
         {{ errorMessage }}
       </VAlert>

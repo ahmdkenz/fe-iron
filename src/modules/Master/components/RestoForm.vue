@@ -7,8 +7,53 @@
     @confirm="handleSubmit"
   >
     <VForm ref="formRef">
-      <VRow>
-        <!-- Kode Resto -->
+      <!-- Hero Banner -->
+      <div
+        class="d-flex align-center gap-3 pa-3 rounded-lg mb-4"
+        style="background: rgba(var(--v-theme-primary), 0.06); border: 1px solid rgba(var(--v-theme-primary), 0.15)"
+      >
+        <VAvatar
+          :color="isEditing ? 'warning' : 'primary'"
+          size="44"
+          rounded="lg"
+        >
+          <VIcon
+            :icon="isEditing ? 'ri-edit-box-line' : 'ri-store-3-line'"
+            size="22"
+          />
+        </VAvatar>
+        <div class="flex-grow-1 min-width-0">
+          <div class="text-subtitle-2 font-weight-bold text-truncate">
+            {{ isEditing ? (form.nama_resto || 'Edit Resto') : 'Resto Baru' }}
+          </div>
+          <div class="text-caption text-medium-emphasis">
+            {{ isEditing ? 'Perbarui data restoran' : 'Isi detail restoran yang akan ditambahkan' }}
+          </div>
+        </div>
+        <VChip
+          v-if="restoDataRef?.kode_resto || form.kode_resto"
+          color="primary"
+          size="small"
+          variant="tonal"
+          label
+          class="font-weight-bold flex-shrink-0"
+        >
+          {{ restoDataRef?.kode_resto || form.kode_resto }}
+        </VChip>
+      </div>
+
+      <!-- Section: Identitas Resto -->
+      <div
+        class="text-caption font-weight-bold text-uppercase d-flex align-center gap-1 mb-2"
+        style="color: rgb(var(--v-theme-primary))"
+      >
+        <VIcon
+          icon="ri-store-3-line"
+          size="13"
+        />
+        Identitas Resto
+      </div>
+      <VRow dense>
         <VCol cols="12">
           <VTextField
             v-if="isEditing"
@@ -16,6 +61,7 @@
             label="Kode Resto"
             density="compact"
             variant="outlined"
+            prepend-inner-icon="ri-barcode-line"
             readonly
             hint="Kode tidak dapat diubah"
             persistent-hint
@@ -26,26 +72,24 @@
             label="Kode Resto"
             density="compact"
             variant="outlined"
+            prepend-inner-icon="ri-barcode-line"
             :rules="[v => !!v || 'Kode resto wajib diisi']"
             :error-messages="errors.kode_resto"
             hint="Isi kode resto secara manual"
             persistent-hint
           />
         </VCol>
-
-        <!-- Nama Resto -->
         <VCol cols="12">
           <VTextField
             v-model="form.nama_resto"
             label="Nama Resto"
             density="compact"
             variant="outlined"
+            prepend-inner-icon="ri-store-3-line"
             :rules="[v => !!v || 'Nama resto wajib diisi']"
             :error-messages="errors.nama_resto"
           />
         </VCol>
-
-        <!-- Entitas -->
         <VCol
           cols="12"
           md="6"
@@ -55,6 +99,7 @@
             label="Entitas"
             density="compact"
             variant="outlined"
+            prepend-inner-icon="ri-building-4-line"
             :items="entitasList"
             item-title="nama_perusahaan"
             item-value="id"
@@ -73,8 +118,6 @@
             </template>
           </VAutocomplete>
         </VCol>
-
-        <!-- Brand -->
         <VCol
           cols="12"
           md="6"
@@ -84,6 +127,7 @@
             label="Brand"
             density="compact"
             variant="outlined"
+            prepend-inner-icon="ri-award-line"
             :items="brandList"
             item-title="nama_brand"
             item-value="id"
@@ -103,8 +147,6 @@
             </template>
           </VAutocomplete>
         </VCol>
-
-        <!-- Investor -->
         <VCol
           cols="12"
           md="6"
@@ -114,6 +156,7 @@
             label="Investor"
             density="compact"
             variant="outlined"
+            prepend-inner-icon="ri-money-dollar-circle-line"
             :items="investorList"
             item-title="nama_investor"
             item-value="id"
@@ -122,8 +165,6 @@
             clearable
           />
         </VCol>
-
-        <!-- PIC (Karyawan) -->
         <VCol
           cols="12"
           md="6"
@@ -133,6 +174,7 @@
             label="PIC"
             density="compact"
             variant="outlined"
+            prepend-inner-icon="ri-user-star-line"
             :items="karyawanList"
             item-title="nama_karyawan"
             item-value="id"
@@ -149,19 +191,30 @@
             </template>
           </VAutocomplete>
         </VCol>
+      </VRow>
 
-        <!-- Supervisor -->
+      <!-- Section: Penanggung Jawab -->
+      <div
+        class="text-caption font-weight-bold text-uppercase d-flex align-center gap-1 mt-3 mb-2"
+        style="color: rgb(var(--v-theme-warning))"
+      >
+        <VIcon
+          icon="ri-user-star-line"
+          size="13"
+        />
+        Penanggung Jawab
+      </div>
+      <VRow dense>
         <VCol cols="12">
           <VTextField
             v-model="form.supervisor"
             label="Supervisor"
             density="compact"
             variant="outlined"
+            prepend-inner-icon="ri-user-star-line"
             :error-messages="errors.supervisor"
           />
         </VCol>
-
-        <!-- No. HP Supervisor -->
         <VCol
           cols="12"
           md="6"
@@ -171,11 +224,10 @@
             label="No. HP Supervisor (No SPV)"
             density="compact"
             variant="outlined"
+            prepend-inner-icon="ri-phone-line"
             :error-messages="errors.no_hp_supervisor"
           />
         </VCol>
-
-        <!-- STOKIS -->
         <VCol
           cols="12"
           md="6"
@@ -185,11 +237,24 @@
             label="STOKIS"
             density="compact"
             variant="outlined"
+            prepend-inner-icon="ri-store-line"
             :error-messages="errors.stokis"
           />
         </VCol>
+      </VRow>
 
-        <!-- Area -->
+      <!-- Section: Lokasi & Kontak -->
+      <div
+        class="text-caption font-weight-bold text-uppercase d-flex align-center gap-1 mt-3 mb-2"
+        style="color: rgb(var(--v-theme-info))"
+      >
+        <VIcon
+          icon="ri-map-pin-line"
+          size="13"
+        />
+        Lokasi &amp; Kontak
+      </div>
+      <VRow dense>
         <VCol
           cols="12"
           md="6"
@@ -199,11 +264,10 @@
             label="Area"
             density="compact"
             variant="outlined"
+            prepend-inner-icon="ri-compass-3-line"
             :error-messages="errors.area"
           />
         </VCol>
-
-        <!-- Kota -->
         <VCol
           cols="12"
           md="6"
@@ -213,22 +277,20 @@
             label="Kota"
             density="compact"
             variant="outlined"
+            prepend-inner-icon="ri-building-2-line"
             :error-messages="errors.kota"
           />
         </VCol>
-
-        <!-- Alamat -->
         <VCol cols="12">
           <VTextField
             v-model="form.alamat"
             label="Alamat"
             density="compact"
             variant="outlined"
+            prepend-inner-icon="ri-map-pin-line"
             :error-messages="errors.alamat"
           />
         </VCol>
-
-        <!-- No. Telp -->
         <VCol
           cols="12"
           md="6"
@@ -238,11 +300,10 @@
             label="No. Telp"
             density="compact"
             variant="outlined"
+            prepend-inner-icon="ri-phone-line"
             :error-messages="errors.no_telp"
           />
         </VCol>
-
-        <!-- Tanggal Aktif -->
         <VCol
           cols="12"
           md="6"
@@ -253,44 +314,56 @@
             density="compact"
             variant="outlined"
             type="date"
+            prepend-inner-icon="ri-calendar-line"
             :error-messages="errors.tgl_aktif"
           />
         </VCol>
-
-        <!-- Keterangan -->
-        <VCol
-          cols="12"
-          md="6"
-        >
+        <VCol cols="12">
           <VTextField
             v-model="form.keterangan"
             label="Keterangan"
             density="compact"
             variant="outlined"
+            prepend-inner-icon="ri-sticky-note-line"
             :error-messages="errors.keterangan"
           />
         </VCol>
-
-        <!-- Status -->
-        <VCol
-          cols="12"
-          md="6"
-        >
-          <BaseSelect
-            v-model="form.status"
-            label="Status"
-            :items="statusOptions"
-            item-title="label"
-            item-value="value"
-          />
-        </VCol>
       </VRow>
+
+      <!-- Status Toggle -->
+      <div
+        class="d-flex align-center justify-space-between pa-3 rounded-lg mt-3"
+        style="border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity))"
+      >
+        <div class="d-flex align-center gap-2">
+          <VIcon
+            :icon="form.status ? 'ri-checkbox-circle-line' : 'ri-close-circle-line'"
+            :color="form.status ? 'success' : 'error'"
+            size="20"
+          />
+          <div>
+            <div class="text-body-2 font-weight-medium">Status Resto</div>
+            <div class="text-caption text-medium-emphasis">
+              {{ form.status ? 'Aktif — resto beroperasi' : 'Nonaktif — resto tidak aktif' }}
+            </div>
+          </div>
+        </div>
+        <VSwitch
+          v-model="form.status"
+          :true-value="1"
+          :false-value="0"
+          color="success"
+          hide-details
+          density="compact"
+          inset
+        />
+      </div>
 
       <VAlert
         v-if="errorMessage"
         type="error"
         variant="tonal"
-        class="mt-2"
+        class="mt-3"
       >
         {{ errorMessage }}
       </VAlert>

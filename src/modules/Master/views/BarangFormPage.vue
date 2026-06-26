@@ -107,33 +107,6 @@
               md="6"
             >
               <VAutocomplete
-                v-model="form.perusahaan_id"
-                label="Entitas"
-                density="compact"
-                variant="outlined"
-                :items="entitasList"
-                item-title="nama_perusahaan"
-                item-value="id"
-                :rules="[v => !!v || 'Entitas wajib dipilih']"
-                :error-messages="errors.perusahaan_id"
-                :loading="entitasLoading"
-                clearable
-                @focus="ensureEntitasLoaded()"
-              >
-                <template #item="{ props: p, item }">
-                  <VListItem
-                    v-bind="p"
-                    :title="item.raw.nama_perusahaan"
-                    :subtitle="item.raw.kode_perusahaan"
-                  />
-                </template>
-              </VAutocomplete>
-            </VCol>
-            <VCol
-              cols="12"
-              md="6"
-            >
-              <VAutocomplete
                 v-model="form.brand_id"
                 label="Brand"
                 density="compact"
@@ -233,9 +206,7 @@ const id = route.params.id
 const isEditing = computed(() => !!id)
 
 const { create, update, saving, fetchOne } = useCrud('/master/barang')
-const { items: entitasList, loading: entitasLoading, fetchAll: fetchEntitas } = useCrud('/master/perusahaan')
 const { items: brandList, loading: brandLoading, fetchAll: fetchBrands } = useCrud('/master/brand')
-const { ensureLoaded: ensureEntitasLoaded } = useLazyFetchAll(fetchEntitas)
 const { ensureLoaded: ensureBrandsLoaded } = useLazyFetchAll(fetchBrands)
 
 const formRef = ref(null)
@@ -243,13 +214,13 @@ const pageLoading = ref(!!id)
 const errorMessage = ref('')
 
 const errors = reactive({
-  kode_barang: [], nama_barang: [], perusahaan_id: [], brand_id: [], spesifikasi: [], keterangan: [],
+  kode_barang: [], nama_barang: [], brand_id: [], spesifikasi: [], keterangan: [],
 })
 
 const statusOptions = BOOLEAN_STATUS_OPTIONS
 
 const form = reactive({
-  kode_barang: '', nama_barang: '', perusahaan_id: null, brand_id: null, spesifikasi: '', keterangan: '', status: 1,
+  kode_barang: '', nama_barang: '', brand_id: null, spesifikasi: '', keterangan: '', status: 1,
 })
 
 async function handleSubmit() {
@@ -282,17 +253,16 @@ onMounted(async () => {
     return
   }
 
-  await Promise.all([ensureEntitasLoaded(), ensureBrandsLoaded()])
+  await ensureBrandsLoaded()
 
   const data = await fetchOne(id)
   if (data) {
-    form.kode_barang   = data.kode_barang   ?? ''
-    form.nama_barang   = data.nama_barang   ?? ''
-    form.perusahaan_id = data.perusahaan_id ?? null
-    form.brand_id      = data.brand_id      ?? null
-    form.spesifikasi   = data.spesifikasi   ?? ''
-    form.keterangan    = data.keterangan    ?? ''
-    form.status        = normalizeBooleanStatus(data.status)
+    form.kode_barang = data.kode_barang ?? ''
+    form.nama_barang = data.nama_barang ?? ''
+    form.brand_id    = data.brand_id    ?? null
+    form.spesifikasi = data.spesifikasi ?? ''
+    form.keterangan  = data.keterangan  ?? ''
+    form.status      = normalizeBooleanStatus(data.status)
   }
   pageLoading.value = false
 })

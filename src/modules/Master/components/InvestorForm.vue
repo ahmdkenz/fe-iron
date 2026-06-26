@@ -7,13 +7,50 @@
     @confirm="handleSubmit"
   >
     <VForm ref="formRef">
-      <VRow>
+      <!-- Hero Banner -->
+      <div
+        class="d-flex align-center gap-3 pa-3 rounded-lg mb-4"
+        style="background: rgba(var(--v-theme-primary), 0.06); border: 1px solid rgba(var(--v-theme-primary), 0.15)"
+      >
+        <VAvatar
+          :color="isEditing ? 'warning' : 'primary'"
+          size="44"
+          rounded="lg"
+        >
+          <VIcon
+            :icon="isEditing ? 'ri-edit-box-line' : 'ri-money-dollar-circle-line'"
+            size="22"
+          />
+        </VAvatar>
+        <div class="flex-grow-1 min-width-0">
+          <div class="text-subtitle-2 font-weight-bold text-truncate">
+            {{ isEditing ? (form.nama_investor || 'Edit Investor') : 'Investor Baru' }}
+          </div>
+          <div class="text-caption text-medium-emphasis">
+            {{ isEditing ? 'Perbarui data investor' : 'Isi detail investor yang akan ditambahkan' }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: Data Investor -->
+      <div
+        class="text-caption font-weight-bold text-uppercase d-flex align-center gap-1 mb-2"
+        style="color: rgb(var(--v-theme-primary))"
+      >
+        <VIcon
+          icon="ri-user-line"
+          size="13"
+        />
+        Data Investor
+      </div>
+      <VRow dense>
         <VCol cols="12">
           <VTextField
             v-model="form.nama_investor"
             label="Nama Investor"
             density="compact"
             variant="outlined"
+            prepend-inner-icon="ri-user-line"
             :rules="[v => !!v || 'Nama investor wajib diisi']"
             :error-messages="errors.nama_investor"
           />
@@ -27,6 +64,7 @@
             label="No. KTP"
             density="compact"
             variant="outlined"
+            prepend-inner-icon="ri-id-card-line"
             :error-messages="errors.ktp"
           />
         </VCol>
@@ -39,21 +77,34 @@
             label="NPWP"
             density="compact"
             variant="outlined"
+            prepend-inner-icon="ri-file-paper-line"
             :error-messages="errors.npwp"
           />
         </VCol>
-        <VCol
-          cols="12"
-          md="6"
-        >
+        <VCol cols="12">
           <VTextField
             v-model="form.no_hp"
             label="No. HP"
             density="compact"
             variant="outlined"
+            prepend-inner-icon="ri-phone-line"
             :error-messages="errors.no_hp"
           />
         </VCol>
+      </VRow>
+
+      <!-- Section: Data Pengelola -->
+      <div
+        class="text-caption font-weight-bold text-uppercase d-flex align-center gap-1 mt-3 mb-2"
+        style="color: rgb(var(--v-theme-info))"
+      >
+        <VIcon
+          icon="ri-user-star-line"
+          size="13"
+        />
+        Data Pengelola
+      </div>
+      <VRow dense>
         <VCol
           cols="12"
           md="6"
@@ -63,6 +114,7 @@
             label="Nama Pengelola"
             density="compact"
             variant="outlined"
+            prepend-inner-icon="ri-user-star-line"
             :error-messages="errors.pengelola"
           />
         </VCol>
@@ -75,21 +127,24 @@
             label="No. HP Pengelola"
             density="compact"
             variant="outlined"
+            prepend-inner-icon="ri-phone-line"
             :error-messages="errors.no_hp_pengelola"
           />
         </VCol>
-        <VCol
-          cols="12"
-          md="6"
-        >
-          <BaseSelect
-            v-model="form.status"
-            label="Status"
-            :items="statusOptions"
-            item-title="label"
-            item-value="value"
-          />
-        </VCol>
+      </VRow>
+
+      <!-- Section: Data Cabang -->
+      <div
+        class="text-caption font-weight-bold text-uppercase d-flex align-center gap-1 mt-3 mb-2"
+        style="color: rgb(var(--v-theme-secondary))"
+      >
+        <VIcon
+          icon="ri-git-branch-line"
+          size="13"
+        />
+        Data Cabang
+      </div>
+      <VRow dense>
         <VCol
           cols="12"
           md="6"
@@ -99,6 +154,7 @@
             label="Kode Cabang"
             density="compact"
             variant="outlined"
+            prepend-inner-icon="ri-barcode-line"
             :error-messages="errors.kode_cabang"
           />
         </VCol>
@@ -111,16 +167,46 @@
             label="ID Cabang"
             density="compact"
             variant="outlined"
+            prepend-inner-icon="ri-hashtag"
             :error-messages="errors.id_cabang"
           />
         </VCol>
       </VRow>
 
+      <!-- Status Toggle -->
+      <div
+        class="d-flex align-center justify-space-between pa-3 rounded-lg mt-3"
+        style="border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity))"
+      >
+        <div class="d-flex align-center gap-2">
+          <VIcon
+            :icon="form.status ? 'ri-checkbox-circle-line' : 'ri-close-circle-line'"
+            :color="form.status ? 'success' : 'error'"
+            size="20"
+          />
+          <div>
+            <div class="text-body-2 font-weight-medium">Status Investor</div>
+            <div class="text-caption text-medium-emphasis">
+              {{ form.status ? 'Aktif — investor terdaftar' : 'Nonaktif — investor dinonaktifkan' }}
+            </div>
+          </div>
+        </div>
+        <VSwitch
+          v-model="form.status"
+          :true-value="1"
+          :false-value="0"
+          color="success"
+          hide-details
+          density="compact"
+          inset
+        />
+      </div>
+
       <VAlert
         v-if="errorMessage"
         type="error"
         variant="tonal"
-        class="mt-2"
+        class="mt-3"
       >
         {{ errorMessage }}
       </VAlert>

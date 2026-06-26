@@ -7,7 +7,53 @@
     @confirm="handleSubmit"
   >
     <VForm ref="formRef">
-      <VRow>
+      <!-- Hero Banner -->
+      <div
+        class="d-flex align-center gap-3 pa-3 rounded-lg mb-4"
+        style="background: rgba(var(--v-theme-primary), 0.06); border: 1px solid rgba(var(--v-theme-primary), 0.15)"
+      >
+        <VAvatar
+          :color="isEditing ? 'warning' : 'primary'"
+          size="44"
+          rounded="lg"
+        >
+          <VIcon
+            :icon="isEditing ? 'ri-edit-box-line' : 'ri-award-fill'"
+            size="22"
+          />
+        </VAvatar>
+        <div class="flex-grow-1 min-width-0">
+          <div class="text-subtitle-2 font-weight-bold text-truncate">
+            {{ isEditing ? (form.nama_brand || 'Edit Brand') : 'Brand Baru' }}
+          </div>
+          <div class="text-caption text-medium-emphasis">
+            {{ isEditing ? 'Perbarui informasi brand' : 'Isi detail brand yang akan ditambahkan' }}
+          </div>
+        </div>
+        <VChip
+          v-if="form.kode_brand"
+          color="primary"
+          size="small"
+          variant="tonal"
+          label
+          class="font-weight-bold flex-shrink-0"
+        >
+          {{ form.kode_brand }}
+        </VChip>
+      </div>
+
+      <!-- Section: Identitas Brand -->
+      <div
+        class="text-caption font-weight-bold text-uppercase d-flex align-center gap-1 mb-2"
+        style="color: rgb(var(--v-theme-primary))"
+      >
+        <VIcon
+          icon="ri-award-line"
+          size="13"
+        />
+        Identitas Brand
+      </div>
+      <VRow dense>
         <VCol
           cols="12"
           md="6"
@@ -17,6 +63,7 @@
             label="Kode Brand"
             density="compact"
             variant="outlined"
+            prepend-inner-icon="ri-barcode-line"
             :rules="[v => !!v || 'Kode brand wajib diisi']"
             :error-messages="errors.kode_brand"
             :disabled="isEditing"
@@ -32,41 +79,57 @@
             label="Nama Brand"
             density="compact"
             variant="outlined"
+            prepend-inner-icon="ri-award-line"
             :rules="[v => !!v || 'Nama brand wajib diisi']"
             :error-messages="errors.nama_brand"
           />
         </VCol>
-        <VCol
-          cols="12"
-          md="6"
-        >
+        <VCol cols="12">
           <VTextField
             v-model="form.keterangan"
             label="Keterangan"
             density="compact"
             variant="outlined"
+            prepend-inner-icon="ri-sticky-note-line"
             :error-messages="errors.keterangan"
           />
         </VCol>
-        <VCol
-          cols="12"
-          md="6"
-        >
-          <BaseSelect
-            v-model="form.status"
-            label="Status"
-            :items="statusOptions"
-            item-title="label"
-            item-value="value"
-          />
-        </VCol>
       </VRow>
+
+      <!-- Status Toggle -->
+      <div
+        class="d-flex align-center justify-space-between pa-3 rounded-lg mt-3"
+        style="border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity))"
+      >
+        <div class="d-flex align-center gap-2">
+          <VIcon
+            :icon="form.status ? 'ri-checkbox-circle-line' : 'ri-close-circle-line'"
+            :color="form.status ? 'success' : 'error'"
+            size="20"
+          />
+          <div>
+            <div class="text-body-2 font-weight-medium">Status Brand</div>
+            <div class="text-caption text-medium-emphasis">
+              {{ form.status ? 'Aktif — brand dapat digunakan' : 'Nonaktif — brand dinonaktifkan' }}
+            </div>
+          </div>
+        </div>
+        <VSwitch
+          v-model="form.status"
+          :true-value="1"
+          :false-value="0"
+          color="success"
+          hide-details
+          density="compact"
+          inset
+        />
+      </div>
 
       <VAlert
         v-if="errorMessage"
         type="error"
         variant="tonal"
-        class="mt-2"
+        class="mt-3"
       >
         {{ errorMessage }}
       </VAlert>

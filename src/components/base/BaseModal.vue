@@ -5,8 +5,11 @@
     persistent
   >
     <VCard>
-      <VCardTitle class="pa-4 d-flex align-center justify-space-between">
-        <span>{{ title }}</span>
+      <VCardTitle
+        class="pa-4 d-flex align-center justify-space-between"
+        style="background: rgba(var(--v-theme-primary), 0.07); border-left: 4px solid rgb(var(--v-theme-primary))"
+      >
+        <span class="text-body-1 font-weight-bold">{{ title }}</span>
         <VBtn
           icon
           size="small"
@@ -16,7 +19,13 @@
           <VIcon icon="ri-close-line" />
         </VBtn>
       </VCardTitle>
-      <VDivider />
+      <VProgressLinear
+        v-if="loading"
+        indeterminate
+        color="primary"
+        height="2"
+      />
+      <VDivider v-else />
       <VCardText class="pa-4">
         <slot />
       </VCardText>
@@ -26,15 +35,21 @@
           <VBtn
             variant="tonal"
             color="secondary"
+            :disabled="loading"
             @click="isOpen = false"
           >
             Batal
           </VBtn>
           <VBtn
             color="primary"
-            :disabled="loading"
+            :loading="loading"
             @click="$emit('confirm')"
           >
+            <VIcon
+              icon="ri-save-line"
+              size="16"
+              class="me-1"
+            />
             Simpan
           </VBtn>
         </slot>
