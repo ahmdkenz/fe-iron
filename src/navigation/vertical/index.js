@@ -33,7 +33,7 @@
     title: 'Data Entitas',
     to: { name: 'master-perusahaan' },
     icon: { icon: 'ri-building-line' },
-    roles: ['ADMIN'],
+    roles: ['ADMIN', 'MANAGER', 'SUPERVISOR'],
   },
   { heading: 'MASTER DATA' },
   {
