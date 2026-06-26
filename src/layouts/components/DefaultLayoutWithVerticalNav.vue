@@ -20,16 +20,30 @@ const authStore = useAuthStore()
 const financeNotificationStore = useFinanceNotificationStore()
 const route = useRoute()
 let financeNotificationIntervalId = null
+let ebKoreksiNotificationIntervalId = null
+
+const canApproveEbKoreksi = computed(() =>
+  authStore.canApproveEndingBalanceSpv || authStore.canApproveEndingBalanceManager
+)
 
 const enrichedNavItems = computed(() => navItems.map(item => {
-  if (item.to?.name !== 'finance-opening-balance')
-    return item
-
-  return {
-    ...item,
-    badgeContent: financeNotificationStore.pendingOpeningBalanceBadge,
-    badgeClass: financeNotificationStore.pendingOpeningBalanceBadge ? 'bg-error text-white' : undefined,
+  if (item.to?.name === 'finance-opening-balance') {
+    return {
+      ...item,
+      badgeContent: financeNotificationStore.pendingOpeningBalanceBadge,
+      badgeClass: financeNotificationStore.pendingOpeningBalanceBadge ? 'bg-error text-white' : undefined,
+    }
   }
+
+  if (item.to?.name === 'finance-ending-balance-approval') {
+    return {
+      ...item,
+      badgeContent: financeNotificationStore.pendingEndingBalanceKoreksieBadge,
+      badgeClass: financeNotificationStore.pendingEndingBalanceKoreksieBadge ? 'bg-error text-white' : undefined,
+    }
+  }
+
+  return item
 }))
 
 const filteredNavItems = computed(() => {
@@ -63,12 +77,23 @@ async function refreshFinanceNotifications() {
   await financeNotificationStore.fetchPendingOpeningBalanceCount()
 }
 
+async function refreshEbKoreksiNotifications() {
+  await financeNotificationStore.fetchPendingEndingBalanceKoreksiCount()
+}
+
+async function refreshAllNotifications() {
+  await Promise.all([
+    authStore.canApproveOpeningBalance ? refreshFinanceNotifications() : Promise.resolve(),
+    canApproveEbKoreksi.value ? refreshEbKoreksiNotifications() : Promise.resolve(),
+  ])
+}
+
 watch(() => authStore.canApproveOpeningBalance, async canApprove => {
   clearInterval(financeNotificationIntervalId)
   financeNotificationIntervalId = null
 
   if (!canApprove) {
-    financeNotificationStore.reset()
+    financeNotificationStore.pendingOpeningBalanceCount = 0
 
     return
   }
@@ -77,18 +102,35 @@ watch(() => authStore.canApproveOpeningBalance, async canApprove => {
   financeNotificationIntervalId = window.setInterval(refreshFinanceNotifications, 60000)
 }, { immediate: true })
 
+watch(canApproveEbKoreksi, async canApprove => {
+  clearInterval(ebKoreksiNotificationIntervalId)
+  ebKoreksiNotificationIntervalId = null
+
+  if (!canApprove) {
+    financeNotificationStore.pendingEndingBalanceKoreksiCount = 0
+
+    return
+  }
+
+  await refreshEbKoreksiNotifications()
+  ebKoreksiNotificationIntervalId = window.setInterval(refreshEbKoreksiNotifications, 60000)
+}, { immediate: true })
+
 watch(() => route.fullPath, () => {
   if (authStore.canApproveOpeningBalance)
     refreshFinanceNotifications()
+  if (canApproveEbKoreksi.value)
+    refreshEbKoreksiNotifications()
 })
 
 onMounted(() => {
-  window.addEventListener('focus', refreshFinanceNotifications)
+  window.addEventListener('focus', refreshAllNotifications)
 })
 
 onBeforeUnmount(() => {
-  window.removeEventListener('focus', refreshFinanceNotifications)
+  window.removeEventListener('focus', refreshAllNotifications)
   clearInterval(financeNotificationIntervalId)
+  clearInterval(ebKoreksiNotificationIntervalId)
 })
 
 // ℹ️ Provide animation name for vertical nav collapse icon.

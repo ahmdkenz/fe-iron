@@ -5,9 +5,13 @@ import { useAuthStore } from '@/stores/auth.store'
 let pendingOpeningBalanceCountRequest = null
 let pendingOpeningBalanceCountRequestId = 0
 
+let pendingEbKoreksiCountRequest = null
+let pendingEbKoreksiCountRequestId = 0
+
 export const useFinanceNotificationStore = defineStore('finance-notification', {
   state: () => ({
     pendingOpeningBalanceCount: 0,
+    pendingEndingBalanceKoreksiCount: 0,
     isLoaded: false,
   }),
 
@@ -19,6 +23,15 @@ export const useFinanceNotificationStore = defineStore('finance-notification', {
       return state.pendingOpeningBalanceCount > 99
         ? '99+'
         : String(state.pendingOpeningBalanceCount)
+    },
+
+    pendingEndingBalanceKoreksieBadge: state => {
+      if (state.pendingEndingBalanceKoreksiCount <= 0)
+        return null
+
+      return state.pendingEndingBalanceKoreksiCount > 99
+        ? '99+'
+        : String(state.pendingEndingBalanceKoreksiCount)
     },
   },
 
@@ -65,10 +78,50 @@ export const useFinanceNotificationStore = defineStore('finance-notification', {
       return pendingOpeningBalanceCountRequest
     },
 
+    async fetchPendingEndingBalanceKoreksiCount() {
+      const authStore = useAuthStore()
+
+      if (!authStore.canApproveEndingBalanceSpv && !authStore.canApproveEndingBalanceManager) {
+        this.pendingEndingBalanceKoreksiCount = 0
+
+        return 0
+      }
+
+      if (pendingEbKoreksiCountRequest)
+        return pendingEbKoreksiCountRequest
+
+      const requestId = ++pendingEbKoreksiCountRequestId
+
+      pendingEbKoreksiCountRequest = (async () => {
+        try {
+          const { data } = await api.get('/finance/ending-balance/koreksi/pending')
+
+          if (requestId !== pendingEbKoreksiCountRequestId)
+            return this.pendingEndingBalanceKoreksiCount
+
+          this.pendingEndingBalanceKoreksiCount = Array.isArray(data?.data) ? data.data.length : 0
+        } catch {
+          if (requestId === pendingEbKoreksiCountRequestId)
+            this.pendingEndingBalanceKoreksiCount = 0
+        } finally {
+          pendingEbKoreksiCountRequest = null
+        }
+
+        return this.pendingEndingBalanceKoreksiCount
+      })()
+
+      return pendingEbKoreksiCountRequest
+    },
+
     reset() {
       pendingOpeningBalanceCountRequestId += 1
       pendingOpeningBalanceCountRequest = null
       this.pendingOpeningBalanceCount = 0
+
+      pendingEbKoreksiCountRequestId += 1
+      pendingEbKoreksiCountRequest = null
+      this.pendingEndingBalanceKoreksiCount = 0
+
       this.isLoaded = false
     },
   },

@@ -16,7 +16,7 @@
     <VCard class="mb-6">
       <VCardTitle class="d-flex align-center gap-2 pa-4 pb-2">
         <VIcon icon="ri-building-line" size="20" />
-        Approval Koreksi B2B
+        Ending Balance B2B
       </VCardTitle>
 
       <VDataTable
@@ -69,7 +69,7 @@
     <VCard>
       <VCardTitle class="d-flex align-center gap-2 pa-4 pb-2">
         <VIcon icon="ri-store-2-line" size="20" />
-        Approval Koreksi B2C
+        Ending Balance B2C
       </VCardTitle>
 
       <VDataTable
@@ -122,7 +122,7 @@
     <VCard class="mb-6 mt-6">
       <VCardTitle class="d-flex align-center gap-2 pa-4 pb-2">
         <VIcon icon="ri-building-line" size="20" color="success" />
-        Ending Balance B2B — Sudah Disetujui
+        Ending Balance B2B — Sudah Approve
       </VCardTitle>
 
       <VDataTable
@@ -134,6 +134,11 @@
         no-data-text="Belum ada koreksi B2B yang disetujui."
         density="comfortable"
       >
+        <template #item.status="{ item }">
+          <VChip size="x-small" :color="item.status === 'APPROVED' ? 'success' : 'warning'" label>
+            {{ item.status === 'APPROVED' ? 'Selesai' : 'Menunggu Manager' }}
+          </VChip>
+        </template>
         <template #item.tipe="{ item }">
           <VChip size="x-small" :color="tipeBadgeColor(item.tipe)" label>{{ tipeLabel(item.tipe) }}</VChip>
         </template>
@@ -153,6 +158,14 @@
         </template>
         <template #item.saldo_sesudah="{ item }">
           <span class="text-body-2 font-weight-semibold">{{ formatRp(item.saldo_sesudah) }}</span>
+        </template>
+        <template #item.spv="{ item }">
+          <span class="text-caption">{{ item.spv || '—' }}</span>
+        </template>
+        <template #item.manager="{ item }">
+          <span class="text-caption" :class="item.manager ? 'font-weight-semibold text-success' : 'text-medium-emphasis'">
+            {{ item.manager || '—' }}
+          </span>
         </template>
         <template #item.manager_actioned_at="{ item }">
           <span class="text-caption">{{ formatDatetime(item.manager_actioned_at) }}</span>
@@ -171,7 +184,7 @@
     <VCard class="mb-6">
       <VCardTitle class="d-flex align-center gap-2 pa-4 pb-2">
         <VIcon icon="ri-store-2-line" size="20" color="success" />
-        Ending Balance B2C — Sudah Disetujui
+        Ending Balance B2C — Sudah Approve
       </VCardTitle>
 
       <VDataTable
@@ -183,6 +196,11 @@
         no-data-text="Belum ada koreksi B2C yang disetujui."
         density="comfortable"
       >
+        <template #item.status="{ item }">
+          <VChip size="x-small" :color="item.status === 'APPROVED' ? 'success' : 'warning'" label>
+            {{ item.status === 'APPROVED' ? 'Selesai' : 'Menunggu Manager' }}
+          </VChip>
+        </template>
         <template #item.tipe="{ item }">
           <VChip size="x-small" :color="tipeBadgeColor(item.tipe)" label>{{ tipeLabel(item.tipe) }}</VChip>
         </template>
@@ -202,6 +220,14 @@
         </template>
         <template #item.saldo_sesudah="{ item }">
           <span class="text-body-2 font-weight-semibold">{{ formatRp(item.saldo_sesudah) }}</span>
+        </template>
+        <template #item.spv="{ item }">
+          <span class="text-caption">{{ item.spv || '—' }}</span>
+        </template>
+        <template #item.manager="{ item }">
+          <span class="text-caption" :class="item.manager ? 'font-weight-semibold text-success' : 'text-medium-emphasis'">
+            {{ item.manager || '—' }}
+          </span>
         </template>
         <template #item.manager_actioned_at="{ item }">
           <span class="text-caption">{{ formatDatetime(item.manager_actioned_at) }}</span>
@@ -390,6 +416,7 @@ const loadingApproved = ref(false)
 const approvedRows    = ref([])
 
 const approvedHeaders = [
+  { title: 'STATUS',            key: 'status',             sortable: false },
   { title: 'TIPE',              key: 'tipe',               sortable: false },
   { title: 'NO DOKUMEN',        key: 'no_dokumen',         sortable: false },
   { title: 'CLIENT',            key: 'nama_klien',         sortable: false },
@@ -484,6 +511,7 @@ async function confirmAction() {
     await api.patch(url, { note: dialog.keterangan.trim() || null })
     dialog.open = false
     fetchPending()
+    fetchApproved()
   } catch (e) {
     dialog.error = e?.response?.data?.message ?? 'Terjadi kesalahan.'
   } finally {
