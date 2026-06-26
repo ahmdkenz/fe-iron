@@ -73,7 +73,7 @@
               color="primary"
               class="fx-cb"
             />
-            <a href="#" class="a-forgot" @click.prevent="openForgotModal">Lupa Password?</a>
+            <a href="#" class="a-forgot">Forgot password?</a>
           </div>
 
           <!-- Attempt warning -->
@@ -138,71 +138,6 @@
       </div>
     </div>
 
-    <!-- ══════ FORGOT PASSWORD MODAL ══════ -->
-    <Transition name="fade">
-      <div v-if="showForgotModal" class="fp-backdrop" @click.self="closeForgotModal">
-        <div class="fp-card">
-          <button class="fp-close" @click="closeForgotModal">
-            <VIcon icon="ri-close-line" size="18" />
-          </button>
-          <div class="fp-icon-wrap mb-3">
-            <VIcon icon="ri-lock-unlock-line" size="28" class="fp-icon" />
-          </div>
-          <h3 class="fp-title">Reset Password</h3>
-          <p class="fp-desc">Masukkan email yang terdaftar. Kami akan mengirim link untuk mereset password Anda.</p>
-
-          <template v-if="!forgotSent">
-            <VTextField
-              v-model="forgotEmail"
-              label="Email"
-              placeholder="email@contoh.com"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-mail-line"
-              type="email"
-              :error-messages="forgotEmailError"
-              class="fx-field mb-3"
-              @keyup.enter="handleForgotPassword"
-            />
-
-            <VAlert
-              v-if="forgotError"
-              type="error"
-              variant="tonal"
-              density="compact"
-              class="mb-3"
-            >
-              {{ forgotError }}
-            </VAlert>
-
-            <VBtn
-              block
-              size="large"
-              :loading="forgotLoading"
-              :disabled="forgotLoading"
-              class="fx-btn"
-              elevation="0"
-              @click="handleForgotPassword"
-            >
-              <template #loader>
-                <VProgressCircular indeterminate size="20" width="2" color="current" />
-              </template>
-              {{ forgotLoading ? 'Mengirim...' : 'Kirim Link Reset' }}
-            </VBtn>
-          </template>
-
-          <template v-else>
-            <VAlert type="success" variant="tonal" density="compact" class="mb-3" icon="ri-mail-check-line">
-              Link reset password telah dikirim ke <strong>{{ forgotEmail }}</strong>. Cek inbox dan folder spam Anda.
-            </VAlert>
-            <VBtn block variant="outlined" class="fp-back-btn mt-1" @click="closeForgotModal">
-              Kembali ke Login
-            </VBtn>
-          </template>
-        </div>
-      </div>
-    </Transition>
-
     <!-- ══════ SUCCESS OVERLAY ══════ -->
     <Transition name="fade">
       <div v-if="showOverlay" class="sov">
@@ -228,7 +163,6 @@
 import { computed, ref, reactive, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.store.js'
-import api from '@/utils/axios'
 
 const router    = useRouter()
 const authStore = useAuthStore()
@@ -243,51 +177,6 @@ const isSubmitting   = ref(false)
 const processingText = ref('Memverifikasi kredensial...')
 const errors = reactive({ username: [], password: [] })
 const form   = reactive({ username: '', password: '' })
-
-// ── Forgot Password ───────────────────────────────────────────────────────────
-const showForgotModal  = ref(false)
-const forgotEmail      = ref('')
-const forgotEmailError = ref([])
-const forgotError      = ref('')
-const forgotLoading    = ref(false)
-const forgotSent       = ref(false)
-
-function openForgotModal() {
-  forgotEmail.value      = ''
-  forgotEmailError.value = []
-  forgotError.value      = ''
-  forgotSent.value       = false
-  showForgotModal.value  = true
-}
-
-function closeForgotModal() {
-  showForgotModal.value = false
-}
-
-async function handleForgotPassword() {
-  forgotEmailError.value = []
-  forgotError.value      = ''
-
-  if (!forgotEmail.value) {
-    forgotEmailError.value = ['Email wajib diisi.']
-    return
-  }
-
-  try {
-    forgotLoading.value = true
-    await api.post('/auth/forgot-password', { email: forgotEmail.value })
-    forgotSent.value = true
-  } catch (err) {
-    const data = err.response?.data
-    if (data?.errors?.email) {
-      forgotEmailError.value = data.errors.email
-    } else {
-      forgotError.value = data?.message ?? 'Gagal mengirim email. Coba lagi.'
-    }
-  } finally {
-    forgotLoading.value = false
-  }
-}
 
 // ── Lockout ───────────────────────────────────────────────────────────────────
 const MAX_ATTEMPTS     = 3
@@ -706,42 +595,4 @@ async function handleLogin() {
 
 .loading-dots::after { content: ''; animation: dots 1.5s steps(4, end) infinite; }
 @keyframes dots { 0%,20%{content:''} 40%{content:'.'} 60%{content:'..'} 80%,100%{content:'...'} }
-
-/* ── Forgot Password Modal ── */
-.fp-backdrop {
-  position: fixed; inset: 0; z-index: 9000;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(6px);
-  display: flex; align-items: center; justify-content: center;
-  padding: 16px;
-}
-.fp-card {
-  position: relative;
-  width: 100%; max-width: 400px;
-  background: var(--glass-bg);
-  backdrop-filter: blur(20px);
-  border: 1px solid var(--glass-bdr);
-  border-radius: 16px;
-  padding: 36px 32px 32px;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
-  text-align: center;
-}
-.fp-close {
-  position: absolute; top: 12px; right: 12px;
-  background: transparent; border: none; cursor: pointer;
-  color: var(--dim); padding: 4px; border-radius: 6px;
-  transition: color 0.2s, background 0.2s;
-}
-.fp-close:hover { color: var(--txt); background: rgba(255,255,255,0.1); }
-.fp-icon-wrap {
-  width: 56px; height: 56px; border-radius: 50%;
-  background: rgba(56, 189, 248, 0.12);
-  border: 1px solid rgba(56, 189, 248, 0.25);
-  display: flex; align-items: center; justify-content: center;
-  margin: 0 auto;
-}
-.fp-icon { color: var(--acc) !important; }
-.fp-title { font-size: 1.2rem; font-weight: 800; color: var(--txt); margin: 0 0 8px; }
-.fp-desc  { font-size: 0.82rem; color: var(--mut); margin: 0 0 20px; line-height: 1.6; }
-.fp-back-btn { color: var(--acc) !important; border-color: rgba(56, 189, 248, 0.35) !important; border-radius: 10px !important; }
 </style>

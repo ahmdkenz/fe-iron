@@ -9,8 +9,8 @@
       ]"
     />
 
-    <!-- Tombol Upload -->
-    <VCard class="mb-4">
+    <!-- Tombol Upload — disembunyikan untuk role AR -->
+    <VCard v-if="!authStore.isArOnly" class="mb-4">
       <VCardText class="d-flex align-center gap-3">
         <VBtn color="primary" prepend-icon="ri-upload-cloud-2-line" @click="dialog = true">
           Upload Rekening Koran Bank
@@ -197,9 +197,12 @@
 <script setup>
 import { markRaw, onMounted, reactive, ref } from 'vue'
 import { useFormatter } from '@/composables/useFormatter'
+import { useAuthStore } from '@/stores/auth.store'
 import api from '@/utils/axios'
 import writeXlsxFile from 'write-excel-file/browser'
 import RekonsiliasiBankDetail from './RekonsiliasiBankDetail.vue'
+
+const authStore = useAuthStore()
 
 const { formatCurrency } = useFormatter()
 
