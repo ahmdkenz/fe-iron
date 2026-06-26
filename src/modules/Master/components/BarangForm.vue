@@ -75,15 +75,33 @@
           cols="12"
           md="7"
         >
-          <VTextField
-            v-model="form.nama_barang"
+          <VCombobox
+            v-model="namaBarangModel"
             label="Nama Barang"
             density="compact"
             variant="outlined"
             prepend-inner-icon="ri-box-3-line"
+            :items="externalCatalog"
+            item-title="nama_barang"
             :rules="[v => !!v || 'Nama barang wajib diisi']"
             :error-messages="errors.nama_barang"
-          />
+            :loading="catalogLoading"
+            return-object
+            clearable
+            @update:model-value="onNamaBarangChange"
+          >
+            <template #item="{ props: p, item }">
+              <VListItem v-bind="p">
+                <template #title>{{ item.raw.nama_barang }}</template>
+                <template #subtitle>
+                  <VChip size="x-small" color="primary" variant="tonal" label class="mr-1">
+                    {{ item.raw.kode_barang }}
+                  </VChip>
+                  <span class="text-caption text-medium-emphasis">{{ item.raw.kategori }}</span>
+                </template>
+              </VListItem>
+            </template>
+          </VCombobox>
         </VCol>
         <VCol cols="12">
           <VTextField
@@ -197,6 +215,7 @@
 import { ref, reactive, watch, computed } from 'vue'
 import { useCrud } from '@/composables/useCrud.js'
 import { normalizeBooleanStatus } from '@/utils/status.js'
+import api from '@/utils/axios'
 
 const props = defineProps({
   modelValue: Boolean,
@@ -211,6 +230,34 @@ const { items: brandList, loading: brandLoading, fetchAll: fetchBrands } = useCr
 const formRef      = ref(null)
 const errorMessage = ref('')
 const isEditing    = computed(() => !!props.barangData)
+
+const externalCatalog = ref([])
+const catalogLoading  = ref(false)
+const namaBarangModel = ref(null)
+
+async function fetchExternalCatalog() {
+  if (externalCatalog.value.length) return
+  catalogLoading.value = true
+  try {
+    const res = await api.get('/master/barang/external-catalog')
+    externalCatalog.value = res.data?.data ?? []
+  } catch {
+    externalCatalog.value = []
+  } finally {
+    catalogLoading.value = false
+  }
+}
+
+function onNamaBarangChange(val) {
+  if (val && typeof val === 'object') {
+    form.nama_barang = val.nama_barang
+    if (!isEditing.value) {
+      form.kode_barang = val.kode_barang?.toUpperCase() ?? ''
+    }
+  } else {
+    form.nama_barang = val ?? ''
+  }
+}
 
 const errors = reactive({
   kode_barang: [], nama_barang: [],
@@ -233,6 +280,7 @@ watch(() => props.modelValue, async val => {
     Object.keys(errors).forEach(k => (errors[k] = []))
     errorMessage.value = ''
     fetchBrands()
+    fetchExternalCatalog()
 
     if (props.barangData) {
       Object.assign(form, {
@@ -243,8 +291,10 @@ watch(() => props.modelValue, async val => {
         keterangan:  props.barangData.keterangan  ?? '',
         status:      normalizeBooleanStatus(props.barangData.status),
       })
+      namaBarangModel.value = props.barangData.nama_barang ?? ''
     } else {
       Object.assign(form, defaultForm())
+      namaBarangModel.value = null
     }
   }
 })

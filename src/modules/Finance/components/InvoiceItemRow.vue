@@ -47,9 +47,9 @@
             density="compact"
             variant="outlined"
             prepend-inner-icon="ri-barcode-line"
-            readonly
             hide-details="auto"
-            placeholder="Otomatis dari pilihan nama barang"
+            placeholder="Opsional — isi manual atau otomatis dari pilihan"
+            @update:model-value="value => updateField('kode_barang', value)"
           />
         </VCol>
 
@@ -57,19 +57,19 @@
           cols="12"
           sm="6"
         >
-          <VAutocomplete
-            :model-value="localItem.barang_id"
+          <VCombobox
+            :model-value="localItem.nama_barang"
             label="Nama Barang"
             density="compact"
             variant="outlined"
             :items="barangList"
             item-title="nama_barang"
-            item-value="id"
+            item-value="nama_barang"
             :loading="barangLoading"
             clearable
             hide-details="auto"
-            :rules="[v => !!v || 'Nama barang wajib dipilih']"
-            @update:model-value="onBarangChange"
+            :rules="[v => !!v || 'Nama barang wajib diisi']"
+            @update:model-value="onNamaBarangChange"
           >
             <template #item="{ props: p, item }">
               <VListItem
@@ -78,7 +78,7 @@
                 :subtitle="item.raw.kode_barang"
               />
             </template>
-          </VAutocomplete>
+          </VCombobox>
         </VCol>
 
         <!-- Baris 2: Qty + Satuan + Harga + Subtotal -->
@@ -213,7 +213,7 @@ watch(() => props.item, value => {
   syncLocalItem(value)
 })
 
-// Resolve kode_barang when barangList loads after item is already set
+// Resolve kode_barang dari master barang jika item punya barang_id tapi kode belum ada
 watch(() => props.barangList, list => {
   if (localItem.barang_id && !localItem.kode_barang && list.length > 0) {
     const found = list.find(b => b.id === localItem.barang_id)
@@ -243,18 +243,19 @@ function updateNumberField(field, value) {
   recalculate()
 }
 
-function onBarangChange(id) {
-  localItem.barang_id = id ?? null
-
-  const found = props.barangList.find(barang => barang.id === id)
-  if (found) {
-    localItem.kode_barang  = found.kode_barang ?? ''
-    localItem.nama_barang  = found.nama_barang
-    localItem.satuan       = found.satuan ?? localItem.satuan
-    localItem.harga_satuan = normalizeNumber(found.harga_beli ?? found.harga_jual ?? 0)
+function onNamaBarangChange(value) {
+  if (value && typeof value === 'object') {
+    // User memilih dari dropdown
+    localItem.barang_id    = value.id ?? null
+    localItem.kode_barang  = value.kode_barang ?? localItem.kode_barang
+    localItem.nama_barang  = value.nama_barang ?? ''
+    localItem.satuan       = value.satuan ?? localItem.satuan
+    localItem.harga_satuan = normalizeNumber(value.harga_beli ?? value.harga_jual ?? 0)
   } else {
-    localItem.kode_barang = ''
-    localItem.nama_barang = ''
+    // User mengetik bebas
+    localItem.barang_id   = null
+    localItem.nama_barang = value ?? ''
+    if (!localItem.kode_barang) localItem.kode_barang = ''
   }
 
   recalculate()
