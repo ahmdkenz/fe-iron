@@ -16,31 +16,57 @@
       </button>
     </div>
 
-    <!-- ══════ CENTER FORM ══════ -->
-    <div class="center-wrap">
-      <div class="glass-card">
+    <!-- ══════ LEFT BRAND PANEL ══════ -->
+    <aside class="brand-panel">
+      <div class="brand-inner">
+        <div class="brand-logo-tile">
+          <img src="/images/iron/Logo_IRON.png" alt="IRON" class="brand-logo-img" />
+        </div>
+        <h1 class="brand-name">I.R.O.N</h1>
+        <p class="brand-tag">Intelligent Record of Numbers</p>
+        <p class="brand-desc">
+          Sistem akuntansi terpadu untuk mengelola keuangan,
+          invoice, dan laporan bisnis Anda dalam satu tempat.
+        </p>
 
-        <!-- Logo / Emblem -->
-        <div class="card-logo">
-          <div class="emblem-orbit">
-            <div class="orbit-spin" />
-            <div class="emblem-center">
-              <span class="emblem-mono">IR</span>
-              <span class="emblem-sub">IRON</span>
-            </div>
-          </div>
+        <ul class="brand-points">
+          <li>
+            <VIcon icon="ri-shield-check-line" size="18" class="bp-icon" />
+            <span>Keamanan data terjamin</span>
+          </li>
+          <li>
+            <VIcon icon="ri-line-chart-line" size="18" class="bp-icon" />
+            <span>Laporan keuangan real-time</span>
+          </li>
+          <li>
+            <VIcon icon="ri-time-line" size="18" class="bp-icon" />
+            <span>Efisiensi proses operasional</span>
+          </li>
+        </ul>
+      </div>
+
+      <p class="brand-foot">© {{ currentYear }} PT Sheza Mitra Amanah</p>
+    </aside>
+
+    <!-- ══════ RIGHT FORM PANEL ══════ -->
+    <main class="form-panel">
+      <div class="form-card">
+
+        <!-- Compact logo for mobile -->
+        <div class="mobile-logo">
+          <img src="/images/iron/Logo_IRON.png" alt="IRON" />
+          <span>I.R.O.N</span>
         </div>
 
-        <!-- Title -->
-        <h2 class="card-title">Login</h2>
-        <p class="card-sub">Masuk ke sistem I.R.O.N</p>
+        <h2 class="card-title">Selamat Datang</h2>
+        <p class="card-sub">Masuk untuk melanjutkan ke sistem I.R.O.N</p>
 
-        <VForm ref="formRef" @submit.prevent="handleLogin" class="mt-6">
+        <VForm ref="formRef" @submit.prevent="handleLogin" class="mt-7">
 
+          <label class="fx-label">Username</label>
           <VTextField
             v-model="form.username"
-            label="Username"
-            placeholder="Masukkan Username"
+            placeholder="Masukkan username"
             variant="outlined"
             density="comfortable"
             prepend-inner-icon="ri-user-3-line"
@@ -49,10 +75,10 @@
             class="fx-field mb-4"
           />
 
+          <label class="fx-label">Password</label>
           <VTextField
             v-model="form.password"
-            label="Password"
-            placeholder="············"
+            placeholder="Masukkan password"
             variant="outlined"
             density="comfortable"
             prepend-inner-icon="ri-lock-2-line"
@@ -70,10 +96,8 @@
               label="Remember me"
               hide-details
               density="compact"
-              color="primary"
               class="fx-cb"
             />
-            <a href="#" class="a-forgot">Forgot password?</a>
           </div>
 
           <!-- Attempt warning -->
@@ -118,7 +142,7 @@
             elevation="0"
           >
             <template #loader>
-              <VProgressCircular indeterminate size="20" width="2" color="current" />
+              <VProgressCircular indeterminate size="20" width="2" color="white" />
             </template>
             <template v-if="isLocked">
               <VIcon icon="ri-lock-2-line" size="15" class="mr-1" />
@@ -129,20 +153,15 @@
             </template>
           </VBtn>
 
-          <p class="text-center mt-5 a-contact-row">
-            Kendala akses?
-            <a href="#" class="a-contact">Hubungi Administrator</a>
-          </p>
-
         </VForm>
       </div>
-    </div>
+    </main>
 
     <!-- ══════ SUCCESS OVERLAY ══════ -->
     <Transition name="fade">
       <div v-if="showOverlay" class="sov">
         <div class="sov-wrap mb-6">
-          <div class="sov-ring" />
+          <div class="sov-spinner" />
           <div class="sov-box">
             <VIcon icon="ri-shield-check-line" size="38" class="sov-icon" />
           </div>
@@ -166,6 +185,8 @@ import { useAuthStore } from '@/stores/auth.store.js'
 
 const router    = useRouter()
 const authStore = useAuthStore()
+
+const currentYear = new Date().getFullYear()
 
 // ── Form ──────────────────────────────────────────────────────────────────────
 const formRef        = ref(null)
@@ -316,37 +337,35 @@ async function handleLogin() {
 <style scoped>
 /* ── Tokens ── */
 [data-theme="light"] {
-  --overlay:   rgba(10, 18, 40, 0.38);
-  --acc:       #38bdf8;
-  --acc-hi:    #7dd3fc;
-  --acc-lo:    rgba(56, 189, 248, 0.15);
-  --bdr:       rgba(255, 255, 255, 0.22);
-  --bdr-hi:    rgba(56, 189, 248, 0.5);
-  --txt:       #ffffff;
-  --mut:       rgba(255, 255, 255, 0.75);
-  --dim:       rgba(255, 255, 255, 0.5);
-  --btn-txt:   #0f172a;
-  --glass-bg:  rgba(255, 255, 255, 0.22);
-  --glass-bdr: rgba(255, 255, 255, 0.35);
-  --field-bg:  rgba(255, 255, 255, 0.15);
-  --shadow:    0 32px 80px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.15);
+  --page-bg:    #f1f5f9;
+  --surface:    #ffffff;
+  --txt:        #0f172a;
+  --mut:        #64748b;
+  --dim:        #94a3b8;
+  --border:     #e2e8f0;
+  --border-hi:  #1b3b73;
+  --field-bg:   #f8fafc;
+  --shadow:     0 24px 60px rgba(15, 23, 42, 0.10), 0 2px 6px rgba(15, 23, 42, 0.04);
 }
 
 [data-theme="dark"] {
-  --overlay:   rgba(0, 0, 0, 0.52);
-  --acc:       #38bdf8;
-  --acc-hi:    #7dd3fc;
-  --acc-lo:    rgba(56, 189, 248, 0.12);
-  --bdr:       rgba(255, 255, 255, 0.12);
-  --bdr-hi:    rgba(56, 189, 248, 0.4);
-  --txt:       #ffffff;
-  --mut:       rgba(255, 255, 255, 0.65);
-  --dim:       rgba(255, 255, 255, 0.38);
-  --btn-txt:   #ffffff;
-  --glass-bg:  rgba(15, 25, 50, 0.5);
-  --glass-bdr: rgba(255, 255, 255, 0.14);
-  --field-bg:  rgba(255, 255, 255, 0.07);
-  --shadow:    0 32px 80px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(0, 0, 0, 0.35);
+  --page-bg:    #0d1c38;
+  --surface:    #15294a;
+  --txt:        #f1f5f9;
+  --mut:        #9fb0cc;
+  --dim:        #6b7e9e;
+  --border:     #294063;
+  --border-hi:  #ed7d2b;
+  --field-bg:   #102140;
+  --shadow:     0 24px 60px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* shared brand constants */
+:root, [data-theme] {
+  --brand:        #1b3b73;
+  --brand-deep:   #142d59;
+  --accent:       #ed7d2b;
+  --accent-hover: #d76c1d;
 }
 
 /* ── Root ── */
@@ -355,20 +374,9 @@ async function handleLogin() {
   width: 100%;
   font-family: 'Inter', sans-serif;
   position: relative;
-  overflow: hidden;
-  background: url('/images/bg/accounting.jpg') center / cover no-repeat fixed;
   display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.lr-root::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: var(--overlay);
-  z-index: 0;
-  transition: background 0.35s;
+  background: var(--page-bg);
+  transition: background 0.3s;
 }
 
 /* ── Theme bar ── */
@@ -380,13 +388,11 @@ async function handleLogin() {
   display: flex;
   align-items: center;
   gap: 2px;
-  background: rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(14px) saturate(160%);
-  -webkit-backdrop-filter: blur(14px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 10px;
   padding: 4px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 
 .theme-btn {
@@ -397,7 +403,7 @@ async function handleLogin() {
   border-radius: 7px;
   border: none;
   background: transparent;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--mut);
   font-size: 0.71rem;
   font-weight: 600;
   letter-spacing: 0.03em;
@@ -405,102 +411,158 @@ async function handleLogin() {
   font-family: inherit;
   transition: background 0.18s, color 0.18s;
 }
-.theme-btn:hover   { background: var(--acc-lo); color: var(--acc); }
-.theme-btn--active { background: var(--acc-lo); color: var(--acc); }
+.theme-btn:hover   { background: var(--field-bg); color: var(--accent); }
+.theme-btn--active { background: var(--brand); color: #ffffff; }
 
-/* ── Center wrap ── */
-.center-wrap {
+/* ══════ LEFT BRAND PANEL ══════ */
+.brand-panel {
+  width: 46%;
+  max-width: 620px;
+  background: var(--brand);
+  color: #ffffff;
+  padding: 3.5rem 3rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   position: relative;
-  z-index: 1;
-  width: 100%;
+}
+
+.brand-inner {
+  margin: auto 0;
+  max-width: 420px;
+}
+
+.brand-logo-tile {
+  width: 92px;
+  height: 92px;
+  border-radius: 22px;
+  background: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem 1.25rem;
-  min-height: 100vh;
+  margin-bottom: 2rem;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+}
+.brand-logo-img { width: 62px; height: 62px; object-fit: contain; }
+
+.brand-name {
+  font-size: 2.4rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  margin: 0 0 0.5rem;
+}
+.brand-tag {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--accent);
+  margin: 0 0 1.5rem;
+  letter-spacing: 0.02em;
+}
+.brand-desc {
+  font-size: 0.92rem;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.78);
+  margin: 0 0 2.25rem;
 }
 
-/* ── Glass card ── */
-.glass-card {
+.brand-points {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.95rem;
+}
+.brand-points li {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+}
+.bp-icon {
+  color: var(--accent) !important;
+  flex-shrink: 0;
+}
+
+.brand-foot {
+  position: absolute;
+  bottom: 1.75rem;
+  left: 3rem;
+  font-size: 0.74rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0;
+}
+
+/* ══════ RIGHT FORM PANEL ══════ */
+.form-panel {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 1.5rem;
+}
+
+.form-card {
   width: 100%;
   max-width: 400px;
-  background: var(--glass-bg);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid var(--glass-bdr);
-  border-radius: 20px;
-  padding: 2.5rem 2.25rem 2rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 2.75rem 2.5rem;
   box-shadow: var(--shadow);
-  animation: card-up 0.6s cubic-bezier(0.34, 1.2, 0.64, 1) both;
+  animation: card-up 0.55s cubic-bezier(0.34, 1.2, 0.64, 1) both;
 }
 @keyframes card-up {
-  from { opacity: 0; transform: translateY(28px); }
+  from { opacity: 0; transform: translateY(22px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ── Emblem ── */
-.card-logo {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 1.25rem;
+/* mobile logo (hidden on desktop) */
+.mobile-logo {
+  display: none;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1.5rem;
 }
-
-.emblem-orbit {
-  position: relative;
-  width: 80px; height: 80px;
-  display: flex; align-items: center; justify-content: center;
-}
-.orbit-spin {
-  position: absolute; inset: 0; border-radius: 50%;
-  background: conic-gradient(from 0deg, transparent 40%, var(--acc) 65%, transparent 72%);
-  animation: spin 3s linear infinite;
-  opacity: 0.65;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-.emblem-center {
-  width: 64px; height: 64px; border-radius: 50%;
-  background: var(--glass-bg);
-  backdrop-filter: blur(10px);
-  border: 1px solid var(--glass-bdr);
-  position: relative; z-index: 1;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 1px;
-}
-.emblem-mono {
-  font-size: 1.25rem; font-weight: 900; letter-spacing: 3px;
-  color: var(--acc); line-height: 1;
-}
-.emblem-sub {
-  font-size: 0.44rem; font-weight: 700; letter-spacing: 0.18em;
-  color: var(--dim); text-transform: uppercase;
-}
+.mobile-logo img { width: 40px; height: 40px; object-fit: contain; }
+.mobile-logo span { font-size: 1.25rem; font-weight: 900; color: var(--txt); letter-spacing: 0.04em; }
 
 /* ── Card text ── */
 .card-title {
-  font-size: 1.65rem;
+  font-size: 1.6rem;
   font-weight: 800;
   color: var(--txt);
-  text-align: center;
-  margin-bottom: 0.3rem;
+  margin-bottom: 0.4rem;
   letter-spacing: 0.01em;
 }
 .card-sub {
-  font-size: 0.78rem;
+  font-size: 0.85rem;
   color: var(--mut);
-  text-align: center;
   margin: 0;
   line-height: 1.5;
 }
 
 /* ── Fields ── */
+.fx-label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--txt);
+  margin-bottom: 0.4rem;
+  letter-spacing: 0.01em;
+}
 .fx-field :deep(.v-field)           { background-color: var(--field-bg) !important; border-radius: 10px; }
-.fx-field :deep(.v-field__outline)  { --v-field-border-color: var(--bdr) !important; }
-.fx-field :deep(.v-field--focused .v-field__outline) { --v-field-border-color: var(--bdr-hi) !important; }
+.fx-field :deep(.v-field__outline)  { --v-field-border-color: var(--border) !important; --v-field-border-opacity: 1; }
+.fx-field :deep(.v-field--focused .v-field__outline) { --v-field-border-color: var(--border-hi) !important; }
 .fx-field :deep(.v-field__input)    { color: var(--txt); }
-.fx-field :deep(.v-label)           { color: var(--mut); }
+.fx-field :deep(input::placeholder) { color: var(--dim); opacity: 1; }
 .fx-field :deep(.v-icon)            { color: var(--dim); }
-.fx-field :deep(.v-field--focused .v-icon) { color: var(--acc); }
-.fx-cb    :deep(.v-label)           { color: var(--mut); font-size: 0.82rem; }
+.fx-field :deep(.v-field--focused .v-icon) { color: var(--accent); }
+.fx-cb    :deep(.v-label)           { color: var(--mut); font-size: 0.82rem; opacity: 1; }
+.fx-cb    :deep(.v-selection-control__input) { color: var(--brand); }
 
 /* ── Row opts ── */
 .row-opts {
@@ -512,41 +574,41 @@ async function handleLogin() {
 .a-forgot {
   font-size: 0.8rem;
   font-weight: 600;
-  color: var(--acc);
+  color: var(--accent);
   text-decoration: none;
-  opacity: 0.85;
-  transition: opacity 0.2s;
+  transition: color 0.2s;
   white-space: nowrap;
 }
-.a-forgot:hover { opacity: 1; }
+.a-forgot:hover { color: var(--accent-hover); }
 
 /* ── Login button ── */
 .fx-btn {
-  background: rgba(255, 255, 255, 0.9) !important;
-  color: #0f172a !important;
+  background: var(--brand) !important;
+  color: #ffffff !important;
   font-weight: 700 !important;
   font-size: 0.95rem !important;
   letter-spacing: 0.04em;
   border-radius: 10px !important;
+  height: 48px !important;
   transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease !important;
 }
 .fx-btn:not(:disabled):hover {
-  background: #ffffff !important;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 28px rgba(255, 255, 255, 0.25) !important;
+  background: var(--brand-deep) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 22px rgba(27, 59, 115, 0.3) !important;
 }
 
-.a-contact-row { font-size: 0.79rem; color: var(--dim); }
-.a-contact { font-weight: 600; color: var(--acc); text-decoration: none; transition: color 0.2s; }
-.a-contact:hover { color: var(--acc-hi); }
+.a-contact-row { font-size: 0.79rem; color: var(--mut); }
+.a-contact { font-weight: 600; color: var(--accent); text-decoration: none; transition: color 0.2s; }
+.a-contact:hover { color: var(--accent-hover); }
 
 /* ── Lockout ── */
 .attempt-warn {
   font-size: 0.76rem;
   font-weight: 500;
-  color: #f59e0b;
+  color: #b45309;
   background: rgba(245, 158, 11, 0.1);
-  border: 1px solid rgba(245, 158, 11, 0.22);
+  border: 1px solid rgba(245, 158, 11, 0.28);
   border-radius: 8px;
   padding: 6px 10px;
   display: flex;
@@ -557,7 +619,7 @@ async function handleLogin() {
 /* ── Success overlay ── */
 .sov {
   position: fixed; inset: 0; z-index: 9999;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(11, 17, 32, 0.85);
   backdrop-filter: blur(8px);
   display: flex; flex-direction: column; align-items: center; justify-content: center;
 }
@@ -568,31 +630,39 @@ async function handleLogin() {
   position: relative; width: 96px; height: 96px;
   display: flex; align-items: center; justify-content: center;
 }
-.sov-ring {
+.sov-spinner {
   position: absolute; inset: 0; border-radius: 50%;
-  background: conic-gradient(from 0deg, transparent 38%, var(--acc) 65%, transparent 70%);
-  animation: spin 1.4s linear infinite;
+  border: 3px solid rgba(255, 255, 255, 0.12);
+  border-top-color: var(--accent);
+  animation: spin 1s linear infinite;
 }
+@keyframes spin { to { transform: rotate(360deg); } }
 .sov-box {
   width: 74px; height: 74px; border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
   position: relative; z-index: 1;
   display: flex; align-items: center; justify-content: center;
 }
-.sov-icon   { color: var(--acc) !important; }
+.sov-icon   { color: var(--accent) !important; }
 .sov-title  { font-size: 1.3rem; font-weight: 800; color: #ffffff; margin-bottom: 0.2rem; }
-.sov-name   { color: var(--acc); font-size: 0.9rem; font-weight: 500; margin-bottom: 0.15rem; }
+.sov-name   { color: var(--accent); font-size: 0.9rem; font-weight: 500; margin-bottom: 0.15rem; }
 .sov-status { color: rgba(255, 255, 255, 0.6); font-size: 0.79rem; }
 
-.sov-prog { width: 220px; height: 3px; background: rgba(56, 189, 248, 0.15); border-radius: 4px; overflow: hidden; }
+.sov-prog { width: 220px; height: 3px; background: rgba(255, 255, 255, 0.12); border-radius: 4px; overflow: hidden; }
 .sov-bar  {
-  height: 100%; background: #38bdf8; border-radius: 4px;
+  height: 100%; background: var(--accent); border-radius: 4px;
   animation: fill 2.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 @keyframes fill { 0%{width:0} 30%{width:40%} 65%{width:72%} 100%{width:100%} }
 
 .loading-dots::after { content: ''; animation: dots 1.5s steps(4, end) infinite; }
 @keyframes dots { 0%,20%{content:''} 40%{content:'.'} 60%{content:'..'} 80%,100%{content:'...'} }
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .brand-panel { display: none; }
+  .mobile-logo { display: flex; }
+  .form-panel  { padding: 1.5rem 1rem; }
+}
 </style>
