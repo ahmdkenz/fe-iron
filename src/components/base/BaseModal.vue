@@ -10,14 +10,25 @@
         style="background: rgba(var(--v-theme-primary), 0.07); border-left: 4px solid rgb(var(--v-theme-primary))"
       >
         <span class="text-body-1 font-weight-bold">{{ title }}</span>
-        <VBtn
-          icon
-          size="small"
-          variant="text"
-          @click="isOpen = false"
-        >
-          <VIcon icon="ri-close-line" />
-        </VBtn>
+        <div class="d-flex ga-1">
+          <VBtn
+            v-if="minimizable"
+            icon
+            size="small"
+            variant="text"
+            @click="$emit('minimize')"
+          >
+            <VIcon icon="ri-subtract-line" />
+          </VBtn>
+          <VBtn
+            icon
+            size="small"
+            variant="text"
+            @click="isOpen = false"
+          >
+            <VIcon icon="ri-close-line" />
+          </VBtn>
+        </div>
       </VCardTitle>
       <VProgressLinear
         v-if="loading"
@@ -63,8 +74,9 @@ defineProps({
   title: { type: String, default: '' },
   width: { type: [String, Number], default: 600 },
   loading: { type: Boolean, default: false },
+  minimizable: { type: Boolean, default: false },
 })
-defineEmits(['confirm'])
+defineEmits(['confirm', 'minimize'])
 
 const isOpen = defineModel({ type: Boolean, default: false })
 </script>

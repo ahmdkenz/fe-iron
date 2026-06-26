@@ -218,6 +218,8 @@
     <UserForm
       v-model="showForm"
       :user-data="selectedForm"
+      :minimizable="true"
+      @minimize="minimizeForm"
       @saved="onFormSaved"
     />
 
@@ -230,14 +232,18 @@
 </template>
 
 <script setup>
-import { nextTick, onMounted, ref } from 'vue'
+import { nextTick, onActivated, onMounted, ref, watch } from 'vue'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useCrud } from '@/composables/useCrud.js'
+import { useMinimizeWidgetStore } from '@/stores/minimize-widget.store'
 import api from '@/utils/axios'
 import BulkDeleteBar from '@/components/base/BulkDeleteBar.vue'
 
 const { showSuccess, showError, showLoading, closeAlert, confirmDelete: swalConfirmDelete } = useSweetAlert()
 const { items, loading, meta, params, fetchList, remove } = useCrud('/iam/users')
+const minimizeStore = useMinimizeWidgetStore()
+
+const FORM_WIDGET_ID = 'user-form'
 
 const showDelete = ref(false)
 const showDetail = ref(false)
@@ -272,9 +278,36 @@ function onTableOptions({ page, itemsPerPage }) {
   fetchList()
 }
 
-function openCreate() { selectedForm.value = null; showForm.value = true }
-function openEdit(user) { selectedForm.value = user; showForm.value = true }
-function onFormSaved() { showForm.value = false; fetchList() }
+function openCreate() {
+  minimizeStore.register(FORM_WIDGET_ID, { title: 'Form Tambah User', routeName: 'iam-users', type: 'form', minimized: false })
+  selectedForm.value = null
+  showForm.value = true
+}
+function openEdit(user) {
+  minimizeStore.register(FORM_WIDGET_ID, { title: 'Form Edit User', routeName: 'iam-users', type: 'form', minimized: false })
+  selectedForm.value = user
+  showForm.value = true
+}
+function minimizeForm() {
+  minimizeStore.setMinimized(FORM_WIDGET_ID, true)
+  showForm.value = false
+}
+function onFormSaved() { minimizeStore.remove(FORM_WIDGET_ID); showForm.value = false; fetchList() }
+
+watch(showForm, (val) => {
+  if (!val) {
+    const w = minimizeStore.widgets[FORM_WIDGET_ID]
+    if (w && !w.minimized) minimizeStore.remove(FORM_WIDGET_ID)
+  }
+})
+
+onActivated(() => {
+  if (minimizeStore.widgets[FORM_WIDGET_ID]?.pendingRestore) {
+    minimizeStore.clearPendingRestore(FORM_WIDGET_ID)
+    minimizeStore.setMinimizedFalse(FORM_WIDGET_ID)
+    showForm.value = true
+  }
+})
 
 function openDetail(user) {
   selectedUser.value = user

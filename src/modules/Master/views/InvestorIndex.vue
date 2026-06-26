@@ -251,6 +251,8 @@
     <InvestorForm
       v-model="showForm"
       :investor-data="selectedForm"
+      :minimizable="true"
+      @minimize="minimizeForm"
       @saved="onFormSaved"
     />
 
@@ -424,80 +426,25 @@
       @clear="selectedItems = []"
     />
 
-    <!-- Floating Import Progress Widget (saat modal di-minimize) -->
-    <Transition name="slide-up">
-      <VCard
-        v-if="isImportMinimized"
-        elevation="8"
-        rounded="lg"
-        style="position: fixed; bottom: 24px; right: 24px; z-index: 2400; width: 300px; cursor: pointer;"
-        @click="restoreImport"
-      >
-        <VCardText class="pa-3">
-          <div class="d-flex align-center justify-space-between mb-2">
-            <div class="d-flex align-center ga-2">
-              <VIcon
-                :icon="importing ? 'ri-loader-4-line' : 'ri-checkbox-circle-line'"
-                :color="importing ? 'warning' : 'success'"
-                size="18"
-              />
-              <span class="text-subtitle-2 font-weight-medium">Import Investor</span>
-            </div>
-            <VBtn
-              icon
-              size="x-small"
-              variant="text"
-              @click.stop="closeImport"
-            >
-              <VIcon icon="ri-close-line" size="16" />
-            </VBtn>
-          </div>
-
-          <template v-if="importing && importProgress">
-            <VProgressLinear
-              :model-value="importProgress.progress_total > 0
-                ? (importProgress.processed / importProgress.progress_total) * 100
-                : 0"
-              :indeterminate="importProgress.status === 'queued' || !importProgress.progress_total"
-              color="warning"
-              height="6"
-              rounded
-              class="mb-1"
-            />
-            <div class="text-caption text-medium-emphasis">
-              {{ importProgress.status === 'queued'
-                ? 'Menunggu antrian…'
-                : `${importProgress.processed} / ${importProgress.progress_total} baris diproses` }}
-            </div>
-          </template>
-
-          <template v-else-if="importResult">
-            <div class="text-caption">
-              <strong>{{ importResult.inserted }}</strong> ditambahkan,
-              <strong>{{ importResult.updated }}</strong> diperbarui,
-              <strong>{{ importResult.failed }}</strong> gagal
-            </div>
-            <div class="text-caption text-primary mt-1">
-              Klik untuk lihat detail →
-            </div>
-          </template>
-        </VCardText>
-      </VCard>
-    </Transition>
   </div>
 </template>
 
 <script setup>
-import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { nextTick, onActivated, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useAuthStore } from '@/stores/auth.store'
 import { useCrud } from '@/composables/useCrud'
+import { useMinimizeWidgetStore } from '@/stores/minimize-widget.store'
 import api from '@/utils/axios'
 import BulkDeleteBar from '@/components/base/BulkDeleteBar.vue'
 
 const authStore = useAuthStore()
 const { showSuccess, showError, showLoading, closeAlert, confirmDelete: swalConfirmDelete } = useSweetAlert()
 const { items, loading, meta, params, fetchList, remove } = useCrud('/master/investor')
+const minimizeStore = useMinimizeWidgetStore()
+
+const FORM_WIDGET_ID   = 'investor-form'
+const IMPORT_WIDGET_ID = 'investor-import'
 
 const tableCard        = ref(null)
 let prevItemsPerPage   = null
@@ -510,14 +457,13 @@ const selectedInvestor = ref(null)
 const selectedForm     = ref(null)
 const selectedItems    = ref([])
 
-const exporting         = ref(false)
-const showImport        = ref(false)
-const importing         = ref(false)
-const importFile        = ref(null)
-const importResult      = ref(null)
-const importProgress    = ref(null)
-const isImportMinimized = ref(false)
-let importPollTimer     = null
+const exporting      = ref(false)
+const showImport     = ref(false)
+const importing      = ref(false)
+const importFile     = ref(null)
+const importResult   = ref(null)
+const importProgress = ref(null)
+let importPollTimer  = null
 
 const headers = [
   { title: 'No',               key: 'no',               sortable: false, width: '60px' },
@@ -552,13 +498,54 @@ function onTableOptions({ page, itemsPerPage }) {
   }
 }
 
-function openCreate()  { selectedForm.value = null; showForm.value = true }
-function openEdit(inv) { selectedForm.value = inv;  showForm.value = true }
-function onFormSaved() { showForm.value = false; fetchList() }
+function openCreate() {
+  minimizeStore.register(FORM_WIDGET_ID, { title: 'Form Tambah Investor', routeName: 'master-investor', type: 'form', minimized: false })
+  selectedForm.value = null
+  showForm.value = true
+}
+function openEdit(inv) {
+  minimizeStore.register(FORM_WIDGET_ID, { title: 'Form Edit Investor', routeName: 'master-investor', type: 'form', minimized: false })
+  selectedForm.value = inv
+  showForm.value = true
+}
+function minimizeForm() {
+  minimizeStore.setMinimized(FORM_WIDGET_ID, true)
+  showForm.value = false
+}
+function onFormSaved() { minimizeStore.remove(FORM_WIDGET_ID); showForm.value = false; fetchList() }
 function openDetail(inv)  { selectedInvestor.value = inv;  showDetail.value = true }
 function confirmDelete(inv) { selectedInvestor.value = inv; deleteError.value = ''; showDelete.value = true }
 
+watch(showForm, (val) => {
+  if (!val) {
+    const w = minimizeStore.widgets[FORM_WIDGET_ID]
+    if (w && !w.minimized) minimizeStore.remove(FORM_WIDGET_ID)
+  }
+})
+
+watch([importing, importProgress, importResult], () => {
+  minimizeStore.updateImportState(IMPORT_WIDGET_ID, {
+    importing: importing.value,
+    progress: importProgress.value,
+    result: importResult.value,
+  })
+})
+
+onActivated(() => {
+  if (minimizeStore.widgets[FORM_WIDGET_ID]?.pendingRestore) {
+    minimizeStore.clearPendingRestore(FORM_WIDGET_ID)
+    minimizeStore.setMinimizedFalse(FORM_WIDGET_ID)
+    showForm.value = true
+  }
+  if (minimizeStore.widgets[IMPORT_WIDGET_ID]?.pendingRestore) {
+    minimizeStore.clearPendingRestore(IMPORT_WIDGET_ID)
+    minimizeStore.setMinimizedFalse(IMPORT_WIDGET_ID)
+    showImport.value = true
+  }
+})
+
 function openImport() {
+  minimizeStore.register(IMPORT_WIDGET_ID, { title: 'Import Investor', routeName: 'master-investor', type: 'import', minimized: false })
   importFile.value     = null
   importResult.value   = null
   importProgress.value = null
@@ -566,8 +553,8 @@ function openImport() {
 }
 
 function closeImport() {
-  showImport.value        = false
-  isImportMinimized.value = false
+  minimizeStore.remove(IMPORT_WIDGET_ID)
+  showImport.value = false
   stopImportPolling()
   importing.value      = false
   importProgress.value = null
@@ -575,14 +562,8 @@ function closeImport() {
 }
 
 function minimizeImport() {
-  showImport.value        = false
-  isImportMinimized.value = true
-  // Polling TIDAK dihentikan — proses tetap dipantau di background
-}
-
-function restoreImport() {
-  showImport.value        = true
-  isImportMinimized.value = false
+  minimizeStore.setMinimized(IMPORT_WIDGET_ID, true)
+  showImport.value = false
 }
 
 function stopImportPolling() {
@@ -670,7 +651,6 @@ function pollImportStatus(batchId) {
         if (data.status === 'failed') {
           importProgress.value    = null
           await showError(data.message || 'Import gagal diproses.')
-          isImportMinimized.value = false
         } else {
           importResult.value = data
           if ((data.inserted > 0) || (data.updated > 0)) fetchList()
@@ -728,15 +708,3 @@ onBeforeUnmount(() => {
   stopImportPolling()
 })
 </script>
-
-<style scoped>
-.slide-up-enter-active,
-.slide-up-leave-active {
-  transition: transform 0.25s ease, opacity 0.25s ease;
-}
-.slide-up-enter-from,
-.slide-up-leave-to {
-  transform: translateY(16px);
-  opacity: 0;
-}
-</style>

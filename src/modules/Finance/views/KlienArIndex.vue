@@ -645,78 +645,24 @@
       @delete="doBulkDelete"
       @clear="clearAllSelected"
     />
-
-    <!-- Floating Import Loading Widget (saat modal di-minimize) -->
-    <Transition name="slide-up">
-      <VCard
-        v-if="isImportMinimized"
-        elevation="8"
-        rounded="lg"
-        style="position: fixed; bottom: 24px; right: 24px; z-index: 2400; width: 300px; cursor: pointer;"
-        @click="restoreImport"
-      >
-        <VCardText class="pa-3">
-          <div class="d-flex align-center justify-space-between mb-2">
-            <div class="d-flex align-center ga-2">
-              <VIcon
-                :icon="importing ? 'ri-loader-4-line' : 'ri-checkbox-circle-line'"
-                :color="importing ? 'primary' : 'success'"
-                size="18"
-              />
-              <span class="text-subtitle-2 font-weight-medium">Import Client</span>
-            </div>
-            <VBtn
-              icon
-              size="x-small"
-              variant="text"
-              @click.stop="closeImport"
-            >
-              <VIcon icon="ri-close-line" size="16" />
-            </VBtn>
-          </div>
-
-          <template v-if="importing">
-            <VProgressLinear
-              indeterminate
-              color="primary"
-              height="6"
-              rounded
-              class="mb-1"
-            />
-            <div class="text-caption text-medium-emphasis">
-              Sedang mengimport data...
-            </div>
-          </template>
-
-          <template v-else-if="importResult">
-            <div class="text-caption">
-              <strong>{{ importResult.inserted }}</strong> ditambahkan,
-              <strong>{{ importResult.updated }}</strong> diperbarui,
-              <strong>{{ importResult.failed }}</strong> gagal
-            </div>
-            <div class="text-caption text-primary mt-1">
-              Klik untuk lihat detail →
-            </div>
-          </template>
-        </VCardText>
-      </VCard>
-    </Transition>
   </div>
 </template>
 
 <script setup>
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, nextTick, onActivated, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 import { useRouter } from 'vue-router'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useAuthStore } from '@/stores/auth.store'
 import { useCrud } from '@/composables/useCrud'
+import { useMinimizeWidgetStore } from '@/stores/minimize-widget.store'
 import api from '@/utils/axios'
 import BulkDeleteBar from '@/components/base/BulkDeleteBar.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
 const { showSuccess, showError, showLoading, closeAlert, confirmDelete: swalConfirmDelete } = useSweetAlert()
+const minimizeStore = useMinimizeWidgetStore()
 
 const { items: itemsB2C, loading: loadingB2C, meta: metaB2C, params: paramsB2C, fetchList: fetchListB2C, remove } = useCrud('/finance/klien-ar')
 const { items: itemsB2B, loading: loadingB2B, meta: metaB2B, params: paramsB2B, fetchList: fetchListB2B } = useCrud('/finance/klien-ar')
@@ -726,6 +672,8 @@ const canSeeAll = authStore.hasAnyRole(['ADMIN', 'MANAGER', 'SUPERVISOR'])
 if (!canSeeAll) {
   paramsB2C.karyawan_ar_id = authStore.user?.karyawan?.id
 }
+
+const IMPORT_WIDGET_ID = 'klien-ar-import'
 
 const searchB2B = ref('')
 const statusB2B = ref(null)
@@ -746,14 +694,13 @@ function clearAllSelected() {
   selectedB2C.value = []
 }
 
-const exporting         = ref(false)
-const showImport        = ref(false)
-const importing         = ref(false)
-const importFile        = ref(null)
-const importResult      = ref(null)
-const importProgress    = ref(null)
-const isImportMinimized = ref(false)
-let importPollTimer     = null
+const exporting      = ref(false)
+const showImport     = ref(false)
+const importing      = ref(false)
+const importFile     = ref(null)
+const importResult   = ref(null)
+const importProgress = ref(null)
+let importPollTimer  = null
 
 const headersB2B = [
   { title: 'No',           key: 'no',          sortable: false, width: '60px' },
@@ -847,15 +794,33 @@ function openEdit(k)       { router.push({ name: 'finance-klien-ar-edit', params
 function openDetail(k)     { selectedKlien.value = k;    showDetail.value = true }
 function confirmDelete(k)  { selectedKlien.value = k;    deleteError.value = ''; showDelete.value = true }
 
+watch([importing, importProgress, importResult], () => {
+  minimizeStore.updateImportState(IMPORT_WIDGET_ID, {
+    importing: importing.value,
+    progress: importProgress.value,
+    result: importResult.value,
+  })
+})
+
+onActivated(() => {
+  if (minimizeStore.widgets[IMPORT_WIDGET_ID]?.pendingRestore) {
+    minimizeStore.clearPendingRestore(IMPORT_WIDGET_ID)
+    minimizeStore.setMinimizedFalse(IMPORT_WIDGET_ID)
+    showImport.value = true
+  }
+})
+
 function openImport() {
+  minimizeStore.register(IMPORT_WIDGET_ID, { title: 'Import Client', routeName: 'finance-klien-ar', type: 'import', minimized: false })
   importFile.value   = null
   importResult.value = null
+  importProgress.value = null
   showImport.value   = true
 }
 
 function closeImport() {
-  showImport.value        = false
-  isImportMinimized.value = false
+  minimizeStore.remove(IMPORT_WIDGET_ID)
+  showImport.value = false
   stopImportPolling()
   importing.value      = false
   importProgress.value = null
@@ -866,13 +831,8 @@ function closeImport() {
 }
 
 function minimizeImport() {
-  showImport.value        = false
-  isImportMinimized.value = true
-}
-
-function restoreImport() {
-  showImport.value        = true
-  isImportMinimized.value = false
+  minimizeStore.setMinimized(IMPORT_WIDGET_ID, true)
+  showImport.value = false
 }
 
 async function exportExcel() {
@@ -957,9 +917,8 @@ function pollImportStatus(batchId) {
       if (data.status === 'completed' || data.status === 'failed') {
         importing.value = false
         if (data.status === 'failed') {
-          importProgress.value    = null
+          importProgress.value = null
           await showError(data.message || 'Import gagal diproses.')
-          isImportMinimized.value = false
         } else {
           importResult.value = data
           if ((data.inserted > 0) || (data.updated > 0)) {
@@ -1027,15 +986,3 @@ onMounted(() => {
   loadListB2B()
 })
 </script>
-
-<style scoped>
-.slide-up-enter-active,
-.slide-up-leave-active {
-  transition: transform 0.25s ease, opacity 0.25s ease;
-}
-.slide-up-enter-from,
-.slide-up-leave-to {
-  transform: translateY(16px);
-  opacity: 0;
-}
-</style>

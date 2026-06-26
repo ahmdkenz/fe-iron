@@ -1,7 +1,7 @@
 <template>
   <div>
-    <PageHeader 
-      title="Manajemen Resto" 
+    <PageHeader
+      title="Manajemen Resto"
       subtitle="Kelola data restoran"
       :breadcrumbs="[
         { title: 'Dashboard', to: { name: 'dashboard' } },
@@ -334,6 +334,8 @@
     <RestoForm
       v-model="showForm"
       :resto-data="selectedForm"
+      :minimizable="true"
+      @minimize="minimizeForm"
       @saved="onFormSaved"
     />
 
@@ -509,80 +511,25 @@
       @clear="selectedItems = []"
     />
 
-    <!-- Floating Import Progress Widget (saat modal di-minimize) -->
-    <Transition name="slide-up">
-      <VCard
-        v-if="isImportMinimized"
-        elevation="8"
-        rounded="lg"
-        style="position: fixed; bottom: 24px; right: 24px; z-index: 2400; width: 300px; cursor: pointer;"
-        @click="restoreImport"
-      >
-        <VCardText class="pa-3">
-          <div class="d-flex align-center justify-space-between mb-2">
-            <div class="d-flex align-center ga-2">
-              <VIcon
-                :icon="importing ? 'ri-loader-4-line' : 'ri-checkbox-circle-line'"
-                :color="importing ? 'warning' : 'success'"
-                size="18"
-              />
-              <span class="text-subtitle-2 font-weight-medium">Import Resto</span>
-            </div>
-            <VBtn
-              icon
-              size="x-small"
-              variant="text"
-              @click.stop="closeImport"
-            >
-              <VIcon icon="ri-close-line" size="16" />
-            </VBtn>
-          </div>
-
-          <template v-if="importing && importProgress">
-            <VProgressLinear
-              :model-value="importProgress.progress_total > 0
-                ? (importProgress.processed / importProgress.progress_total) * 100
-                : 0"
-              :indeterminate="importProgress.status === 'queued' || !importProgress.progress_total"
-              color="warning"
-              height="6"
-              rounded
-              class="mb-1"
-            />
-            <div class="text-caption text-medium-emphasis">
-              {{ importProgress.status === 'queued'
-                ? 'Menunggu antrian…'
-                : `${importProgress.processed} / ${importProgress.progress_total} baris diproses` }}
-            </div>
-          </template>
-
-          <template v-else-if="importResult">
-            <div class="text-caption">
-              <strong>{{ importResult.inserted }}</strong> ditambahkan,
-              <strong>{{ importResult.updated }}</strong> diperbarui,
-              <strong>{{ importResult.failed }}</strong> gagal
-            </div>
-            <div class="text-caption text-primary mt-1">
-              Klik untuk lihat detail →
-            </div>
-          </template>
-        </VCardText>
-      </VCard>
-    </Transition>
   </div>
 </template>
 
 <script setup>
-import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { nextTick, onActivated, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useAuthStore } from '@/stores/auth.store'
 import { useCrud } from '@/composables/useCrud'
+import { useMinimizeWidgetStore } from '@/stores/minimize-widget.store'
 import api from '@/utils/axios'
 import BulkDeleteBar from '@/components/base/BulkDeleteBar.vue'
 
 const authStore = useAuthStore()
 const { showSuccess, showError, showLoading, closeAlert, confirmDelete: swalConfirmDelete } = useSweetAlert()
 const { items, loading, meta, params, fetchList, remove } = useCrud('/master/resto')
+const minimizeStore = useMinimizeWidgetStore()
+
+const FORM_WIDGET_ID   = 'resto-form'
+const IMPORT_WIDGET_ID = 'resto-import'
 
 const tableCard     = ref(null)
 let prevItemsPerPage = null
@@ -595,14 +542,13 @@ const selectedResto = ref(null)
 const selectedForm  = ref(null)
 const selectedItems = ref([])
 
-const exporting         = ref(false)
-const showImport        = ref(false)
-const importing         = ref(false)
-const importFile        = ref(null)
-const importResult      = ref(null)
-const importProgress    = ref(null)
-const isImportMinimized = ref(false)
-let importPollTimer     = null
+const exporting      = ref(false)
+const showImport     = ref(false)
+const importing      = ref(false)
+const importFile     = ref(null)
+const importResult   = ref(null)
+const importProgress = ref(null)
+let importPollTimer  = null
 
 const headers = [
   { title: 'No',            key: 'no',              sortable: false, width: '60px' },
@@ -630,7 +576,7 @@ const headers = [
 function formatDate(d) {
   if (!d) return '-'
   const dt = new Date(d)
-  
+
   return dt.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
@@ -653,13 +599,54 @@ function onTableOptions({ page, itemsPerPage }) {
   }
 }
 
-function openCreate()  { selectedForm.value = null; showForm.value = true }
-function openEdit(r)   { selectedForm.value = r;    showForm.value = true }
-function onFormSaved() { showForm.value = false; fetchList() }
-function openDetail(r)     { selectedResto.value = r;    showDetail.value = true }
-function confirmDelete(r)  { selectedResto.value = r;    deleteError.value = ''; showDelete.value = true }
+function openCreate() {
+  minimizeStore.register(FORM_WIDGET_ID, { title: 'Form Tambah Resto', routeName: 'master-resto', type: 'form', minimized: false })
+  selectedForm.value = null
+  showForm.value = true
+}
+function openEdit(r) {
+  minimizeStore.register(FORM_WIDGET_ID, { title: 'Form Edit Resto', routeName: 'master-resto', type: 'form', minimized: false })
+  selectedForm.value = r
+  showForm.value = true
+}
+function minimizeForm() {
+  minimizeStore.setMinimized(FORM_WIDGET_ID, true)
+  showForm.value = false
+}
+function onFormSaved() { minimizeStore.remove(FORM_WIDGET_ID); showForm.value = false; fetchList() }
+function openDetail(r)    { selectedResto.value = r;    showDetail.value = true }
+function confirmDelete(r) { selectedResto.value = r;    deleteError.value = ''; showDelete.value = true }
+
+watch(showForm, (val) => {
+  if (!val) {
+    const w = minimizeStore.widgets[FORM_WIDGET_ID]
+    if (w && !w.minimized) minimizeStore.remove(FORM_WIDGET_ID)
+  }
+})
+
+watch([importing, importProgress, importResult], () => {
+  minimizeStore.updateImportState(IMPORT_WIDGET_ID, {
+    importing: importing.value,
+    progress: importProgress.value,
+    result: importResult.value,
+  })
+})
+
+onActivated(() => {
+  if (minimizeStore.widgets[FORM_WIDGET_ID]?.pendingRestore) {
+    minimizeStore.clearPendingRestore(FORM_WIDGET_ID)
+    minimizeStore.setMinimizedFalse(FORM_WIDGET_ID)
+    showForm.value = true
+  }
+  if (minimizeStore.widgets[IMPORT_WIDGET_ID]?.pendingRestore) {
+    minimizeStore.clearPendingRestore(IMPORT_WIDGET_ID)
+    minimizeStore.setMinimizedFalse(IMPORT_WIDGET_ID)
+    showImport.value = true
+  }
+})
 
 function openImport() {
+  minimizeStore.register(IMPORT_WIDGET_ID, { title: 'Import Resto', routeName: 'master-resto', type: 'import', minimized: false })
   importFile.value     = null
   importResult.value   = null
   importProgress.value = null
@@ -667,8 +654,8 @@ function openImport() {
 }
 
 function closeImport() {
-  showImport.value        = false
-  isImportMinimized.value = false
+  minimizeStore.remove(IMPORT_WIDGET_ID)
+  showImport.value = false
   stopImportPolling()
   importing.value      = false
   importProgress.value = null
@@ -676,13 +663,8 @@ function closeImport() {
 }
 
 function minimizeImport() {
-  showImport.value        = false
-  isImportMinimized.value = true
-}
-
-function restoreImport() {
-  showImport.value        = true
-  isImportMinimized.value = false
+  minimizeStore.setMinimized(IMPORT_WIDGET_ID, true)
+  showImport.value = false
 }
 
 function stopImportPolling() {
@@ -768,9 +750,8 @@ function pollImportStatus(batchId) {
       if (data.status === 'completed' || data.status === 'failed') {
         importing.value = false
         if (data.status === 'failed') {
-          importProgress.value    = null
+          importProgress.value = null
           await showError(data.message || 'Import gagal diproses.')
-          isImportMinimized.value = false
         } else {
           importResult.value = data
           if ((data.inserted > 0) || (data.updated > 0)) fetchList()
@@ -833,15 +814,3 @@ onBeforeUnmount(() => {
   stopImportPolling()
 })
 </script>
-
-<style scoped>
-.slide-up-enter-active,
-.slide-up-leave-active {
-  transition: transform 0.25s ease, opacity 0.25s ease;
-}
-.slide-up-enter-from,
-.slide-up-leave-to {
-  transform: translateY(16px);
-  opacity: 0;
-}
-</style>

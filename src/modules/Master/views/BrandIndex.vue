@@ -206,18 +206,24 @@
     <BrandForm
       v-model="showForm"
       :brand-data="selectedForm"
+      :minimizable="true"
+      @minimize="minimizeForm"
       @saved="onFormSaved"
     />
   </div>
 </template>
 
 <script setup>
-import { nextTick, onMounted, ref } from 'vue'
+import { nextTick, onActivated, onMounted, ref, watch } from 'vue'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useCrud } from '@/composables/useCrud.js'
+import { useMinimizeWidgetStore } from '@/stores/minimize-widget.store'
 
 const { showSuccess, showError } = useSweetAlert()
 const { items, loading, meta, params, fetchList, remove } = useCrud('/master/brand')
+const minimizeStore = useMinimizeWidgetStore()
+
+const FORM_WIDGET_ID = 'brand-form'
 
 const showDelete  = ref(false)
 const showDetail  = ref(false)
@@ -249,9 +255,36 @@ function onTableOptions({ page, itemsPerPage }) {
   fetchList()
 }
 
-function openCreate()  { selectedForm.value = null; showForm.value = true }
-function openEdit(b)   { selectedForm.value = b;    showForm.value = true }
-function onFormSaved() { showForm.value = false; fetchList() }
+function openCreate() {
+  minimizeStore.register(FORM_WIDGET_ID, { title: 'Form Tambah Brand', routeName: 'master-brand', type: 'form', minimized: false })
+  selectedForm.value = null
+  showForm.value = true
+}
+function openEdit(b) {
+  minimizeStore.register(FORM_WIDGET_ID, { title: 'Form Edit Brand', routeName: 'master-brand', type: 'form', minimized: false })
+  selectedForm.value = b
+  showForm.value = true
+}
+function minimizeForm() {
+  minimizeStore.setMinimized(FORM_WIDGET_ID, true)
+  showForm.value = false
+}
+function onFormSaved() { minimizeStore.remove(FORM_WIDGET_ID); showForm.value = false; fetchList() }
+
+watch(showForm, (val) => {
+  if (!val) {
+    const w = minimizeStore.widgets[FORM_WIDGET_ID]
+    if (w && !w.minimized) minimizeStore.remove(FORM_WIDGET_ID)
+  }
+})
+
+onActivated(() => {
+  if (minimizeStore.widgets[FORM_WIDGET_ID]?.pendingRestore) {
+    minimizeStore.clearPendingRestore(FORM_WIDGET_ID)
+    minimizeStore.setMinimizedFalse(FORM_WIDGET_ID)
+    showForm.value = true
+  }
+})
 function openDetail(b)     { selectedBrand.value = b;    showDetail.value = true }
 function confirmDelete(b)  { selectedBrand.value = b;    deleteError.value = ''; showDelete.value = true }
 

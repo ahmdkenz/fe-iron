@@ -26,6 +26,7 @@ declare module 'vue' {
     DialogCloseBtn: typeof import('./src/@core/components/DialogCloseBtn.vue')['default']
     DropZone: typeof import('./src/@core/components/DropZone.vue')['default']
     EntitasForm: typeof import('./src/modules/Master/components/EntitasForm.vue')['default']
+    GlobalMinimizeWidgets: typeof import('./src/components/base/GlobalMinimizeWidgets.vue')['default']
     I18n: typeof import('./src/@core/components/I18n.vue')['default']
     InvestorForm: typeof import('./src/modules/Master/components/InvestorForm.vue')['default']
     InvoiceItemRow: typeof import('./src/modules/Finance/components/InvoiceItemRow.vue')['default']

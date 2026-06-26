@@ -8,6 +8,9 @@ const DefaultLayoutWithVerticalNav = defineAsyncComponent(() => import('./compon
 const configStore = useConfigStore()
 const keepAliveRouteNames = new Set([
   'finance-opening-balance',
+  'iam-users', 'iam-roles',
+  'master-karyawan', 'master-perusahaan', 'master-investor', 'master-resto', 'master-brand',
+  'finance-klien-ar',
 ])
 
 // ℹ️ This will switch to vertical nav when define breakpoint is reached when in horizontal nav layout
