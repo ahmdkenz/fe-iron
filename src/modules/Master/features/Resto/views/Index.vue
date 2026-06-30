@@ -117,8 +117,8 @@
           </VChip>
           <span v-else>-</span>
         </template>
-        <template #item.pic="{ item }">
-          {{ item.pic?.nama_karyawan ?? '-' }}
+        <template #item.pic_ar="{ item }">
+          {{ item.pic_ar?.nama_karyawan ?? '-' }}
         </template>
         <template #item.tgl_aktif="{ item }">
           {{ item.tgl_aktif ? formatDate(item.tgl_aktif) : '-' }}
@@ -245,8 +245,8 @@
         :value="selectedResto?.brand?.nama_brand"
       />
       <DetailRow
-        label="PIC"
-        :value="selectedResto?.pic?.nama_karyawan"
+        label="PIC AR"
+        :value="selectedResto?.pic_ar?.nama_karyawan"
       />
       <DetailRow
         label="Supervisor"
@@ -557,7 +557,7 @@ const headers = [
   { title: 'Investor',      key: 'investor',        sortable: false },
   { title: 'Entitas',       key: 'perusahaan',      sortable: false },
   { title: 'Brand',         key: 'brand',           sortable: false },
-  { title: 'PIC',           key: 'pic',             sortable: false },
+  { title: 'PIC AR',        key: 'pic_ar',          sortable: false },
   { title: 'Supervisor',    key: 'supervisor',      sortable: false },
   { title: 'No. HP SPV',   key: 'no_hp_supervisor', sortable: false },
   { title: 'STOKIS',       key: 'stokis',          sortable: false },
@@ -575,8 +575,11 @@ const headers = [
 
 function formatDate(d) {
   if (!d) return '-'
-  const dt = new Date(d)
-
+  const parts = d.split('-')
+  const dt = parts.length === 3 && parts[2].length === 4
+    ? new Date(+parts[2], +parts[1] - 1, +parts[0])
+    : new Date(d)
+  if (isNaN(dt.getTime())) return d
   return dt.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 

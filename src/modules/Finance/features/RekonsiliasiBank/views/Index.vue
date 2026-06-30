@@ -200,7 +200,7 @@ import { useFormatter } from '@/composables/useFormatter'
 import { useAuthStore } from '@/stores/auth.store'
 import api from '@/utils/axios'
 import writeXlsxFile from 'write-excel-file/browser'
-import RekonsiliasiBankDetail from './RekonsiliasiBankDetail.vue'
+import RekonsiliasiBankDetail from './Detail.vue'
 
 const authStore = useAuthStore()
 

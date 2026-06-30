@@ -3,7 +3,7 @@ export default [
     path: '/master/master-data',
     name: 'master-unified-import',
     component: () => import('@/modules/Master/features/MasterData/views/Index.vue'),
-    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'] },
+    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR'] },
   },
   {
     path: '/master/karyawan',

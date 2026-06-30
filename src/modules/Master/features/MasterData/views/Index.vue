@@ -24,14 +24,59 @@
           </div>
           <ul class="ps-4">
             <li>Upload <strong>1 file Excel</strong> dengan 2 sheet: <strong>MASTER DATA</strong> (Investor + Resto + Client AR) dan <strong>MASTER BARANG</strong> (Produk/Barang).</li>
-            <li>Sheet <strong>MASTER DATA</strong>: 1 baris = 1 outlet (investor, resto, dan client AR sekaligus).</li>
-            <li>Sheet <strong>MASTER BARANG</strong>: 1 baris = 1 produk/barang.</li>
+            <li>Sheet <strong>MASTER DATA</strong>: 1 baris = 1 outlet. Field Resto: <strong>nama_pic</strong> (PIC Data Resto), supervisor, stokis, no_telp, keterangan. Field Client AR: <strong>pic_ar</strong> (PIC AR), no_npwp, no_wa.</li>
+            <li>Kolom <strong>nama_entitas wajib</strong> jika <code>tipe_klien = PT</code>. Nama Client AR diatur otomatis: RESTO = nama_investor, PT = nama_entitas.</li>
+            <li>Untuk <code>tipe_klien = PT</code>: jika <strong>nama_pic</strong> kosong, sistem otomatis memakai <strong>pic_ar</strong> sebagai PIC Data Resto — tidak perlu mengisi keduanya bila orangnya sama.</li>
+            <li>Sheet <strong>MASTER BARANG</strong>: urutan kolom — kode_barang, nama_barang, <strong>spesifikasi</strong>, nama_brand, keterangan, status.</li>
+            <li>Import hanya dapat dilakukan oleh role <strong>ADMIN, MANAGER, atau SUPERVISOR</strong>.</li>
             <li>Download template Excel terlebih dahulu untuk mendapatkan format yang benar.</li>
             <li>Import diproses di latar belakang — Anda bisa memantau progres secara real-time.</li>
           </ul>
         </VAlert>
 
-        <VRow class="mt-2">
+        <!-- Banner riwayat import terakhir -->
+        <div class="mb-4">
+          <VAlert
+            v-if="latestImport"
+            type="success"
+            variant="tonal"
+            density="compact"
+            :icon="false"
+          >
+            <div class="d-flex align-center ga-2 flex-wrap">
+              <VIcon
+                icon="ri-history-line"
+                size="16"
+                color="success"
+              />
+              <span class="text-body-2">
+                <strong>Terakhir diimport:</strong>
+                {{ formatDateTime(latestImport.imported_at) }}
+                <span class="text-medium-emphasis">oleh</span>
+                <strong>{{ latestImport.imported_by ?? '—' }}</strong>
+              </span>
+            </div>
+          </VAlert>
+          <VAlert
+            v-else-if="!loadingLatest"
+            type="warning"
+            variant="tonal"
+            density="compact"
+            :icon="false"
+          >
+            <div class="d-flex align-center ga-2">
+              <VIcon
+                icon="ri-information-line"
+                size="16"
+                color="warning"
+              />
+              <span class="text-body-2">Belum ada riwayat import — upload file pertama Anda untuk memulai.</span>
+            </div>
+          </VAlert>
+        </div>
+
+        <!-- Summary Cards -->
+        <VRow class="mt-1">
           <VCol
             v-for="card in summaryCards"
             :key="card.label"
@@ -42,19 +87,73 @@
             <VCard
               variant="tonal"
               :color="card.color"
+              height="100%"
             >
-              <VCardText class="d-flex align-center ga-3 pa-4">
-                <VIcon
-                  :icon="card.icon"
-                  size="32"
-                />
-                <div>
-                  <div class="text-caption text-medium-emphasis">
-                    {{ card.label }}
+              <VCardText class="pa-4">
+                <div class="d-flex align-center ga-3 mb-3">
+                  <VIcon
+                    :icon="card.icon"
+                    size="28"
+                  />
+                  <div>
+                    <div class="text-subtitle-2 font-weight-medium">
+                      {{ card.label }}
+                    </div>
+                    <div class="text-caption text-medium-emphasis">
+                      {{ card.hint }}
+                    </div>
                   </div>
-                  <div class="text-h6">
-                    {{ card.hint }}
-                  </div>
+                </div>
+
+                <!-- Stats dari import terakhir -->
+                <VDivider class="mb-2" />
+                <div
+                  v-if="loadingLatest"
+                  class="text-caption text-medium-emphasis"
+                >
+                  <VProgressCircular
+                    size="12"
+                    width="2"
+                    indeterminate
+                    class="me-1"
+                  />
+                  Memuat…
+                </div>
+                <div
+                  v-else-if="latestImport"
+                  class="d-flex ga-2 flex-wrap"
+                >
+                  <VChip
+                    size="x-small"
+                    color="success"
+                    variant="tonal"
+                    prepend-icon="ri-add-line"
+                  >
+                    {{ latestImport[card.insKey] ?? 0 }} ditambah
+                  </VChip>
+                  <VChip
+                    size="x-small"
+                    color="warning"
+                    variant="tonal"
+                    prepend-icon="ri-refresh-line"
+                  >
+                    {{ latestImport[card.updKey] ?? 0 }} diperbarui
+                  </VChip>
+                  <VChip
+                    v-if="(latestImport[card.failKey] ?? 0) > 0"
+                    size="x-small"
+                    color="error"
+                    variant="tonal"
+                    prepend-icon="ri-close-line"
+                  >
+                    {{ latestImport[card.failKey] }} gagal
+                  </VChip>
+                </div>
+                <div
+                  v-else
+                  class="text-caption text-medium-emphasis"
+                >
+                  Belum ada data import
                 </div>
               </VCardText>
             </VCard>
@@ -66,7 +165,7 @@
     <!-- ── Import Dialog ─────────────────────────────────────────── -->
     <VDialog
       v-model="showImport"
-      max-width="620"
+      max-width="640"
       persistent
     >
       <VCard>
@@ -103,10 +202,10 @@
           >
             <ul class="ps-4">
               <li>File harus berformat <strong>.xlsx</strong> dengan 2 sheet: <strong>MASTER DATA</strong> dan <strong>MASTER BARANG</strong>.</li>
-              <li>Sheet <strong>MASTER DATA</strong>: 1 baris = Investor + Resto + Client AR.</li>
-              <li>Kolom <strong>tipe_klien</strong> (PT/RESTO) wajib untuk membuat Client AR.</li>
-              <li>Kolom <strong>pic_ar</strong> wajib jika tipe_klien diisi.</li>
-              <li>Sheet <strong>MASTER BARANG</strong>: kode_barang wajib untuk produk baru.</li>
+              <li>Sheet <strong>MASTER DATA</strong>: 1 baris = Investor + Resto + Client AR. Field Resto: <strong>nama_pic</strong> (PIC di halaman Data Resto), supervisor, no_hp_supervisor, stokis, no_telp, keterangan.</li>
+              <li>Kolom <strong>tipe_klien</strong> (PT/RESTO) wajib untuk membuat Client AR. Kolom <strong>nama_entitas wajib jika tipe_klien=PT</strong>.</li>
+              <li>Kolom <strong>pic_ar</strong> adalah PIC penagihan Client AR (tampil di halaman Data Client AR &amp; kolom PIC AR di Data Resto) — wajib jika tipe_klien diisi. Nama Client AR diatur otomatis: RESTO = nama_investor, PT = nama_entitas. Untuk <code>tipe_klien=PT</code>: jika <strong>nama_pic</strong> kosong, sistem memakai <strong>pic_ar</strong> untuk mengisi PIC di Data Resto.</li>
+              <li>Sheet <strong>MASTER BARANG</strong>: urutan kolom kode_barang, nama_barang, <strong>spesifikasi</strong>, nama_brand, keterangan, status. kode_barang wajib untuk produk baru.</li>
             </ul>
           </VAlert>
 
@@ -241,62 +340,112 @@
             </div>
           </div>
 
-          <!-- Hasil setelah selesai -->
+          <!-- ── Hasil setelah selesai ─────────────────────────── -->
           <div
             v-if="importResult"
-            class="mt-4"
+            class="mt-5"
           >
-            <VAlert
-              :type="importResult.status === 'completed' ? 'success' : 'error'"
-              variant="tonal"
-              class="mb-3"
-            >
-              {{ importResult.message }}
-            </VAlert>
-
-            <!-- Ringkasan per entitas -->
-            <VRow
-              v-if="importResult.status === 'completed'"
-              dense
-              class="mb-3"
-            >
-              <VCol
-                v-for="stat in resultStats"
-                :key="stat.label"
-                cols="6"
-                sm="3"
+            <!-- Header sukses / gagal -->
+            <div class="d-flex flex-column align-center text-center mb-4">
+              <VIcon
+                :icon="importResult.status === 'completed' ? 'ri-checkbox-circle-fill' : 'ri-close-circle-fill'"
+                :color="importResult.status === 'completed' ? 'success' : 'error'"
+                size="52"
+                class="mb-2"
+              />
+              <div class="text-h6 font-weight-bold">
+                {{ importResult.status === 'completed' ? 'Import Berhasil!' : 'Import Gagal' }}
+              </div>
+              <div
+                v-if="importResult.status === 'completed'"
+                class="text-caption text-medium-emphasis mt-1"
               >
-                <div class="text-caption text-medium-emphasis">
-                  {{ stat.label }}
-                </div>
-                <div class="text-body-2">
-                  <span class="text-success">+{{ stat.inserted }}</span>
-                  &nbsp;
-                  <span class="text-warning">~{{ stat.updated }}</span>
-                  &nbsp;
-                  <span
-                    v-if="stat.failed > 0"
-                    class="text-error"
-                  >✗{{ stat.failed }}</span>
-                </div>
-              </VCol>
-            </VRow>
+                Selesai pada: {{ formatDateTime(new Date().toISOString()) }}
+              </div>
+              <div
+                v-else
+                class="text-body-2 text-error mt-1"
+              >
+                {{ importResult.message }}
+              </div>
+            </div>
+
+            <!-- Ringkasan per entitas (hanya jika completed) -->
+            <template v-if="importResult.status === 'completed'">
+              <VDivider class="mb-4" />
+              <VRow dense>
+                <VCol
+                  v-for="stat in resultStats"
+                  :key="stat.label"
+                  cols="6"
+                >
+                  <VCard
+                    variant="tonal"
+                    :color="stat.color"
+                    rounded="lg"
+                  >
+                    <VCardText class="pa-3">
+                      <div class="d-flex align-center ga-2 mb-2">
+                        <VIcon
+                          :icon="stat.icon"
+                          size="18"
+                          :color="stat.color"
+                        />
+                        <span class="text-subtitle-2 font-weight-medium">{{ stat.label }}</span>
+                      </div>
+                      <div class="d-flex flex-wrap ga-1">
+                        <VChip
+                          size="x-small"
+                          color="success"
+                          variant="flat"
+                        >
+                          +{{ stat.inserted }} ditambah
+                        </VChip>
+                        <VChip
+                          size="x-small"
+                          color="warning"
+                          variant="flat"
+                        >
+                          ~{{ stat.updated }} diperbarui
+                        </VChip>
+                        <VChip
+                          v-if="stat.failed > 0"
+                          size="x-small"
+                          color="error"
+                          variant="flat"
+                        >
+                          ✗{{ stat.failed }} gagal
+                        </VChip>
+                      </div>
+                    </VCardText>
+                  </VCard>
+                </VCol>
+              </VRow>
+            </template>
 
             <!-- Error table -->
-            <div v-if="importResult.errors && importResult.errors.length > 0">
-              <div class="text-subtitle-2 mb-2 text-error">
-                {{ importResult.errors.length }} baris gagal:
+            <div
+              v-if="importResult.errors && importResult.errors.length > 0"
+              class="mt-4"
+            >
+              <div class="text-subtitle-2 mb-2 text-error d-flex align-center ga-1">
+                <VIcon
+                  icon="ri-error-warning-line"
+                  size="16"
+                  color="error"
+                />
+                {{ importResult.errors.length }} baris gagal diproses:
               </div>
               <VTable
                 density="compact"
                 fixed-header
-                height="200"
+                height="180"
               >
                 <thead>
                   <tr>
                     <th>Sheet</th>
                     <th>Baris</th>
-                    <th>Pesan</th>
+                    <th>Pesan Error</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -378,7 +527,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import api from '@/utils/axios'
 
 const showImport          = ref(false)
@@ -388,23 +537,58 @@ const importResult        = ref(null)
 const importProgress      = ref(null)
 const isImportMinimized   = ref(false)
 const downloadingTemplate = ref(false)
+const latestImport        = ref(null)
+const loadingLatest       = ref(true)
 let importPollTimer       = null
 
 const summaryCards = [
-  { label: 'Investor',   hint: 'Upsert by nama+cabang',  icon: 'ri-money-dollar-circle-line', color: 'primary' },
-  { label: 'Resto',      hint: 'Upsert by nama_cabang',  icon: 'ri-store-2-line',             color: 'success' },
-  { label: 'Client AR',  hint: 'Upsert by nama+tipe',    icon: 'ri-building-4-line',          color: 'warning' },
-  { label: 'Barang',     hint: 'Upsert by nama_barang',  icon: 'ri-box-3-line',               color: 'info'    },
+  {
+    label:   'Investor',
+    hint:    'Upsert by nama+cabang',
+    icon:    'ri-money-dollar-circle-line',
+    color:   'primary',
+    insKey:  'investor_inserted',
+    updKey:  'investor_updated',
+    failKey: 'investor_failed',
+  },
+  {
+    label:   'Resto',
+    hint:    'Upsert by nama_cabang',
+    icon:    'ri-store-2-line',
+    color:   'success',
+    insKey:  'resto_inserted',
+    updKey:  'resto_updated',
+    failKey: 'resto_failed',
+  },
+  {
+    label:   'Client AR',
+    hint:    'Upsert by nama+tipe',
+    icon:    'ri-building-4-line',
+    color:   'warning',
+    insKey:  'klien_inserted',
+    updKey:  'klien_updated',
+    failKey: 'klien_failed',
+  },
+  {
+    label:   'Barang',
+    hint:    'Upsert by nama_barang',
+    icon:    'ri-box-3-line',
+    color:   'info',
+    insKey:  'barang_inserted',
+    updKey:  'barang_updated',
+    failKey: 'barang_failed',
+  },
 ]
 
 const resultStats = computed(() => {
   if (!importResult.value) return []
   const r = importResult.value
+
   return [
-    { label: 'Investor', inserted: r.investor_inserted ?? 0, updated: r.investor_updated ?? 0, failed: r.investor_failed ?? 0 },
-    { label: 'Resto',    inserted: r.resto_inserted ?? 0,    updated: r.resto_updated ?? 0,    failed: r.resto_failed ?? 0 },
-    { label: 'Client',   inserted: r.klien_inserted ?? 0,    updated: r.klien_updated ?? 0,    failed: r.klien_failed ?? 0 },
-    { label: 'Barang',   inserted: r.barang_inserted ?? 0,   updated: r.barang_updated ?? 0,   failed: r.barang_failed ?? 0 },
+    { label: 'Investor',  icon: 'ri-money-dollar-circle-line', color: 'primary', inserted: r.investor_inserted ?? 0, updated: r.investor_updated ?? 0, failed: r.investor_failed ?? 0 },
+    { label: 'Resto',     icon: 'ri-store-2-line',             color: 'success', inserted: r.resto_inserted ?? 0,    updated: r.resto_updated ?? 0,    failed: r.resto_failed ?? 0 },
+    { label: 'Client AR', icon: 'ri-building-4-line',          color: 'warning', inserted: r.klien_inserted ?? 0,    updated: r.klien_updated ?? 0,    failed: r.klien_failed ?? 0 },
+    { label: 'Barang',    icon: 'ri-box-3-line',               color: 'info',    inserted: r.barang_inserted ?? 0,   updated: r.barang_updated ?? 0,   failed: r.barang_failed ?? 0 },
   ]
 })
 
@@ -413,18 +597,44 @@ const overallProgress = computed(() => {
   if (!p) return 0
   const total     = (p.master_total ?? 0) + (p.barang_total ?? 0)
   const processed = (p.master_processed ?? 0) + (p.barang_processed ?? 0)
+
   return total > 0 ? Math.round((processed / total) * 100) : 0
 })
 
+function formatDateTime(isoString) {
+  if (!isoString) return '—'
+  const d = new Date(isoString)
+
+  return d.toLocaleString('id-ID', {
+    day:    '2-digit',
+    month:  'long',
+    year:   'numeric',
+    hour:   '2-digit',
+    minute: '2-digit',
+  })
+}
+
+async function fetchLatestImport() {
+  loadingLatest.value = true
+  try {
+    const res = await api.get('/master/master-data/import/latest')
+    latestImport.value = res.data?.data ?? null
+  } catch {
+    latestImport.value = null
+  } finally {
+    loadingLatest.value = false
+  }
+}
+
 function openImport() {
-  importFile.value   = null
-  importResult.value = null
+  importFile.value     = null
+  importResult.value   = null
   importProgress.value = null
-  showImport.value   = true
+  showImport.value     = true
 }
 
 function minimizeImport() {
-  showImport.value      = false
+  showImport.value        = false
   isImportMinimized.value = true
 }
 
@@ -460,12 +670,20 @@ async function doImport() {
 
   importing.value      = true
   importResult.value   = null
-  importProgress.value = { status: 'queued', master_total: 0, master_processed: 0, barang_total: 0, barang_processed: 0, investor_inserted: 0, investor_updated: 0, investor_failed: 0, resto_inserted: 0, resto_updated: 0, resto_failed: 0, klien_inserted: 0, klien_updated: 0, klien_failed: 0, barang_inserted: 0, barang_updated: 0, barang_failed: 0 }
+  importProgress.value = {
+    status: 'queued',
+    master_total: 0, master_processed: 0,
+    barang_total: 0, barang_processed: 0,
+    investor_inserted: 0, investor_updated: 0, investor_failed: 0,
+    resto_inserted: 0,    resto_updated: 0,    resto_failed: 0,
+    klien_inserted: 0,    klien_updated: 0,    klien_failed: 0,
+    barang_inserted: 0,   barang_updated: 0,   barang_failed: 0,
+  }
 
   try {
     const form = new FormData()
     form.append('file', importFile.value)
-    const res   = await api.post('/master/master-data/import', form)
+    const res     = await api.post('/master/master-data/import', form)
     const batchId = res.data?.data?.batch_id
     if (batchId) pollImportStatus(batchId)
   } catch (err) {
@@ -487,10 +705,14 @@ function pollImportStatus(batchId) {
       if (data) importProgress.value = data
 
       if (data?.status === 'completed' || data?.status === 'failed') {
-        importing.value    = false
-        importResult.value = data
+        importing.value         = false
+        importResult.value      = data
         isImportMinimized.value = false
         showImport.value        = true
+
+        // Refresh cards di index setelah import selesai
+        if (data?.status === 'completed') fetchLatestImport()
+
         return
       }
 
@@ -500,4 +722,8 @@ function pollImportStatus(batchId) {
     }
   }, 1500)
 }
+
+onMounted(() => {
+  fetchLatestImport()
+})
 </script>
