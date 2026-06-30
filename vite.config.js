@@ -43,9 +43,8 @@ export default defineConfig(({ mode }) => {
         dirs: [
           'src/@core/components',
           'src/components',
-          'src/modules/Finance/components',
-          'src/modules/IAM/components',
-          'src/modules/Master/components',
+          'src/modules/**/features/**/components',
+          'src/modules/**/shared/components',
         ],
         dts: true,
       }),

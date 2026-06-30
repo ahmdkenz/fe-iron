@@ -37,6 +37,12 @@
   },
   { heading: 'MASTER DATA' },
   {
+    title: 'Import Master Data',
+    to: { name: 'master-unified-import' },
+    icon: { icon: 'ri-file-upload-line' },
+    roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'],
+  },
+  {
     title: 'Data Investor',
     to: { name: 'master-investor' },
     icon: { icon: 'ri-money-dollar-circle-line' },
