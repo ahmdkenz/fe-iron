@@ -18,14 +18,6 @@
           Export
         </VBtn>
         <VBtn
-          v-if="!authStore.isArOnly"
-          color="primary"
-          prepend-icon="ri-upload-line"
-          @click="openImport"
-        >
-          Import
-        </VBtn>
-        <VBtn
           color="primary"
           prepend-icon="ri-add-line"
           @click="openCreate"
@@ -454,170 +446,6 @@
       </div>
     </VNavigationDrawer>
 
-    <!-- Import Modal -->
-    <VDialog
-      v-model="showImport"
-      max-width="560"
-      persistent
-    >
-      <VCard>
-        <VCardTitle class="d-flex align-center justify-space-between pa-4">
-          <span>Import Data Client</span>
-          <div class="d-flex ga-1">
-            <VBtn
-              v-if="importing"
-              icon
-              size="small"
-              variant="text"
-              title="Minimize ke latar belakang"
-              @click="minimizeImport"
-            >
-              <VIcon icon="ri-subtract-line" />
-            </VBtn>
-            <VBtn
-              icon
-              size="small"
-              variant="text"
-              @click="closeImport"
-            >
-              <VIcon icon="ri-close-line" />
-            </VBtn>
-          </div>
-        </VCardTitle>
-        <VDivider />
-        <VCardText class="pt-4">
-          <VAlert
-            type="info"
-            variant="tonal"
-            class="mb-4"
-          >
-            <div class="mb-2 font-weight-medium">
-              Panduan Import:
-            </div>
-            <ul class="ps-4">
-              <li>Download template Excel, isi data, lalu upload file (.xlsx atau .csv).</li>
-              <li>Kode Client <strong>digenerate otomatis</strong> oleh sistem — tidak perlu diisi di template.</li>
-              <li>Kolom <strong>nama_klien</strong> dan <strong>tipe_klien</strong> wajib diisi.</li>
-              <li>Kolom <strong>nama_klien</strong>: isi <strong>nama investor/pengelola</strong> (untuk B2C/RESTO) atau nama kontak billing PT (untuk B2B/PT).</li>
-              <li>Kolom <strong>tipe_klien</strong>: isi persis <strong>RESTO</strong> (B2C) atau <strong>PT</strong> (B2B).</li>
-              <li>Untuk tipe RESTO, kolom <strong>nama_resto</strong> wajib diisi sesuai data di sistem.</li>
-              <li>Kolom <strong>nama_karyawan_ar</strong> wajib diisi sesuai nama karyawan di sistem.</li>
-              <li>Untuk tipe PT, kolom <strong>nama_entitas</strong> wajib diisi persis sesuai nama perusahaan di sistem.</li>
-              <li>Kolom <strong>status</strong>: 1 = Aktif, 0 = Nonaktif (default: 1).</li>
-              <li>Lihat sheet <strong>Petunjuk Pengisian</strong> di template untuk panduan lengkap.</li>
-            </ul>
-          </VAlert>
-
-          <VBtn
-            variant="outlined"
-            color="primary"
-            prepend-icon="ri-file-excel-line"
-            class="mb-4"
-            @click="downloadTemplate"
-          >
-            Download Template Excel
-          </VBtn>
-
-          <VFileInput
-            v-model="importFile"
-            label="Pilih File (.xlsx atau .csv)"
-            accept=".xlsx,.xls,.csv"
-            prepend-icon="ri-file-upload-line"
-            variant="outlined"
-            density="compact"
-            :clearable="true"
-            hide-details="auto"
-            :disabled="importing"
-            @update:model-value="importResult = null"
-          />
-
-          <!-- Progress saat import berjalan di latar belakang -->
-          <div
-            v-if="importing && importProgress"
-            class="mt-4"
-          >
-            <div class="text-caption text-medium-emphasis mb-1">
-              {{ importProgress.status === 'queued' ? 'Menunggu antrian…' : 'Memproses data…' }}
-              <span v-if="importProgress.progress_total > 0">
-                ({{ importProgress.processed }} / {{ importProgress.progress_total }} baris)
-              </span>
-            </div>
-            <VProgressLinear
-              :model-value="importProgress.progress_total > 0 ? (importProgress.processed / importProgress.progress_total) * 100 : 0"
-              :indeterminate="importProgress.status === 'queued' || !importProgress.progress_total"
-              color="primary"
-              height="8"
-              rounded
-            />
-          </div>
-
-          <div
-            v-if="importResult"
-            class="mt-4"
-          >
-            <VAlert
-              :type="importResult.failed > 0 ? 'warning' : 'success'"
-              variant="tonal"
-              class="mb-3"
-            >
-              Import selesai:
-              <strong>{{ importResult.inserted }}</strong> ditambahkan,
-              <strong>{{ importResult.updated }}</strong> diperbarui,
-              <strong>{{ importResult.failed }}</strong> gagal
-              (total {{ importResult.total }} baris).
-            </VAlert>
-
-            <div
-              v-if="importResult.errors?.length"
-              class="mt-2"
-            >
-              <div class="text-subtitle-2 mb-2">
-                Detail Error:
-              </div>
-              <VTable
-                density="compact"
-                class="border rounded"
-              >
-                <thead>
-                  <tr>
-                    <th>Baris</th>
-                    <th>Pesan</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr
-                    v-for="err in importResult.errors"
-                    :key="err.row"
-                  >
-                    <td>{{ err.row }}</td>
-                    <td>{{ err.message }}</td>
-                  </tr>
-                </tbody>
-              </VTable>
-            </div>
-          </div>
-        </VCardText>
-        <VDivider />
-        <VCardActions class="pa-4 gap-2 justify-end">
-          <VBtn
-            variant="outlined"
-            @click="closeImport"
-          >
-            Tutup
-          </VBtn>
-          <VBtn
-            color="warning"
-            :loading="importing"
-            :disabled="!importFile"
-            prepend-icon="ri-upload-line"
-            @click="doImport"
-          >
-            Import
-          </VBtn>
-        </VCardActions>
-      </VCard>
-    </VDialog>
-
     <!-- Confirm Delete -->
     <BaseModal
       v-if="showDelete"
@@ -649,20 +477,18 @@
 </template>
 
 <script setup>
-import { computed, nextTick, onActivated, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 
 import { useRouter } from 'vue-router'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useAuthStore } from '@/stores/auth.store'
 import { useCrud } from '@/composables/useCrud'
-import { useMinimizeWidgetStore } from '@/stores/minimize-widget.store'
 import api from '@/utils/axios'
 import BulkDeleteBar from '@/components/base/BulkDeleteBar.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
 const { showSuccess, showError, showLoading, closeAlert, confirmDelete: swalConfirmDelete } = useSweetAlert()
-const minimizeStore = useMinimizeWidgetStore()
 
 const { items: itemsB2C, loading: loadingB2C, meta: metaB2C, params: paramsB2C, fetchList: fetchListB2C, remove } = useCrud('/finance/klien-ar')
 const { items: itemsB2B, loading: loadingB2B, meta: metaB2B, params: paramsB2B, fetchList: fetchListB2B } = useCrud('/finance/klien-ar')
@@ -672,8 +498,6 @@ const canSeeAll = authStore.hasAnyRole(['ADMIN', 'MANAGER', 'SUPERVISOR'])
 if (!canSeeAll) {
   paramsB2C.karyawan_ar_id = authStore.user?.karyawan?.id
 }
-
-const IMPORT_WIDGET_ID = 'klien-ar-import'
 
 const searchB2B = ref('')
 const statusB2B = ref(null)
@@ -694,13 +518,7 @@ function clearAllSelected() {
   selectedB2C.value = []
 }
 
-const exporting      = ref(false)
-const showImport     = ref(false)
-const importing      = ref(false)
-const importFile     = ref(null)
-const importResult   = ref(null)
-const importProgress = ref(null)
-let importPollTimer  = null
+const exporting = ref(false)
 
 const headersB2B = [
   { title: 'No',           key: 'no',          sortable: false, width: '60px' },
@@ -794,47 +612,6 @@ function openEdit(k)       { router.push({ name: 'finance-klien-ar-edit', params
 function openDetail(k)     { selectedKlien.value = k;    showDetail.value = true }
 function confirmDelete(k)  { selectedKlien.value = k;    deleteError.value = ''; showDelete.value = true }
 
-watch([importing, importProgress, importResult], () => {
-  minimizeStore.updateImportState(IMPORT_WIDGET_ID, {
-    importing: importing.value,
-    progress: importProgress.value,
-    result: importResult.value,
-  })
-})
-
-onActivated(() => {
-  if (minimizeStore.widgets[IMPORT_WIDGET_ID]?.pendingRestore) {
-    minimizeStore.clearPendingRestore(IMPORT_WIDGET_ID)
-    minimizeStore.setMinimizedFalse(IMPORT_WIDGET_ID)
-    showImport.value = true
-  }
-})
-
-function openImport() {
-  minimizeStore.register(IMPORT_WIDGET_ID, { title: 'Import Client', routeName: 'finance-klien-ar', type: 'import', minimized: false })
-  importFile.value   = null
-  importResult.value = null
-  importProgress.value = null
-  showImport.value   = true
-}
-
-function closeImport() {
-  minimizeStore.remove(IMPORT_WIDGET_ID)
-  showImport.value = false
-  stopImportPolling()
-  importing.value      = false
-  importProgress.value = null
-  if ((importResult.value?.inserted > 0) || (importResult.value?.updated > 0)) {
-    loadListB2C()
-    loadListB2B()
-  }
-}
-
-function minimizeImport() {
-  minimizeStore.setMinimized(IMPORT_WIDGET_ID, true)
-  showImport.value = false
-}
-
 async function exportExcel() {
   exporting.value = true
   showLoading({ title: 'Mengeksport Data Klien AR', text: 'Mohon tunggu sebentar...' })
@@ -858,84 +635,6 @@ async function exportExcel() {
   }
 }
 
-async function downloadTemplate() {
-  try {
-    const res  = await api.get('/finance/klien-ar/import-template', { responseType: 'blob' })
-    const url  = URL.createObjectURL(res.data)
-    const a    = document.createElement('a')
-    a.href     = url
-    a.download = 'template-klien-ar.xlsx'
-    a.click()
-    URL.revokeObjectURL(url)
-  } catch {
-    await showError('Gagal mengunduh template.')
-  }
-}
-
-function stopImportPolling() {
-  if (importPollTimer) {
-    clearTimeout(importPollTimer)
-    importPollTimer = null
-  }
-}
-
-async function doImport() {
-  if (!importFile.value) return
-  importing.value      = true
-  importResult.value   = null
-  importProgress.value = { status: 'queued', processed: 0, progress_total: 0 }
-
-  try {
-    const formData = new FormData()
-    formData.append('file', importFile.value)
-
-    const res = await api.post('/finance/klien-ar/import', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    })
-
-    const batchId = res.data?.data?.batch_id
-    if (!batchId) throw new Error('Batch import tidak valid.')
-
-    importFile.value = null
-    pollImportStatus(batchId)
-  } catch (err) {
-    const message = err?.response?.data?.message || 'Gagal mengimport data.'
-    importing.value      = false
-    importProgress.value = null
-    await showError(message)
-  }
-}
-
-function pollImportStatus(batchId) {
-  stopImportPolling()
-  importPollTimer = setTimeout(async () => {
-    try {
-      const res  = await api.get(`/finance/klien-ar/import/${batchId}/status`)
-      const data = res.data?.data
-      importProgress.value = data
-
-      if (data.status === 'completed' || data.status === 'failed') {
-        importing.value = false
-        if (data.status === 'failed') {
-          importProgress.value = null
-          await showError(data.message || 'Import gagal diproses.')
-        } else {
-          importResult.value = data
-          if ((data.inserted > 0) || (data.updated > 0)) {
-            loadListB2C()
-            loadListB2B()
-          }
-        }
-        return
-      }
-      pollImportStatus(batchId)
-    } catch {
-      // Lanjutkan polling; gangguan jaringan sementara tidak menghentikan proses server.
-      pollImportStatus(batchId)
-    }
-  }, 1500)
-}
-
 async function doBulkDelete() {
   if (!selectedKlienAll.value.length) return
   const { isConfirmed } = await swalConfirmDelete(`Sebanyak ${selectedKlienAll.value.length} data yang dipilih akan dihapus.`)
@@ -956,7 +655,6 @@ async function doBulkDelete() {
 }
 
 onBeforeUnmount(() => {
-  stopImportPolling()
   clearTimeout(debounceTimerB2C)
   clearTimeout(debounceTimerB2B)
 })

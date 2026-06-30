@@ -20,14 +20,6 @@
         <VBtn
           v-if="!authStore.isArOnly"
           color="primary"
-          prepend-icon="ri-upload-line"
-          @click="openImport"
-        >
-          Import
-        </VBtn>
-        <VBtn
-          v-if="!authStore.isArOnly"
-          color="primary"
           prepend-icon="ri-add-line"
           @click="openCreate"
         >
@@ -256,169 +248,6 @@
       @saved="onFormSaved"
     />
 
-    <!-- Import Modal -->
-    <VDialog
-      v-model="showImport"
-      max-width="560"
-      persistent
-    >
-      <VCard>
-        <VCardTitle class="d-flex align-center justify-space-between pa-4">
-          <span>Import Data Investor</span>
-          <div class="d-flex ga-1">
-            <VBtn
-              v-if="importing"
-              icon
-              size="small"
-              variant="text"
-              title="Minimize ke latar belakang"
-              @click="minimizeImport"
-            >
-              <VIcon icon="ri-subtract-line" />
-            </VBtn>
-            <VBtn
-              icon
-              size="small"
-              variant="text"
-              @click="closeImport"
-            >
-              <VIcon icon="ri-close-line" />
-            </VBtn>
-          </div>
-        </VCardTitle>
-        <VDivider />
-        <VCardText class="pt-4">
-          <VAlert
-            type="info"
-            variant="tonal"
-            class="mb-4"
-          >
-            <div class="mb-2 font-weight-medium">
-              Panduan Import:
-            </div>
-            <ul class="ps-4">
-              <li>Download template Excel, isi data, lalu upload file (.xlsx atau .csv).</li>
-              <li>Kolom <strong>nama_investor</strong> wajib diisi.</li>
-              <li>Kolom <strong>status</strong>: 1 = Aktif, 0 = Nonaktif (default: 1).</li>
-              <li>Lihat sheet <strong>Petunjuk Pengisian</strong> di template untuk panduan lengkap.</li>
-            </ul>
-          </VAlert>
-
-          <VBtn
-            variant="outlined"
-            color="primary"
-            prepend-icon="ri-file-excel-line"
-            class="mb-4"
-            @click="downloadTemplate"
-          >
-            Download Template Excel
-          </VBtn>
-
-          <VFileInput
-            v-model="importFile"
-            label="Pilih File (.xlsx atau .csv)"
-            accept=".xlsx,.xls,.csv"
-            prepend-icon="ri-file-upload-line"
-            variant="outlined"
-            density="compact"
-            :clearable="true"
-            hide-details="auto"
-            :disabled="importing"
-            @update:model-value="importResult = null"
-          />
-
-          <!-- Progress saat import berjalan di latar belakang -->
-          <div
-            v-if="importing && importProgress"
-            class="mt-4"
-          >
-            <div class="d-flex align-center justify-space-between text-caption mb-1">
-              <span>
-                {{ importProgress.status === 'queued' ? 'Menunggu antrian…' : 'Memproses data…' }}
-              </span>
-              <span v-if="importProgress.progress_total > 0">
-                {{ importProgress.processed }} / {{ importProgress.progress_total }} baris
-              </span>
-            </div>
-            <VProgressLinear
-              :model-value="importProgress.progress_total > 0 ? (importProgress.processed / importProgress.progress_total) * 100 : 0"
-              :indeterminate="importProgress.status === 'queued' || !importProgress.progress_total"
-              color="warning"
-              height="8"
-              rounded
-            />
-            <div class="text-caption text-medium-emphasis mt-1">
-              Anda boleh menutup dialog ini — proses tetap berjalan di latar belakang.
-            </div>
-          </div>
-
-          <div
-            v-if="importResult"
-            class="mt-4"
-          >
-            <VAlert
-              :type="(importResult.total === 0 || importResult.failed > 0) ? 'warning' : 'success'"
-              variant="tonal"
-              class="mb-3"
-            >
-              Import selesai:
-              <strong>{{ importResult.inserted }}</strong> ditambahkan,
-              <strong>{{ importResult.updated }}</strong> diperbarui,
-              <strong>{{ importResult.failed }}</strong> gagal
-              (total {{ importResult.total }} baris).
-            </VAlert>
-
-            <div
-              v-if="importResult.errors?.length"
-              class="mt-2"
-            >
-              <div class="text-subtitle-2 mb-2">
-                Detail Error:
-              </div>
-              <VTable
-                density="compact"
-                class="border rounded"
-              >
-                <thead>
-                  <tr>
-                    <th>Baris</th>
-                    <th>Pesan</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr
-                    v-for="err in importResult.errors"
-                    :key="err.row"
-                  >
-                    <td>{{ err.row }}</td>
-                    <td>{{ err.message }}</td>
-                  </tr>
-                </tbody>
-              </VTable>
-            </div>
-          </div>
-        </VCardText>
-        <VDivider />
-        <VCardActions class="pa-4 gap-2 justify-end">
-          <VBtn
-            variant="outlined"
-            @click="closeImport"
-          >
-            Tutup
-          </VBtn>
-          <VBtn
-            color="warning"
-            :loading="importing"
-            :disabled="!importFile"
-            prepend-icon="ri-upload-line"
-            @click="doImport"
-          >
-            Import
-          </VBtn>
-        </VCardActions>
-      </VCard>
-    </VDialog>
-
     <BulkDeleteBar
       v-if="!authStore.isArOnly"
       :selected="selectedItems"
@@ -430,7 +259,7 @@
 </template>
 
 <script setup>
-import { nextTick, onActivated, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { nextTick, onActivated, onMounted, ref, watch } from 'vue'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useAuthStore } from '@/stores/auth.store'
 import { useCrud } from '@/composables/useCrud'
@@ -443,8 +272,7 @@ const { showSuccess, showError, showLoading, closeAlert, confirmDelete: swalConf
 const { items, loading, meta, params, fetchList, remove } = useCrud('/master/investor')
 const minimizeStore = useMinimizeWidgetStore()
 
-const FORM_WIDGET_ID   = 'investor-form'
-const IMPORT_WIDGET_ID = 'investor-import'
+const FORM_WIDGET_ID = 'investor-form'
 
 const tableCard        = ref(null)
 let prevItemsPerPage   = null
@@ -457,13 +285,7 @@ const selectedInvestor = ref(null)
 const selectedForm     = ref(null)
 const selectedItems    = ref([])
 
-const exporting      = ref(false)
-const showImport     = ref(false)
-const importing      = ref(false)
-const importFile     = ref(null)
-const importResult   = ref(null)
-const importProgress = ref(null)
-let importPollTimer  = null
+const exporting = ref(false)
 
 const headers = [
   { title: 'No',               key: 'no',               sortable: false, width: '60px' },
@@ -523,55 +345,13 @@ watch(showForm, (val) => {
   }
 })
 
-watch([importing, importProgress, importResult], () => {
-  minimizeStore.updateImportState(IMPORT_WIDGET_ID, {
-    importing: importing.value,
-    progress: importProgress.value,
-    result: importResult.value,
-  })
-})
-
 onActivated(() => {
   if (minimizeStore.widgets[FORM_WIDGET_ID]?.pendingRestore) {
     minimizeStore.clearPendingRestore(FORM_WIDGET_ID)
     minimizeStore.setMinimizedFalse(FORM_WIDGET_ID)
     showForm.value = true
   }
-  if (minimizeStore.widgets[IMPORT_WIDGET_ID]?.pendingRestore) {
-    minimizeStore.clearPendingRestore(IMPORT_WIDGET_ID)
-    minimizeStore.setMinimizedFalse(IMPORT_WIDGET_ID)
-    showImport.value = true
-  }
 })
-
-function openImport() {
-  minimizeStore.register(IMPORT_WIDGET_ID, { title: 'Import Investor', routeName: 'master-investor', type: 'import', minimized: false })
-  importFile.value     = null
-  importResult.value   = null
-  importProgress.value = null
-  showImport.value     = true
-}
-
-function closeImport() {
-  minimizeStore.remove(IMPORT_WIDGET_ID)
-  showImport.value = false
-  stopImportPolling()
-  importing.value      = false
-  importProgress.value = null
-  if ((importResult.value?.inserted > 0) || (importResult.value?.updated > 0)) fetchList()
-}
-
-function minimizeImport() {
-  minimizeStore.setMinimized(IMPORT_WIDGET_ID, true)
-  showImport.value = false
-}
-
-function stopImportPolling() {
-  if (importPollTimer) {
-    clearTimeout(importPollTimer)
-    importPollTimer = null
-  }
-}
 
 async function exportCsv() {
   exporting.value = true
@@ -595,74 +375,6 @@ async function exportCsv() {
     exporting.value = false
     closeAlert({ onlyLoading: true })
   }
-}
-
-async function downloadTemplate() {
-  try {
-    const res  = await api.get('/master/investor/import-template', { responseType: 'blob' })
-    const url  = URL.createObjectURL(res.data)
-    const a    = document.createElement('a')
-    a.href     = url
-    a.download = 'template-investor.xlsx'
-    a.click()
-    URL.revokeObjectURL(url)
-  } catch {
-    await showError('Gagal mengunduh template.')
-  }
-}
-
-async function doImport() {
-  if (!importFile.value) return
-  importing.value      = true
-  importResult.value   = null
-  importProgress.value = { status: 'queued', processed: 0, progress_total: 0 }
-
-  try {
-    const formData = new FormData()
-    formData.append('file', importFile.value)
-
-    const res = await api.post('/master/investor/import', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    })
-
-    const batchId = res.data?.data?.batch_id
-    if (!batchId) throw new Error('Batch import tidak valid.')
-
-    importFile.value = null
-    pollImportStatus(batchId)
-  } catch (err) {
-    const message = err?.response?.data?.message || 'Gagal mengimport data.'
-    importing.value      = false
-    importProgress.value = null
-    await showError(message)
-  }
-}
-
-function pollImportStatus(batchId) {
-  stopImportPolling()
-  importPollTimer = setTimeout(async () => {
-    try {
-      const res  = await api.get(`/master/investor/import/${batchId}/status`)
-      const data = res.data?.data
-      importProgress.value = data
-
-      if (data.status === 'completed' || data.status === 'failed') {
-        importing.value = false
-        if (data.status === 'failed') {
-          importProgress.value    = null
-          await showError(data.message || 'Import gagal diproses.')
-        } else {
-          importResult.value = data
-          if ((data.inserted > 0) || (data.updated > 0)) fetchList()
-        }
-        return
-      }
-      pollImportStatus(batchId)
-    } catch {
-      // Lanjutkan polling; gangguan jaringan sementara tidak menghentikan proses server.
-      pollImportStatus(batchId)
-    }
-  }, 1500)
 }
 
 async function doDelete() {
@@ -703,8 +415,4 @@ async function doBulkDelete() {
 }
 
 onMounted(() => fetchList())
-
-onBeforeUnmount(() => {
-  stopImportPolling()
-})
 </script>
