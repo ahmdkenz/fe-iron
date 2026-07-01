@@ -161,18 +161,17 @@ const statusOptions = BOOLEAN_STATUS_OPTIONS
 const defaultForm = () => ({ name: '', nama_role: '', keterangan: '', status: 1 })
 const form = reactive(defaultForm())
 
-watch(() => props.modelValue, val => {
-  if (val) {
-    Object.assign(errors, { name: [], nama_role: [], keterangan: [] })
-    errorMessage.value = ''
-    if (props.roleData) {
-      form.name = props.roleData.name ?? ''
-      form.nama_role = props.roleData.nama_role ?? ''
-      form.keterangan = props.roleData.keterangan ?? ''
-      form.status = normalizeBooleanStatus(props.roleData.status)
-    } else {
-      Object.assign(form, defaultForm())
-    }
+watch([() => props.modelValue, () => props.roleData], ([open]) => {
+  if (!open) return
+  Object.assign(errors, { name: [], nama_role: [], keterangan: [] })
+  errorMessage.value = ''
+  if (props.roleData) {
+    form.name = props.roleData.name ?? ''
+    form.nama_role = props.roleData.nama_role ?? ''
+    form.keterangan = props.roleData.keterangan ?? ''
+    form.status = normalizeBooleanStatus(props.roleData.status)
+  } else {
+    Object.assign(form, defaultForm())
   }
 })
 

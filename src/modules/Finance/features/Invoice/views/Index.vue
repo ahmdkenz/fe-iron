@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div>
     <PageHeader
       title="Invoice AR"
@@ -16,13 +16,6 @@
           @click="showExportModal = true"
         >
           Export
-        </VBtn>
-        <VBtn
-          color="primary"
-          prepend-icon="ri-upload-line"
-          @click="openImport"
-        >
-          Import
         </VBtn>
         <VBtn
           color="primary"
@@ -271,7 +264,7 @@
               size="14"
               color="warning"
             >
-              <VTooltip activator="parent">Periode invoice ini sudah dikunci di Ending Balance — tidak dapat diubah via import</VTooltip>
+              <VTooltip activator="parent">Periode invoice ini sudah dikunci di Ending Balance â€” tidak dapat diubah via import</VTooltip>
             </VIcon>
           </div>
         </template>
@@ -492,7 +485,7 @@
               size="14"
               color="warning"
             >
-              <VTooltip activator="parent">Periode invoice ini sudah dikunci di Ending Balance — tidak dapat diubah via import</VTooltip>
+              <VTooltip activator="parent">Periode invoice ini sudah dikunci di Ending Balance â€” tidak dapat diubah via import</VTooltip>
             </VIcon>
           </div>
         </template>
@@ -645,373 +638,6 @@
       v-model="showShareDialog"
       :pre-selected="shareTargetInvoices"
     />
-
-    <!-- Import Modal -->
-    <VDialog
-      v-model="showImport"
-      max-width="660"
-      persistent
-    >
-      <VCard>
-        <VCardTitle class="d-flex align-center justify-space-between pa-4">
-          <span>Import Invoice AR</span>
-          <div class="d-flex ga-1">
-            <VBtn
-              v-if="importing"
-              icon
-              size="small"
-              variant="text"
-              title="Minimize ke latar belakang"
-              @click="minimizeImport"
-            >
-              <VIcon icon="ri-subtract-line" />
-            </VBtn>
-            <VBtn
-              icon
-              size="small"
-              variant="text"
-              @click="closeImport"
-            >
-              <VIcon icon="ri-close-line" />
-            </VBtn>
-          </div>
-        </VCardTitle>
-        <VDivider />
-        <VCardText class="pt-4">
-          <!-- Langkah 1: Pilih Jenis -->
-          <div class="text-caption text-medium-emphasis font-weight-bold text-uppercase letter-spacing-widened mb-2">
-            Langkah 1 — Pilih Jenis Invoice
-          </div>
-          <div class="d-flex gap-2 mb-5">
-            <div
-              class="flex-1-1 pa-3 rounded-lg border cursor-pointer"
-              :style="importType === 'b2c'
-                ? 'border: 2px solid rgb(var(--v-theme-primary)); background: rgba(var(--v-theme-primary), 0.08);'
-                : 'border: 2px solid rgba(var(--v-border-color), var(--v-border-opacity));'"
-              @click="importType = 'b2c'"
-            >
-              <div class="d-flex align-center gap-2">
-                <VAvatar
-                  :color="importType === 'b2c' ? 'primary' : 'secondary'"
-                  variant="tonal"
-                  size="32"
-                >
-                  <VIcon
-                    icon="ri-user-line"
-                    size="16"
-                  />
-                </VAvatar>
-                <div>
-                  <div
-                    class="text-body-2 font-weight-semibold"
-                    :class="importType === 'b2c' ? 'text-primary' : ''"
-                  >
-                    B2C
-                  </div>
-                  <div class="text-caption text-medium-emphasis">
-                    Klien Perorangan / Resto
-                  </div>
-                </div>
-                <VSpacer />
-                <VIcon
-                  :icon="importType === 'b2c' ? 'ri-checkbox-circle-fill' : 'ri-checkbox-blank-circle-line'"
-                  :color="importType === 'b2c' ? 'primary' : 'secondary'"
-                  size="18"
-                />
-              </div>
-            </div>
-            <div
-              class="flex-1-1 pa-3 rounded-lg border cursor-pointer"
-              :style="importType === 'b2b'
-                ? 'border: 2px solid rgb(var(--v-theme-success)); background: rgba(var(--v-theme-success), 0.08);'
-                : 'border: 2px solid rgba(var(--v-border-color), var(--v-border-opacity));'"
-              @click="importType = 'b2b'"
-            >
-              <div class="d-flex align-center gap-2">
-                <VAvatar
-                  :color="importType === 'b2b' ? 'success' : 'secondary'"
-                  variant="tonal"
-                  size="32"
-                >
-                  <VIcon
-                    icon="ri-building-4-line"
-                    size="16"
-                  />
-                </VAvatar>
-                <div>
-                  <div
-                    class="text-body-2 font-weight-semibold"
-                    :class="importType === 'b2b' ? 'text-success' : ''"
-                  >
-                    B2B
-                  </div>
-                  <div class="text-caption text-medium-emphasis">
-                    Klien PT / Perusahaan
-                  </div>
-                </div>
-                <VSpacer />
-                <VIcon
-                  :icon="importType === 'b2b' ? 'ri-checkbox-circle-fill' : 'ri-checkbox-blank-circle-line'"
-                  :color="importType === 'b2b' ? 'success' : 'secondary'"
-                  size="18"
-                />
-              </div>
-            </div>
-          </div>
-
-          <!-- Langkah 2: Download Template -->
-          <div class="text-caption text-medium-emphasis font-weight-bold text-uppercase letter-spacing-widened mb-2">
-            Langkah 2 — Download Template &amp; Isi Data
-          </div>
-          <VBtn
-            v-if="importType === 'b2c'"
-            variant="outlined"
-            color="primary"
-            prepend-icon="ri-file-excel-line"
-            size="small"
-            class="mb-3"
-            @click="downloadTemplate('b2c')"
-          >
-            Download Template B2C
-          </VBtn>
-          <VBtn
-            v-else
-            variant="outlined"
-            color="success"
-            prepend-icon="ri-file-excel-line"
-            size="small"
-            class="mb-3"
-            @click="downloadTemplate('b2b')"
-          >
-            Download Template B2B
-          </VBtn>
-
-          <!-- Panduan per tipe -->
-          <VAlert
-            v-if="importType === 'b2c'"
-            type="info"
-            variant="tonal"
-            density="compact"
-            class="mb-4"
-          >
-            <div class="font-weight-semibold mb-1 text-body-2">
-              Template B2C — 2 Sheet:
-            </div>
-            <div class="text-caption">
-              <strong>Sheet 1 (Invoice):</strong> no_urut · no_invoice · nama_klien · tanggal_invoice · tanggal_jatuh_tempo · no_surat_jalan · keterangan
-            </div>
-            <div class="text-caption mt-1">
-              <strong>Sheet 2 (Item Invoice):</strong> no_urut_invoice · kode_barang · nama_barang · qty · satuan · harga_satuan
-            </div>
-            <div class="text-caption mt-2 font-weight-medium text-info">
-              Tagihan sebelumnya dihitung otomatis dari sisa tagihan klien yang belum lunas — tidak perlu diisi.
-            </div>
-          </VAlert>
-          <VAlert
-            v-else
-            type="success"
-            variant="tonal"
-            density="compact"
-            class="mb-4"
-          >
-            <div class="font-weight-semibold mb-1 text-body-2">
-              Template B2B — 2 Sheet (Data Invoice + Item Invoice):
-            </div>
-            <div class="text-caption">
-              <strong>Sheet 1 — Kolom A–E (Data Invoice):</strong>
-              no_urut · nama_klien · no_surat_jalan (opt) · tanggal_jatuh_tempo (opt)
-            </div>
-            <div class="text-caption mt-1">
-              <strong>Sheet 2 — Kolom A–I (Item Invoice):</strong>
-              no_urut_invoice · no_invoice_resto · kode_resto · nama_resto · kode_barang · nama_barang · qty · satuan · harga_satuan
-            </div>
-            <div class="text-caption mt-2 font-weight-medium text-success">
-              No. Invoice konsolidasi digenerate otomatis oleh sistem (format: SI-ABB-DDMMYYYYHHmmss-XXX). Gunakan no_urut yang sama di Sheet 2 untuk menghubungkan item ke invoice.
-            </div>
-          </VAlert>
-
-          <!-- Catatan umum -->
-          <div class="text-caption text-medium-emphasis mb-4 d-flex align-center gap-1">
-            <VIcon
-              icon="ri-information-line"
-              size="14"
-            />
-            Format tanggal: <strong>DD-MM-YYYY</strong> &nbsp;·&nbsp; Kolom <strong>nama_klien</strong> harus persis sesuai data di sistem &nbsp;·&nbsp; Hapus baris [CONTOH] sebelum upload
-          </div>
-
-          <!-- Langkah 3: Upload -->
-          <div class="text-caption text-medium-emphasis font-weight-bold text-uppercase letter-spacing-widened mb-2">
-            Langkah 3 — Upload File
-          </div>
-          <VFileInput
-            v-model="importFile"
-            label="Pilih File (.xlsx)"
-            accept=".xlsx,.xls"
-            prepend-icon="ri-file-upload-line"
-            variant="outlined"
-            density="compact"
-            :clearable="true"
-            hide-details="auto"
-            :disabled="importing"
-            @update:model-value="importResult = null"
-          />
-
-          <!-- Progress saat import berjalan di latar belakang -->
-          <div
-            v-if="importing && importProgress"
-            class="mt-4"
-          >
-            <div class="d-flex align-center justify-space-between text-caption mb-1">
-              <span>
-                {{ importProgress.status === 'queued' ? 'Menunggu antrian…' : 'Memproses data…' }}
-              </span>
-              <span v-if="importProgress.progress_total > 0">
-                {{ importProgress.processed }} / {{ importProgress.progress_total }} baris
-              </span>
-            </div>
-            <VProgressLinear
-              :model-value="importProgress.progress_total > 0 ? (importProgress.processed / importProgress.progress_total) * 100 : 0"
-              :indeterminate="importProgress.status === 'queued' || !importProgress.progress_total"
-              color="warning"
-              height="8"
-              rounded
-            />
-            <div class="text-caption text-medium-emphasis mt-1">
-              Anda boleh menutup dialog ini — proses tetap berjalan di latar belakang.
-            </div>
-          </div>
-
-          <div
-            v-if="importResult"
-            class="mt-4"
-          >
-            <VAlert
-              :type="importResult.failed > 0 ? 'warning' : 'success'"
-              variant="tonal"
-              class="mb-3"
-            >
-              Import selesai:
-              <strong>{{ importResult.inserted }}</strong> ditambahkan,
-              <strong>{{ importResult.updated }}</strong> diperbarui,
-              <strong>{{ importResult.failed }}</strong> gagal
-              (total {{ importResult.total }} baris).
-            </VAlert>
-
-            <div
-              v-if="importResult.errors?.length"
-              class="mt-2"
-            >
-              <div class="text-subtitle-2 mb-2">
-                Detail Error:
-              </div>
-              <VTable
-                density="compact"
-                class="border rounded"
-              >
-                <thead>
-                  <tr>
-                    <th>Sheet</th>
-                    <th>Baris</th>
-                    <th>Pesan</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr
-                    v-for="(err, i) in importResult.errors"
-                    :key="i"
-                  >
-                    <td>{{ err.sheet }}</td>
-                    <td>{{ err.row }}</td>
-                    <td>{{ err.message }}</td>
-                  </tr>
-                </tbody>
-              </VTable>
-            </div>
-          </div>
-        </VCardText>
-        <VDivider />
-        <VCardActions class="pa-4 gap-2 justify-end">
-          <VBtn
-            variant="outlined"
-            @click="closeImport"
-          >
-            Tutup
-          </VBtn>
-          <VBtn
-            color="warning"
-            :loading="importing"
-            :disabled="!importFile"
-            prepend-icon="ri-upload-line"
-            @click="doImport"
-          >
-            Import
-          </VBtn>
-        </VCardActions>
-      </VCard>
-    </VDialog>
-
-    <!-- Floating Import Progress Widget (saat modal di-minimize) -->
-    <Transition name="slide-up">
-      <VCard
-        v-if="isImportMinimized"
-        elevation="8"
-        rounded="lg"
-        style="position: fixed; bottom: 24px; right: 24px; z-index: 2400; width: 300px; cursor: pointer;"
-        @click="restoreImport"
-      >
-        <VCardText class="pa-3">
-          <div class="d-flex align-center justify-space-between mb-2">
-            <div class="d-flex align-center ga-2">
-              <VIcon
-                :icon="importing ? 'ri-loader-4-line' : 'ri-checkbox-circle-line'"
-                :color="importing ? 'warning' : 'success'"
-                size="18"
-              />
-              <span class="text-subtitle-2 font-weight-medium">
-                Import Invoice ({{ importType.toUpperCase() }})
-              </span>
-            </div>
-            <VBtn
-              icon
-              size="x-small"
-              variant="text"
-              @click.stop="closeImport"
-            >
-              <VIcon icon="ri-close-line" size="16" />
-            </VBtn>
-          </div>
-
-          <template v-if="importing && importProgress">
-            <VProgressLinear
-              :model-value="importProgress.progress_total > 0
-                ? (importProgress.processed / importProgress.progress_total) * 100
-                : 0"
-              :indeterminate="importProgress.status === 'queued' || !importProgress.progress_total"
-              color="warning"
-              height="6"
-              rounded
-              class="mb-1"
-            />
-            <div class="text-caption text-medium-emphasis">
-              {{ importProgress.status === 'queued'
-                ? 'Menunggu antrian…'
-                : `${importProgress.processed} / ${importProgress.progress_total} baris diproses` }}
-            </div>
-          </template>
-
-          <template v-else-if="importResult">
-            <div class="text-caption">
-              <strong>{{ importResult.inserted }}</strong> ditambahkan,
-              <strong>{{ importResult.updated }}</strong> diperbarui,
-              <strong>{{ importResult.failed }}</strong> gagal
-            </div>
-            <div class="text-caption text-primary mt-1">
-              Klik untuk lihat detail →
-            </div>
-          </template>
-        </VCardText>
-      </VCard>
-    </Transition>
   </div>
 </template>
 
@@ -1074,15 +700,7 @@ const selectedForPayment  = ref(null)
 const exportingExcel   = ref(false)
 const showExportModal  = ref(false)
 const exportMonth      = ref(new Date().toISOString().slice(0, 7))
-const showImport        = ref(false)
-const importing         = ref(false)
 const printingId        = ref(null)
-const importFile        = ref(null)
-const importResult      = ref(null)
-const importType        = ref('b2c')
-const importProgress    = ref(null)
-const isImportMinimized = ref(false)
-let   importPollTimer   = null
 
 const headers = [
   { title: 'No',           key: 'no',              sortable: false, width: '60px' },
@@ -1251,114 +869,6 @@ async function exportExcel() {
     closeAlert({ onlyLoading: true })
   }
 }
-
-function openImport() {
-  importFile.value     = null
-  importResult.value   = null
-  importProgress.value = null
-  importType.value     = 'b2c'
-  showImport.value     = true
-}
-
-function closeImport() {
-  showImport.value        = false
-  isImportMinimized.value = false
-  stopImportPolling()
-  importing.value      = false
-  importProgress.value = null
-  if (importResult.value?.inserted > 0 || importResult.value?.updated > 0) {
-    loadListB2C()
-    if (canSeeAll) loadListB2B()
-    loadSummary()
-  }
-}
-
-function minimizeImport() {
-  showImport.value        = false
-  isImportMinimized.value = true
-}
-
-function restoreImport() {
-  showImport.value        = true
-  isImportMinimized.value = false
-}
-
-async function downloadTemplate(type = 'b2c') {
-  try {
-    const res  = await api.get('/finance/invoices/import-template', { responseType: 'blob', params: { type } })
-    const url  = URL.createObjectURL(res.data)
-    const a    = document.createElement('a')
-    a.href     = url
-    a.download = type === 'b2b' ? 'Template Tagihan Invoice B2B.xlsx' : 'Template Tagihan Invoice B2C.xlsx'
-    a.click()
-    URL.revokeObjectURL(url)
-  } catch {
-    await showError('Gagal mengunduh template.')
-  }
-}
-
-function stopImportPolling() {
-  if (importPollTimer) {
-    clearTimeout(importPollTimer)
-    importPollTimer = null
-  }
-}
-
-async function doImport() {
-  if (!importFile.value) return
-  importing.value      = true
-  importResult.value   = null
-  importProgress.value = { status: 'queued', processed: 0, progress_total: 0 }
-
-  try {
-    const formData = new FormData()
-    formData.append('file', importFile.value)
-    formData.append('type', importType.value)
-
-    const res = await api.post('/finance/invoices/import', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    })
-
-    const batchId = res.data?.data?.batch_id
-    if (!batchId) throw new Error('Batch import tidak valid.')
-
-    importFile.value = null
-    pollImportStatus(batchId)
-  } catch (err) {
-    const message = err?.response?.data?.message || 'Gagal mengimport data.'
-    importing.value      = false
-    importProgress.value = null
-    await showError(message)
-  }
-}
-
-function pollImportStatus(batchId) {
-  stopImportPolling()
-  importPollTimer = setTimeout(async () => {
-    try {
-      const res  = await api.get(`/finance/invoices/import/${batchId}/status`)
-      const data = res.data?.data
-      importProgress.value = data
-
-      if (data.status === 'completed' || data.status === 'failed') {
-        importing.value = false
-        if (data.status === 'failed') {
-          importProgress.value    = null
-          await showError(data.message || 'Import gagal diproses.')
-          isImportMinimized.value = false
-        } else {
-          importResult.value = data
-        }
-        return
-      }
-      pollImportStatus(batchId)
-    } catch {
-      // Lanjutkan polling; gangguan jaringan sementara tidak menghentikan proses server.
-      pollImportStatus(batchId)
-    }
-  }, 1500)
-}
-
 function confirmDelete(inv) { selectedInvoice.value = inv; deleteError.value = ''; showDelete.value = true }
 
 function openCatatBayar(item) {
@@ -1455,19 +965,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   clearTimeout(debounceTimerB2B)
   clearTimeout(debounceTimerB2C)
-  stopImportPolling()
   abortPendingRequests()
 })
 </script>
 
-<style scoped>
-.slide-up-enter-active,
-.slide-up-leave-active {
-  transition: transform 0.25s ease, opacity 0.25s ease;
-}
-.slide-up-enter-from,
-.slide-up-leave-to {
-  transform: translateY(16px);
-  opacity: 0;
-}
-</style>

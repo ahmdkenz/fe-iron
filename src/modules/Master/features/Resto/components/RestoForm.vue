@@ -448,41 +448,40 @@ function onEntitasChange(val) {
 
 function onBrandChange() {}
 
-watch(() => props.modelValue, async val => {
-  if (val) {
-    Object.keys(errors).forEach(k => (errors[k] = []))
-    errorMessage.value = ''
+watch([() => props.modelValue, () => props.restoData], async ([open]) => {
+  if (!open) return
+  Object.keys(errors).forEach(k => (errors[k] = []))
+  errorMessage.value = ''
 
-    fetchEntitas()
-    fetchInvestor()
-    fetchKaryawan()
+  fetchEntitas()
+  fetchInvestor()
+  fetchKaryawan()
 
-    if (props.restoData) {
-      Object.assign(form, {
-        kode_resto: props.restoData.kode_resto    ?? '',
-        nama_resto: props.restoData.nama_resto    ?? '',
-        perusahaan_id: props.restoData.perusahaan_id ?? null,
-        brand_id: props.restoData.brand_id      ?? null,
-        investor_id: props.restoData.investor_id   ?? null,
-        karyawan_id: props.restoData.karyawan_id   ?? null,
-        supervisor: props.restoData.supervisor     ?? '',
-        no_hp_supervisor: props.restoData.no_hp_supervisor ?? '',
-        stokis: props.restoData.stokis         ?? '',
-        area: props.restoData.area          ?? '',
-        kota: props.restoData.kota          ?? '',
-        alamat: props.restoData.alamat        ?? '',
-        no_telp: props.restoData.no_telp       ?? '',
-        tgl_aktif: props.restoData.tgl_aktif     ?? '',
-        keterangan: props.restoData.keterangan    ?? '',
-        status: normalizeBooleanStatus(props.restoData.status),
-      })
-      if (form.perusahaan_id) {
-        await fetchBrands(form.perusahaan_id)
-      }
-    } else {
-      Object.assign(form, defaultForm())
-      brandList.value = []
+  if (props.restoData) {
+    Object.assign(form, {
+      kode_resto: props.restoData.kode_resto    ?? '',
+      nama_resto: props.restoData.nama_resto    ?? '',
+      perusahaan_id: props.restoData.perusahaan_id ?? null,
+      brand_id: props.restoData.brand_id      ?? null,
+      investor_id: props.restoData.investor_id   ?? null,
+      karyawan_id: props.restoData.karyawan_id   ?? null,
+      supervisor: props.restoData.supervisor     ?? '',
+      no_hp_supervisor: props.restoData.no_hp_supervisor ?? '',
+      stokis: props.restoData.stokis         ?? '',
+      area: props.restoData.area          ?? '',
+      kota: props.restoData.kota          ?? '',
+      alamat: props.restoData.alamat        ?? '',
+      no_telp: props.restoData.no_telp       ?? '',
+      tgl_aktif: props.restoData.tgl_aktif     ?? '',
+      keterangan: props.restoData.keterangan    ?? '',
+      status: normalizeBooleanStatus(props.restoData.status),
+    })
+    if (form.perusahaan_id) {
+      await fetchBrands(form.perusahaan_id)
     }
+  } else {
+    Object.assign(form, defaultForm())
+    brandList.value = []
   }
 })
 

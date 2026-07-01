@@ -274,34 +274,32 @@ function onKaryawanSelect(val) {
   form.karyawan_id = val?.id ?? null
 }
 
-watch(() => props.modelValue, val => {
-  if (val) {
-    Object.assign(errors, { username: [], email: [], password: [], no_hp: [], role_id: [], karyawan_id: [] })
-    errorMessage.value = ''
-    showPwd.value = false
-    nikSearch.value = ''
-    karyawanOptions.value = []
-    fetchRoles()
-    if (props.userData) {
-      form.username = props.userData.username ?? ''
-      form.email = props.userData.email ?? ''
-      form.no_hp = props.userData.no_hp ?? ''
-      form.password = ''
-      form.role_id = props.userData.role?.id ?? null
-      form.status = normalizeBooleanStatus(props.userData.status)
-      form.karyawan_id = props.userData.karyawan_id ?? null
+watch([() => props.modelValue, () => props.userData], ([open]) => {
+  if (!open) return
+  Object.assign(errors, { username: [], email: [], password: [], no_hp: [], role_id: [], karyawan_id: [] })
+  errorMessage.value = ''
+  showPwd.value = false
+  nikSearch.value = ''
+  karyawanOptions.value = []
+  fetchRoles()
+  if (props.userData) {
+    form.username = props.userData.username ?? ''
+    form.email = props.userData.email ?? ''
+    form.no_hp = props.userData.no_hp ?? ''
+    form.password = ''
+    form.role_id = props.userData.role?.id ?? null
+    form.status = normalizeBooleanStatus(props.userData.status)
+    form.karyawan_id = props.userData.karyawan_id ?? null
 
-      // Pre-populate karyawan display if editing
-      if (props.userData.karyawan) {
-        selectedKaryawan.value = props.userData.karyawan
-        karyawanOptions.value = [props.userData.karyawan]
-      } else {
-        selectedKaryawan.value = null
-      }
+    if (props.userData.karyawan) {
+      selectedKaryawan.value = props.userData.karyawan
+      karyawanOptions.value = [props.userData.karyawan]
     } else {
-      Object.assign(form, defaultForm())
       selectedKaryawan.value = null
     }
+  } else {
+    Object.assign(form, defaultForm())
+    selectedKaryawan.value = null
   }
 })
 

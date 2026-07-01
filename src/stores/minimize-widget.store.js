@@ -21,6 +21,9 @@ export const useMinimizeWidgetStore = defineStore('minimize-widgets', {
         importing: false,
         progress: null,
         result: null,
+        mode: config.mode ?? null,
+        recordId: config.recordId ?? null,
+        endpoint: config.endpoint ?? null,
       }
     },
 

@@ -414,11 +414,16 @@
           :value="selectedKlien.resto?.investor?.no_hp_pengelola"
         />
         <DetailRow
-          label="No. NPWP"
-          :value="selectedKlien.no_npwp"
+          :label="selectedKlien.client_contact_source === 'investor' ? 'No. NPWP (Investor)' : selectedKlien.client_contact_source === 'perusahaan' ? 'No. NPWP (Perusahaan)' : 'No. NPWP'"
+          :value="selectedKlien.client_npwp"
         />
         <DetailRow
-          label="No. WhatsApp"
+          :label="selectedKlien.tipe_klien === 'RESTO' ? 'No. HP Investor' : selectedKlien.tipe_klien === 'PT' ? 'No. Telp Perusahaan' : 'No. WhatsApp'"
+          :value="selectedKlien.client_contact_phone"
+        />
+        <DetailRow
+          v-if="selectedKlien.no_wa && selectedKlien.no_wa !== selectedKlien.client_contact_phone"
+          label="No. WhatsApp (Fallback)"
           :value="selectedKlien.no_wa"
         />
         <DetailRow

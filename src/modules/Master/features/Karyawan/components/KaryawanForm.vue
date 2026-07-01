@@ -193,20 +193,19 @@ const defaultForm = () => ({
 
 const form = reactive(defaultForm())
 
-watch(() => props.modelValue, val => {
-  if (val) {
-    Object.assign(errors, { nik: [], nama_karyawan: [], perusahaan_id: [], keterangan: [] })
-    errorMessage.value = ''
-    fetchEntitas()
-    if (props.karyawanData) {
-      form.nik           = props.karyawanData.nik ?? ''
-      form.nama_karyawan = props.karyawanData.nama_karyawan ?? ''
-      form.perusahaan_id = props.karyawanData.perusahaan_id ?? null
-      form.keterangan    = props.karyawanData.keterangan ?? ''
-      form.status        = normalizeBooleanStatus(props.karyawanData.status)
-    } else {
-      Object.assign(form, defaultForm())
-    }
+watch([() => props.modelValue, () => props.karyawanData], ([open]) => {
+  if (!open) return
+  Object.assign(errors, { nik: [], nama_karyawan: [], perusahaan_id: [], keterangan: [] })
+  errorMessage.value = ''
+  fetchEntitas()
+  if (props.karyawanData) {
+    form.nik           = props.karyawanData.nik ?? ''
+    form.nama_karyawan = props.karyawanData.nama_karyawan ?? ''
+    form.perusahaan_id = props.karyawanData.perusahaan_id ?? null
+    form.keterangan    = props.karyawanData.keterangan ?? ''
+    form.status        = normalizeBooleanStatus(props.karyawanData.status)
+  } else {
+    Object.assign(form, defaultForm())
   }
 })
 

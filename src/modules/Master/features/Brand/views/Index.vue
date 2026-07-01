@@ -218,6 +218,7 @@ import { nextTick, onActivated, onMounted, ref, watch } from 'vue'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useCrud } from '@/composables/useCrud.js'
 import { useMinimizeWidgetStore } from '@/stores/minimize-widget.store'
+import api from '@/utils/axios'
 
 const { showSuccess, showError } = useSweetAlert()
 const { items, loading, meta, params, fetchList, remove } = useCrud('/master/brand')
@@ -256,12 +257,12 @@ function onTableOptions({ page, itemsPerPage }) {
 }
 
 function openCreate() {
-  minimizeStore.register(FORM_WIDGET_ID, { title: 'Form Tambah Brand', routeName: 'master-brand', type: 'form', minimized: false })
+  minimizeStore.register(FORM_WIDGET_ID, { title: 'Form Tambah Brand', routeName: 'master-brand', type: 'form', minimized: false, mode: 'create', recordId: null, endpoint: null })
   selectedForm.value = null
   showForm.value = true
 }
 function openEdit(b) {
-  minimizeStore.register(FORM_WIDGET_ID, { title: 'Form Edit Brand', routeName: 'master-brand', type: 'form', minimized: false })
+  minimizeStore.register(FORM_WIDGET_ID, { title: 'Form Edit Brand', routeName: 'master-brand', type: 'form', minimized: false, mode: 'edit', recordId: b.id, endpoint: '/master/brand' })
   selectedForm.value = b
   showForm.value = true
 }
@@ -278,10 +279,21 @@ watch(showForm, (val) => {
   }
 })
 
-onActivated(() => {
+onActivated(async () => {
   if (minimizeStore.widgets[FORM_WIDGET_ID]?.pendingRestore) {
+    const widget = minimizeStore.widgets[FORM_WIDGET_ID]
     minimizeStore.clearPendingRestore(FORM_WIDGET_ID)
     minimizeStore.setMinimizedFalse(FORM_WIDGET_ID)
+    if (widget.mode === 'edit' && widget.recordId && widget.endpoint) {
+      try {
+        const res = await api.get(`${widget.endpoint}/${widget.recordId}`)
+        selectedForm.value = res.data?.data ?? null
+      } catch {
+        selectedForm.value = null
+      }
+    } else {
+      selectedForm.value = null
+    }
     showForm.value = true
   }
 })

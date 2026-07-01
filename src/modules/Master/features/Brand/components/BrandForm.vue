@@ -168,21 +168,20 @@ const defaultForm = () => ({
 
 const form = reactive(defaultForm())
 
-watch(() => props.modelValue, val => {
-  if (val) {
-    Object.assign(errors, { kode_brand: [], nama_brand: [], keterangan: [] })
-    errorMessage.value = ''
+watch([() => props.modelValue, () => props.brandData], ([open]) => {
+  if (!open) return
+  Object.assign(errors, { kode_brand: [], nama_brand: [], keterangan: [] })
+  errorMessage.value = ''
 
-    if (props.brandData) {
-      Object.assign(form, {
-        kode_brand: props.brandData.kode_brand ?? '',
-        nama_brand: props.brandData.nama_brand ?? '',
-        keterangan: props.brandData.keterangan ?? '',
-        status: normalizeBooleanStatus(props.brandData.status),
-      })
-    } else {
-      Object.assign(form, defaultForm())
-    }
+  if (props.brandData) {
+    Object.assign(form, {
+      kode_brand: props.brandData.kode_brand ?? '',
+      nama_brand: props.brandData.nama_brand ?? '',
+      keterangan: props.brandData.keterangan ?? '',
+      status: normalizeBooleanStatus(props.brandData.status),
+    })
+  } else {
+    Object.assign(form, defaultForm())
   }
 })
 

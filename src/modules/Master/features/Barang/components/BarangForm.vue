@@ -275,27 +275,26 @@ const defaultForm = () => ({
 
 const form = reactive(defaultForm())
 
-watch(() => props.modelValue, async val => {
-  if (val) {
-    Object.keys(errors).forEach(k => (errors[k] = []))
-    errorMessage.value = ''
-    fetchBrands()
-    fetchExternalCatalog()
+watch([() => props.modelValue, () => props.barangData], async ([open]) => {
+  if (!open) return
+  Object.keys(errors).forEach(k => (errors[k] = []))
+  errorMessage.value = ''
+  fetchBrands()
+  fetchExternalCatalog()
 
-    if (props.barangData) {
-      Object.assign(form, {
-        kode_barang: props.barangData.kode_barang ?? '',
-        nama_barang: props.barangData.nama_barang ?? '',
-        brand_id:    props.barangData.brand_id    ?? null,
-        spesifikasi: props.barangData.spesifikasi ?? '',
-        keterangan:  props.barangData.keterangan  ?? '',
-        status:      normalizeBooleanStatus(props.barangData.status),
-      })
-      namaBarangModel.value = props.barangData.nama_barang ?? ''
-    } else {
-      Object.assign(form, defaultForm())
-      namaBarangModel.value = null
-    }
+  if (props.barangData) {
+    Object.assign(form, {
+      kode_barang: props.barangData.kode_barang ?? '',
+      nama_barang: props.barangData.nama_barang ?? '',
+      brand_id:    props.barangData.brand_id    ?? null,
+      spesifikasi: props.barangData.spesifikasi ?? '',
+      keterangan:  props.barangData.keterangan  ?? '',
+      status:      normalizeBooleanStatus(props.barangData.status),
+    })
+    namaBarangModel.value = props.barangData.nama_barang ?? ''
+  } else {
+    Object.assign(form, defaultForm())
+    namaBarangModel.value = null
   }
 })
 

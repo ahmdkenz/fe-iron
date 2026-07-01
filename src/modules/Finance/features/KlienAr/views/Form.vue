@@ -174,6 +174,7 @@
 
             <VCol cols="12" md="9">
               <VTextField
+                v-if="isB2B"
                 v-model="form.no_npwp"
                 :label="npwpLabel"
                 density="compact"
@@ -181,17 +182,30 @@
                 :rules="npwpRules"
                 :error-messages="errors.no_npwp"
                 :readonly="isArEditMode"
-                :hint="isB2B && !isArEditMode ? 'Wajib untuk penerbitan faktur pajak' : ''"
-                :persistent-hint="isB2B && !isArEditMode"
+                hint="Wajib untuk penerbitan faktur pajak"
+                persistent-hint
+              />
+              <VTextField
+                v-else
+                :model-value="selectedRestoInvestor?.npwp || form.no_npwp || ''"
+                label="No. NPWP (dari Investor)"
+                density="compact"
+                variant="outlined"
+                :hint="selectedRestoInvestor?.npwp ? 'Dibaca otomatis dari data Investor — ubah di Master Investor' : 'Belum ada NPWP di data Investor'"
+                persistent-hint
+                readonly
+                :prepend-inner-icon="selectedRestoInvestor?.npwp ? 'ri-shield-check-line' : 'ri-information-line'"
               />
             </VCol>
             <VCol cols="12" md="6">
               <VTextField
                 v-model="form.no_wa"
-                :label="isB2B ? 'No. WhatsApp Kontak Keuangan PT' : 'No. WhatsApp Investor'"
+                :label="isB2B ? 'No. WhatsApp Kontak Keuangan PT' : 'No. WhatsApp (Fallback AR)'"
                 placeholder="08123456789"
                 density="compact"
                 variant="outlined"
+                :hint="!isB2B ? 'Opsional — digunakan jika HP Investor belum diisi' : ''"
+                :persistent-hint="!isB2B"
                 :error-messages="errors.no_wa"
                 clearable
               />
@@ -290,6 +304,13 @@
                     v-if="selectedRestoInvestor.no_hp"
                     class="text-caption text-disabled"
                   >· {{ selectedRestoInvestor.no_hp }}</span>
+                </div>
+                <div
+                  v-if="selectedRestoInvestor.npwp"
+                  class="info-panel__row"
+                >
+                  <span class="text-caption text-medium-emphasis">NPWP Investor:</span>
+                  <span class="text-caption font-weight-medium">{{ selectedRestoInvestor.npwp }}</span>
                 </div>
                 <div
                   v-if="selectedRestoInvestor.pengelola"
@@ -430,11 +451,11 @@
                   </tr>
                   <tr>
                     <td class="font-weight-medium">No. NPWP</td>
-                    <td>NPWP pengelola (opsional)</td>
+                    <td>Otomatis dari data Investor — untuk mengubah, edit di Master Investor</td>
                   </tr>
                   <tr>
                     <td class="font-weight-medium">No. WhatsApp</td>
-                    <td>Nomor aktif pengelola (format: 08xx atau 62xx)</td>
+                    <td>Opsional — fallback jika No. HP Investor belum diisi (format: 08xx atau 62xx)</td>
                   </tr>
                   <tr>
                     <td class="font-weight-medium">PIC AR</td>

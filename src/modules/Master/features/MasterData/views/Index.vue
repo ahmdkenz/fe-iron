@@ -23,14 +23,14 @@
             Tentang halaman ini:
           </div>
           <ul class="ps-4">
-            <li>Upload <strong>1 file Excel</strong> dengan 2 sheet: <strong>MASTER DATA</strong> (Investor + Resto + Client AR) dan <strong>MASTER BARANG</strong> (Produk/Barang).</li>
-            <li>Sheet <strong>MASTER DATA</strong>: 1 baris = 1 outlet. Field Resto: <strong>nama_pic</strong> (PIC Data Resto), supervisor, stokis, no_telp, keterangan. Field Client AR: <strong>pic_ar</strong> (PIC AR), no_npwp, no_wa.</li>
-            <li>Kolom <strong>nama_entitas wajib</strong> jika <code>tipe_klien = PT</code>. Nama Client AR diatur otomatis: RESTO = nama_investor, PT = nama_entitas.</li>
-            <li>Untuk <code>tipe_klien = PT</code>: jika <strong>nama_pic</strong> kosong, sistem otomatis memakai <strong>pic_ar</strong> sebagai PIC Data Resto — tidak perlu mengisi keduanya bila orangnya sama.</li>
-            <li>Sheet <strong>MASTER BARANG</strong>: urutan kolom — kode_barang, nama_barang, <strong>spesifikasi</strong>, nama_brand, keterangan, status.</li>
+            <li>Upload <strong>1 file Excel</strong> dengan <strong>4 sheet</strong>: <strong>MASTER DATA</strong> (Investor + Resto + Client AR), <strong>MASTER BARANG</strong> (Produk/Barang), <strong>MASTER INVOICE</strong> (Invoice B2B &amp; B2C), dan <strong>Petunjuk Pengisian</strong>.</li>
+            <li>Urutan import: MASTER DATA → MASTER BARANG → MASTER INVOICE. Invoice dapat langsung menggunakan data master yang baru diimport.</li>
+            <li>Sheet <strong>MASTER DATA</strong>: 1 baris = 1 outlet. Field Client AR: <strong>pic_ar</strong> (PIC AR) wajib jika <code>tipe_klien</code> diisi. Kolom <strong>nama_entitas wajib</strong> jika <code>tipe_klien = PT</code>.</li>
+            <li>Sheet <strong>MASTER BARANG</strong>: kode_barang wajib untuk barang baru. Kolom: kode_barang, nama_barang, spesifikasi, nama_brand, keterangan, status.</li>
+            <li>Sheet <strong>MASTER INVOICE</strong>: 1 baris = 1 item. Baris dengan <code>tipe_invoice + no_urut</code> sama digabung jadi 1 invoice. <code>tipe_invoice</code>: <strong>B2C</strong> atau <strong>B2B</strong>. Invoice LUNAS atau periode terkunci → dilewati otomatis.</li>
+            <li>Setelah invoice berhasil disimpan, <strong>PDF otomatis diupload ke Google Drive</strong> (proses antrian). Link share muncul setelah antrian selesai.</li>
             <li>Import hanya dapat dilakukan oleh role <strong>ADMIN, MANAGER, atau SUPERVISOR</strong>.</li>
             <li>Download template Excel terlebih dahulu untuk mendapatkan format yang benar.</li>
-            <li>Import diproses di latar belakang — Anda bisa memantau progres secara real-time.</li>
           </ul>
         </VAlert>
 
@@ -201,11 +201,11 @@
             class="mb-4"
           >
             <ul class="ps-4">
-              <li>File harus berformat <strong>.xlsx</strong> dengan 2 sheet: <strong>MASTER DATA</strong> dan <strong>MASTER BARANG</strong>.</li>
-              <li>Sheet <strong>MASTER DATA</strong>: 1 baris = Investor + Resto + Client AR. Field Resto: <strong>nama_pic</strong> (PIC di halaman Data Resto), supervisor, no_hp_supervisor, stokis, no_telp, keterangan.</li>
-              <li>Kolom <strong>tipe_klien</strong> (PT/RESTO) wajib untuk membuat Client AR. Kolom <strong>nama_entitas wajib jika tipe_klien=PT</strong>.</li>
-              <li>Kolom <strong>pic_ar</strong> adalah PIC penagihan Client AR (tampil di halaman Data Client AR &amp; kolom PIC AR di Data Resto) — wajib jika tipe_klien diisi. Nama Client AR diatur otomatis: RESTO = nama_investor, PT = nama_entitas. Untuk <code>tipe_klien=PT</code>: jika <strong>nama_pic</strong> kosong, sistem memakai <strong>pic_ar</strong> untuk mengisi PIC di Data Resto.</li>
-              <li>Sheet <strong>MASTER BARANG</strong>: urutan kolom kode_barang, nama_barang, <strong>spesifikasi</strong>, nama_brand, keterangan, status. kode_barang wajib untuk produk baru.</li>
+              <li>File harus berformat <strong>.xlsx</strong> dengan <strong>4 sheet</strong>: <strong>MASTER DATA</strong>, <strong>MASTER BARANG</strong>, <strong>MASTER INVOICE</strong>, dan <strong>Petunjuk Pengisian</strong>.</li>
+              <li>Sheet <strong>MASTER DATA</strong>: 1 baris = Investor + Resto + Client AR. Kolom <strong>tipe_klien</strong> (PT/RESTO) &amp; <strong>pic_ar</strong> wajib untuk membuat Client AR.</li>
+              <li>Sheet <strong>MASTER BARANG</strong>: kode_barang, nama_barang, spesifikasi, nama_brand, keterangan, status. kode_barang wajib untuk produk baru.</li>
+              <li>Sheet <strong>MASTER INVOICE</strong>: 1 baris = 1 item. Baris dengan <code>tipe_invoice + no_urut</code> sama digabung jadi 1 invoice. Kolom B2B: no_invoice_resto, kode_resto, nama_resto.</li>
+              <li>Setelah invoice disimpan, PDF <strong>otomatis diqueue ke Google Drive</strong>. Link share tersedia setelah job antrian selesai.</li>
             </ul>
           </VAlert>
 
@@ -338,6 +338,50 @@
                 >✗{{ importProgress.barang_failed }}</span>
               </div>
             </div>
+
+            <!-- Sheet MASTER INVOICE progress -->
+            <div
+              v-if="importProgress.invoice_total > 0 || (importProgress.barang_processed >= importProgress.barang_total && importProgress.barang_total > 0)"
+              class="mt-4"
+            >
+              <div class="text-subtitle-2 mb-2 d-flex align-center ga-1">
+                <VIcon
+                  icon="ri-file-list-3-line"
+                  size="16"
+                />
+                Sheet MASTER INVOICE
+                <span class="text-caption text-medium-emphasis ms-auto">
+                  {{ importProgress.invoice_processed }} / {{ importProgress.invoice_total }} invoice
+                </span>
+              </div>
+              <VProgressLinear
+                :model-value="importProgress.invoice_total > 0 ? (importProgress.invoice_processed / importProgress.invoice_total) * 100 : 0"
+                :indeterminate="importProgress.status === 'processing' && importProgress.invoice_total === 0"
+                color="purple"
+                height="6"
+                rounded
+                class="mb-2"
+              />
+              <div class="d-flex flex-wrap ga-3 text-caption">
+                <span>
+                  <VIcon
+                    icon="ri-file-list-3-line"
+                    size="14"
+                    color="purple"
+                  />
+                  Invoice: <strong>+{{ importProgress.invoice_inserted }}</strong>
+                  ~{{ importProgress.invoice_updated }}
+                  <span
+                    v-if="importProgress.invoice_skipped > 0"
+                    class="text-medium-emphasis"
+                  >⊘{{ importProgress.invoice_skipped }} dilewati</span>
+                  <span
+                    v-if="importProgress.invoice_failed > 0"
+                    class="text-error"
+                  >✗{{ importProgress.invoice_failed }}</span>
+                </span>
+              </div>
+            </div>
           </div>
 
           <!-- ── Hasil setelah selesai ─────────────────────────── -->
@@ -407,6 +451,14 @@
                           variant="flat"
                         >
                           ~{{ stat.updated }} diperbarui
+                        </VChip>
+                        <VChip
+                          v-if="stat.skipped > 0"
+                          size="x-small"
+                          color="secondary"
+                          variant="flat"
+                        >
+                          ⊘{{ stat.skipped }} dilewati
                         </VChip>
                         <VChip
                           v-if="stat.failed > 0"
@@ -585,18 +637,19 @@ const resultStats = computed(() => {
   const r = importResult.value
 
   return [
-    { label: 'Investor',  icon: 'ri-money-dollar-circle-line', color: 'primary', inserted: r.investor_inserted ?? 0, updated: r.investor_updated ?? 0, failed: r.investor_failed ?? 0 },
-    { label: 'Resto',     icon: 'ri-store-2-line',             color: 'success', inserted: r.resto_inserted ?? 0,    updated: r.resto_updated ?? 0,    failed: r.resto_failed ?? 0 },
-    { label: 'Client AR', icon: 'ri-building-4-line',          color: 'warning', inserted: r.klien_inserted ?? 0,    updated: r.klien_updated ?? 0,    failed: r.klien_failed ?? 0 },
-    { label: 'Barang',    icon: 'ri-box-3-line',               color: 'info',    inserted: r.barang_inserted ?? 0,   updated: r.barang_updated ?? 0,   failed: r.barang_failed ?? 0 },
+    { label: 'Investor',  icon: 'ri-money-dollar-circle-line', color: 'primary', inserted: r.investor_inserted ?? 0, updated: r.investor_updated ?? 0, skipped: 0,                    failed: r.investor_failed ?? 0 },
+    { label: 'Resto',     icon: 'ri-store-2-line',             color: 'success', inserted: r.resto_inserted ?? 0,    updated: r.resto_updated ?? 0,    skipped: 0,                    failed: r.resto_failed ?? 0 },
+    { label: 'Client AR', icon: 'ri-building-4-line',          color: 'warning', inserted: r.klien_inserted ?? 0,    updated: r.klien_updated ?? 0,    skipped: 0,                    failed: r.klien_failed ?? 0 },
+    { label: 'Barang',    icon: 'ri-box-3-line',               color: 'info',    inserted: r.barang_inserted ?? 0,   updated: r.barang_updated ?? 0,   skipped: 0,                    failed: r.barang_failed ?? 0 },
+    { label: 'Invoice',   icon: 'ri-file-list-3-line',         color: 'purple',  inserted: r.invoice_inserted ?? 0,  updated: r.invoice_updated ?? 0,  skipped: r.invoice_skipped ?? 0, failed: r.invoice_failed ?? 0 },
   ]
 })
 
 const overallProgress = computed(() => {
   const p = importProgress.value
   if (!p) return 0
-  const total     = (p.master_total ?? 0) + (p.barang_total ?? 0)
-  const processed = (p.master_processed ?? 0) + (p.barang_processed ?? 0)
+  const total     = (p.master_total ?? 0) + (p.barang_total ?? 0) + (p.invoice_total ?? 0)
+  const processed = (p.master_processed ?? 0) + (p.barang_processed ?? 0) + (p.invoice_processed ?? 0)
 
   return total > 0 ? Math.round((processed / total) * 100) : 0
 })
@@ -672,12 +725,14 @@ async function doImport() {
   importResult.value   = null
   importProgress.value = {
     status: 'queued',
-    master_total: 0, master_processed: 0,
-    barang_total: 0, barang_processed: 0,
+    master_total: 0,  master_processed: 0,
+    barang_total: 0,  barang_processed: 0,
+    invoice_total: 0, invoice_processed: 0,
     investor_inserted: 0, investor_updated: 0, investor_failed: 0,
     resto_inserted: 0,    resto_updated: 0,    resto_failed: 0,
     klien_inserted: 0,    klien_updated: 0,    klien_failed: 0,
     barang_inserted: 0,   barang_updated: 0,   barang_failed: 0,
+    invoice_inserted: 0,  invoice_updated: 0,  invoice_skipped: 0, invoice_failed: 0,
   }
 
   try {

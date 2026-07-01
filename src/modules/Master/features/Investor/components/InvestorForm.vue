@@ -254,29 +254,28 @@ const defaultForm = () => ({
 
 const form = reactive(defaultForm())
 
-watch(() => props.modelValue, val => {
-  if (val) {
-    Object.assign(errors, {
-      nama_investor: [], ktp: [], npwp: [], no_hp: [],
-      pengelola: [], no_hp_pengelola: [], kode_cabang: [], id_cabang: [],
-    })
-    errorMessage.value = ''
+watch([() => props.modelValue, () => props.investorData], ([open]) => {
+  if (!open) return
+  Object.assign(errors, {
+    nama_investor: [], ktp: [], npwp: [], no_hp: [],
+    pengelola: [], no_hp_pengelola: [], kode_cabang: [], id_cabang: [],
+  })
+  errorMessage.value = ''
 
-    if (props.investorData) {
-      Object.assign(form, {
-        nama_investor: props.investorData.nama_investor   ?? '',
-        ktp: props.investorData.ktp             ?? '',
-        npwp: props.investorData.npwp            ?? '',
-        no_hp: props.investorData.no_hp           ?? '',
-        pengelola: props.investorData.pengelola       ?? '',
-        no_hp_pengelola: props.investorData.no_hp_pengelola ?? '',
-        kode_cabang: props.investorData.kode_cabang    ?? '',
-        id_cabang: props.investorData.id_cabang      ?? '',
-        status: normalizeBooleanStatus(props.investorData.status),
-      })
-    } else {
-      Object.assign(form, defaultForm())
-    }
+  if (props.investorData) {
+    Object.assign(form, {
+      nama_investor: props.investorData.nama_investor   ?? '',
+      ktp: props.investorData.ktp             ?? '',
+      npwp: props.investorData.npwp            ?? '',
+      no_hp: props.investorData.no_hp           ?? '',
+      pengelola: props.investorData.pengelola       ?? '',
+      no_hp_pengelola: props.investorData.no_hp_pengelola ?? '',
+      kode_cabang: props.investorData.kode_cabang    ?? '',
+      id_cabang: props.investorData.id_cabang      ?? '',
+      status: normalizeBooleanStatus(props.investorData.status),
+    })
+  } else {
+    Object.assign(form, defaultForm())
   }
 })
 
