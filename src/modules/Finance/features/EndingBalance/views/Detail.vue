@@ -48,8 +48,7 @@
             <VCardText>
               <div class="text-caption text-medium-emphasis mb-1">
                 Saldo Akhir Final
-                <VChip v-if="eb.status === 'LOCKED'" size="x-small" color="success" class="ml-1">LOCKED</VChip>
-                <VChip v-else size="x-small" color="warning" class="ml-1">DRAFT</VChip>
+                <EndingBalanceStatusBadge :status="eb.status" class="ml-1" />
               </div>
               <div class="text-h6 font-weight-bold">{{ formatRp(eb.saldo_akhir_final) }}</div>
               <div v-if="eb.saldo_akhir_sistem !== eb.saldo_akhir_final" class="text-caption">
@@ -973,6 +972,7 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.store'
 import api from '@/utils/axios'
+import EndingBalanceStatusBadge from '@/modules/Finance/shared/components/EndingBalanceStatusBadge.vue'
 
 const route     = useRoute()
 const authStore = useAuthStore()

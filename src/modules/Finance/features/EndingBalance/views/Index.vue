@@ -107,13 +107,7 @@
         </template>
 
         <template #item.status="{ item }">
-          <VChip
-            :color="item.status === 'LOCKED' ? 'success' : 'warning'"
-            size="small"
-            label
-          >
-            {{ item.status }}
-          </VChip>
+          <EndingBalanceStatusBadge :status="item.status" />
           <VChip
             v-if="item.has_active_koreksi"
             color="info"
@@ -282,13 +276,7 @@
         </template>
 
         <template #item.status="{ item }">
-          <VChip
-            :color="item.status === 'LOCKED' ? 'success' : 'warning'"
-            size="small"
-            label
-          >
-            {{ item.status }}
-          </VChip>
+          <EndingBalanceStatusBadge :status="item.status" />
           <VChip
             v-if="item.has_active_koreksi"
             color="info"
@@ -532,6 +520,7 @@
 import { ref, reactive, computed, onMounted, defineComponent, h } from 'vue'
 import { useAuthStore } from '@/stores/auth.store'
 import api from '@/utils/axios'
+import EndingBalanceStatusBadge from '@/modules/Finance/shared/components/EndingBalanceStatusBadge.vue'
 
 // ─── Komponen inline: breakdown invoice per EB ───────────────────────────────
 const EbInvoiceBreakdown = defineComponent({

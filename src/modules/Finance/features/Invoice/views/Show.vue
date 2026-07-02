@@ -515,7 +515,7 @@
                   <tr>
                     <th>No</th>
                     <th v-if="showNoInvoiceResto">
-                      No Invoice Resto
+                      No Invoice Asal
                     </th>
                     <th v-if="isB2B">
                       Kode Resto

@@ -166,13 +166,13 @@
                 >
                   <VTextField
                     v-model="noInvoiceResto"
-                    label="No. Invoice Resto"
+                    label="No Invoice Asal"
                     density="compact"
                     variant="outlined"
                     prepend-inner-icon="ri-receipt-line"
-                    placeholder="Nomor invoice dari resto"
+                    placeholder="Nomor invoice/dokumen asal"
                     clearable
-                    :hint="isB2B ? 'Nomor invoice yang diterima oleh resto' : 'Opsional, nomor asli untuk pencocokan data'"
+                    :hint="isB2B ? 'Wajib, nomor invoice asal yang diterima oleh resto' : 'Opsional, nomor invoice asal untuk pencocokan data'"
                     persistent-hint
                   />
                 </VCol>
