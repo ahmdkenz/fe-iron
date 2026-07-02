@@ -115,13 +115,7 @@
           {{ item.karyawan_ar?.nama_karyawan ?? '-' }}
         </template>
         <template #item.status="{ item }">
-          <VChip
-            :color="item.status ? 'success' : 'error'"
-            size="small"
-            label
-          >
-            {{ item.status ? 'Aktif' : 'Nonaktif' }}
-          </VChip>
+          <StatusChip :active="item.status" />
         </template>
         <template #item.actions="{ item }">
           <div class="d-flex gap-1">
@@ -287,13 +281,7 @@
           {{ item.karyawan_ar?.nama_karyawan ?? '-' }}
         </template>
         <template #item.status="{ item }">
-          <VChip
-            :color="item.status ? 'success' : 'error'"
-            size="small"
-            label
-          >
-            {{ item.status ? 'Aktif' : 'Nonaktif' }}
-          </VChip>
+          <StatusChip :active="item.status" />
         </template>
         <template #item.actions="{ item }">
           <div class="d-flex gap-1">
@@ -431,13 +419,7 @@
           :value="selectedKlien.karyawan_ar?.nama_karyawan"
         />
         <DetailRow label="Status">
-          <VChip
-            :color="selectedKlien.status ? 'success' : 'error'"
-            size="small"
-            label
-          >
-            {{ selectedKlien.status ? 'Aktif' : 'Nonaktif' }}
-          </VChip>
+          <StatusChip :active="selectedKlien.status" />
         </DetailRow>
         <DetailRow
           label="Created By"

@@ -59,13 +59,7 @@
           <span v-else>-</span>
         </template>
         <template #item.status="{ item }">
-          <VChip
-            :color="item.status ? 'success' : 'error'"
-            size="small"
-            label
-          >
-            {{ item.status ? 'Aktif' : 'Nonaktif' }}
-          </VChip>
+          <StatusChip :active="item.status" />
         </template>
         <template #item.keterangan="{ item }">
           {{ item.keterangan ?? '-' }}
@@ -169,13 +163,7 @@
         :value="selectedKaryawan?.keterangan"
       />
       <DetailRow label="Status">
-        <VChip
-          :color="selectedKaryawan?.status ? 'success' : 'error'"
-          size="small"
-          label
-        >
-          {{ selectedKaryawan?.status ? 'Aktif' : 'Nonaktif' }}
-        </VChip>
+        <StatusChip :active="selectedKaryawan?.status" />
       </DetailRow>
       <DetailRow
         label="Created By"

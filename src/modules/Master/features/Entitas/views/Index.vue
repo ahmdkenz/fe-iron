@@ -57,13 +57,7 @@
           </VChip>
         </template>
         <template #item.status="{ item }">
-          <VChip
-            :color="item.status ? 'success' : 'error'"
-            size="small"
-            label
-          >
-            {{ item.status ? 'Aktif' : 'Nonaktif' }}
-          </VChip>
+          <StatusChip :active="item.status" />
         </template>
         <template #item.keterangan="{ item }">
           {{ item.keterangan ?? '-' }}
@@ -167,13 +161,7 @@
         :value="selectedEntitas?.nama_direktur"
       />
       <DetailRow label="Status">
-        <VChip
-          :color="selectedEntitas?.status ? 'success' : 'error'"
-          size="small"
-          label
-        >
-          {{ selectedEntitas?.status ? 'Aktif' : 'Nonaktif' }}
-        </VChip>
+        <StatusChip :active="selectedEntitas?.status" />
       </DetailRow>
       <DetailRow
         label="Created By"

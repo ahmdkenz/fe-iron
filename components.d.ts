@@ -55,6 +55,7 @@ declare module 'vue' {
     RouterView: typeof import('vue-router')['RouterView']
     ScrollToTop: typeof import('./src/@core/components/ScrollToTop.vue')['default']
     ShareInvoicesDialog: typeof import('./src/modules/Finance/shared/components/ShareInvoicesDialog.vue')['default']
+    StatusChip: typeof import('./src/components/shared/StatusChip.vue')['default']
     SupervisorDashboardSection: typeof import('./src/modules/Finance/features/Dashboard/components/SupervisorDashboardSection.vue')['default']
     ThemeSwitcher: typeof import('./src/@core/components/ThemeSwitcher.vue')['default']
     UserForm: typeof import('./src/modules/IAM/features/Users/components/UserForm.vue')['default']

@@ -47,13 +47,7 @@
           {{ (meta.current_page - 1) * meta.per_page + index + 1 }}
         </template>
         <template #item.status="{ item }">
-          <VChip
-            :color="item.status ? 'success' : 'error'"
-            size="small"
-            label
-          >
-            {{ item.status ? 'Aktif' : 'Nonaktif' }}
-          </VChip>
+          <StatusChip :active="item.status" />
         </template>
         <template #item.name="{ item }">
           <VChip
@@ -159,13 +153,7 @@
         :value="selectedRole?.keterangan"
       />
       <DetailRow label="Status">
-        <VChip
-          :color="selectedRole?.status ? 'success' : 'error'"
-          size="small"
-          label
-        >
-          {{ selectedRole?.status ? 'Aktif' : 'Nonaktif' }}
-        </VChip>
+        <StatusChip :active="selectedRole?.status" />
       </DetailRow>
       <DetailRow
         label="Total User"

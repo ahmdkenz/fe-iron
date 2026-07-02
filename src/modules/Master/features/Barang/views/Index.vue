@@ -65,13 +65,7 @@
           {{ item.keterangan ?? '-' }}
         </template>
         <template #item.status="{ item }">
-          <VChip
-            :color="item.status ? 'success' : 'error'"
-            size="small"
-            label
-          >
-            {{ item.status ? 'Aktif' : 'Nonaktif' }}
-          </VChip>
+          <StatusChip :active="item.status" />
         </template>
         <template #item.created_by_name="{ item }">
           {{ item.created_by_name ?? '-' }}
@@ -170,13 +164,7 @@
         :value="selectedBarang?.keterangan"
       />
       <DetailRow label="Status">
-        <VChip
-          :color="selectedBarang?.status ? 'success' : 'error'"
-          size="small"
-          label
-        >
-          {{ selectedBarang?.status ? 'Aktif' : 'Nonaktif' }}
-        </VChip>
+        <StatusChip :active="selectedBarang?.status" />
       </DetailRow>
       <DetailRow
         label="Created By"

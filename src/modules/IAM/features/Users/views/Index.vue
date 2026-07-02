@@ -51,13 +51,7 @@
           {{ item.karyawan?.nama_karyawan ?? '-' }}
         </template>
         <template #item.status="{ item }">
-          <VChip
-            :color="item.status ? 'success' : 'error'"
-            size="small"
-            label
-          >
-            {{ item.status ? 'Aktif' : 'Nonaktif' }}
-          </VChip>
+          <StatusChip :active="item.status" />
         </template>
         <template #item.role="{ item }">
           <VChip
@@ -144,13 +138,7 @@
         <div class="text-h6 font-weight-bold mb-2">
           {{ selectedUser?.username }}
         </div>
-        <VChip
-          :color="selectedUser?.status ? 'success' : 'error'"
-          size="small"
-          label
-        >
-          {{ selectedUser?.status ? 'Aktif' : 'Nonaktif' }}
-        </VChip>
+        <StatusChip :active="selectedUser?.status" />
       </template>
 
       <DetailRow

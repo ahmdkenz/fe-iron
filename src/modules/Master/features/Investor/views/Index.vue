@@ -79,13 +79,7 @@
           {{ item.id_cabang ?? '-' }}
         </template>
         <template #item.status="{ item }">
-          <VChip
-            :color="item.status ? 'success' : 'error'"
-            size="small"
-            label
-          >
-            {{ item.status ? 'Aktif' : 'Nonaktif' }}
-          </VChip>
+          <StatusChip :active="item.status" />
         </template>
         <template #item.created_by_name="{ item }">
           {{ item.created_by_name ?? '-' }}
@@ -165,13 +159,7 @@
         <div class="text-h6 font-weight-bold mb-2">
           {{ selectedInvestor?.nama_investor }}
         </div>
-        <VChip
-          :color="selectedInvestor?.status ? 'success' : 'error'"
-          size="small"
-          label
-        >
-          {{ selectedInvestor?.status ? 'Aktif' : 'Nonaktif' }}
-        </VChip>
+        <StatusChip :active="selectedInvestor?.status" />
       </template>
 
       <DetailRow
