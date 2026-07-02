@@ -96,6 +96,7 @@
         wrap-text
         show-select
         v-model:selected="selectedB2B"
+        column-resize-key="finance-klien-ar-b2b"
         @update:options="onTableOptionsB2B"
       >
         <template #item.no="{ index }">
@@ -238,6 +239,7 @@
         wrap-text
         show-select
         v-model:selected="selectedB2C"
+        column-resize-key="finance-klien-ar-b2c"
         @update:options="onTableOptionsB2C"
       >
         <template #item.no="{ index }">

@@ -274,6 +274,7 @@
           show-select
           v-model:selected="selectedInvoices"
           class="mt-2"
+          column-resize-key="finance-opening-balance-b2b"
           @update:options="onTableOptionsB2B"
         >
           <template #item.no="{ index }">
@@ -517,6 +518,7 @@
           show-select
           v-model:selected="selectedInvoices"
           class="mt-2"
+          column-resize-key="finance-opening-balance-b2c"
           @update:options="onTableOptions"
         >
           <template #item.no="{ index }">
@@ -873,6 +875,7 @@
           :per-page="dirApprovalMeta.per_page"
           :page="dirApprovalMeta.current_page"
           class="mt-2"
+          column-resize-key="finance-opening-balance-approval"
           @update:options="onDirApprovalTableOptions"
         >
           <template #top>
@@ -1235,6 +1238,7 @@
           :per-page="dirObMetaB2B.per_page"
           :page="dirObMetaB2B.current_page"
           class="mt-2"
+          column-resize-key="finance-opening-balance-dir-b2b"
           @update:options="onDirObTableOptionsB2B"
         >
           <template #item.no="{ index }">
@@ -1460,6 +1464,7 @@
           :per-page="dirObMeta.per_page"
           :page="dirObMeta.current_page"
           class="mt-2"
+          column-resize-key="finance-opening-balance-dir-b2c"
           @update:options="onDirObTableOptions"
         >
           <template #item.no="{ index }">

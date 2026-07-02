@@ -243,6 +243,7 @@
         :page="metaB2B.current_page"
         show-select
         v-model:selected="selectedInvoices"
+        column-resize-key="finance-invoice-b2b"
         @update:options="onTableOptionsB2B"
       >
         <template #item.no="{ index }">
@@ -464,6 +465,7 @@
         :page="metaB2C.current_page"
         show-select
         v-model:selected="selectedInvoices"
+        column-resize-key="finance-invoice-b2c"
         @update:options="onTableOptionsB2C"
       >
         <template #item.no="{ index }">

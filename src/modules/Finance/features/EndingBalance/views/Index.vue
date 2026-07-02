@@ -46,15 +46,17 @@
           @update:model-value="doFetchB2B(1)"
         />
       </VCardText>
-      <VDataTableServer
+      <BaseTable
         :headers="headers"
         :items="rowsB2B"
-        :items-length="metaB2B.total"
+        :total="metaB2B.total"
         :loading="loadingB2B"
-        :items-per-page="metaB2B.per_page"
+        :per-page="metaB2B.per_page"
+        :page="currentPageB2B"
         item-value="id"
         show-expand
         v-model:expanded="expandedB2B"
+        column-resize-key="finance-ending-balance-b2b"
         @update:options="onTableOptionsB2B"
       >
         <template #item.no="{ index }">
@@ -176,7 +178,7 @@
             </VBtn>
           </div>
         </template>
-      </VDataTableServer>
+      </BaseTable>
     </VCard>
 
     <!-- Tabel B2C -->
@@ -215,15 +217,17 @@
           @update:model-value="doFetch(1)"
         />
       </VCardText>
-      <VDataTableServer
+      <BaseTable
         :headers="headers"
         :items="rows"
-        :items-length="meta.total"
+        :total="meta.total"
         :loading="loading"
-        :items-per-page="meta.per_page"
+        :per-page="meta.per_page"
+        :page="currentPage"
         item-value="id"
         show-expand
         v-model:expanded="expanded"
+        column-resize-key="finance-ending-balance-b2c"
         @update:options="onTableOptions"
       >
         <template #item.no="{ index }">
@@ -345,7 +349,7 @@
             </VBtn>
           </div>
         </template>
-      </VDataTableServer>
+      </BaseTable>
     </VCard>
 
     <!-- Dialog Konfirmasi Lock -->
