@@ -1,5 +1,22 @@
-import Swal from 'sweetalert2'
 import { useTheme } from 'vuetify'
+
+let swalPromise = null
+let Swal = null
+
+// Loads SweetAlert2 (JS + CSS) on first use instead of bundling it into the initial page load.
+function loadSwal() {
+  if (!swalPromise) {
+    swalPromise = Promise.all([
+      import('sweetalert2'),
+      import('sweetalert2/dist/sweetalert2.min.css'),
+      import('@/styles/sweetalert.scss'),
+    ]).then(([mod]) => {
+      Swal = mod.default
+    })
+  }
+
+  return swalPromise
+}
 
 function normalizeOptions(defaults, options = {}) {
   if (typeof options === 'string')
@@ -42,7 +59,8 @@ export function useSweetAlert() {
     }
   }
 
-  function showAlert(options = {}) {
+  // Assumes Swal is already loaded — only call this after `await loadSwal()`.
+  function fireSwal(options = {}) {
     const themeTokens = resolveThemeTokens()
     const customClass = options.customClass ?? {}
 
@@ -73,6 +91,12 @@ export function useSweetAlert() {
     })
   }
 
+  async function showAlert(options = {}) {
+    await loadSwal()
+
+    return fireSwal(options)
+  }
+
   function showSuccess(options = {}) {
     return showAlert(normalizeOptions({
       icon: 'success',
@@ -90,7 +114,7 @@ export function useSweetAlert() {
     }, options))
   }
 
-  function showLoading(options = {}) {
+  async function showLoading(options = {}) {
     const customClass = options.customClass ?? {}
     let alertOptions = normalizeOptions({
       title: 'Memproses Data',
@@ -110,11 +134,23 @@ export function useSweetAlert() {
       popup: joinClasses('iron-swal-loading-popup', customClass.popup),
     }
 
-    return showAlert(alertOptions)
+    // Single await hop so this resolves and calls Swal.fire() synchronously in the
+    // same microtask — keeps ordering correct against a closeAlert() racing on the
+    // same in-flight loadSwal() promise (see closeAlert below).
+    await loadSwal()
+
+    return fireSwal(alertOptions)
   }
 
-  function closeAlert(options = {}) {
+  async function closeAlert(options = {}) {
     const { onlyLoading = false } = options
+
+    // Nothing was ever shown, so there is nothing to close.
+    if (!swalPromise)
+      return
+
+    await swalPromise
+
     const popup = Swal.getPopup()
     if (!popup)
       return

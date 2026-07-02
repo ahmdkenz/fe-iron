@@ -10,8 +10,14 @@
     >
       </PageHeader>
 
+    <!-- Tab Selector B2B/B2C -->
+    <VTabs :model-value="activeSegmentTab" class="mb-4" @update:model-value="onSegmentTabChange">
+      <VTab value="b2b">Ending Balance B2B</VTab>
+      <VTab value="b2c">Ending Balance B2C</VTab>
+    </VTabs>
+
     <!-- Tabel B2B -->
-    <VCard class="mb-4">
+    <VCard v-if="activeSegmentTab === 'b2b'" class="mb-4">
       <VCardTitle class="px-4 pt-4 pb-0 text-body-1 font-weight-bold d-flex align-center gap-2">
         <VIcon icon="ri-building-line" size="20" color="primary" />
         Ending Balance B2B
@@ -182,7 +188,7 @@
     </VCard>
 
     <!-- Tabel B2C -->
-    <VCard>
+    <VCard v-if="activeSegmentTab === 'b2c'">
       <VCardTitle class="px-4 pt-4 pb-0 text-body-1 font-weight-bold d-flex align-center gap-2">
         <VIcon icon="ri-store-line" size="20" color="secondary" />
         Ending Balance B2C
@@ -665,6 +671,8 @@ const submittingKoreksi = ref(false)
 const koreksiError      = ref('')
 const koreksiInvoices   = ref([])
 const koreksiInvoicesLoading = ref(false)
+const activeSegmentTab  = ref('b2c')
+let b2bLoaded = false
 
 const nilaiKoreksiComputed = computed(() => {
   const jumlah = Number(koreksiForm.jumlah_koreksi || 0)
@@ -748,6 +756,19 @@ async function doFetchB2B(page = 1) {
   }
 }
 
+function onSegmentTabChange(tab) {
+  activeSegmentTab.value = tab
+  if (tab === 'b2b' && !b2bLoaded) {
+    b2bLoaded = true
+    doFetchB2B(currentPageB2B.value)
+  }
+}
+
+function refreshLists() {
+  doFetch(currentPage.value)
+  if (b2bLoaded) doFetchB2B(currentPageB2B.value)
+}
+
 function onTableOptions({ page }) {
   currentPage.value = page
   doFetch(page)
@@ -769,8 +790,7 @@ async function doLock() {
   try {
     await api.patch(`/finance/ending-balance/${lockTarget.value.id}/lock`)
     showLockDialog.value = false
-    doFetch(currentPage.value)
-    doFetchB2B(currentPageB2B.value)
+    refreshLists()
   } catch (e) {
     alert(e?.response?.data?.message ?? 'Gagal mengunci.')
   } finally {
@@ -790,8 +810,7 @@ async function doUnlock() {
   try {
     await api.patch(`/finance/ending-balance/${unlockTarget.value.id}/unlock`)
     showUnlockDialog.value = false
-    doFetch(currentPage.value)
-    doFetchB2B(currentPageB2B.value)
+    refreshLists()
   } catch (e) {
     alert(e?.response?.data?.message ?? 'Gagal membuka kunci periode.')
   } finally {
@@ -857,8 +876,7 @@ async function submitKoreksiDialog() {
     showKoreksiDialog.value = false
     if (wasDraft) {
       // DRAFT: penyesuaian langsung berlaku → muat ulang agar saldo & outstanding terupdate
-      doFetch(currentPage.value)
-      doFetchB2B(currentPageB2B.value)
+      refreshLists()
     } else {
       // LOCKED: koreksi menunggu approval → tandai ada koreksi aktif
       const idx = rows.value.findIndex(r => r.id === koreksiTarget.value.id)
@@ -873,7 +891,7 @@ async function submitKoreksiDialog() {
   }
 }
 
-onMounted(() => { doFetch(); doFetchB2B() })
+onMounted(() => { doFetch() })
 </script>
 
 <style scoped>

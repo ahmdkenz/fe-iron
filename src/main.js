@@ -7,8 +7,6 @@ import { useAuthStore } from '@/stores/auth.store'
 // Styles
 import '@core/scss/template/index.scss'
 import '@styles/styles.scss'
-import 'sweetalert2/dist/sweetalert2.min.css'
-import './styles/sweetalert.scss'
 
 const app = createApp(App)
 registerPlugins(app)

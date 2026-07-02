@@ -199,20 +199,28 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref, shallowRef } from 'vue'
+import { computed, defineAsyncComponent, onMounted, ref, shallowRef } from 'vue'
 import { useTheme } from 'vuetify'
 import { useAuthStore } from '@/stores/auth.store'
 import DeferredApexChart from '@/components/shared/DeferredApexChart.vue'
-import PicArDashboardSection from '@/modules/Finance/features/Dashboard/components/PicArDashboardSection.vue'
-import ManagerDashboardSection from '@/modules/Finance/features/Dashboard/components/ManagerDashboardSection.vue'
-import SupervisorDashboardSection from '@/modules/Finance/features/Dashboard/components/SupervisorDashboardSection.vue'
 import InvoiceStatusBadge from '@/modules/Finance/shared/components/InvoiceStatusBadge.vue'
 import { useFormatter } from '@/composables/useFormatter'
 import api from '@/utils/axios'
 
+const PicArDashboardSection = defineAsyncComponent(() => import('@/modules/Finance/features/Dashboard/components/PicArDashboardSection.vue'))
+const ManagerDashboardSection = defineAsyncComponent(() => import('@/modules/Finance/features/Dashboard/components/ManagerDashboardSection.vue'))
+const SupervisorDashboardSection = defineAsyncComponent(() => import('@/modules/Finance/features/Dashboard/components/SupervisorDashboardSection.vue'))
+
 const authStore = useAuthStore()
 const theme     = useTheme()
 const { formatCurrency } = useFormatter()
+
+// Mirrors the template's v-if/v-else-if chain — only this branch fetches/renders the full admin dashboard.
+const showFullDashboard = computed(() => (
+  !authStore.isArOnly
+  && !(authStore.isManager && !authStore.isAdmin)
+  && !(authStore.isSupervisor && !authStore.isAdmin && !authStore.isManager)
+))
 
 const compactFormatter = new Intl.NumberFormat('id-ID', {
   notation: 'compact',
@@ -366,7 +374,10 @@ async function loadDashboard() {
   }
 }
 
-onMounted(loadDashboard)
+onMounted(() => {
+  if (showFullDashboard.value)
+    loadDashboard()
+})
 </script>
 
 <style scoped>

@@ -139,8 +139,14 @@
       </VCol>
     </VRow>
 
+    <!-- Tab Selector B2B/B2C (hanya untuk admin/manager/supervisor) -->
+    <VTabs v-if="canSeeAll" :model-value="activeSegmentTab" class="mb-4" @update:model-value="onSegmentTabChange">
+      <VTab value="b2b">Invoice B2B</VTab>
+      <VTab value="b2c">Invoice B2C</VTab>
+    </VTabs>
+
     <!-- B2B Table (hanya untuk admin/manager/supervisor) -->
-    <VCard v-if="canSeeAll" class="mb-4">
+    <VCard v-if="canSeeAll && activeSegmentTab === 'b2b'" class="mb-4">
       <div class="d-flex align-center justify-space-between px-4 py-3">
         <div class="d-flex align-center gap-2">
           <VAvatar
@@ -362,7 +368,7 @@
     </VCard>
 
     <!-- B2C Table -->
-    <VCard>
+    <VCard v-if="!canSeeAll || activeSegmentTab === 'b2c'">
       <div class="d-flex align-center justify-space-between px-4 py-3">
         <div class="d-flex align-center gap-2">
           <VAvatar
@@ -703,6 +709,8 @@ const exportingExcel   = ref(false)
 const showExportModal  = ref(false)
 const exportMonth      = ref(new Date().toISOString().slice(0, 7))
 const printingId        = ref(null)
+const activeSegmentTab  = ref('b2c')
+let b2bLoaded = false
 
 const headers = [
   { title: 'No',           key: 'no',              sortable: false, width: '60px' },
@@ -823,6 +831,20 @@ function resetFiltersB2C() {
   doFetchB2C()
 }
 
+function onSegmentTabChange(tab) {
+  activeSegmentTab.value = tab
+  if (tab === 'b2b' && !b2bLoaded) {
+    b2bLoaded = true
+    loadListB2B()
+  }
+}
+
+function refreshLists() {
+  loadListB2C()
+  if (canSeeAll && b2bLoaded) loadListB2B()
+  loadSummary()
+}
+
 function onTableOptionsB2C({ page, itemsPerPage }) {
   paramsB2C.page = page
   paramsB2C.per_page = itemsPerPage
@@ -879,9 +901,7 @@ function openCatatBayar(item) {
 }
 
 function onPembayaranSaved() {
-  loadListB2C()
-  if (canSeeAll) loadListB2B()
-  loadSummary()
+  refreshLists()
 }
 
 async function printInvoice(id) {
@@ -926,9 +946,7 @@ async function doBulkDelete() {
     })
     const deleted = res.data?.data?.deleted ?? draftItems.length
     selectedInvoices.value = []
-    loadListB2C()
-    if (canSeeAll) loadListB2B()
-    loadSummary()
+    refreshLists()
     await showSuccess(`${deleted} invoice berhasil dihapus.`)
   } catch (err) {
     await showError(err.response?.data?.message ?? 'Gagal menghapus invoice')
@@ -948,9 +966,7 @@ async function doDelete() {
 
   const res = await remove(deleteId)
   if (res.success) {
-    loadListB2C()
-    if (canSeeAll) loadListB2B()
-    loadSummary()
+    refreshLists()
     await showSuccess('Invoice berhasil dihapus.')
   } else {
     deleteError.value = res.message || 'Gagal menghapus data'
@@ -960,7 +976,6 @@ async function doDelete() {
 
 onMounted(() => {
   loadListB2C()
-  if (canSeeAll) loadListB2B()
   loadSummary()
 })
 

@@ -220,9 +220,10 @@
 
 <script setup>
 import { computed, reactive, ref } from 'vue'
-import writeXlsxFile from 'write-excel-file/browser'
-import Swal from 'sweetalert2'
+import { useSweetAlert } from '@/composables/useSweetAlert'
 import api from '@/utils/axios'
+
+const { showSuccess, showError } = useSweetAlert()
 
 const exporting = ref(false)
 const selectedKeys = ref([])
@@ -565,6 +566,9 @@ async function doExport() {
         sections.push(await fetchMap[def.key]())
     }
 
+    // Library ekspor Excel besar (~70 kB) — dimuat hanya saat tombol Export diklik.
+    const { default: writeXlsxFile } = await import('write-excel-file/browser')
+
     await writeXlsxFile(
       sections.map(s => ({
         data:    sectionToSheetData(s),
@@ -575,8 +579,7 @@ async function doExport() {
       }))
     ).toFile(`laporan-ar-${todayStr}.xlsx`)
 
-    Swal.fire({
-      icon: 'success',
+    showSuccess({
       title: 'Export Berhasil!',
       html: `<span style="color:#283593">${sections.length} laporan berhasil diunduh sebagai <b>file Excel</b></span>`,
       iconColor: '#283593',
@@ -587,8 +590,7 @@ async function doExport() {
     })
   } catch (err) {
     console.error('Export gagal:', err)
-    Swal.fire({
-      icon: 'error',
+    showError({
       title: 'Export Gagal',
       text: err?.response?.data?.message || err?.message || 'Terjadi kesalahan saat mengambil data',
       confirmButtonColor: '#283593',

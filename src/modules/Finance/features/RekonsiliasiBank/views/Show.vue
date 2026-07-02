@@ -17,9 +17,10 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { defineAsyncComponent, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import RekonsiliasiBankDetail from './RekonsiliasiBankDetail.vue'
+
+const RekonsiliasiBankDetail = defineAsyncComponent(() => import('./Detail.vue'))
 
 const route    = useRoute()
 const bankType = ref('')
