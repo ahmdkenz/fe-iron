@@ -58,18 +58,6 @@
             {{ item.kode_barang }}
           </VChip>
         </template>
-        <template #item.brand="{ item }">
-          <VChip
-            v-if="item.brand"
-            color="info"
-            size="small"
-            variant="tonal"
-            label
-          >
-            {{ item.brand.nama_brand }}
-          </VChip>
-          <span v-else>-</span>
-        </template>
         <template #item.spesifikasi="{ item }">
           {{ item.spesifikasi ?? '-' }}
         </template>
@@ -178,14 +166,6 @@
         :value="selectedBarang?.spesifikasi"
       />
       <DetailRow
-        label="Brand"
-        :value="selectedBarang?.brand?.nama_brand"
-      />
-      <DetailRow
-        label="Kode Brand"
-        :value="selectedBarang?.brand?.kode_brand"
-      />
-      <DetailRow
         label="Keterangan"
         :value="selectedBarang?.keterangan"
       />
@@ -276,7 +256,6 @@ const headers = [
   { title: 'Kode Barang',  key: 'kode_barang',     sortable: false },
   { title: 'Nama Barang',  key: 'nama_barang',     sortable: false },
   { title: 'Spesifikasi',  key: 'spesifikasi',     sortable: false },
-  { title: 'Brand',        key: 'brand',           sortable: false },
   { title: 'Keterangan',   key: 'keterangan',      sortable: false },
   { title: 'Status',       key: 'status',          sortable: false },
   { title: 'Created By',   key: 'created_by_name', sortable: false },

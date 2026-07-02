@@ -161,7 +161,6 @@
                   />
                 </VCol>
                 <VCol
-                  v-if="isB2B"
                   cols="12"
                   md="6"
                 >
@@ -173,7 +172,7 @@
                     prepend-inner-icon="ri-receipt-line"
                     placeholder="Nomor invoice dari resto"
                     clearable
-                    hint="Nomor invoice yang diterima oleh resto"
+                    :hint="isB2B ? 'Nomor invoice yang diterima oleh resto' : 'Opsional, nomor asli untuk pencocokan data'"
                     persistent-hint
                   />
                 </VCol>
@@ -742,7 +741,7 @@ async function submitAs(status = null) {
   if (status) payload.status = status
   payload.items = form.items.map(it => ({
     ...it,
-    no_invoice_resto: isB2B.value ? (noInvoiceResto.value ?? '') : '',
+    no_invoice_resto: noInvoiceResto.value ?? '',
   }))
 
   const res = isEditing.value

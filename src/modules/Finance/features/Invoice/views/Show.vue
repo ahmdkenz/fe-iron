@@ -514,7 +514,7 @@
                 <thead>
                   <tr>
                     <th>No</th>
-                    <th v-if="isB2B">
+                    <th v-if="showNoInvoiceResto">
                       No Invoice Resto
                     </th>
                     <th v-if="isB2B">
@@ -543,7 +543,7 @@
                     :key="it.id"
                   >
                     <td>{{ i + 1 }}</td>
-                    <td v-if="isB2B">
+                    <td v-if="showNoInvoiceResto">
                       <VChip
                         v-if="it.no_invoice_resto"
                         size="x-small"
@@ -1212,6 +1212,9 @@ const statusTransitions = {
 
 const isOpeningBalance = computed(() => invoice.value?.is_opening_balance === true)
 const isB2B = computed(() => invoice.value?.klien_ar?.tipe_klien === 'PT')
+const showNoInvoiceResto = computed(() =>
+  isB2B.value || (invoice.value?.items ?? []).some(it => it.no_invoice_resto),
+)
 const documentLabel = computed(() => isOpeningBalance.value ? 'Opening Balance' : 'Invoice')
 
 const isOverdue = computed(() => {

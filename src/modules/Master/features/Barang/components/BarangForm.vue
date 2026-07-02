@@ -114,51 +114,7 @@
             :error-messages="errors.spesifikasi"
           />
         </VCol>
-      </VRow>
-
-      <!-- Section: Klasifikasi -->
-      <div
-        class="text-caption font-weight-bold text-uppercase d-flex align-center gap-1 mt-3 mb-2"
-        style="color: rgb(var(--v-theme-info))"
-      >
-        <VIcon
-          icon="ri-folder-3-line"
-          size="13"
-        />
-        Klasifikasi
-      </div>
-      <VRow dense>
-        <VCol
-          cols="12"
-          md="7"
-        >
-          <VAutocomplete
-            v-model="form.brand_id"
-            label="Brand"
-            density="compact"
-            variant="outlined"
-            prepend-inner-icon="ri-award-line"
-            :items="brandList"
-            item-title="nama_brand"
-            item-value="id"
-            :rules="[v => !!v || 'Brand wajib dipilih']"
-            :error-messages="errors.brand_id"
-            :loading="brandLoading"
-            clearable
-          >
-            <template #item="{ props: p, item }">
-              <VListItem
-                v-bind="p"
-                :title="item.raw.nama_brand"
-                :subtitle="item.raw.kode_brand"
-              />
-            </template>
-          </VAutocomplete>
-        </VCol>
-        <VCol
-          cols="12"
-          md="5"
-        >
+        <VCol cols="12">
           <VTextField
             v-model="form.keterangan"
             label="Keterangan"
@@ -225,7 +181,6 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue', 'saved'])
 
 const { create, update, saving } = useCrud('/master/barang')
-const { items: brandList, loading: brandLoading, fetchAll: fetchBrands } = useCrud('/master/brand')
 
 const formRef      = ref(null)
 const errorMessage = ref('')
@@ -261,13 +216,12 @@ function onNamaBarangChange(val) {
 
 const errors = reactive({
   kode_barang: [], nama_barang: [],
-  brand_id: [], spesifikasi: [], keterangan: [],
+  spesifikasi: [], keterangan: [],
 })
 
 const defaultForm = () => ({
   kode_barang: '',
   nama_barang: '',
-  brand_id: null,
   spesifikasi: '',
   keterangan: '',
   status: 1,
@@ -279,14 +233,12 @@ watch([() => props.modelValue, () => props.barangData], async ([open]) => {
   if (!open) return
   Object.keys(errors).forEach(k => (errors[k] = []))
   errorMessage.value = ''
-  fetchBrands()
   fetchExternalCatalog()
 
   if (props.barangData) {
     Object.assign(form, {
       kode_barang: props.barangData.kode_barang ?? '',
       nama_barang: props.barangData.nama_barang ?? '',
-      brand_id:    props.barangData.brand_id    ?? null,
       spesifikasi: props.barangData.spesifikasi ?? '',
       keterangan:  props.barangData.keterangan  ?? '',
       status:      normalizeBooleanStatus(props.barangData.status),

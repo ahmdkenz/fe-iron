@@ -86,49 +86,6 @@
                 :error-messages="errors.spesifikasi"
               />
             </VCol>
-          </VRow>
-        </VCardText>
-      </VCard>
-
-      <!-- Klasifikasi -->
-      <VCard class="mb-4">
-        <VCardTitle class="pa-4 pb-2">
-          <VIcon
-            icon="ri-folder-3-line"
-            class="me-2"
-          />
-          Klasifikasi
-        </VCardTitle>
-        <VDivider />
-        <VCardText>
-          <VRow>
-            <VCol
-              cols="12"
-              md="6"
-            >
-              <VAutocomplete
-                v-model="form.brand_id"
-                label="Brand"
-                density="compact"
-                variant="outlined"
-                :items="brandList"
-                item-title="nama_brand"
-                item-value="id"
-                :rules="[v => !!v || 'Brand wajib dipilih']"
-                :error-messages="errors.brand_id"
-                :loading="brandLoading"
-                clearable
-                @focus="ensureBrandsLoaded()"
-              >
-                <template #item="{ props: p, item }">
-                  <VListItem
-                    v-bind="p"
-                    :title="item.raw.nama_brand"
-                    :subtitle="item.raw.kode_brand"
-                  />
-                </template>
-              </VAutocomplete>
-            </VCol>
             <VCol
               cols="12"
               md="6"
@@ -194,7 +151,6 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useCrud } from '@/composables/useCrud.js'
-import { useLazyFetchAll } from '@/composables/useLazyFetchAll.js'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { setFlashAlert } from '@/utils/flashAlert'
 import { BOOLEAN_STATUS_OPTIONS, normalizeBooleanStatus } from '@/utils/status.js'
@@ -206,21 +162,19 @@ const id = route.params.id
 const isEditing = computed(() => !!id)
 
 const { create, update, saving, fetchOne } = useCrud('/master/barang')
-const { items: brandList, loading: brandLoading, fetchAll: fetchBrands } = useCrud('/master/brand')
-const { ensureLoaded: ensureBrandsLoaded } = useLazyFetchAll(fetchBrands)
 
 const formRef = ref(null)
 const pageLoading = ref(!!id)
 const errorMessage = ref('')
 
 const errors = reactive({
-  kode_barang: [], nama_barang: [], brand_id: [], spesifikasi: [], keterangan: [],
+  kode_barang: [], nama_barang: [], spesifikasi: [], keterangan: [],
 })
 
 const statusOptions = BOOLEAN_STATUS_OPTIONS
 
 const form = reactive({
-  kode_barang: '', nama_barang: '', brand_id: null, spesifikasi: '', keterangan: '', status: 1,
+  kode_barang: '', nama_barang: '', spesifikasi: '', keterangan: '', status: 1,
 })
 
 async function handleSubmit() {
@@ -248,18 +202,15 @@ async function handleSubmit() {
 
 onMounted(async () => {
   if (!isEditing.value) {
-    pageLoading.value = false 
+    pageLoading.value = false
 
     return
   }
-
-  await ensureBrandsLoaded()
 
   const data = await fetchOne(id)
   if (data) {
     form.kode_barang = data.kode_barang ?? ''
     form.nama_barang = data.nama_barang ?? ''
-    form.brand_id    = data.brand_id    ?? null
     form.spesifikasi = data.spesifikasi ?? ''
     form.keterangan  = data.keterangan  ?? ''
     form.status      = normalizeBooleanStatus(data.status)
