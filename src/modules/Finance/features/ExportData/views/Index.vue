@@ -13,16 +13,31 @@
       <VCardText>
         <div class="d-flex flex-wrap justify-space-between align-center gap-3 mb-4">
           <div>
-            <div class="text-h6 font-weight-bold">Pilih Laporan</div>
-            <div class="text-caption text-medium-emphasis">Centang satu atau lebih laporan yang akan di-export</div>
+            <div class="text-h6 font-weight-bold">
+              Pilih Laporan
+            </div>
+            <div class="text-caption text-medium-emphasis">
+              Centang satu atau lebih laporan yang akan di-export
+            </div>
           </div>
-          <VBtn variant="tonal" size="small" color="primary" @click="toggleSelectAll">
+          <VBtn
+            variant="tonal"
+            size="small"
+            color="primary"
+            @click="toggleSelectAll"
+          >
             {{ allSelected ? 'Batal Semua' : 'Pilih Semua' }}
           </VBtn>
         </div>
 
         <VRow>
-          <VCol v-for="rpt in reportDefs" :key="rpt.key" cols="12" sm="6" md="4">
+          <VCol
+            v-for="rpt in reportDefs"
+            :key="rpt.key"
+            cols="12"
+            sm="6"
+            md="4"
+          >
             <div
               class="report-tile"
               :class="{
@@ -40,12 +55,23 @@
                 @click.stop
                 @update:model-value="toggleReport(rpt.key)"
               />
-              <VAvatar :color="rpt.color" variant="tonal" size="42">
-                <VIcon :icon="rpt.icon" size="22" />
+              <VAvatar
+                :color="rpt.color"
+                variant="tonal"
+                size="42"
+              >
+                <VIcon
+                  :icon="rpt.icon"
+                  size="22"
+                />
               </VAvatar>
               <div class="min-width-0">
-                <div class="font-weight-semibold text-body-1">{{ rpt.label }}</div>
-                <div class="text-caption text-medium-emphasis mt-1">{{ rpt.description }}</div>
+                <div class="font-weight-semibold text-body-1">
+                  {{ rpt.label }}
+                </div>
+                <div class="text-caption text-medium-emphasis mt-1">
+                  {{ rpt.description }}
+                </div>
                 <VChip
                   v-if="rpt.disabled"
                   size="x-small"
@@ -62,13 +88,20 @@
       </VCardText>
     </VCard>
 
-    <VCard v-if="selectedKeys.length > 0" class="mb-4">
+    <VCard
+      v-if="selectedKeys.length > 0"
+      class="mb-4"
+    >
       <VCardTitle class="px-5 pt-5 pb-0 text-subtitle-2 text-uppercase text-medium-emphasis font-weight-bold">
         Filter Export
       </VCardTitle>
       <VCardText class="pa-5">
         <VRow dense>
-          <VCol v-if="showSegmentFilter" cols="12" sm="auto">
+          <VCol
+            v-if="showSegmentFilter"
+            cols="12"
+            sm="auto"
+          >
             <VBtnToggle
               v-model="filters.segment"
               color="primary"
@@ -77,13 +110,35 @@
               divided
               density="compact"
             >
-              <VBtn value="ALL" size="small" style="min-width: 80px">Semua</VBtn>
-              <VBtn value="B2C" size="small" style="min-width: 70px">B2C</VBtn>
-              <VBtn value="B2B" size="small" style="min-width: 70px">B2B</VBtn>
+              <VBtn
+                value="ALL"
+                size="small"
+                style="min-width: 80px"
+              >
+                Semua
+              </VBtn>
+              <VBtn
+                value="B2C"
+                size="small"
+                style="min-width: 70px"
+              >
+                B2C
+              </VBtn>
+              <VBtn
+                value="B2B"
+                size="small"
+                style="min-width: 70px"
+              >
+                B2B
+              </VBtn>
             </VBtnToggle>
           </VCol>
 
-          <VCol v-if="showPeriodFilter" cols="6" sm="auto">
+          <VCol
+            v-if="showPeriodFilter"
+            cols="6"
+            sm="auto"
+          >
             <VTextField
               v-model="filters.tanggal_dari"
               label="Dari Tanggal"
@@ -95,7 +150,11 @@
             />
           </VCol>
 
-          <VCol v-if="showPeriodFilter" cols="6" sm="auto">
+          <VCol
+            v-if="showPeriodFilter"
+            cols="6"
+            sm="auto"
+          >
             <VTextField
               v-model="filters.tanggal_sampai"
               label="Sampai Tanggal"
@@ -107,7 +166,11 @@
             />
           </VCol>
 
-          <VCol v-if="showClientFilter" cols="12" sm>
+          <VCol
+            v-if="showClientFilter"
+            cols="12"
+            sm
+          >
             <VAutocomplete
               v-model="filters.klien_ar_id"
               label="Klien"
@@ -121,11 +184,15 @@
               item-title="nama_klien"
               item-value="id"
               :loading="klienLoading"
-              @focus="ensureKlienLoaded()"
+              @focus="ensureKlienLoaded"
             />
           </VCol>
 
-          <VCol v-if="showPaymentMethodFilter" cols="12" sm="auto">
+          <VCol
+            v-if="showPaymentMethodFilter"
+            cols="12"
+            sm="auto"
+          >
             <VSelect
               v-model="filters.metode_pembayaran"
               label="Metode"
@@ -142,13 +209,27 @@
           </VCol>
         </VRow>
 
-        <VDivider v-if="showSpecialFilters" class="my-4" />
+        <VDivider
+          v-if="showSpecialFilters"
+          class="my-4"
+        />
 
-        <VRow v-if="showSpecialFilters" dense>
-          <VCol v-if="isSelected('aging_report')" cols="12" md="4">
+        <VRow
+          v-if="showSpecialFilters"
+          dense
+        >
+          <VCol
+            v-if="isSelected('aging_report')"
+            cols="12"
+            md="4"
+          >
             <div class="filter-group">
               <div class="d-flex align-center gap-2 mb-3">
-                <VIcon icon="ri-bar-chart-grouped-line" size="16" color="primary" />
+                <VIcon
+                  icon="ri-bar-chart-grouped-line"
+                  size="16"
+                  color="primary"
+                />
                 <span class="text-subtitle-2 font-weight-semibold">Aging Report</span>
               </div>
               <VTextField
@@ -162,10 +243,18 @@
             </div>
           </VCol>
 
-          <VCol v-if="isSelected('rekap_klien')" cols="12" md="4">
+          <VCol
+            v-if="isSelected('rekap_klien')"
+            cols="12"
+            md="4"
+          >
             <div class="filter-group">
               <div class="d-flex align-center gap-2 mb-3">
-                <VIcon icon="ri-pie-chart-2-line" size="16" color="secondary" />
+                <VIcon
+                  icon="ri-pie-chart-2-line"
+                  size="16"
+                  color="secondary"
+                />
                 <span class="text-subtitle-2 font-weight-semibold">Rekap Klien</span>
               </div>
               <div class="d-flex gap-3">
@@ -193,10 +282,18 @@
             </div>
           </VCol>
 
-          <VCol v-if="isSelected('jurnal_pic')" cols="12" md="4">
+          <VCol
+            v-if="isSelected('jurnal_pic')"
+            cols="12"
+            md="4"
+          >
             <div class="filter-group">
               <div class="d-flex align-center gap-2 mb-3">
-                <VIcon icon="ri-file-list-3-line" size="16" color="warning" />
+                <VIcon
+                  icon="ri-file-list-3-line"
+                  size="16"
+                  color="warning"
+                />
                 <span class="text-subtitle-2 font-weight-semibold">Jurnal PIC</span>
               </div>
               <div class="d-flex flex-column gap-3">
@@ -220,7 +317,7 @@
                   item-title="nama_karyawan"
                   item-value="id"
                   :loading="karyawanLoading"
-                  @focus="ensureKaryawanLoaded()"
+                  @focus="ensureKaryawanLoaded"
                 />
                 <VSelect
                   v-model="jurnalPicFilter.status_rekonsiliasi"
@@ -238,27 +335,21 @@
             </div>
           </VCol>
 
-          <VCol v-if="isSelected('pendapatan_di_muka')" cols="12" md="4">
+          <VCol
+            v-if="isSelected('pendapatan_di_muka')"
+            cols="12"
+            md="4"
+          >
             <div class="filter-group">
               <div class="d-flex align-center gap-2 mb-3">
-                <VIcon icon="ri-time-line" size="16" color="deep-purple" />
+                <VIcon
+                  icon="ri-time-line"
+                  size="16"
+                  color="deep-purple"
+                />
                 <span class="text-subtitle-2 font-weight-semibold">Pendapatan di Muka</span>
               </div>
               <div class="d-flex flex-column gap-3">
-                <VAutocomplete
-                  v-model="pdmFilter.investor_id"
-                  label="Investor"
-                  placeholder="Semua Investor"
-                  clearable
-                  density="compact"
-                  variant="outlined"
-                  hide-details
-                  :items="investorList"
-                  item-title="nama_investor"
-                  item-value="id"
-                  :loading="investorLoading"
-                  @focus="ensureInvestorLoaded()"
-                />
                 <VSelect
                   v-model="pdmFilter.status"
                   label="Status"
@@ -281,15 +372,25 @@
     <VCard>
       <VCardText class="d-flex flex-wrap justify-space-between align-center gap-3">
         <div class="min-width-0">
-          <div v-if="selectedKeys.length > 0" class="text-subtitle-1 font-weight-medium">
+          <div
+            v-if="selectedKeys.length > 0"
+            class="text-subtitle-1 font-weight-medium"
+          >
             {{ selectedKeys.length }} laporan dipilih
           </div>
-          <div v-else class="text-subtitle-1 text-medium-emphasis">Belum ada laporan dipilih</div>
+          <div
+            v-else
+            class="text-subtitle-1 text-medium-emphasis"
+          >
+            Belum ada laporan dipilih
+          </div>
           <div class="text-caption text-medium-emphasis mt-1 selected-labels">
             <template v-if="selectedKeys.length > 0">
               {{ selectedDefs.map(r => r.label).join(' | ') }}
             </template>
-            <template v-else>Silakan pilih minimal satu laporan</template>
+            <template v-else>
+              Silakan pilih minimal satu laporan
+            </template>
           </div>
         </div>
         <VBtn
@@ -317,10 +418,8 @@ import api from '@/utils/axios'
 const { showSuccess, showError } = useSweetAlert()
 const { items: klienList, loading: klienLoading, fetchAll: fetchKlien } = useCrud('/finance/klien-ar')
 const { items: karyawanList, loading: karyawanLoading, fetchAll: fetchKaryawan } = useCrud('/master/karyawan')
-const { items: investorList, loading: investorLoading, fetchAll: fetchInvestor } = useCrud('/master/investor')
 const { ensureLoaded: ensureKlienLoaded } = useLazyFetchAll(fetchKlien)
 const { ensureLoaded: ensureKaryawanLoaded } = useLazyFetchAll(fetchKaryawan)
-const { ensureLoaded: ensureInvestorLoaded } = useLazyFetchAll(fetchInvestor)
 
 const exporting = ref(false)
 const selectedKeys = ref([])
@@ -341,7 +440,7 @@ const filters = reactive({
 const agingFilter = reactive({ as_of_date: todayStr })
 const rekapKlienFilter = reactive({ periode_bulan: null, periode_tahun: now.getFullYear() })
 const jurnalPicFilter = reactive({ no_referensi: null, karyawan_id: null, status_rekonsiliasi: null })
-const pdmFilter = reactive({ investor_id: null, status: null })
+const pdmFilter = reactive({ status: null })
 
 const reportDefs = [
   {
@@ -350,7 +449,6 @@ const reportDefs = [
     icon: 'ri-bar-chart-grouped-line',
     description: 'Umur piutang belum terbayar',
     color: 'primary',
-    endpoint: '/finance/aging-report/export-excel',
     supportsSegment: true,
     supportsClient: true,
     usesAsOfDate: true,
@@ -361,7 +459,6 @@ const reportDefs = [
     icon: 'ri-file-list-3-line',
     description: 'Pembayaran berdasarkan PIC dan referensi',
     color: 'warning',
-    endpoint: '/finance/jurnal-pic/export-excel',
     usesPeriod: true,
     supportsClient: true,
     supportsPaymentMethod: true,
@@ -372,7 +469,6 @@ const reportDefs = [
     icon: 'ri-pie-chart-2-line',
     description: 'Ringkasan outstanding per klien',
     color: 'secondary',
-    frontendWorkbook: true,
     supportsSegment: true,
     usesMonthYear: true,
   },
@@ -382,7 +478,6 @@ const reportDefs = [
     icon: 'ri-money-cny-circle-line',
     description: 'Daftar semua pembayaran AR',
     color: 'success',
-    frontendWorkbook: true,
     supportsSegment: true,
     supportsClient: true,
     supportsPaymentMethod: true,
@@ -394,7 +489,6 @@ const reportDefs = [
     icon: 'ri-exchange-funds-line',
     description: 'Pergerakan piutang per klien',
     color: 'info',
-    endpoint: '/finance/mutasi-piutang/export-excel',
     supportsSegment: true,
     supportsClient: true,
     usesPeriod: true,
@@ -405,7 +499,6 @@ const reportDefs = [
     icon: 'ri-bank-card-line',
     description: 'Rekap pembayaran AR per transaksi',
     color: 'error',
-    endpoint: '/finance/rekap-pembayaran/export-excel',
     supportsSegment: true,
     supportsClient: true,
     supportsPaymentMethod: true,
@@ -417,7 +510,6 @@ const reportDefs = [
     icon: 'ri-user-star-line',
     description: 'Performa penagihan per PIC',
     color: 'deep-purple',
-    endpoint: '/finance/kinerja-ar/export-excel',
     supportsSegment: true,
     usesPeriod: true,
   },
@@ -427,7 +519,7 @@ const reportDefs = [
     icon: 'ri-time-line',
     description: 'Pembayaran diterima sebelum jasa diberikan',
     color: 'deep-purple',
-    endpoint: '/finance/pendapatan-di-muka/export-excel',
+    supportsClient: true,
     usesPeriod: true,
   },
   {
@@ -447,6 +539,7 @@ const showSegmentFilter = computed(() => selectedDefs.value.some(report => repor
 const showClientFilter = computed(() => selectedDefs.value.some(report => report.supportsClient))
 const showPaymentMethodFilter = computed(() => selectedDefs.value.some(report => report.supportsPaymentMethod))
 const showPeriodFilter = computed(() => selectedDefs.value.some(report => report.usesPeriod))
+
 const showSpecialFilters = computed(() =>
   isSelected('aging_report')
   || isSelected('rekap_klien')
@@ -513,6 +606,7 @@ function toDateInput(date) {
   const year = date.getFullYear()
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
+  
   return `${year}-${month}-${day}`
 }
 
@@ -541,7 +635,7 @@ function buildParams(reportKey) {
     addSegment(params)
   }
 
-  if (['aging_report', 'riwayat_pembayaran', 'mutasi_piutang', 'rekap_pembayaran', 'jurnal_pic'].includes(reportKey)) {
+  if (['aging_report', 'riwayat_pembayaran', 'mutasi_piutang', 'rekap_pembayaran', 'jurnal_pic', 'pendapatan_di_muka'].includes(reportKey)) {
     addParam(params, 'klien_ar_id', filters.klien_ar_id)
   }
 
@@ -570,7 +664,6 @@ function buildParams(reportKey) {
   }
 
   if (reportKey === 'pendapatan_di_muka') {
-    addParam(params, 'investor_id', pdmFilter.investor_id)
     addParam(params, 'status', pdmFilter.status)
   }
 
@@ -582,23 +675,18 @@ async function doExport() {
 
   exporting.value = true
   try {
-    const backendDefs = selectedDefs.value.filter(report => report.endpoint)
-    const workbookDefs = selectedDefs.value.filter(report => report.frontendWorkbook)
-    let fileCount = 0
+    const builders = selectedDefs.value.map(report => SHEET_BUILDERS[report.key]).filter(Boolean)
+    const sheets = await Promise.all(builders.map(build => build()))
 
-    for (const report of backendDefs) {
-      await downloadBackendReport(report)
-      fileCount += 1
-    }
+    if (!sheets.length) return
 
-    if (workbookDefs.length) {
-      await downloadFrontendWorkbook(workbookDefs)
-      fileCount += 1
-    }
+    const { default: writeXlsxFile } = await import('write-excel-file/browser')
+
+    await writeXlsxFile(sheets).toFile(`export-data-ar-${todayStr}.xlsx`)
 
     showSuccess({
       title: 'Export Berhasil',
-      text: `${fileCount} file export berhasil dibuat.`,
+      text: `1 file Excel berhasil dibuat (${sheets.length} sheet: ${selectedDefs.value.map(r => r.label).join(', ')}).`,
       timerProgressBar: true,
       timer: 3000,
       showConfirmButton: false,
@@ -613,43 +701,6 @@ async function doExport() {
   } finally {
     exporting.value = false
   }
-}
-
-async function downloadBackendReport(report) {
-  const response = await api.get(report.endpoint, {
-    params: buildParams(report.key),
-    responseType: 'blob',
-    timeout: 120000,
-  })
-
-  const fallback = `${report.key}-${buildTimestamp()}.xlsx`
-  downloadBlob(response.data, pickFilename(response, fallback))
-}
-
-async function downloadFrontendWorkbook(workbookDefs) {
-  const sections = []
-
-  for (const report of workbookDefs) {
-    if (report.key === 'rekap_klien')
-      sections.push(buildRekapKlienSection(await fetchRekapKlien()))
-
-    if (report.key === 'riwayat_pembayaran')
-      sections.push(buildRiwayatPembayaranSection(await fetchRiwayatPembayaran()))
-  }
-
-  if (!sections.length) return
-
-  const { default: writeXlsxFile } = await import('write-excel-file/browser')
-
-  await writeXlsxFile(
-    sections.map(section => ({
-      data: sectionToSheetData(section),
-      sheet: section.sheetName,
-      columns: section.headers.map((header, index) => ({
-        width: (section.currencyCols ?? []).includes(index) ? 22 : Math.max((header?.length ?? 10) + 4, 14),
-      })),
-    })),
-  ).toFile(`laporan-ar-ringkasan-${todayStr}.xlsx`)
 }
 
 async function fetchRekapKlien() {
@@ -668,39 +719,6 @@ async function fetchRiwayatPembayaran() {
   return data.data ?? []
 }
 
-function downloadBlob(data, filename) {
-  const url = URL.createObjectURL(new Blob([data], {
-    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  }))
-  const link = document.createElement('a')
-  link.href = url
-  link.download = filename
-  link.click()
-  setTimeout(() => URL.revokeObjectURL(url), 10000)
-}
-
-function pickFilename(response, fallback) {
-  const disposition = response.headers?.['content-disposition']
-  if (!disposition) return fallback
-
-  const encoded = disposition.match(/filename\*=UTF-8''([^;]+)/i)?.[1]
-  if (encoded) return decodeURIComponent(encoded.replace(/["]/g, ''))
-
-  return disposition.match(/filename="?([^"]+)"?/i)?.[1] ?? fallback
-}
-
-function buildTimestamp() {
-  const date = new Date()
-  return (
-    String(date.getDate()).padStart(2, '0')
-    + String(date.getMonth() + 1).padStart(2, '0')
-    + String(date.getFullYear())
-    + String(date.getHours()).padStart(2, '0')
-    + String(date.getMinutes()).padStart(2, '0')
-    + String(date.getSeconds()).padStart(2, '0')
-  )
-}
-
 function n(value) {
   return value === null || value === undefined ? 0 : Number(value)
 }
@@ -709,6 +727,7 @@ function fmtDate(value) {
   if (!value) return '-'
   if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
     const [year, month, day] = value.split('-').map(Number)
+    
     return new Date(year, month - 1, day).toLocaleDateString('id-ID', {
       day: '2-digit',
       month: 'long',
@@ -717,6 +736,7 @@ function fmtDate(value) {
   }
 
   const date = new Date(value)
+  
   return Number.isNaN(date.getTime())
     ? value
     : date.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })
@@ -796,12 +816,351 @@ function buildRiwayatPembayaranSection(rows) {
   }
 }
 
+const AGING_BUCKET_LABELS = {
+  current: 'Belum Jatuh Tempo',
+  hari_1_30: '1–30 Hari',
+  hari_31_60: '31–60 Hari',
+  hari_61_90: '61–90 Hari',
+  hari_91_plus: '>90 Hari',
+}
+
+function bucketLabel(key) {
+  return AGING_BUCKET_LABELS[key] ?? key ?? '-'
+}
+
+function flattenDetails(rows) {
+  return (rows ?? []).flatMap(row =>
+    (row.details ?? []).map(detail => ({ ...detail, nama_klien: row.nama_klien, kode_klien: row.kode_klien })),
+  )
+}
+
+async function fetchJurnalPicAll() {
+  const rows = []
+  let page = 1
+  let lastPage = 1
+
+  do {
+    const { data } = await api.get('/finance/jurnal-pic', {
+      params: { ...buildParams('jurnal_pic'), per_page: 100, page },
+    })
+
+    rows.push(...(data.data ?? []))
+    lastPage = data.meta?.last_page ?? 1
+    page += 1
+  } while (page <= lastPage)
+
+  return rows
+}
+
+function buildJurnalPicSection(rows) {
+  return {
+    sheetName: 'Jurnal PIC',
+    title: 'JURNAL AKTIVITAS PER PIC AR',
+    meta: `Periode: ${fmtDate(filters.tanggal_dari)} s/d ${fmtDate(filters.tanggal_sampai)} | Total Transaksi: ${rows.length}`,
+    headers: ['No', 'No Referensi', 'PIC', 'No Invoice', 'Klien', 'Tgl Bayar', 'Jumlah Bayar', 'Sisa Piutang', 'Status Invoice', 'Metode', 'Status Rekon'],
+    aligns: ['c', '', '', '', '', 'c', 'r', 'r', 'c', 'c', 'c'],
+    rows: rows.map((row, index) => [
+      index + 1,
+      row.no_referensi ?? '-',
+      row.pic_nama ?? '-',
+      row.no_invoice ?? '-',
+      row.klien ?? '-',
+      fmtDate(row.tanggal_pembayaran),
+      n(row.jumlah_pembayaran),
+      n(row.sisa_piutang),
+      row.invoice_status ?? '-',
+      row.metode_pembayaran ?? '-',
+      row.status_rekonsiliasi ?? 'MANUAL',
+    ]),
+    totalRow: ['', '', '', '', 'TOTAL', '', rows.reduce((sum, row) => sum + n(row.jumlah_pembayaran), 0), '', '', '', ''],
+    currencyCols: [6, 7],
+  }
+}
+
+async function fetchRekapPembayaran() {
+  const { data } = await api.get('/finance/rekap-pembayaran', { params: buildParams('rekap_pembayaran') })
+  
+  return data.data ?? { rows: [] }
+}
+
+function buildRekapPembayaranSection(report) {
+  const rows = report.rows ?? []
+
+  return {
+    sheetName: 'Rekap Pembayaran',
+    title: 'REKAP PEMBAYARAN AR',
+    meta: `Periode: ${fmtDate(report.tanggal_dari)} s/d ${fmtDate(report.tanggal_sampai)} | Total Transaksi: ${rows.length}`,
+    headers: ['No', 'Tanggal', 'Klien', 'Invoice', 'No Referensi', 'Metode', 'Nominal', 'PIC AR', 'Rekon'],
+    aligns: ['c', 'c', '', '', '', 'c', 'r', '', 'c'],
+    rows: rows.map((row, index) => [
+      index + 1,
+      fmtDate(row.tanggal),
+      row.client ?? '-',
+      row.invoice ?? '-',
+      row.ref_payment ?? '-',
+      row.metode ?? '-',
+      n(row.nominal),
+      row.pic_ar ?? '-',
+      row.is_rekon ? 'Ya' : 'Tidak',
+    ]),
+    totalRow: ['', '', '', '', '', 'TOTAL', rows.reduce((sum, row) => sum + n(row.nominal), 0), '', ''],
+    currencyCols: [6],
+  }
+}
+
+async function fetchKinerjaAr() {
+  const { data } = await api.get('/finance/kinerja-ar', { params: buildParams('kinerja_ar') })
+  
+  return data.data ?? { rows: [] }
+}
+
+function buildKinerjaArSection(report) {
+  const rows = report.rows ?? []
+
+  return {
+    sheetName: 'Kinerja AR',
+    title: 'KINERJA AR PER PIC',
+    meta: `Periode: ${fmtDate(report.periode_awal)} s/d ${fmtDate(report.periode_akhir)} | Jumlah AR Officer: ${rows.length}`,
+    headers: ['No', 'AR Officer', 'Entitas', 'Jml Klien', 'Jml Invoice', 'Total Tagihan', 'Total Terkumpul', 'Sisa', 'Collection Rate'],
+    aligns: ['c', '', '', 'c', 'c', 'r', 'r', 'r', 'c'],
+    rows: rows.map((row, index) => [
+      index + 1,
+      row.nama_karyawan ?? '-',
+      row.perusahaan ?? '-',
+      row.jumlah_klien ?? 0,
+      row.jumlah_invoice ?? 0,
+      n(row.total_tagihan),
+      n(row.total_terkumpul),
+      n(row.total_sisa),
+      `${row.collection_rate ?? 0}%`,
+    ]),
+    totalRow: [
+      '',
+      '',
+      'TOTAL',
+      '',
+      '',
+      rows.reduce((sum, row) => sum + n(row.total_tagihan), 0),
+      rows.reduce((sum, row) => sum + n(row.total_terkumpul), 0),
+      rows.reduce((sum, row) => sum + n(row.total_sisa), 0),
+      '',
+    ],
+    numericCols: [3, 4],
+    currencyCols: [5, 6, 7],
+  }
+}
+
+async function fetchPendapatanDiMuka() {
+  const { data } = await api.get('/finance/pendapatan-di-muka', { params: buildParams('pendapatan_di_muka') })
+  
+  return { rows: data.data ?? [], summary: data.summary ?? {} }
+}
+
+function buildPendapatanDiMukaSection({ rows, summary }) {
+  return {
+    sheetName: 'Pendapatan di Muka',
+    title: 'PENDAPATAN DITERIMA DI MUKA',
+    meta: `Jumlah Record: ${summary.jumlah_record ?? rows.length}`,
+    headers: ['No', 'Tanggal Pencatatan', 'Klien', 'Investor', 'No Ref Sumber', 'Jumlah PDM', 'Sisa PDM', 'Status', 'Keterangan', 'Dicatat Oleh'],
+    aligns: ['c', 'c', '', '', '', 'r', 'r', 'c', '', ''],
+    rows: rows.map((row, index) => [
+      index + 1,
+      fmtDate(row.tanggal_pencatatan),
+      row.klien ?? '-',
+      row.investor ?? '-',
+      row.no_referensi_sumber ?? '-',
+      n(row.jumlah),
+      n(row.sisa_pdm),
+      row.status ?? '-',
+      row.keterangan ?? '-',
+      row.created_by ?? '-',
+    ]),
+    totalRow: [
+      '',
+      '',
+      '',
+      '',
+      'TOTAL',
+      rows.reduce((sum, row) => sum + n(row.jumlah), 0),
+      rows.reduce((sum, row) => sum + n(row.sisa_pdm), 0),
+      '',
+      '',
+      '',
+    ],
+    currencyCols: [5, 6],
+  }
+}
+
+async function fetchAgingReport() {
+  const { data } = await api.get('/finance/aging-report', { params: buildParams('aging_report') })
+  
+  return data.data ?? { rows: [] }
+}
+
+function buildAgingSummarySection(report) {
+  const rows = report.rows ?? []
+
+  return {
+    sheetName: 'Aging Report',
+    title: 'AGING REPORT - RINGKASAN PER KLIEN',
+    meta: `Per Tanggal: ${fmtDate(report.as_of_date)} | Total Klien: ${rows.length}`,
+    headers: ['No', 'Kode Klien', 'Nama Klien', 'PIC AR', 'Current', '1-30 Hari', '31-60 Hari', '61-90 Hari', '>90 Hari', 'Total'],
+    aligns: ['c', '', '', '', 'r', 'r', 'r', 'r', 'r', 'r'],
+    rows: rows.map((row, index) => [
+      index + 1,
+      row.kode_klien ?? '-',
+      row.nama_klien ?? '-',
+      row.pic_ar ?? '-',
+      n(row.current),
+      n(row.hari_1_30),
+      n(row.hari_31_60),
+      n(row.hari_61_90),
+      n(row.hari_91_plus),
+      n(row.total),
+    ]),
+    totalRow: [
+      '',
+      '',
+      'TOTAL',
+      '',
+      rows.reduce((sum, row) => sum + n(row.current), 0),
+      rows.reduce((sum, row) => sum + n(row.hari_1_30), 0),
+      rows.reduce((sum, row) => sum + n(row.hari_31_60), 0),
+      rows.reduce((sum, row) => sum + n(row.hari_61_90), 0),
+      rows.reduce((sum, row) => sum + n(row.hari_91_plus), 0),
+      rows.reduce((sum, row) => sum + n(row.total), 0),
+    ],
+    currencyCols: [4, 5, 6, 7, 8, 9],
+  }
+}
+
+function buildAgingDetailSection(detailRows, report) {
+  return {
+    sheetName: 'Aging Report',
+    title: 'AGING REPORT - DETAIL INVOICE',
+    meta: `Per Tanggal: ${fmtDate(report.as_of_date)} | Total Invoice: ${detailRows.length}`,
+    headers: ['No', 'Klien', 'No Invoice', 'Tgl Invoice', 'Jatuh Tempo', 'Umur (hr)', 'Terlambat (hr)', 'Bucket', 'Total Tagihan', 'Total Bayar', 'Sisa Tagihan', 'Status', 'PIC AR', 'Entitas'],
+    aligns: ['c', '', '', 'c', 'c', 'r', 'r', 'c', 'r', 'r', 'r', 'c', '', ''],
+    rows: detailRows.map((row, index) => [
+      index + 1,
+      row.nama_klien ?? '-',
+      row.no_invoice ?? '-',
+      fmtDate(row.tanggal_invoice),
+      fmtDate(row.tanggal_jatuh_tempo),
+      row.umur_invoice ?? 0,
+      row.hari_terlambat ?? 0,
+      bucketLabel(row.bucket),
+      n(row.total_tagihan),
+      n(row.total_pembayaran),
+      n(row.sisa_tagihan),
+      row.status ?? '-',
+      row.pic_ar ?? '-',
+      row.perusahaan ?? '-',
+    ]),
+    totalRow: [
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      'TOTAL',
+      detailRows.reduce((sum, row) => sum + n(row.total_tagihan), 0),
+      detailRows.reduce((sum, row) => sum + n(row.total_pembayaran), 0),
+      detailRows.reduce((sum, row) => sum + n(row.sisa_tagihan), 0),
+      '',
+      '',
+      '',
+    ],
+    numericCols: [5, 6],
+    currencyCols: [8, 9, 10],
+  }
+}
+
+async function fetchMutasiPiutang() {
+  const { data } = await api.get('/finance/mutasi-piutang', { params: buildParams('mutasi_piutang') })
+  
+  return data.data ?? { rows: [] }
+}
+
+function buildMutasiSummarySection(report) {
+  const rows = report.rows ?? []
+
+  return {
+    sheetName: 'Mutasi Piutang',
+    title: 'MUTASI PIUTANG - RINGKASAN PER KLIEN',
+    meta: `Periode: ${fmtDate(report.periode_awal)} s/d ${fmtDate(report.periode_akhir)} | Total Klien: ${rows.length}`,
+    headers: ['No', 'Kode Klien', 'Nama Klien', 'Entitas', 'Saldo Awal', 'Invoice Masuk', 'Pembayaran', 'Saldo Akhir'],
+    aligns: ['c', '', '', '', 'r', 'r', 'r', 'r'],
+    rows: rows.map((row, index) => [
+      index + 1,
+      row.kode_klien ?? '-',
+      row.nama_klien ?? '-',
+      row.perusahaan ?? '-',
+      n(row.saldo_awal),
+      n(row.invoice_masuk),
+      n(row.pembayaran),
+      n(row.saldo_akhir),
+    ]),
+    totalRow: [
+      '',
+      '',
+      '',
+      'TOTAL',
+      rows.reduce((sum, row) => sum + n(row.saldo_awal), 0),
+      rows.reduce((sum, row) => sum + n(row.invoice_masuk), 0),
+      rows.reduce((sum, row) => sum + n(row.pembayaran), 0),
+      rows.reduce((sum, row) => sum + n(row.saldo_akhir), 0),
+    ],
+    currencyCols: [4, 5, 6, 7],
+  }
+}
+
+function buildMutasiDetailSection(detailRows, report) {
+  return {
+    sheetName: 'Mutasi Piutang',
+    title: 'MUTASI PIUTANG - DETAIL MUTASI',
+    meta: `Periode: ${fmtDate(report.periode_awal)} s/d ${fmtDate(report.periode_akhir)} | Total Baris Mutasi: ${detailRows.length}`,
+    headers: ['No', 'Kode Klien', 'Nama Klien', 'Tanggal', 'Tipe', 'Dokumen', 'Invoice', 'Debit', 'Kredit', 'Saldo', 'Keterangan'],
+    aligns: ['c', '', '', 'c', 'c', '', '', 'r', 'r', 'r', ''],
+    rows: detailRows.map((row, index) => [
+      index + 1,
+      row.kode_klien ?? '-',
+      row.nama_klien ?? '-',
+      fmtDate(row.tanggal),
+      row.label ?? row.tipe ?? '-',
+      row.no_dokumen ?? '-',
+      row.no_invoice ?? '-',
+      n(row.debit),
+      n(row.kredit),
+      n(row.saldo),
+      row.keterangan ?? '-',
+    ]),
+    totalRow: [
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      'TOTAL',
+      detailRows.reduce((sum, row) => sum + n(row.debit), 0),
+      detailRows.reduce((sum, row) => sum + n(row.kredit), 0),
+      '',
+      '',
+    ],
+    currencyCols: [7, 8, 9],
+  }
+}
+
 function sectionToSheetData(section) {
   const exportDate = new Date().toLocaleDateString('id-ID', {
     day: '2-digit',
     month: 'long',
     year: 'numeric',
   })
+
   const currencyCols = section.currencyCols ?? []
   const numericCols = (section.numericCols ?? []).filter(index => !currencyCols.includes(index))
   const columnCount = section.headers.length
@@ -810,6 +1169,7 @@ function sectionToSheetData(section) {
   const getAlign = index => {
     if (currencyCols.includes(index) || aligns[index] === 'r') return 'right'
     if (aligns[index] === 'c') return 'center'
+    
     return 'left'
   }
 
@@ -870,7 +1230,7 @@ function sectionToSheetData(section) {
       return {
         value,
         type: (isCurrency || isNumeric) && typeof value === 'number' ? Number : undefined,
-        format: (isCurrency || isNumeric) ? '#,##0' : undefined,
+        format: (isCurrency || isNumeric) && typeof value === 'number' ? '#,##0' : undefined,
         fontWeight: isCurrency ? 'bold' : undefined,
         color: isCurrency ? '#1A237E' : '#212121',
         backgroundColor,
@@ -887,25 +1247,82 @@ function sectionToSheetData(section) {
 
   const totalRows = section.totalRow
     ? [
-        section.totalRow.map((value, index) => ({
-          value,
-          type: currencyCols.includes(index) && typeof value === 'number' ? Number : undefined,
-          format: currencyCols.includes(index) ? '#,##0' : undefined,
-          fontWeight: 'bold',
-          color: '#FFFFFF',
-          backgroundColor: '#E65100',
-          fontSize: 10,
-          fontFamily: 'Calibri',
-          align: getAlign(index),
-          alignVertical: 'middle',
-          height: 18,
-          borderStyle: 'thin',
-          borderColor: '#BF360C',
-        })),
-      ]
+      section.totalRow.map((value, index) => ({
+        value,
+        type: currencyCols.includes(index) && typeof value === 'number' ? Number : undefined,
+        format: currencyCols.includes(index) && typeof value === 'number' ? '#,##0' : undefined,
+        fontWeight: 'bold',
+        color: '#FFFFFF',
+        backgroundColor: '#E65100',
+        fontSize: 10,
+        fontFamily: 'Calibri',
+        align: getAlign(index),
+        alignVertical: 'middle',
+        height: 18,
+        borderStyle: 'thin',
+        borderColor: '#BF360C',
+      })),
+    ]
     : []
 
   return [titleRow, metaRow, headerRow, ...dataRows, ...totalRows]
+}
+
+function combineSideBySide(leftGrid, rightGrid, leftColCount, rightColCount, gapColCount = 1) {
+  const rowCount = Math.max(leftGrid.length, rightGrid.length)
+  const blankLeft = Array.from({ length: leftColCount }, () => null)
+  const blankRight = Array.from({ length: rightColCount }, () => null)
+  const gapCells = Array.from({ length: gapColCount }, () => null)
+
+  return Array.from({ length: rowCount }, (_, i) => [
+    ...(leftGrid[i] ?? blankLeft),
+    ...gapCells,
+    ...(rightGrid[i] ?? blankRight),
+  ])
+}
+
+function columnsFor(section) {
+  return section.headers.map((header, index) => ({
+    width: (section.currencyCols ?? []).includes(index) ? 22 : Math.max((header?.length ?? 10) + 4, 14),
+  }))
+}
+
+function singleSheet(sheetName, section) {
+  return { sheet: sheetName, data: sectionToSheetData(section), columns: columnsFor(section) }
+}
+
+async function dualBlockSheet(sheetName, leftSection, rightSection) {
+  return {
+    sheet: sheetName,
+    data: combineSideBySide(
+      sectionToSheetData(leftSection),
+      sectionToSheetData(rightSection),
+      leftSection.headers.length,
+      rightSection.headers.length,
+    ),
+    columns: [...columnsFor(leftSection), { width: 3 }, ...columnsFor(rightSection)],
+  }
+}
+
+const SHEET_BUILDERS = {
+  aging_report: async () => {
+    const report = await fetchAgingReport()
+    const detailRows = flattenDetails(report.rows)
+    
+    return dualBlockSheet('Aging Report', buildAgingSummarySection(report), buildAgingDetailSection(detailRows, report))
+  },
+  mutasi_piutang: async () => {
+    const report = await fetchMutasiPiutang()
+    const detailRows = flattenDetails(report.rows)
+    
+    return dualBlockSheet('Mutasi Piutang', buildMutasiSummarySection(report), buildMutasiDetailSection(detailRows, report))
+  },
+  jurnal_pic: async () => singleSheet('Jurnal PIC', buildJurnalPicSection(await fetchJurnalPicAll())),
+  rekap_klien: async () => singleSheet('Rekap Per Klien', buildRekapKlienSection(await fetchRekapKlien())),
+  riwayat_pembayaran: async () => singleSheet('Riwayat Pembayaran', buildRiwayatPembayaranSection(await fetchRiwayatPembayaran())),
+  rekap_pembayaran: async () => singleSheet('Rekap Pembayaran', buildRekapPembayaranSection(await fetchRekapPembayaran())),
+  kinerja_ar: async () => singleSheet('Kinerja AR', buildKinerjaArSection(await fetchKinerjaAr())),
+  pendapatan_di_muka: async () => singleSheet('Pendapatan di Muka', buildPendapatanDiMukaSection(await fetchPendapatanDiMuka())),
 }
 </script>
 
