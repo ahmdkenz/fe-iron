@@ -145,8 +145,282 @@
 
     <!-- RIGHT: LOGIN FORM -->
     <main class="form-panel">
-      <div class="form-glow form-glow--one" />
-      <div class="form-glow form-glow--two" />
+      <!-- ======================================================
+           FUTURISTIC ACCOUNTING BACKGROUND
+      ====================================================== -->
+      <div class="auth-visual" aria-hidden="true">
+
+        <!-- Background layers -->
+        <div class="auth-visual__mesh" />
+        <div class="auth-visual__noise" />
+        <div class="auth-visual__floor" />
+        <div class="auth-visual__floor-glow" />
+
+        <!-- Ambient lighting -->
+        <div class="auth-aurora auth-aurora--blue" />
+        <div class="auth-aurora auth-aurora--orange" />
+
+        <!-- Circular holographic orbit behind login card -->
+        <div class="auth-orbit">
+          <span class="auth-orbit__ring auth-orbit__ring--one" />
+          <span class="auth-orbit__ring auth-orbit__ring--two" />
+          <span class="auth-orbit__ring auth-orbit__ring--three" />
+          <span class="auth-orbit__pulse auth-orbit__pulse--one" />
+          <span class="auth-orbit__pulse auth-orbit__pulse--two" />
+        </div>
+
+        <!-- Revenue card - top left -->
+        <section class="holo-stat holo-stat--revenue">
+          <div class="holo-stat__top">
+            <span class="holo-stat__icon">
+              <VIcon icon="ri-wallet-3-line" size="17" />
+            </span>
+
+            <span class="holo-stat__label">TOTAL REVENUE</span>
+          </div>
+
+          <strong class="holo-stat__value">Rp 2.450.000.000</strong>
+
+          <div class="holo-stat__trend holo-stat__trend--up">
+            <VIcon icon="ri-arrow-up-line" size="14" />
+            <span>18.2%</span>
+            <small>vs bulan lalu</small>
+          </div>
+        </section>
+
+        <!-- Invoice card - lower left -->
+        <section class="holo-stat holo-stat--invoice">
+          <div class="holo-stat__top">
+            <span class="holo-stat__icon">
+              <VIcon icon="ri-file-list-3-line" size="17" />
+            </span>
+
+            <span class="holo-stat__label">INVOICE OVERVIEW</span>
+          </div>
+
+          <div class="invoice-stat-row">
+            <strong class="invoice-stat-row__value">236</strong>
+
+            <span class="invoice-stat-row__growth">
+              +24%
+            </span>
+          </div>
+
+          <p class="invoice-stat-row__caption">Invoice bulan ini</p>
+        </section>
+
+        <!-- Donut chart - right -->
+        <section class="holo-donut">
+          <div class="holo-donut__header">
+            <span class="holo-donut__label">AR COMPOSITION</span>
+            <span class="holo-donut__live">
+              <span class="holo-donut__live-dot" />
+              Real-time
+            </span>
+          </div>
+
+          <div class="holo-donut__body">
+            <svg
+              class="donut-svg"
+              viewBox="0 0 180 180"
+              aria-hidden="true"
+            >
+              <defs>
+                <filter id="donutGlow">
+                  <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+                  <feMerge>
+                    <feMergeNode in="coloredBlur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+              </defs>
+
+              <circle
+                class="donut-svg__track"
+                cx="90"
+                cy="90"
+                r="61"
+              />
+
+              <circle
+                class="donut-svg__segment donut-svg__segment--one"
+                cx="90"
+                cy="90"
+                r="61"
+              />
+
+              <circle
+                class="donut-svg__segment donut-svg__segment--two"
+                cx="90"
+                cy="90"
+                r="61"
+              />
+
+              <circle
+                class="donut-svg__segment donut-svg__segment--three"
+                cx="90"
+                cy="90"
+                r="61"
+              />
+
+              <circle
+                class="donut-svg__center-ring"
+                cx="90"
+                cy="90"
+                r="39"
+              />
+            </svg>
+
+            <div class="holo-donut__center">
+              <span>OUTSTANDING</span>
+              <strong>72%</strong>
+            </div>
+          </div>
+
+          <div class="holo-donut__legend">
+            <span>
+              <i class="legend-dot legend-dot--blue" />
+              Lancar
+            </span>
+
+            <span>
+              <i class="legend-dot legend-dot--orange" />
+              Overdue
+            </span>
+          </div>
+        </section>
+
+        <!-- Cash flow graph - upper right -->
+        <section class="cash-flow-card">
+          <div class="cash-flow-card__head">
+            <div>
+              <span class="cash-flow-card__eyebrow">CASH FLOW</span>
+              <strong class="cash-flow-card__title">Performa Arus Kas</strong>
+            </div>
+
+            <span class="cash-flow-card__badge">
+              <VIcon icon="ri-arrow-up-line" size="14" />
+              +28.6%
+            </span>
+          </div>
+
+          <div class="cash-flow-card__graph">
+            <svg
+              class="cash-flow-svg"
+              viewBox="0 0 650 240"
+              preserveAspectRatio="none"
+              aria-hidden="true"
+            >
+              <defs>
+                <linearGradient id="cashFlowFillBlue" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0%" stop-color="#2f8cff" stop-opacity="0.28" />
+                  <stop offset="100%" stop-color="#2f8cff" stop-opacity="0" />
+                </linearGradient>
+
+                <linearGradient id="cashFlowFillOrange" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0%" stop-color="#f38a3e" stop-opacity="0.18" />
+                  <stop offset="100%" stop-color="#f38a3e" stop-opacity="0" />
+                </linearGradient>
+              </defs>
+
+              <line class="cash-grid" x1="0" y1="55" x2="650" y2="55" />
+              <line class="cash-grid" x1="0" y1="120" x2="650" y2="120" />
+              <line class="cash-grid" x1="0" y1="185" x2="650" y2="185" />
+
+              <path
+                class="cash-line-area cash-line-area--blue"
+                d="M0 200
+                  C45 185, 63 160, 100 172
+                  C138 184, 153 125, 194 140
+                  C238 158, 252 98, 295 114
+                  C340 130, 357 68, 405 84
+                  C450 99, 470 54, 515 64
+                  C560 75, 585 22, 650 30
+                  L650 240 L0 240 Z"
+              />
+
+              <path
+                class="cash-line cash-line--blue"
+                d="M0 200
+                  C45 185, 63 160, 100 172
+                  C138 184, 153 125, 194 140
+                  C238 158, 252 98, 295 114
+                  C340 130, 357 68, 405 84
+                  C450 99, 470 54, 515 64
+                  C560 75, 585 22, 650 30"
+              />
+
+              <path
+                class="cash-line-area cash-line-area--orange"
+                d="M0 215
+                  C42 210, 65 178, 102 192
+                  C145 208, 165 170, 205 180
+                  C245 193, 263 146, 305 161
+                  C348 177, 373 120, 415 138
+                  C457 155, 482 103, 520 120
+                  C564 140, 600 80, 650 95
+                  L650 240 L0 240 Z"
+              />
+
+              <path
+                class="cash-line cash-line--orange"
+                d="M0 215
+                  C42 210, 65 178, 102 192
+                  C145 208, 165 170, 205 180
+                  C245 193, 263 146, 305 161
+                  C348 177, 373 120, 415 138
+                  C457 155, 482 103, 520 120
+                  C564 140, 600 80, 650 95"
+              />
+
+              <circle class="cash-dot cash-dot--blue cash-dot--one" cx="100" cy="172" r="5" />
+              <circle class="cash-dot cash-dot--blue cash-dot--two" cx="194" cy="140" r="5" />
+              <circle class="cash-dot cash-dot--blue cash-dot--three" cx="295" cy="114" r="5" />
+              <circle class="cash-dot cash-dot--blue cash-dot--four" cx="405" cy="84" r="5" />
+              <circle class="cash-dot cash-dot--blue cash-dot--five" cx="515" cy="64" r="5" />
+            </svg>
+
+            <div class="cash-flow-card__months">
+              <span>Jan</span>
+              <span>Mar</span>
+              <span>Mei</span>
+              <span>Jul</span>
+              <span>Sep</span>
+              <span>Nov</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Data beams -->
+        <div class="data-beam data-beam--one" />
+        <div class="data-beam data-beam--two" />
+        <div class="data-beam data-beam--three" />
+
+        <!-- Floating crystal -->
+        <div class="finance-crystal finance-crystal--one">
+          <span />
+        </div>
+
+        <div class="finance-crystal finance-crystal--two">
+          <span />
+        </div>
+
+        <!-- Floating labels -->
+        <div class="finance-chip finance-chip--invoice">
+          <VIcon icon="ri-file-list-3-line" size="15" />
+          <span>Invoice</span>
+        </div>
+
+        <div class="finance-chip finance-chip--report">
+          <VIcon icon="ri-pie-chart-2-line" size="15" />
+          <span>Report</span>
+        </div>
+
+        <div class="finance-chip finance-chip--revenue">
+          <VIcon icon="ri-funds-line" size="15" />
+          <span>Revenue</span>
+        </div>
+      </div>
 
       <div class="form-card">
 
@@ -163,10 +437,6 @@
         </div>
 
         <div class="form-heading">
-          <span class="secure-badge">
-            <VIcon icon="ri-shield-keyhole-line" size="14" />
-            Secure Access
-          </span>
 
           <h2 class="card-title">Selamat Datang</h2>
 
@@ -1169,33 +1439,6 @@ async function handleLogin() {
   padding: 5rem 1.5rem 2.5rem;
 }
 
-.form-glow {
-  position: absolute;
-  border-radius: 50%;
-  pointer-events: none;
-  filter: blur(4px);
-}
-
-.form-glow--one {
-  width: 330px;
-  height: 330px;
-
-  top: -145px;
-  right: -150px;
-
-  background: rgba(37, 104, 186, 0.11);
-}
-
-.form-glow--two {
-  width: 220px;
-  height: 220px;
-
-  bottom: -100px;
-  left: -110px;
-
-  background: rgba(238, 123, 45, 0.08);
-}
-
 .form-card {
   width: 100%;
   max-width: 430px;
@@ -1653,6 +1896,1212 @@ async function handleLogin() {
   80%,
   100% {
     content: "...";
+  }
+}
+/* =========================================================
+   FUTURISTIC ACCOUNTING BACKGROUND
+========================================================= */
+
+[data-theme="light"] {
+  --auth-visual-bg: #edf5ff;
+  --auth-visual-grid: rgba(37, 104, 186, 0.11);
+  --auth-visual-line: rgba(37, 104, 186, 0.2);
+  --auth-visual-card: rgba(255, 255, 255, 0.55);
+  --auth-visual-border: rgba(47, 121, 211, 0.22);
+  --auth-visual-text: #54708f;
+  --auth-visual-title: #173b73;
+  --auth-orbit: rgba(45, 125, 225, 0.22);
+  --auth-floor: rgba(37, 104, 186, 0.1);
+}
+
+[data-theme="dark"] {
+  --auth-visual-bg: #07182f;
+  --auth-visual-grid: rgba(61, 139, 255, 0.1);
+  --auth-visual-line: rgba(73, 151, 255, 0.26);
+  --auth-visual-card: rgba(13, 35, 69, 0.44);
+  --auth-visual-border: rgba(87, 157, 255, 0.19);
+  --auth-visual-text: #8fa9ca;
+  --auth-visual-title: #e6f0ff;
+  --auth-orbit: rgba(64, 143, 255, 0.22);
+  --auth-floor: rgba(35, 126, 235, 0.1);
+}
+
+/* Panel kanan harus menjadi canvas visual */
+.form-panel {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+
+  background:
+    radial-gradient(circle at 78% 15%, rgba(41, 120, 231, 0.16), transparent 23%),
+    radial-gradient(circle at 18% 90%, rgba(243, 138, 62, 0.08), transparent 23%),
+    var(--auth-visual-bg);
+}
+
+/* Login card selalu paling depan */
+.form-card {
+  position: relative;
+  z-index: 20;
+
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter: blur(20px);
+}
+
+/* Wrapper seluruh visual */
+.auth-visual {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Mesh background */
+.auth-visual__mesh {
+  position: absolute;
+  inset: 0;
+
+  opacity: 0.7;
+
+  background-image:
+    linear-gradient(var(--auth-visual-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--auth-visual-grid) 1px, transparent 1px);
+
+  background-size: 42px 42px;
+
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 18%,
+    black 72%,
+    transparent 100%
+  );
+}
+
+/* Subtle visual texture */
+.auth-visual__noise {
+  position: absolute;
+  inset: 0;
+
+  opacity: 0.18;
+
+  background:
+    radial-gradient(circle at 12% 18%, rgba(70, 151, 255, 0.16) 0 1px, transparent 1px),
+    radial-gradient(circle at 32% 44%, rgba(243, 138, 62, 0.14) 0 1px, transparent 1px),
+    radial-gradient(circle at 76% 69%, rgba(70, 151, 255, 0.15) 0 1px, transparent 1px);
+
+  background-size: 70px 70px, 105px 105px, 130px 130px;
+}
+
+/* Perspective floor */
+.auth-visual__floor {
+  position: absolute;
+  left: -15%;
+  right: -15%;
+  bottom: -28%;
+  height: 53%;
+
+  transform: perspective(620px) rotateX(64deg);
+
+  opacity: 0.82;
+
+  background-image:
+    linear-gradient(var(--auth-floor) 1px, transparent 1px),
+    linear-gradient(90deg, var(--auth-floor) 1px, transparent 1px);
+
+  background-size: 42px 42px;
+
+  mask-image: linear-gradient(
+    to top,
+    black 0%,
+    rgba(0, 0, 0, 0.65) 42%,
+    transparent 100%
+  );
+}
+
+.auth-visual__floor-glow {
+  position: absolute;
+  width: 710px;
+  height: 310px;
+  left: 50%;
+  bottom: -165px;
+
+  transform: translateX(-50%);
+  border-radius: 50%;
+
+  border: 1px solid rgba(61, 145, 255, 0.38);
+  box-shadow:
+    0 0 35px rgba(55, 144, 255, 0.22),
+    inset 0 0 35px rgba(55, 144, 255, 0.13);
+
+  opacity: 0.8;
+}
+
+/* Ambient lights */
+.auth-aurora {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(25px);
+}
+
+.auth-aurora--blue {
+  width: 330px;
+  height: 330px;
+  top: -160px;
+  right: -130px;
+
+  background: rgba(39, 120, 235, 0.2);
+
+  animation: aurora-drift-blue 12s ease-in-out infinite;
+}
+
+.auth-aurora--orange {
+  width: 230px;
+  height: 230px;
+  left: -100px;
+  bottom: -90px;
+
+  background: rgba(243, 138, 62, 0.13);
+
+  animation: aurora-drift-orange 14s ease-in-out infinite;
+}
+
+/* Orbit behind login card */
+.auth-orbit {
+  position: absolute;
+  width: 660px;
+  height: 660px;
+  left: 50%;
+  top: 50%;
+
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+}
+
+.auth-orbit__ring {
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--auth-orbit);
+  border-radius: 50%;
+}
+
+.auth-orbit__ring--one {
+  transform: rotateX(64deg) rotateZ(8deg);
+  animation: orbit-spin-one 18s linear infinite;
+}
+
+.auth-orbit__ring--two {
+  inset: 62px;
+  border-style: dashed;
+  transform: rotateX(65deg) rotateZ(-28deg);
+  animation: orbit-spin-two 24s linear infinite reverse;
+}
+
+.auth-orbit__ring--three {
+  inset: 125px;
+  border-color: rgba(243, 138, 62, 0.24);
+  transform: rotateX(65deg) rotateZ(40deg);
+  animation: orbit-spin-three 15s linear infinite;
+}
+
+.auth-orbit__pulse {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+
+  background: #3d96ff;
+  box-shadow:
+    0 0 0 5px rgba(61, 150, 255, 0.12),
+    0 0 18px rgba(61, 150, 255, 0.9);
+}
+
+.auth-orbit__pulse--one {
+  top: 75px;
+  left: 92px;
+  animation: orbit-pulse-one 7s linear infinite;
+}
+
+.auth-orbit__pulse--two {
+  right: 90px;
+  bottom: 80px;
+
+  background: var(--accent);
+
+  box-shadow:
+    0 0 0 5px rgba(243, 138, 62, 0.12),
+    0 0 18px rgba(243, 138, 62, 0.9);
+
+  animation: orbit-pulse-two 9s linear infinite;
+}
+
+/* Generic holographic card */
+.holo-stat,
+.holo-donut,
+.cash-flow-card {
+  position: absolute;
+
+  border: 1px solid var(--auth-visual-border);
+  background: var(--auth-visual-card);
+
+  box-shadow:
+    0 18px 40px rgba(4, 18, 42, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+
+  backdrop-filter: blur(12px);
+}
+
+/* Revenue card */
+.holo-stat {
+  border-radius: 16px;
+  padding: 1rem 1.05rem;
+  color: var(--auth-visual-text);
+}
+
+.holo-stat--revenue {
+  width: 220px;
+  left: 7%;
+  top: 16%;
+
+  animation: float-card-one 9s ease-in-out infinite;
+}
+
+.holo-stat--invoice {
+  width: 190px;
+  left: 5%;
+  bottom: 13%;
+
+  animation: float-card-two 11s ease-in-out infinite;
+}
+
+.holo-stat__top {
+  display: flex;
+  align-items: center;
+  gap: 0.46rem;
+  margin-bottom: 0.85rem;
+}
+
+.holo-stat__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #4ca1ff;
+}
+
+.holo-stat__label {
+  font-size: 0.59rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.holo-stat__value {
+  display: block;
+  margin-bottom: 0.58rem;
+
+  color: var(--auth-visual-title);
+
+  font-size: 0.93rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.holo-stat__trend {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+
+  font-size: 0.69rem;
+  font-weight: 800;
+}
+
+.holo-stat__trend--up {
+  color: #49d59a;
+}
+
+.holo-stat__trend small {
+  margin-left: 0.15rem;
+
+  color: var(--auth-visual-text);
+
+  font-size: 0.62rem;
+  font-weight: 600;
+}
+
+/* Invoice card */
+.invoice-stat-row {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.invoice-stat-row__value {
+  color: var(--auth-visual-title);
+
+  font-size: 1.65rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.invoice-stat-row__growth {
+  color: #49d59a;
+
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.invoice-stat-row__caption {
+  margin: 0.65rem 0 0;
+
+  color: var(--auth-visual-text);
+
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+
+/* Donut */
+.holo-donut {
+  width: 230px;
+  right: 4%;
+  top: 24%;
+
+  padding: 1rem;
+  border-radius: 20px;
+
+  animation: float-donut 12s ease-in-out infinite;
+}
+
+.holo-donut__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.holo-donut__label {
+  color: var(--auth-visual-text);
+
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.holo-donut__live {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+
+  color: #53d99d;
+
+  font-size: 0.6rem;
+  font-weight: 700;
+}
+
+.holo-donut__live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+
+  background: #53d99d;
+  box-shadow: 0 0 0 4px rgba(83, 217, 157, 0.12);
+
+  animation: live-pulse 2.2s ease-in-out infinite;
+}
+
+.holo-donut__body {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  margin: 0.8rem auto 0.55rem;
+}
+
+.donut-svg {
+  width: 150px;
+  height: 150px;
+  overflow: visible;
+
+  transform: rotate(-90deg);
+}
+
+.donut-svg circle {
+  fill: none;
+  stroke-width: 15;
+}
+
+.donut-svg__track {
+  stroke: rgba(111, 154, 212, 0.13);
+}
+
+.donut-svg__segment {
+  stroke-linecap: round;
+  transform-origin: 90px 90px;
+}
+
+.donut-svg__segment--one {
+  stroke: #2f8cff;
+  stroke-dasharray: 206 383;
+  stroke-dashoffset: 0;
+
+  filter: url(#donutGlow);
+
+  animation: donut-spin-one 7s linear infinite;
+}
+
+.donut-svg__segment--two {
+  stroke: #f38a3e;
+  stroke-dasharray: 96 383;
+  stroke-dashoffset: -220;
+
+  filter: url(#donutGlow);
+
+  animation: donut-spin-two 10s linear infinite reverse;
+}
+
+.donut-svg__segment--three {
+  stroke: #6a6cff;
+  stroke-dasharray: 42 383;
+  stroke-dashoffset: -329;
+}
+
+.donut-svg__center-ring {
+  stroke: rgba(95, 153, 230, 0.16);
+  stroke-width: 1 !important;
+}
+
+.holo-donut__center {
+  position: absolute;
+  inset: 0;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.holo-donut__center span {
+  color: var(--auth-visual-text);
+
+  font-size: 0.52rem;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+}
+
+.holo-donut__center strong {
+  margin-top: 0.22rem;
+
+  color: var(--auth-visual-title);
+
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+
+.holo-donut__legend {
+  display: flex;
+  justify-content: center;
+  gap: 0.8rem;
+
+  color: var(--auth-visual-text);
+
+  font-size: 0.6rem;
+  font-weight: 700;
+}
+
+.holo-donut__legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+}
+
+.legend-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.legend-dot--blue {
+  background: #2f8cff;
+}
+
+.legend-dot--orange {
+  background: #f38a3e;
+}
+
+/* Cash flow graph */
+.cash-flow-card {
+  width: min(560px, 58vw);
+  height: 250px;
+  right: -150px;
+  top: 8%;
+
+  padding: 1.1rem 1.2rem;
+  border-radius: 22px;
+
+  transform: rotate(-4deg);
+
+  opacity: 0.88;
+
+  animation: cash-flow-float 13s ease-in-out infinite;
+}
+
+.cash-flow-card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.cash-flow-card__eyebrow {
+  display: block;
+  margin-bottom: 0.28rem;
+
+  color: var(--auth-visual-text);
+
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+}
+
+.cash-flow-card__title {
+  color: var(--auth-visual-title);
+
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.cash-flow-card__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.22rem;
+
+  color: #4ad89b;
+
+  font-size: 0.67rem;
+  font-weight: 800;
+}
+
+.cash-flow-card__graph {
+  height: 180px;
+  margin-top: 0.6rem;
+}
+
+.cash-flow-svg {
+  width: 100%;
+  height: 150px;
+  overflow: visible;
+}
+
+.cash-grid {
+  stroke: var(--auth-visual-line);
+  stroke-dasharray: 5 7;
+  stroke-width: 1;
+}
+
+.cash-line-area {
+  opacity: 0;
+  animation: cash-area-fade 2.2s ease forwards;
+}
+
+.cash-line-area--blue {
+  fill: url(#cashFlowFillBlue);
+}
+
+.cash-line-area--orange {
+  fill: url(#cashFlowFillOrange);
+  animation-delay: 0.25s;
+}
+
+.cash-line {
+  fill: none;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+
+  stroke-dasharray: 1100;
+  stroke-dashoffset: 1100;
+}
+
+.cash-line--blue {
+  stroke: #2f8cff;
+  filter: drop-shadow(0 0 8px rgba(47, 140, 255, 0.55));
+
+  animation: cash-line-draw 3.6s ease forwards;
+}
+
+.cash-line--orange {
+  stroke: #f38a3e;
+  filter: drop-shadow(0 0 8px rgba(243, 138, 62, 0.42));
+
+  animation: cash-line-draw 3.9s ease forwards 0.25s;
+}
+
+.cash-dot {
+  stroke: #0c2141;
+  stroke-width: 3;
+
+  opacity: 0;
+}
+
+.cash-dot--blue {
+  fill: #f38a3e;
+  filter: drop-shadow(0 0 6px rgba(243, 138, 62, 0.7));
+}
+
+.cash-dot--one {
+  animation: cash-dot-show 0.3s ease forwards 0.75s;
+}
+
+.cash-dot--two {
+  animation: cash-dot-show 0.3s ease forwards 1.15s;
+}
+
+.cash-dot--three {
+  animation: cash-dot-show 0.3s ease forwards 1.55s;
+}
+
+.cash-dot--four {
+  animation: cash-dot-show 0.3s ease forwards 1.95s;
+}
+
+.cash-dot--five {
+  animation: cash-dot-show 0.3s ease forwards 2.35s;
+}
+
+.cash-flow-card__months {
+  display: flex;
+  justify-content: space-between;
+
+  margin-top: -0.15rem;
+
+  color: var(--auth-visual-text);
+
+  font-size: 0.58rem;
+  font-weight: 700;
+}
+
+/* Decorative data beams */
+.data-beam {
+  position: absolute;
+  width: 1px;
+
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(67, 150, 255, 0.8),
+    transparent
+  );
+
+  box-shadow: 0 0 12px rgba(67, 150, 255, 0.72);
+}
+
+.data-beam--one {
+  height: 160px;
+  left: 25%;
+  top: 29%;
+
+  animation: beam-pulse 3.5s ease-in-out infinite;
+}
+
+.data-beam--two {
+  height: 105px;
+  right: 21%;
+  top: 52%;
+
+  animation: beam-pulse 4.5s ease-in-out infinite 1s;
+}
+
+.data-beam--three {
+  height: 130px;
+  left: 15%;
+  bottom: 18%;
+
+  animation: beam-pulse 5.4s ease-in-out infinite 0.5s;
+}
+
+/* Floating crystal / holographic diamond */
+.finance-crystal {
+  position: absolute;
+  width: 48px;
+  height: 48px;
+
+  transform: rotate(45deg);
+
+  border: 1px solid rgba(82, 163, 255, 0.55);
+
+  background:
+    linear-gradient(135deg, rgba(41, 149, 255, 0.43), transparent 58%),
+    linear-gradient(315deg, rgba(243, 138, 62, 0.36), transparent 52%);
+
+  box-shadow:
+    0 0 24px rgba(44, 141, 255, 0.34),
+    inset 0 0 16px rgba(98, 175, 255, 0.18);
+}
+
+.finance-crystal::before,
+.finance-crystal::after {
+  content: "";
+  position: absolute;
+  background: rgba(134, 195, 255, 0.35);
+}
+
+.finance-crystal::before {
+  width: 1px;
+  height: 100%;
+  left: 50%;
+  top: 0;
+}
+
+.finance-crystal::after {
+  width: 100%;
+  height: 1px;
+  left: 0;
+  top: 50%;
+}
+
+.finance-crystal span {
+  position: absolute;
+  inset: 11px;
+
+  border: 1px solid rgba(243, 138, 62, 0.58);
+  background: rgba(243, 138, 62, 0.16);
+}
+
+.finance-crystal--one {
+  left: 18%;
+  top: 42%;
+
+  animation: crystal-float-one 10s ease-in-out infinite;
+}
+
+.finance-crystal--two {
+  right: 19%;
+  bottom: 20%;
+
+  width: 58px;
+  height: 58px;
+
+  animation: crystal-float-two 12s ease-in-out infinite;
+}
+
+/* Floating chips */
+.finance-chip {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+
+  padding: 0.58rem 0.78rem;
+
+  border: 1px solid var(--auth-visual-border);
+  border-radius: 10px;
+
+  color: var(--auth-visual-text);
+  background: var(--auth-visual-card);
+
+  box-shadow: 0 10px 26px rgba(3, 17, 38, 0.12);
+  backdrop-filter: blur(10px);
+
+  font-size: 0.67rem;
+  font-weight: 700;
+}
+
+.finance-chip :deep(.v-icon) {
+  color: var(--accent);
+}
+
+.finance-chip--invoice {
+  top: 28%;
+  left: 9%;
+
+  animation: chip-float-one 8s ease-in-out infinite;
+}
+
+.finance-chip--report {
+  top: 49%;
+  right: 12%;
+
+  animation: chip-float-two 10s ease-in-out infinite;
+}
+
+.finance-chip--revenue {
+  right: 8%;
+  bottom: 24%;
+
+  animation: chip-float-three 9s ease-in-out infinite;
+}
+
+/* =========================================================
+   Animations
+========================================================= */
+
+@keyframes aurora-drift-blue {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.62;
+  }
+
+  50% {
+    transform: translate(-35px, 35px) scale(1.15);
+    opacity: 0.9;
+  }
+}
+
+@keyframes aurora-drift-orange {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.45;
+  }
+
+  50% {
+    transform: translate(35px, -35px) scale(1.18);
+    opacity: 0.72;
+  }
+}
+
+@keyframes orbit-spin-one {
+  to {
+    transform: rotateX(64deg) rotateZ(368deg);
+  }
+}
+
+@keyframes orbit-spin-two {
+  to {
+    transform: rotateX(65deg) rotateZ(-388deg);
+  }
+}
+
+@keyframes orbit-spin-three {
+  to {
+    transform: rotateX(65deg) rotateZ(400deg);
+  }
+}
+
+@keyframes orbit-pulse-one {
+  0% {
+    transform: translate(0, 0);
+    opacity: 0.8;
+  }
+
+  25% {
+    transform: translate(310px, -68px);
+    opacity: 1;
+  }
+
+  50% {
+    transform: translate(450px, 218px);
+    opacity: 0.7;
+  }
+
+  75% {
+    transform: translate(152px, 436px);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate(0, 0);
+    opacity: 0.8;
+  }
+}
+
+@keyframes orbit-pulse-two {
+  0% {
+    transform: translate(0, 0);
+    opacity: 0.65;
+  }
+
+  25% {
+    transform: translate(-290px, 68px);
+    opacity: 1;
+  }
+
+  50% {
+    transform: translate(-445px, -210px);
+    opacity: 0.7;
+  }
+
+  75% {
+    transform: translate(-155px, -430px);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate(0, 0);
+    opacity: 0.65;
+  }
+}
+
+@keyframes float-card-one {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-2deg);
+  }
+
+  50% {
+    transform: translateY(-13px) rotate(-2deg);
+  }
+}
+
+@keyframes float-card-two {
+  0%,
+  100% {
+    transform: translateY(0) rotate(4deg);
+  }
+
+  50% {
+    transform: translateY(-15px) rotate(4deg);
+  }
+}
+
+@keyframes float-donut {
+  0%,
+  100% {
+    transform: translateY(0) rotate(3deg);
+  }
+
+  50% {
+    transform: translateY(-14px) rotate(3deg);
+  }
+}
+
+@keyframes cash-flow-float {
+  0%,
+  100% {
+    transform: rotate(-4deg) translateY(0);
+  }
+
+  50% {
+    transform: rotate(-4deg) translateY(-13px);
+  }
+}
+
+@keyframes live-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 4px rgba(83, 217, 157, 0.12);
+  }
+
+  50% {
+    box-shadow: 0 0 0 9px rgba(83, 217, 157, 0);
+  }
+}
+
+@keyframes donut-spin-one {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes donut-spin-two {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+@keyframes cash-line-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes cash-area-fade {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes cash-dot-show {
+  from {
+    opacity: 0;
+    transform: scale(0);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes beam-pulse {
+  0%,
+  100% {
+    opacity: 0.22;
+    transform: scaleY(0.75);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+
+@keyframes crystal-float-one {
+  0%,
+  100% {
+    transform: rotate(45deg) translateY(0);
+  }
+
+  50% {
+    transform: rotate(145deg) translateY(-20px);
+  }
+}
+
+@keyframes crystal-float-two {
+  0%,
+  100% {
+    transform: rotate(45deg) translateY(0);
+  }
+
+  50% {
+    transform: rotate(-70deg) translateY(-18px);
+  }
+}
+
+@keyframes chip-float-one {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes chip-float-two {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(12px);
+  }
+}
+
+@keyframes chip-float-three {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+/* =========================================================
+   Responsive visual behavior
+========================================================= */
+
+@media (max-width: 1280px) {
+  .cash-flow-card {
+    right: -245px;
+    opacity: 0.58;
+  }
+
+  .holo-donut {
+    right: -54px;
+    opacity: 0.6;
+  }
+
+  .holo-stat--revenue {
+    left: 2%;
+    opacity: 0.6;
+  }
+
+  .holo-stat--invoice {
+    left: -35px;
+    opacity: 0.55;
+  }
+
+  .finance-crystal--one {
+    left: 8%;
+  }
+}
+
+@media (max-width: 900px) {
+  .auth-orbit {
+    width: 570px;
+    height: 570px;
+  }
+
+  .cash-flow-card {
+    width: 510px;
+    right: -280px;
+    top: 10%;
+    opacity: 0.38;
+  }
+
+  .holo-donut {
+    right: -80px;
+    opacity: 0.36;
+  }
+
+  .holo-stat--revenue {
+    left: -85px;
+    opacity: 0.36;
+  }
+
+  .holo-stat--invoice {
+    left: -100px;
+    opacity: 0.3;
+  }
+
+  .finance-chip--invoice {
+    left: -20px;
+    opacity: 0.36;
+  }
+
+  .finance-chip--report {
+    right: -20px;
+    opacity: 0.32;
+  }
+
+  .finance-chip--revenue,
+  .finance-crystal--two {
+    display: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .auth-orbit {
+    width: 500px;
+    height: 500px;
+    opacity: 0.45;
+  }
+
+  .cash-flow-card,
+  .holo-donut,
+  .holo-stat,
+  .finance-chip,
+  .finance-crystal,
+  .data-beam {
+    display: none;
+  }
+
+  .auth-visual__floor {
+    bottom: -16%;
+    opacity: 0.45;
+  }
+}
+
+/* Hormati pengguna yang tidak ingin animasi */
+@media (prefers-reduced-motion: reduce) {
+  .auth-visual *,
+  .auth-visual::before,
+  .auth-visual::after {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .cash-line {
+    stroke-dashoffset: 0;
+  }
+
+  .cash-line-area,
+  .cash-dot {
+    opacity: 1;
   }
 }
 
