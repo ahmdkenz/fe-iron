@@ -622,6 +622,7 @@ const EbInvoiceBreakdown = defineComponent({
 })
 
 const authStore = useAuthStore()
+const canSeeAll = authStore.hasAnyRole(['ADMIN', 'MANAGER', 'SUPERVISOR'])
 
 // ─── State B2C ────────────────────────────────────────────────────────────────
 const loading     = ref(false)
@@ -671,7 +672,7 @@ const submittingKoreksi = ref(false)
 const koreksiError      = ref('')
 const koreksiInvoices   = ref([])
 const koreksiInvoicesLoading = ref(false)
-const activeSegmentTab  = ref('b2c')
+const activeSegmentTab  = ref(canSeeAll ? 'b2b' : 'b2c')
 let b2bLoaded = false
 
 const nilaiKoreksiComputed = computed(() => {
@@ -891,7 +892,13 @@ async function submitKoreksiDialog() {
   }
 }
 
-onMounted(() => { doFetch() })
+onMounted(() => {
+  doFetch()
+  if (canSeeAll) {
+    b2bLoaded = true
+    doFetchB2B()
+  }
+})
 </script>
 
 <style scoped>

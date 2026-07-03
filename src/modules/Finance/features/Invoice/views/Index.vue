@@ -709,7 +709,7 @@ const exportingExcel   = ref(false)
 const showExportModal  = ref(false)
 const exportMonth      = ref(new Date().toISOString().slice(0, 7))
 const printingId        = ref(null)
-const activeSegmentTab  = ref('b2c')
+const activeSegmentTab  = ref(canSeeAll ? 'b2b' : 'b2c')
 let b2bLoaded = false
 
 const headers = [
@@ -976,6 +976,10 @@ async function doDelete() {
 
 onMounted(() => {
   loadListB2C()
+  if (canSeeAll) {
+    b2bLoaded = true
+    loadListB2B()
+  }
   loadSummary()
 })
 
