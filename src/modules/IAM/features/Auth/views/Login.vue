@@ -139,288 +139,289 @@
       </div>
 
       <p class="brand-foot">
-        © {{ currentYear }} PT Sheza Mitra Amanah
+        © {{ currentYear }} I.R.O.M by PT Sheza Mitra Amanah
       </p>
     </aside>
 
     <!-- RIGHT: LOGIN FORM -->
+ <!-- ======================================================
+     FUTURISTIC ACCOUNTING BACKGROUND
+====================================================== -->
     <main class="form-panel">
-      <!-- ======================================================
-           FUTURISTIC ACCOUNTING BACKGROUND
-      ====================================================== -->
-      <div class="auth-visual" aria-hidden="true">
 
-        <!-- Background layers -->
-        <div class="auth-visual__mesh" />
-        <div class="auth-visual__noise" />
-        <div class="auth-visual__floor" />
-        <div class="auth-visual__floor-glow" />
+    <div class="auth-visual" aria-hidden="true">
 
-        <!-- Ambient lighting -->
-        <div class="auth-aurora auth-aurora--blue" />
-        <div class="auth-aurora auth-aurora--orange" />
+  <!-- Background layers -->
+  <div class="auth-visual__mesh" />
+  <div class="auth-visual__noise" />
+  <div class="auth-visual__floor" />
+  <div class="auth-visual__floor-glow" />
 
-        <!-- Circular holographic orbit behind login card -->
-        <div class="auth-orbit">
-          <span class="auth-orbit__ring auth-orbit__ring--one" />
-          <span class="auth-orbit__ring auth-orbit__ring--two" />
-          <span class="auth-orbit__ring auth-orbit__ring--three" />
-          <span class="auth-orbit__pulse auth-orbit__pulse--one" />
-          <span class="auth-orbit__pulse auth-orbit__pulse--two" />
-        </div>
+  <!-- Ambient lighting -->
+  <div class="auth-aurora auth-aurora--blue" />
+  <div class="auth-aurora auth-aurora--orange" />
 
-        <!-- Revenue card - top left -->
-        <section class="holo-stat holo-stat--revenue">
-          <div class="holo-stat__top">
-            <span class="holo-stat__icon">
-              <VIcon icon="ri-wallet-3-line" size="17" />
-            </span>
+  <!-- Circular holographic orbit behind login card -->
+  <div class="auth-orbit">
+    <span class="auth-orbit__ring auth-orbit__ring--one" />
+    <span class="auth-orbit__ring auth-orbit__ring--two" />
+    <span class="auth-orbit__ring auth-orbit__ring--three" />
+    <span class="auth-orbit__pulse auth-orbit__pulse--one" />
+    <span class="auth-orbit__pulse auth-orbit__pulse--two" />
+  </div>
 
-            <span class="holo-stat__label">TOTAL REVENUE</span>
-          </div>
+  <!-- Revenue card - top left -->
+  <section class="holo-stat holo-stat--revenue">
+    <div class="holo-stat__top">
+      <span class="holo-stat__icon">
+        <VIcon icon="ri-wallet-3-line" size="17" />
+      </span>
 
-          <strong class="holo-stat__value">Rp 2.450.000.000</strong>
+      <span class="holo-stat__label">TOTAL REVENUE</span>
+    </div>
 
-          <div class="holo-stat__trend holo-stat__trend--up">
-            <VIcon icon="ri-arrow-up-line" size="14" />
-            <span>18.2%</span>
-            <small>vs bulan lalu</small>
-          </div>
-        </section>
+    <strong class="holo-stat__value">Rp 2.450.000.000</strong>
 
-        <!-- Invoice card - lower left -->
-        <section class="holo-stat holo-stat--invoice">
-          <div class="holo-stat__top">
-            <span class="holo-stat__icon">
-              <VIcon icon="ri-file-list-3-line" size="17" />
-            </span>
+    <div class="holo-stat__trend holo-stat__trend--up">
+      <VIcon icon="ri-arrow-up-line" size="14" />
+      <span>18.2%</span>
+      <small>vs bulan lalu</small>
+    </div>
+  </section>
 
-            <span class="holo-stat__label">INVOICE OVERVIEW</span>
-          </div>
+  <!-- Invoice card - lower left -->
+  <section class="holo-stat holo-stat--invoice">
+    <div class="holo-stat__top">
+      <span class="holo-stat__icon">
+        <VIcon icon="ri-file-list-3-line" size="17" />
+      </span>
 
-          <div class="invoice-stat-row">
-            <strong class="invoice-stat-row__value">236</strong>
+      <span class="holo-stat__label">INVOICE OVERVIEW</span>
+    </div>
 
-            <span class="invoice-stat-row__growth">
-              +24%
-            </span>
-          </div>
+    <div class="invoice-stat-row">
+      <strong class="invoice-stat-row__value">236</strong>
 
-          <p class="invoice-stat-row__caption">Invoice bulan ini</p>
-        </section>
+      <span class="invoice-stat-row__growth">
+        +24%
+      </span>
+    </div>
 
-        <!-- Donut chart - right -->
-        <section class="holo-donut">
-          <div class="holo-donut__header">
-            <span class="holo-donut__label">AR COMPOSITION</span>
-            <span class="holo-donut__live">
-              <span class="holo-donut__live-dot" />
-              Real-time
-            </span>
-          </div>
+    <p class="invoice-stat-row__caption">Invoice bulan ini</p>
+  </section>
 
-          <div class="holo-donut__body">
-            <svg
-              class="donut-svg"
-              viewBox="0 0 180 180"
-              aria-hidden="true"
-            >
-              <defs>
-                <filter id="donutGlow">
-                  <feGaussianBlur stdDeviation="3" result="coloredBlur" />
-                  <feMerge>
-                    <feMergeNode in="coloredBlur" />
-                    <feMergeNode in="SourceGraphic" />
-                  </feMerge>
-                </filter>
-              </defs>
+  <!-- Donut chart - right -->
+  <section class="holo-donut">
+    <div class="holo-donut__header">
+      <span class="holo-donut__label">AR COMPOSITION</span>
+      <span class="holo-donut__live">
+        <span class="holo-donut__live-dot" />
+        Real-time
+      </span>
+    </div>
 
-              <circle
-                class="donut-svg__track"
-                cx="90"
-                cy="90"
-                r="61"
-              />
+    <div class="holo-donut__body">
+      <svg
+        class="donut-svg"
+        viewBox="0 0 180 180"
+        aria-hidden="true"
+      >
+        <defs>
+          <filter id="donutGlow">
+            <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+            <feMerge>
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
 
-              <circle
-                class="donut-svg__segment donut-svg__segment--one"
-                cx="90"
-                cy="90"
-                r="61"
-              />
+        <circle
+          class="donut-svg__track"
+          cx="90"
+          cy="90"
+          r="61"
+        />
 
-              <circle
-                class="donut-svg__segment donut-svg__segment--two"
-                cx="90"
-                cy="90"
-                r="61"
-              />
+        <circle
+          class="donut-svg__segment donut-svg__segment--one"
+          cx="90"
+          cy="90"
+          r="61"
+        />
 
-              <circle
-                class="donut-svg__segment donut-svg__segment--three"
-                cx="90"
-                cy="90"
-                r="61"
-              />
+        <circle
+          class="donut-svg__segment donut-svg__segment--two"
+          cx="90"
+          cy="90"
+          r="61"
+        />
 
-              <circle
-                class="donut-svg__center-ring"
-                cx="90"
-                cy="90"
-                r="39"
-              />
-            </svg>
+        <circle
+          class="donut-svg__segment donut-svg__segment--three"
+          cx="90"
+          cy="90"
+          r="61"
+        />
 
-            <div class="holo-donut__center">
-              <span>OUTSTANDING</span>
-              <strong>72%</strong>
-            </div>
-          </div>
+        <circle
+          class="donut-svg__center-ring"
+          cx="90"
+          cy="90"
+          r="39"
+        />
+      </svg>
 
-          <div class="holo-donut__legend">
-            <span>
-              <i class="legend-dot legend-dot--blue" />
-              Lancar
-            </span>
-
-            <span>
-              <i class="legend-dot legend-dot--orange" />
-              Overdue
-            </span>
-          </div>
-        </section>
-
-        <!-- Cash flow graph - upper right -->
-        <section class="cash-flow-card">
-          <div class="cash-flow-card__head">
-            <div>
-              <span class="cash-flow-card__eyebrow">CASH FLOW</span>
-              <strong class="cash-flow-card__title">Performa Arus Kas</strong>
-            </div>
-
-            <span class="cash-flow-card__badge">
-              <VIcon icon="ri-arrow-up-line" size="14" />
-              +28.6%
-            </span>
-          </div>
-
-          <div class="cash-flow-card__graph">
-            <svg
-              class="cash-flow-svg"
-              viewBox="0 0 650 240"
-              preserveAspectRatio="none"
-              aria-hidden="true"
-            >
-              <defs>
-                <linearGradient id="cashFlowFillBlue" x1="0" x2="0" y1="0" y2="1">
-                  <stop offset="0%" stop-color="#2f8cff" stop-opacity="0.28" />
-                  <stop offset="100%" stop-color="#2f8cff" stop-opacity="0" />
-                </linearGradient>
-
-                <linearGradient id="cashFlowFillOrange" x1="0" x2="0" y1="0" y2="1">
-                  <stop offset="0%" stop-color="#f38a3e" stop-opacity="0.18" />
-                  <stop offset="100%" stop-color="#f38a3e" stop-opacity="0" />
-                </linearGradient>
-              </defs>
-
-              <line class="cash-grid" x1="0" y1="55" x2="650" y2="55" />
-              <line class="cash-grid" x1="0" y1="120" x2="650" y2="120" />
-              <line class="cash-grid" x1="0" y1="185" x2="650" y2="185" />
-
-              <path
-                class="cash-line-area cash-line-area--blue"
-                d="M0 200
-                  C45 185, 63 160, 100 172
-                  C138 184, 153 125, 194 140
-                  C238 158, 252 98, 295 114
-                  C340 130, 357 68, 405 84
-                  C450 99, 470 54, 515 64
-                  C560 75, 585 22, 650 30
-                  L650 240 L0 240 Z"
-              />
-
-              <path
-                class="cash-line cash-line--blue"
-                d="M0 200
-                  C45 185, 63 160, 100 172
-                  C138 184, 153 125, 194 140
-                  C238 158, 252 98, 295 114
-                  C340 130, 357 68, 405 84
-                  C450 99, 470 54, 515 64
-                  C560 75, 585 22, 650 30"
-              />
-
-              <path
-                class="cash-line-area cash-line-area--orange"
-                d="M0 215
-                  C42 210, 65 178, 102 192
-                  C145 208, 165 170, 205 180
-                  C245 193, 263 146, 305 161
-                  C348 177, 373 120, 415 138
-                  C457 155, 482 103, 520 120
-                  C564 140, 600 80, 650 95
-                  L650 240 L0 240 Z"
-              />
-
-              <path
-                class="cash-line cash-line--orange"
-                d="M0 215
-                  C42 210, 65 178, 102 192
-                  C145 208, 165 170, 205 180
-                  C245 193, 263 146, 305 161
-                  C348 177, 373 120, 415 138
-                  C457 155, 482 103, 520 120
-                  C564 140, 600 80, 650 95"
-              />
-
-              <circle class="cash-dot cash-dot--blue cash-dot--one" cx="100" cy="172" r="5" />
-              <circle class="cash-dot cash-dot--blue cash-dot--two" cx="194" cy="140" r="5" />
-              <circle class="cash-dot cash-dot--blue cash-dot--three" cx="295" cy="114" r="5" />
-              <circle class="cash-dot cash-dot--blue cash-dot--four" cx="405" cy="84" r="5" />
-              <circle class="cash-dot cash-dot--blue cash-dot--five" cx="515" cy="64" r="5" />
-            </svg>
-
-            <div class="cash-flow-card__months">
-              <span>Jan</span>
-              <span>Mar</span>
-              <span>Mei</span>
-              <span>Jul</span>
-              <span>Sep</span>
-              <span>Nov</span>
-            </div>
-          </div>
-        </section>
-
-        <!-- Data beams -->
-        <div class="data-beam data-beam--one" />
-        <div class="data-beam data-beam--two" />
-        <div class="data-beam data-beam--three" />
-
-        <!-- Floating crystal -->
-        <div class="finance-crystal finance-crystal--one">
-          <span />
-        </div>
-
-        <div class="finance-crystal finance-crystal--two">
-          <span />
-        </div>
-
-        <!-- Floating labels -->
-        <div class="finance-chip finance-chip--invoice">
-          <VIcon icon="ri-file-list-3-line" size="15" />
-          <span>Invoice</span>
-        </div>
-
-        <div class="finance-chip finance-chip--report">
-          <VIcon icon="ri-pie-chart-2-line" size="15" />
-          <span>Report</span>
-        </div>
-
-        <div class="finance-chip finance-chip--revenue">
-          <VIcon icon="ri-funds-line" size="15" />
-          <span>Revenue</span>
-        </div>
+      <div class="holo-donut__center">
+        <span>OUTSTANDING</span>
+        <strong>72%</strong>
       </div>
+    </div>
+
+    <div class="holo-donut__legend">
+      <span>
+        <i class="legend-dot legend-dot--blue" />
+        Lancar
+      </span>
+
+      <span>
+        <i class="legend-dot legend-dot--orange" />
+        Overdue
+      </span>
+    </div>
+  </section>
+
+  <!-- Cash flow graph - upper right -->
+  <section class="cash-flow-card">
+    <div class="cash-flow-card__head">
+      <div>
+        <span class="cash-flow-card__eyebrow">CASH FLOW</span>
+        <strong class="cash-flow-card__title">Performa Arus Kas</strong>
+      </div>
+
+      <span class="cash-flow-card__badge">
+        <VIcon icon="ri-arrow-up-line" size="14" />
+        +28.6%
+      </span>
+    </div>
+
+    <div class="cash-flow-card__graph">
+      <svg
+        class="cash-flow-svg"
+        viewBox="0 0 650 240"
+        preserveAspectRatio="none"
+        aria-hidden="true"
+      >
+        <defs>
+          <linearGradient id="cashFlowFillBlue" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stop-color="#2f8cff" stop-opacity="0.28" />
+            <stop offset="100%" stop-color="#2f8cff" stop-opacity="0" />
+          </linearGradient>
+
+          <linearGradient id="cashFlowFillOrange" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stop-color="#f38a3e" stop-opacity="0.18" />
+            <stop offset="100%" stop-color="#f38a3e" stop-opacity="0" />
+          </linearGradient>
+        </defs>
+
+        <line class="cash-grid" x1="0" y1="55" x2="650" y2="55" />
+        <line class="cash-grid" x1="0" y1="120" x2="650" y2="120" />
+        <line class="cash-grid" x1="0" y1="185" x2="650" y2="185" />
+
+        <path
+          class="cash-line-area cash-line-area--blue"
+          d="M0 200
+            C45 185, 63 160, 100 172
+            C138 184, 153 125, 194 140
+            C238 158, 252 98, 295 114
+            C340 130, 357 68, 405 84
+            C450 99, 470 54, 515 64
+            C560 75, 585 22, 650 30
+            L650 240 L0 240 Z"
+        />
+
+        <path
+          class="cash-line cash-line--blue"
+          d="M0 200
+            C45 185, 63 160, 100 172
+            C138 184, 153 125, 194 140
+            C238 158, 252 98, 295 114
+            C340 130, 357 68, 405 84
+            C450 99, 470 54, 515 64
+            C560 75, 585 22, 650 30"
+        />
+
+        <path
+          class="cash-line-area cash-line-area--orange"
+          d="M0 215
+            C42 210, 65 178, 102 192
+            C145 208, 165 170, 205 180
+            C245 193, 263 146, 305 161
+            C348 177, 373 120, 415 138
+            C457 155, 482 103, 520 120
+            C564 140, 600 80, 650 95
+            L650 240 L0 240 Z"
+        />
+
+        <path
+          class="cash-line cash-line--orange"
+          d="M0 215
+            C42 210, 65 178, 102 192
+            C145 208, 165 170, 205 180
+            C245 193, 263 146, 305 161
+            C348 177, 373 120, 415 138
+            C457 155, 482 103, 520 120
+            C564 140, 600 80, 650 95"
+        />
+
+        <circle class="cash-dot cash-dot--blue cash-dot--one" cx="100" cy="172" r="5" />
+        <circle class="cash-dot cash-dot--blue cash-dot--two" cx="194" cy="140" r="5" />
+        <circle class="cash-dot cash-dot--blue cash-dot--three" cx="295" cy="114" r="5" />
+        <circle class="cash-dot cash-dot--blue cash-dot--four" cx="405" cy="84" r="5" />
+        <circle class="cash-dot cash-dot--blue cash-dot--five" cx="515" cy="64" r="5" />
+      </svg>
+
+      <div class="cash-flow-card__months">
+        <span>Jan</span>
+        <span>Mar</span>
+        <span>Mei</span>
+        <span>Jul</span>
+        <span>Sep</span>
+        <span>Nov</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Data beams -->
+  <div class="data-beam data-beam--one" />
+  <div class="data-beam data-beam--two" />
+  <div class="data-beam data-beam--three" />
+
+  <!-- Floating crystal -->
+  <div class="finance-crystal finance-crystal--one">
+    <span />
+  </div>
+
+  <div class="finance-crystal finance-crystal--two">
+    <span />
+  </div>
+
+  <!-- Floating labels -->
+  <div class="finance-chip finance-chip--invoice">
+    <VIcon icon="ri-file-list-3-line" size="15" />
+    <span>Invoice</span>
+  </div>
+
+  <div class="finance-chip finance-chip--report">
+    <VIcon icon="ri-pie-chart-2-line" size="15" />
+    <span>Report</span>
+  </div>
+
+  <div class="finance-chip finance-chip--revenue">
+    <VIcon icon="ri-funds-line" size="15" />
+    <span>Revenue</span>
+  </div>
+</div>
 
       <div class="form-card">
 
