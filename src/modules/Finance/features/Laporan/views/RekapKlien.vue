@@ -124,13 +124,19 @@
     <VCard>
       <VProgressLinear v-if="loading" indeterminate color="primary" />
       <BaseTable
+        v-model:expanded="expanded"
         :headers="headers"
         :items="rows"
         :total="rows.length"
         :loading="loading"
         :per-page="rows.length || 10"
         :page="1"
+        show-expand
+        item-value="klien_id"
+        hover
         hide-footer
+        wrap-text
+        @click:row="onRowClick"
       >
         <template #item.no="{ index }">
           {{ index + 1 }}
@@ -139,6 +145,12 @@
           <div>
             <div class="font-weight-medium">{{ item.nama_klien }}</div>
             <div class="text-caption text-medium-emphasis">{{ item.kode_klien }}</div>
+          </div>
+        </template>
+        <template #item.pic_ar="{ item }">
+          <div>
+            <div>{{ item.pic_ar ?? '-' }}</div>
+            <div class="text-caption text-medium-emphasis">{{ item.perusahaan ?? '-' }}</div>
           </div>
         </template>
         <template #item.total_tagihan="{ item }">
@@ -151,6 +163,32 @@
           <span :class="item.sisa_tagihan > 0 ? 'text-error font-weight-bold' : 'text-success'">
             {{ formatCurrency(item.sisa_tagihan) }}
           </span>
+        </template>
+        <template #item.overdue_amount="{ item }">
+          <div class="text-end">
+            <div :class="item.overdue_amount > 0 ? 'text-error font-weight-medium' : 'text-medium-emphasis'">
+              {{ item.overdue_amount > 0 ? formatCurrency(item.overdue_amount) : '-' }}
+            </div>
+            <div class="text-caption text-medium-emphasis">{{ item.overdue_invoice ?? 0 }} invoice</div>
+          </div>
+        </template>
+        <template #item.collection_rate="{ item }">
+          <VChip
+            :color="collectionColor(item.collection_rate)"
+            size="small"
+            variant="tonal"
+            label
+          >
+            {{ formatPercent(item.collection_rate) }}
+          </VChip>
+        </template>
+        <template #item.pembayaran_terakhir_tanggal="{ item }">
+          <div>
+            <div>{{ formatDate(item.pembayaran_terakhir_tanggal) }}</div>
+            <div class="text-caption text-medium-emphasis">
+              {{ item.pembayaran_terakhir_nominal ? formatCurrency(item.pembayaran_terakhir_nominal) : '-' }}
+            </div>
+          </div>
         </template>
         <template #item.status_breakdown="{ item }">
           <div class="d-flex gap-1 flex-wrap">
@@ -169,6 +207,47 @@
             <VTooltip activator="parent">Lihat Invoice</VTooltip>
           </VBtn>
         </template>
+        <template #expanded-row="{ item, columns }">
+          <tr class="rekap-detail-row">
+            <td :colspan="columns.length" class="pa-0">
+              <div class="pa-4">
+                <VTable density="compact" class="rekap-detail-table">
+                  <tbody>
+                    <tr>
+                      <th>Outstanding</th>
+                      <td>{{ item.outstanding_invoice ?? 0 }} invoice</td>
+                      <th>Invoice tertua</th>
+                      <td>{{ formatDate(item.invoice_tertua_tanggal) }}</td>
+                      <th>Jatuh tempo terdekat</th>
+                      <td>{{ formatDate(item.jatuh_tempo_terdekat) }}</td>
+                    </tr>
+                    <tr>
+                      <th>Overdue</th>
+                      <td>{{ formatCurrency(item.overdue_amount ?? 0) }}</td>
+                      <th>Pembayaran terakhir</th>
+                      <td>
+                        {{ formatDate(item.pembayaran_terakhir_tanggal) }}
+                        <span class="text-medium-emphasis">
+                          / {{ item.pembayaran_terakhir_nominal ? formatCurrency(item.pembayaran_terakhir_nominal) : '-' }}
+                        </span>
+                      </td>
+                      <th>Referensi bayar</th>
+                      <td>{{ item.pembayaran_terakhir_ref ?? '-' }}</td>
+                    </tr>
+                    <tr>
+                      <th>Segment</th>
+                      <td>{{ segmentLabel(item.tipe_klien) }}</td>
+                      <th>PIC AR</th>
+                      <td>{{ item.pic_ar ?? '-' }}</td>
+                      <th>Collection rate</th>
+                      <td>{{ formatPercent(item.collection_rate) }}</td>
+                    </tr>
+                  </tbody>
+                </VTable>
+              </div>
+            </td>
+          </tr>
+        </template>
       </BaseTable>
     </VCard>
   </div>
@@ -179,21 +258,26 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { useFormatter } from '@/composables/useFormatter'
 import api from '@/utils/axios'
 
-const { formatCurrency } = useFormatter()
+const { formatCurrency, formatDate } = useFormatter()
 
 const loading = ref(false)
 const rows    = ref([])
 const segment = ref('ALL')
+const expanded = ref([])
 
 const filters = reactive({ periode_bulan: null, periode_tahun: null })
 
 const headers = [
   { title: 'No',         key: 'no',               sortable: false, width: '50px' },
   { title: 'Klien',      key: 'nama_klien',        sortable: false },
+  { title: 'PIC/Entitas',key: 'pic_ar',            sortable: false },
   { title: 'Jml Invoice',key: 'total_invoice',     sortable: false, align: 'center' },
   { title: 'Total Tagihan',   key: 'total_tagihan',   sortable: false },
   { title: 'Total Terbayar',  key: 'total_pembayaran',sortable: false },
   { title: 'Sisa Piutang',    key: 'sisa_tagihan',    sortable: false },
+  { title: 'Overdue',         key: 'overdue_amount',  sortable: false, align: 'end' },
+  { title: 'Collection',      key: 'collection_rate', sortable: false, align: 'center' },
+  { title: 'Bayar Terakhir',  key: 'pembayaran_terakhir_tanggal', sortable: false },
   { title: 'Status',     key: 'status_breakdown',  sortable: false },
   { title: 'Aksi',       key: 'actions',           sortable: false, align: 'center', width: '70px' },
 ]
@@ -216,6 +300,30 @@ function debouncedFetch() {
   debounceTimer = setTimeout(doFetch, 400)
 }
 
+function formatPercent(value) {
+  return `${Number(value ?? 0).toLocaleString('id-ID', { maximumFractionDigits: 2 })}%`
+}
+
+function collectionColor(value) {
+  const n = Number(value ?? 0)
+  if (n >= 100) return 'success'
+  if (n >= 50) return 'warning'
+  return 'error'
+}
+
+function segmentLabel(value) {
+  return value === 'RESTO' ? 'B2C' : value === 'PT' ? 'B2B' : value ?? '-'
+}
+
+function onRowClick(_event, { item } = {}) {
+  const key = item?.klien_id
+  if (key == null) return
+
+  expanded.value = expanded.value.includes(key)
+    ? expanded.value.filter(v => v !== key)
+    : [...expanded.value, key]
+}
+
 async function doFetch() {
   loading.value = true
   try {
@@ -226,6 +334,7 @@ async function doFetch() {
 
     const { data } = await api.get('/finance/invoices/rekap-klien', { params })
     rows.value = data.data ?? []
+    expanded.value = []
   } finally {
     loading.value = false
   }
@@ -233,3 +342,14 @@ async function doFetch() {
 
 onMounted(doFetch)
 </script>
+
+<style scoped>
+.rekap-detail-row > td {
+  background: rgba(var(--v-theme-on-surface), 0.02);
+}
+
+.rekap-detail-table :deep(th),
+.rekap-detail-table :deep(td) {
+  white-space: nowrap;
+}
+</style>

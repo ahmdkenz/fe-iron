@@ -195,6 +195,7 @@
               icon
               size="small"
               variant="text"
+              :disabled="importing"
               @click="closeImport"
             >
               <VIcon icon="ri-close-line" />
@@ -549,62 +550,25 @@
       </VCard>
     </VDialog>
 
-    <!-- ── Floating widget saat minimize ────────────────────────── -->
-    <Teleport to="body">
-      <VCard
-        v-if="isImportMinimized"
-        class="position-fixed"
-        style="bottom: 24px; right: 24px; z-index: 9999; min-width: 300px;"
-        elevation="8"
-        rounded="lg"
-      >
-        <VCardText class="pa-3 d-flex align-center justify-space-between ga-2">
-          <div class="d-flex align-center ga-2">
-            <VProgressCircular
-              :model-value="overallProgress"
-              :indeterminate="overallProgress === 0 && importProgress?.status !== 'completed'"
-              size="28"
-              width="3"
-              color="primary"
-            />
-            <div>
-              <div class="text-caption font-weight-medium">
-                Import Master Data
-              </div>
-              <div class="text-caption text-medium-emphasis">
-                {{ importProgress?.status === 'queued' ? 'Menunggu antrian…' : 'Memproses…' }}
-              </div>
-            </div>
-          </div>
-          <VBtn
-            icon
-            size="x-small"
-            variant="text"
-            title="Buka kembali"
-            @click="maximizeImport"
-          >
-            <VIcon icon="ri-arrow-up-line" />
-          </VBtn>
-        </VCardText>
-      </VCard>
-    </Teleport>
   </div>
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
+import { storeToRefs } from 'pinia'
 import api from '@/utils/axios'
+import { useMasterDataImportStore, WIDGET_ID } from '@/stores/master-data-import.store'
+import { useMinimizeWidgetStore } from '@/stores/minimize-widget.store'
+
+const importStore   = useMasterDataImportStore()
+const minimizeStore = useMinimizeWidgetStore()
+const { importing, progress: importProgress, result: importResult } = storeToRefs(importStore)
 
 const showImport          = ref(false)
 const importFile          = ref(null)
-const importing           = ref(false)
-const importResult        = ref(null)
-const importProgress      = ref(null)
-const isImportMinimized   = ref(false)
 const downloadingTemplate = ref(false)
 const latestImport        = ref(null)
 const loadingLatest       = ref(true)
-let importPollTimer       = null
 
 const summaryCards = [
   {
@@ -659,15 +623,6 @@ const resultStats = computed(() => {
   ]
 })
 
-const overallProgress = computed(() => {
-  const p = importProgress.value
-  if (!p) return 0
-  const total     = (p.master_total ?? 0) + (p.barang_total ?? 0) + (p.invoice_total ?? 0)
-  const processed = (p.master_processed ?? 0) + (p.barang_processed ?? 0) + (p.invoice_processed ?? 0)
-
-  return total > 0 ? Math.round((processed / total) * 100) : 0
-})
-
 function formatDateTime(isoString) {
   if (!isoString) return '—'
   const d = new Date(isoString)
@@ -694,27 +649,26 @@ async function fetchLatestImport() {
 }
 
 function openImport() {
-  importFile.value     = null
-  importResult.value   = null
-  importProgress.value = null
-  showImport.value     = true
+  minimizeStore.setMinimizedFalse(WIDGET_ID)
+
+  if (importing.value) {
+    showImport.value = true
+    return
+  }
+
+  importFile.value = null
+  importStore.reset()
+  showImport.value = true
 }
 
 function minimizeImport() {
-  showImport.value        = false
-  isImportMinimized.value = true
-}
-
-function maximizeImport() {
-  isImportMinimized.value = false
-  showImport.value        = true
+  minimizeStore.setMinimized(WIDGET_ID, true)
+  showImport.value = false
 }
 
 function closeImport() {
-  clearTimeout(importPollTimer)
-  showImport.value        = false
-  isImportMinimized.value = false
-  importing.value         = false
+  showImport.value = false
+  minimizeStore.remove(WIDGET_ID)
 }
 
 async function downloadTemplate() {
@@ -734,65 +688,21 @@ async function downloadTemplate() {
 
 async function doImport() {
   if (!importFile.value) return
-
-  importing.value      = true
-  importResult.value   = null
-  importProgress.value = {
-    status: 'queued',
-    master_total: 0,  master_processed: 0,
-    barang_total: 0,  barang_processed: 0,
-    invoice_total: 0, invoice_processed: 0,
-    investor_inserted: 0, investor_updated: 0, investor_failed: 0,
-    resto_inserted: 0,    resto_updated: 0,    resto_failed: 0,
-    klien_inserted: 0,    klien_updated: 0,    klien_failed: 0,    klien_skipped: 0,
-    barang_inserted: 0,   barang_updated: 0,   barang_failed: 0,
-    invoice_inserted: 0,  invoice_updated: 0,  invoice_skipped: 0, invoice_failed: 0,
-  }
-
-  try {
-    const form = new FormData()
-    form.append('file', importFile.value)
-    const res     = await api.post('/master/master-data/import', form)
-    const batchId = res.data?.data?.batch_id
-    if (batchId) pollImportStatus(batchId)
-  } catch (err) {
-    importing.value    = false
-    importResult.value = {
-      status:  'failed',
-      message: err.response?.data?.message ?? 'Gagal mengunggah file.',
-      errors:  [],
-    }
-  }
+  await importStore.startImport(importFile.value)
 }
 
-function pollImportStatus(batchId) {
-  importPollTimer = setTimeout(async () => {
-    try {
-      const res  = await api.get(`/master/master-data/import/${batchId}/status`)
-      const data = res.data?.data
-
-      if (data) importProgress.value = data
-
-      if (data?.status === 'completed' || data?.status === 'failed') {
-        importing.value         = false
-        importResult.value      = data
-        isImportMinimized.value = false
-        showImport.value        = true
-
-        // Refresh cards di index setelah import selesai
-        if (data?.status === 'completed') fetchLatestImport()
-
-        return
-      }
-
-      pollImportStatus(batchId)
-    } catch {
-      importing.value = false
-    }
-  }, 1500)
-}
+watch(importResult, val => {
+  if (val?.status === 'completed') fetchLatestImport()
+})
 
 onMounted(() => {
   fetchLatestImport()
+
+  const widget = minimizeStore.widgets[WIDGET_ID]
+  if (widget?.pendingRestore) {
+    minimizeStore.clearPendingRestore(WIDGET_ID)
+    minimizeStore.setMinimizedFalse(WIDGET_ID)
+    showImport.value = true
+  }
 })
 </script>

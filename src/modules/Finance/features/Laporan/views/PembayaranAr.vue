@@ -85,13 +85,19 @@
     <!-- Tabel -->
     <VCard>
       <BaseTable
+        v-model:expanded="expanded"
         :headers="headers"
         :items="items"
         :total="meta.total"
         :loading="loading"
         :per-page="meta.per_page"
         :page="meta.current_page"
+        show-expand
+        item-value="id"
+        hover
+        wrap-text
         @update:options="onTableOptions"
+        @click:row="onRowClick"
       >
         <template #item.no="{ index }">
           {{ (meta.current_page - 1) * meta.per_page + index + 1 }}
@@ -117,10 +123,86 @@
             {{ item.metode_pembayaran }}
           </VChip>
         </template>
+        <template #item.status_rekonsiliasi="{ item }">
+          <VChip
+            :color="rekonColor(item.status_rekonsiliasi)"
+            size="small"
+            variant="tonal"
+            label
+          >
+            {{ item.status_rekonsiliasi ?? 'MANUAL' }}
+          </VChip>
+        </template>
         <template #item.jenis="{ item }">
           <VChip v-if="item.jenis === 'ALO'" size="x-small" color="info" label>ALO</VChip>
           <VChip v-else-if="item.jenis === 'PDM'" size="x-small" color="secondary" label>PDM</VChip>
-          <span v-else class="text-caption text-medium-emphasis">—</span>
+          <span v-else class="text-caption text-medium-emphasis">REG</span>
+        </template>
+        <template #item.bukti_gdrive_url="{ item }">
+          <VBtn
+            v-if="item.bukti_gdrive_url"
+            icon
+            size="small"
+            variant="text"
+            color="primary"
+            :href="item.bukti_gdrive_url"
+            target="_blank"
+            rel="noopener"
+          >
+            <VIcon icon="ri-attachment-2" size="18" />
+            <VTooltip activator="parent">Bukti bayar</VTooltip>
+          </VBtn>
+          <span v-else class="text-medium-emphasis">-</span>
+        </template>
+        <template #expanded-row="{ item, columns }">
+          <tr class="payment-detail-row">
+            <td :colspan="columns.length" class="pa-0">
+              <div class="pa-4">
+                <VTable density="compact" class="payment-detail-table">
+                  <tbody>
+                    <tr>
+                      <th>Invoice</th>
+                      <td>{{ item.no_invoice ?? '-' }}</td>
+                      <th>Tanggal invoice</th>
+                      <td>{{ formatDate(item.tanggal_invoice) }}</td>
+                      <th>Jatuh tempo</th>
+                      <td>{{ formatDate(item.tanggal_jatuh_tempo) }}</td>
+                    </tr>
+                    <tr>
+                      <th>Total tagihan</th>
+                      <td>{{ formatCurrency(item.total_tagihan ?? 0) }}</td>
+                      <th>Sisa piutang</th>
+                      <td>{{ formatCurrency(item.sisa_tagihan ?? 0) }}</td>
+                      <th>Status invoice</th>
+                      <td>{{ item.invoice_status ?? '-' }}</td>
+                    </tr>
+                    <tr>
+                      <th>PIC AR</th>
+                      <td>{{ item.pic_ar ?? '-' }}</td>
+                      <th>Entitas</th>
+                      <td>{{ item.perusahaan ?? '-' }}</td>
+                      <th>Kode klien</th>
+                      <td>{{ item.kode_klien ?? '-' }}</td>
+                    </tr>
+                    <tr>
+                      <th>Rekonsiliasi</th>
+                      <td>{{ item.status_rekonsiliasi ?? 'MANUAL' }}</td>
+                      <th>No ref bank</th>
+                      <td>{{ item.no_ref_bank ?? '-' }}</td>
+                      <th>Nominal bank</th>
+                      <td>{{ item.nominal_bank ? formatCurrency(item.nominal_bank) : '-' }}</td>
+                    </tr>
+                    <tr>
+                      <th>Keterangan</th>
+                      <td colspan="3">{{ item.keterangan ?? '-' }}</td>
+                      <th>Dicatat</th>
+                      <td>{{ item.created_by_name ?? '-' }} / {{ item.created_at ?? '-' }}</td>
+                    </tr>
+                  </tbody>
+                </VTable>
+              </div>
+            </td>
+          </tr>
         </template>
       </BaseTable>
     </VCard>
@@ -141,6 +223,7 @@ const { items: klienList, loading: klienLoading, fetchAll: fetchKlien } = useCru
 const { ensureLoaded: ensureKlienLoaded } = useLazyFetchAll(fetchKlien)
 
 const segment = ref('ALL')
+const expanded = ref([])
 
 params.klien_ar_id       = null
 params.metode_pembayaran = null
@@ -156,8 +239,10 @@ const headers = [
   { title: 'Klien',       key: 'klien',              sortable: false },
   { title: 'Jumlah',      key: 'jumlah_pembayaran',  sortable: false },
   { title: 'Metode',      key: 'metode_pembayaran',  sortable: false },
+  { title: 'Rekon',       key: 'status_rekonsiliasi',sortable: false },
   { title: 'No Referensi',key: 'no_referensi',       sortable: false },
   { title: 'Jenis',       key: 'jenis',              sortable: false },
+  { title: 'Bukti',       key: 'bukti_gdrive_url',   sortable: false, align: 'center', width: '70px' },
   { title: 'Dicatat oleh',key: 'created_by_name',   sortable: false },
 ]
 
@@ -171,9 +256,27 @@ function metodeColor(metode) {
   return { TRANSFER: 'info', CASH: 'success', GIRO: 'warning' }[metode] ?? 'default'
 }
 
+function rekonColor(status) {
+  return {
+    MATCHED: 'success',
+    POSSIBLE: 'warning',
+    UNMATCHED: 'error',
+    DIABAIKAN: 'default',
+  }[status] ?? 'secondary'
+}
+
 function onSegmentChange(val) {
   params.segment = val !== 'ALL' ? val : null
   doFetch()
+}
+
+function onRowClick(_event, { item } = {}) {
+  const key = item?.id
+  if (key == null) return
+
+  expanded.value = expanded.value.includes(key)
+    ? expanded.value.filter(v => v !== key)
+    : [...expanded.value, key]
 }
 
 let controller = null
@@ -182,7 +285,10 @@ function doFetch() {
   params.page = 1
   controller?.abort()
   controller = new AbortController()
-  fetchList({}, { signal: controller.signal }).finally(() => { controller = null })
+  fetchList({}, { signal: controller.signal }).finally(() => {
+    expanded.value = []
+    controller = null
+  })
 }
 
 function onTableOptions({ page, itemsPerPage }) {
@@ -200,3 +306,14 @@ onMounted(() => {
 })
 onBeforeUnmount(() => controller?.abort())
 </script>
+
+<style scoped>
+.payment-detail-row > td {
+  background: rgba(var(--v-theme-on-surface), 0.02);
+}
+
+.payment-detail-table :deep(th),
+.payment-detail-table :deep(td) {
+  white-space: nowrap;
+}
+</style>
