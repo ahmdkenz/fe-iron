@@ -148,18 +148,82 @@
         </VChip>
       </template>
 
+      <!-- Section: Identitas Entitas -->
+      <div class="detail-section-header">
+        <VIcon
+          icon="ri-building-4-line"
+          size="14"
+          class="detail-section-icon-primary"
+        />
+        <span class="detail-section-title detail-section-title-primary">Identitas Entitas</span>
+      </div>
+      <VDivider />
+      <DetailRow
+        label="Kode Entitas"
+        :value="selectedEntitas?.kode_perusahaan"
+      />
       <DetailRow
         label="Singkatan"
         :value="selectedEntitas?.nama_singkatan_perusahaan"
       />
       <DetailRow
-        label="Keterangan"
-        :value="selectedEntitas?.keterangan"
+        label="Nama Entitas"
+        :value="selectedEntitas?.nama_perusahaan"
       />
       <DetailRow
         label="Nama Direktur"
         :value="selectedEntitas?.nama_direktur"
       />
+      <DetailRow
+        label="Keterangan"
+        :value="selectedEntitas?.keterangan"
+      />
+
+      <!-- Section: Kontak & Lokasi -->
+      <div class="detail-section-header">
+        <VIcon
+          icon="ri-map-pin-line"
+          size="14"
+          class="detail-section-icon-info"
+        />
+        <span class="detail-section-title detail-section-title-info">Kontak &amp; Lokasi</span>
+      </div>
+      <VDivider />
+      <DetailRow
+        label="Alamat"
+        :value="selectedEntitas?.alamat"
+      />
+      <DetailRow
+        label="Kota"
+        :value="selectedEntitas?.kota"
+      />
+      <DetailRow
+        label="Kode POS"
+        :value="selectedEntitas?.kode_pos"
+      />
+      <DetailRow
+        label="No. Telepon"
+        :value="selectedEntitas?.no_telp"
+      />
+      <DetailRow
+        label="Email"
+        :value="selectedEntitas?.email"
+      />
+      <DetailRow
+        label="NPWP"
+        :value="selectedEntitas?.no_npwp"
+      />
+
+      <!-- Section: Status & Audit -->
+      <div class="detail-section-header">
+        <VIcon
+          icon="ri-history-line"
+          size="14"
+          class="detail-section-icon-secondary"
+        />
+        <span class="detail-section-title detail-section-title-secondary">Status &amp; Audit</span>
+      </div>
+      <VDivider />
       <DetailRow label="Status">
         <StatusChip :active="selectedEntitas?.status" />
       </DetailRow>
@@ -335,3 +399,35 @@ async function doBulkDelete() {
 
 onMounted(() => fetchList())
 </script>
+
+<style scoped>
+.detail-section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 20px;
+  background: rgba(var(--v-theme-on-surface), 0.03);
+}
+
+.detail-section-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.detail-section-icon-primary,
+.detail-section-title-primary {
+  color: rgb(var(--v-theme-primary));
+}
+
+.detail-section-icon-info,
+.detail-section-title-info {
+  color: rgb(var(--v-theme-info));
+}
+
+.detail-section-icon-secondary,
+.detail-section-title-secondary {
+  color: rgb(var(--v-theme-secondary));
+}
+</style>
