@@ -303,6 +303,13 @@ async function fetchCandidates(type, detailId) {
     })
     if (isOb) obCandidates.value = data.data ?? []
     else regularCandidates.value = data.data ?? []
+  } catch (err) {
+    // Jangan sembunyikan kegagalan sebagai "daftar kosong": kosongkan daftar
+    // terkait lalu tampilkan pesan error agar bisa dibedakan dari hasil nihil.
+    if (isOb) obCandidates.value = []
+    else regularCandidates.value = []
+    matchError.value = err?.response?.data?.message
+      ?? 'Gagal memuat daftar invoice. Periksa koneksi lalu coba lagi.'
   } finally {
     if (isOb) obLoading.value = false
     else regularLoading.value = false
@@ -340,7 +347,7 @@ watch(() => props.modelValue, open => {
   resetState()
   fetchCandidates('ob')
   fetchCandidates('regular')
-})
+}, { immediate: true })
 
 function onDialogUpdate(value) {
   emit('update:modelValue', value)

@@ -394,7 +394,7 @@ watch(() => props.modelValue, open => {
   }
   resetState()
   fetchInvoiceLists()
-})
+}, { immediate: true })
 
 // Distribusi floating/waterfall: alokasikan sisa kelebihan berurutan ke tiap
 // invoice sebesar min(sisa_tagihan, sisa kelebihan tersisa). Invoice yang tidak
