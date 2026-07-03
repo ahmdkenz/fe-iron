@@ -1189,7 +1189,7 @@ function koreksiTipeColor(tipe) {
   return { CREDIT_NOTE: 'error', DEBIT_NOTE: 'info', KOREKSI_QTY_HARGA: 'warning', KOREKSI_SALDO: 'secondary' }[tipe] ?? 'secondary'
 }
 function koreksiStatusLabel(s) {
-  return { PENDING_SPV: 'Menunggu SPV', PENDING_MANAGER: 'Menunggu Manager', APPROVED: 'Disetujui', REJECTED: 'Ditolak' }[s] ?? s
+  return { PENDING_SPV: 'Menunggu Approval', PENDING_MANAGER: 'Menunggu Approval', APPROVED: 'Disetujui', REJECTED: 'Ditolak' }[s] ?? s
 }
 function koreksiStatusColor(s) {
   return { PENDING_SPV: 'warning', PENDING_MANAGER: 'info', APPROVED: 'success', REJECTED: 'error' }[s] ?? 'secondary'

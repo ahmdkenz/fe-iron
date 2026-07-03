@@ -136,7 +136,7 @@
       >
         <template #item.status="{ item }">
           <VChip size="x-small" :color="item.status === 'APPROVED' ? 'success' : 'warning'" label>
-            {{ item.status === 'APPROVED' ? 'Selesai' : 'Menunggu Manager' }}
+            {{ item.status === 'APPROVED' ? 'Selesai' : 'Menunggu Approval' }}
           </VChip>
         </template>
         <template #item.tipe="{ item }">
@@ -158,9 +158,6 @@
         </template>
         <template #item.saldo_sesudah="{ item }">
           <span class="text-body-2 font-weight-semibold">{{ formatRp(item.saldo_sesudah) }}</span>
-        </template>
-        <template #item.spv="{ item }">
-          <span class="text-caption">{{ item.spv || '—' }}</span>
         </template>
         <template #item.manager="{ item }">
           <span class="text-caption" :class="item.manager ? 'font-weight-semibold text-success' : 'text-medium-emphasis'">
@@ -198,7 +195,7 @@
       >
         <template #item.status="{ item }">
           <VChip size="x-small" :color="item.status === 'APPROVED' ? 'success' : 'warning'" label>
-            {{ item.status === 'APPROVED' ? 'Selesai' : 'Menunggu Manager' }}
+            {{ item.status === 'APPROVED' ? 'Selesai' : 'Menunggu Approval' }}
           </VChip>
         </template>
         <template #item.tipe="{ item }">
@@ -220,9 +217,6 @@
         </template>
         <template #item.saldo_sesudah="{ item }">
           <span class="text-body-2 font-weight-semibold">{{ formatRp(item.saldo_sesudah) }}</span>
-        </template>
-        <template #item.spv="{ item }">
-          <span class="text-caption">{{ item.spv || '—' }}</span>
         </template>
         <template #item.manager="{ item }">
           <span class="text-caption" :class="item.manager ? 'font-weight-semibold text-success' : 'text-medium-emphasis'">
@@ -425,8 +419,7 @@ const approvedHeaders = [
   { title: 'SALDO SESUDAH',     key: 'saldo_sesudah',      sortable: false },
   { title: 'ALASAN',            key: 'alasan_koreksi',     sortable: false },
   { title: 'DIAJUKAN OLEH',     key: 'submitted_by',       sortable: false },
-  { title: 'DISETUJUI SPV',     key: 'spv',                sortable: false },
-  { title: 'DISETUJUI MANAGER', key: 'manager',            sortable: false },
+  { title: 'DISETUJUI OLEH',    key: 'manager',            sortable: false },
   { title: 'TGL APPROVED',      key: 'manager_actioned_at',sortable: false },
   { title: 'AKSI',              key: 'actions',            sortable: false, align: 'center' },
 ]
@@ -502,10 +495,10 @@ async function confirmAction() {
   dialog.error   = ''
   dialog.loading = true
 
-  const k      = dialog.koreksi
-  const isSPV  = k.status === 'PENDING_SPV'
-  const suffix = isSPV ? '-spv' : '-manager'
-  const url    = `/finance/ending-balance/koreksi/${k.id}/${dialog.action}${suffix}`
+  // Approval EB satu tahap: semua koreksi pending diproses via endpoint final (-manager)
+  // oleh Manager/Supervisor/Admin.
+  const k   = dialog.koreksi
+  const url = `/finance/ending-balance/koreksi/${k.id}/${dialog.action}-manager`
 
   try {
     await api.patch(url, { note: dialog.keterangan.trim() || null })

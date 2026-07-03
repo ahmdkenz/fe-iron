@@ -366,7 +366,7 @@
           Kunci ending balance <strong>{{ lockTarget?.nama_klien }}</strong> untuk periode
           {{ formatDate(lockTarget?.periode_awal) }} – {{ formatDate(lockTarget?.periode_akhir) }}?
           <br><br>
-          Setelah dikunci, koreksi manual memerlukan persetujuan SPV dan Manager.
+          Setelah dikunci, koreksi manual memerlukan persetujuan Manager/Supervisor.
         </VCardText>
         <VCardActions class="px-4 pb-4">
           <VSpacer />

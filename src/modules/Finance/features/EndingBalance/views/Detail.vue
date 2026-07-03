@@ -69,7 +69,7 @@
         class="mb-4"
       >
         Periode dikunci<template v-if="eb.locked_by"> oleh <strong>{{ eb.locked_by }}</strong></template><template v-if="eb.locked_at"> pada {{ formatDatetime(eb.locked_at) }}</template>.
-        Perubahan saldo memerlukan koreksi manual dengan persetujuan SPV dan Manager.
+        Perubahan saldo memerlukan koreksi manual dengan persetujuan Manager/Supervisor.
       </VAlert>
 
       <!-- Aksi DRAFT -->
@@ -448,7 +448,7 @@
         Kunci ending balance <strong>{{ eb?.nama_klien }}</strong> untuk periode
         {{ formatDate(eb?.periode_awal) }} – {{ formatDate(eb?.periode_akhir) }}?
         <br><br>
-        Setelah dikunci, nilai tidak bisa diubah. Koreksi manual memerlukan persetujuan SPV dan Manager.
+        Setelah dikunci, nilai tidak bisa diubah. Koreksi manual memerlukan persetujuan Manager/Supervisor.
       </VCardText>
       <VCardActions class="px-4 pb-4">
         <VSpacer />
@@ -553,7 +553,7 @@ function statusColor(s) {
   return { PENDING_SPV: 'warning', PENDING_MANAGER: 'info', APPROVED: 'success', REJECTED: 'error' }[s] ?? 'default'
 }
 function statusLabel(s) {
-  return { PENDING_SPV: 'Menunggu SPV', PENDING_MANAGER: 'Menunggu Manager', APPROVED: 'Disetujui', REJECTED: 'Ditolak' }[s] ?? s
+  return { PENDING_SPV: 'Menunggu Approval', PENDING_MANAGER: 'Menunggu Approval', APPROVED: 'Disetujui', REJECTED: 'Ditolak' }[s] ?? s
 }
 function invoiceStatusColor(s) {
   return { DRAFT: 'default', TERKIRIM: 'primary', SEBAGIAN: 'warning', LUNAS: 'success' }[s] ?? 'default'
