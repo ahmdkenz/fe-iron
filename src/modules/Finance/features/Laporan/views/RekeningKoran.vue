@@ -301,15 +301,11 @@ const meta = reactive({
   total:        0,
 })
 
-const now      = new Date()
-const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10)
-const lastDay  = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10)
-
 const filters = reactive({
   pic_ar_id:        null,
   bank_type:        null,
-  periode_awal:     firstDay,
-  periode_akhir:    lastDay,
+  periode_awal:     null,
+  periode_akhir:    null,
   dk:               '',
   status_posting_1: '',
   status_posting_2: '',

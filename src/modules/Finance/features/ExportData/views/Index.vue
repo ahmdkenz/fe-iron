@@ -9,13 +9,12 @@
       ]"
     />
 
-    <!-- Pilih Laporan -->
     <VCard class="mb-4">
       <VCardText>
-        <div class="d-flex justify-space-between align-center mb-4">
+        <div class="d-flex flex-wrap justify-space-between align-center gap-3 mb-4">
           <div>
-            <div class="text-h6 font-weight-bold">Pilih Laporan yang Ingin Di-Export</div>
-            <div class="text-caption text-medium-emphasis">Centang satu atau lebih laporan, lalu klik Export Excel</div>
+            <div class="text-h6 font-weight-bold">Pilih Laporan</div>
+            <div class="text-caption text-medium-emphasis">Centang satu atau lebih laporan yang akan di-export</div>
           </div>
           <VBtn variant="tonal" size="small" color="primary" @click="toggleSelectAll">
             {{ allSelected ? 'Batal Semua' : 'Pilih Semua' }}
@@ -24,183 +23,273 @@
 
         <VRow>
           <VCol v-for="rpt in reportDefs" :key="rpt.key" cols="12" sm="6" md="4">
-            <VCard
-              :variant="isSelected(rpt.key) ? 'tonal' : 'outlined'"
-              :color="isSelected(rpt.key) ? rpt.color : undefined"
-              class="cursor-pointer h-100 transition-all"
-              style="border-width: 2px;"
+            <div
+              class="report-tile"
+              :class="{
+                'report-tile--selected': isSelected(rpt.key),
+                'report-tile--disabled': rpt.disabled,
+              }"
               @click="toggleReport(rpt.key)"
             >
-              <VCardText class="d-flex align-center gap-3 pa-4">
-                <VCheckbox
-                  :model-value="isSelected(rpt.key)"
-                  hide-details
-                  density="compact"
-                  :color="rpt.color"
-                  @click.stop
-                  @update:model-value="toggleReport(rpt.key)"
-                />
-                <VAvatar :color="rpt.color" variant="tonal" size="42">
-                  <VIcon :icon="rpt.icon" size="22" />
-                </VAvatar>
-                <div>
-                  <div class="font-weight-semibold text-body-1">{{ rpt.label }}</div>
-                  <div class="text-caption text-medium-emphasis mt-1">{{ rpt.description }}</div>
-                </div>
-              </VCardText>
-            </VCard>
+              <VCheckbox
+                :model-value="isSelected(rpt.key)"
+                hide-details
+                density="compact"
+                :color="rpt.color"
+                :disabled="rpt.disabled"
+                @click.stop
+                @update:model-value="toggleReport(rpt.key)"
+              />
+              <VAvatar :color="rpt.color" variant="tonal" size="42">
+                <VIcon :icon="rpt.icon" size="22" />
+              </VAvatar>
+              <div class="min-width-0">
+                <div class="font-weight-semibold text-body-1">{{ rpt.label }}</div>
+                <div class="text-caption text-medium-emphasis mt-1">{{ rpt.description }}</div>
+                <VChip
+                  v-if="rpt.disabled"
+                  size="x-small"
+                  color="warning"
+                  variant="tonal"
+                  class="mt-2"
+                >
+                  Belum tersedia
+                </VChip>
+              </div>
+            </div>
           </VCol>
         </VRow>
       </VCardText>
     </VCard>
 
-    <!-- Filter -->
     <VCard v-if="selectedKeys.length > 0" class="mb-4">
-      <VCardText>
-        <div class="text-h6 font-weight-bold mb-1">Pengaturan Filter</div>
-        <div class="text-caption text-medium-emphasis mb-4">Sesuaikan rentang tanggal dan filter khusus per laporan</div>
+      <VCardTitle class="px-5 pt-5 pb-0 text-subtitle-2 text-uppercase text-medium-emphasis font-weight-bold">
+        Filter Export
+      </VCardTitle>
+      <VCardText class="pa-5">
+        <VRow dense>
+          <VCol v-if="showSegmentFilter" cols="12" sm="auto">
+            <VBtnToggle
+              v-model="filters.segment"
+              color="primary"
+              variant="outlined"
+              mandatory
+              divided
+              density="compact"
+            >
+              <VBtn value="ALL" size="small" style="min-width: 80px">Semua</VBtn>
+              <VBtn value="B2C" size="small" style="min-width: 70px">B2C</VBtn>
+              <VBtn value="B2B" size="small" style="min-width: 70px">B2B</VBtn>
+            </VBtnToggle>
+          </VCol>
 
-        <!-- Global date range -->
-        <VCard variant="tonal" color="primary" class="mb-3" rounded="lg">
-          <VCardText class="pa-3">
-            <div class="d-flex align-center gap-2 mb-1">
-              <VIcon icon="ri-calendar-line" size="16" color="primary" />
-              <span class="text-subtitle-2 font-weight-semibold">Periode Utama</span>
-            </div>
-            <div class="text-caption text-medium-emphasis mb-3">
-              Berlaku untuk: Mutasi Piutang, Rekap Pembayaran, Kinerja AR, Riwayat Pembayaran
-            </div>
-            <div class="d-flex flex-wrap gap-3">
-              <VTextField
-                v-model="filters.dari"
-                label="Dari Tanggal"
-                type="date"
-                density="compact"
-                hide-details
-                style="max-width: 190px"
-              />
-              <VTextField
-                v-model="filters.sampai"
-                label="Sampai Tanggal"
-                type="date"
-                density="compact"
-                hide-details
-                style="max-width: 190px"
-              />
-            </div>
-          </VCardText>
-        </VCard>
-
-        <!-- Aging specific -->
-        <VCard v-if="isSelected('aging_report')" variant="outlined" class="mb-3" rounded="lg">
-          <VCardText class="pa-3">
-            <div class="d-flex align-center gap-2 mb-3">
-              <VIcon icon="ri-bar-chart-grouped-line" size="16" color="primary" />
-              <span class="text-subtitle-2 font-weight-semibold">Aging Report — Per Tanggal</span>
-            </div>
+          <VCol v-if="showPeriodFilter" cols="6" sm="auto">
             <VTextField
-              v-model="agingFilter.as_of_date"
-              label="Per Tanggal"
+              v-model="filters.tanggal_dari"
+              label="Dari Tanggal"
               type="date"
               density="compact"
+              variant="outlined"
               hide-details
-              style="max-width: 190px"
+              style="min-width: 150px"
             />
-            <div class="text-caption text-medium-emphasis mt-2">
-              Kosongkan untuk menggunakan "Sampai Tanggal" di atas
-            </div>
-          </VCardText>
-        </VCard>
+          </VCol>
 
-        <!-- Rekap Per Klien specific -->
-        <VCard v-if="isSelected('rekap_klien')" variant="outlined" class="mb-3" rounded="lg">
-          <VCardText class="pa-3">
-            <div class="d-flex align-center gap-2 mb-3">
-              <VIcon icon="ri-pie-chart-2-line" size="16" color="secondary" />
-              <span class="text-subtitle-2 font-weight-semibold">Rekap Per Klien — Periode Bulan/Tahun</span>
-            </div>
-            <div class="d-flex flex-wrap gap-3">
-              <VSelect
-                v-model="rekapKlienFilter.bulan"
-                placeholder="Semua Bulan"
-                clearable
-                hide-details
-                density="compact"
-                style="max-width: 170px"
-                :items="bulanOptions"
-                item-title="label"
-                item-value="value"
-              />
+          <VCol v-if="showPeriodFilter" cols="6" sm="auto">
+            <VTextField
+              v-model="filters.tanggal_sampai"
+              label="Sampai Tanggal"
+              type="date"
+              density="compact"
+              variant="outlined"
+              hide-details
+              style="min-width: 150px"
+            />
+          </VCol>
+
+          <VCol v-if="showClientFilter" cols="12" sm>
+            <VAutocomplete
+              v-model="filters.klien_ar_id"
+              label="Klien"
+              placeholder="Semua Klien"
+              variant="outlined"
+              clearable
+              hide-details
+              density="compact"
+              prepend-inner-icon="ri-search-line"
+              :items="klienList"
+              item-title="nama_klien"
+              item-value="id"
+              :loading="klienLoading"
+              @focus="ensureKlienLoaded()"
+            />
+          </VCol>
+
+          <VCol v-if="showPaymentMethodFilter" cols="12" sm="auto">
+            <VSelect
+              v-model="filters.metode_pembayaran"
+              label="Metode"
+              placeholder="Semua Metode"
+              clearable
+              hide-details
+              density="compact"
+              variant="outlined"
+              style="min-width: 170px"
+              :items="metodeOptions"
+              item-title="label"
+              item-value="value"
+            />
+          </VCol>
+        </VRow>
+
+        <VDivider v-if="showSpecialFilters" class="my-4" />
+
+        <VRow v-if="showSpecialFilters" dense>
+          <VCol v-if="isSelected('aging_report')" cols="12" md="4">
+            <div class="filter-group">
+              <div class="d-flex align-center gap-2 mb-3">
+                <VIcon icon="ri-bar-chart-grouped-line" size="16" color="primary" />
+                <span class="text-subtitle-2 font-weight-semibold">Aging Report</span>
+              </div>
               <VTextField
-                v-model="rekapKlienFilter.tahun"
-                placeholder="Tahun"
-                hide-details
+                v-model="agingFilter.as_of_date"
+                label="Per Tanggal"
+                type="date"
                 density="compact"
-                style="max-width: 110px"
-                type="number"
+                variant="outlined"
+                hide-details
               />
             </div>
-          </VCardText>
-        </VCard>
+          </VCol>
 
-        <!-- Jatuh Tempo specific -->
-        <VCard v-if="isSelected('jatuh_tempo')" variant="outlined" class="mb-3" rounded="lg">
-          <VCardText class="pa-3">
-            <div class="d-flex align-center gap-2 mb-3">
-              <VIcon icon="ri-time-line" size="16" color="deep-orange" />
-              <span class="text-subtitle-2 font-weight-semibold">Tagihan Jatuh Tempo — Tipe Filter</span>
+          <VCol v-if="isSelected('rekap_klien')" cols="12" md="4">
+            <div class="filter-group">
+              <div class="d-flex align-center gap-2 mb-3">
+                <VIcon icon="ri-pie-chart-2-line" size="16" color="secondary" />
+                <span class="text-subtitle-2 font-weight-semibold">Rekap Klien</span>
+              </div>
+              <div class="d-flex gap-3">
+                <VSelect
+                  v-model="rekapKlienFilter.periode_bulan"
+                  placeholder="Semua Bulan"
+                  clearable
+                  hide-details
+                  density="compact"
+                  variant="outlined"
+                  :items="bulanOptions"
+                  item-title="label"
+                  item-value="value"
+                />
+                <VTextField
+                  v-model="rekapKlienFilter.periode_tahun"
+                  placeholder="Tahun"
+                  hide-details
+                  density="compact"
+                  variant="outlined"
+                  type="number"
+                  style="max-width: 110px"
+                />
+              </div>
             </div>
-            <div class="d-flex flex-wrap gap-3 align-center">
-              <VSelect
-                v-model="jatuhTempoFilter.filter_type"
-                label="Tipe Filter"
-                density="compact"
-                hide-details
-                style="max-width: 200px"
-                :items="[
-                  { label: 'Akan Jatuh Tempo', value: 'upcoming' },
-                  { label: 'Sudah Lewat',       value: 'overdue'  },
-                  { label: 'Semua',             value: 'all'      },
-                ]"
-                item-title="label"
-                item-value="value"
-              />
-              <VSelect
-                v-if="jatuhTempoFilter.filter_type === 'upcoming'"
-                v-model="jatuhTempoFilter.days"
-                label="Dalam"
-                density="compact"
-                hide-details
-                style="max-width: 140px"
-                :items="[
-                  { label: '7 Hari',  value: 7  },
-                  { label: '14 Hari', value: 14 },
-                  { label: '30 Hari', value: 30 },
-                  { label: '60 Hari', value: 60 },
-                  { label: '90 Hari', value: 90 },
-                ]"
-                item-title="label"
-                item-value="value"
-              />
+          </VCol>
+
+          <VCol v-if="isSelected('jurnal_pic')" cols="12" md="4">
+            <div class="filter-group">
+              <div class="d-flex align-center gap-2 mb-3">
+                <VIcon icon="ri-file-list-3-line" size="16" color="warning" />
+                <span class="text-subtitle-2 font-weight-semibold">Jurnal PIC</span>
+              </div>
+              <div class="d-flex flex-column gap-3">
+                <VTextField
+                  v-model="jurnalPicFilter.no_referensi"
+                  label="No Referensi"
+                  density="compact"
+                  variant="outlined"
+                  hide-details
+                  clearable
+                />
+                <VAutocomplete
+                  v-model="jurnalPicFilter.karyawan_id"
+                  label="PIC"
+                  placeholder="Semua PIC"
+                  clearable
+                  density="compact"
+                  variant="outlined"
+                  hide-details
+                  :items="karyawanOptions"
+                  item-title="nama_karyawan"
+                  item-value="id"
+                  :loading="karyawanLoading"
+                  @focus="ensureKaryawanLoaded()"
+                />
+                <VSelect
+                  v-model="jurnalPicFilter.status_rekonsiliasi"
+                  label="Status Rekon"
+                  placeholder="Semua Status"
+                  clearable
+                  density="compact"
+                  variant="outlined"
+                  hide-details
+                  :items="rekonStatusOptions"
+                  item-title="label"
+                  item-value="value"
+                />
+              </div>
             </div>
-          </VCardText>
-        </VCard>
+          </VCol>
+
+          <VCol v-if="isSelected('pendapatan_di_muka')" cols="12" md="4">
+            <div class="filter-group">
+              <div class="d-flex align-center gap-2 mb-3">
+                <VIcon icon="ri-time-line" size="16" color="deep-purple" />
+                <span class="text-subtitle-2 font-weight-semibold">Pendapatan di Muka</span>
+              </div>
+              <div class="d-flex flex-column gap-3">
+                <VAutocomplete
+                  v-model="pdmFilter.investor_id"
+                  label="Investor"
+                  placeholder="Semua Investor"
+                  clearable
+                  density="compact"
+                  variant="outlined"
+                  hide-details
+                  :items="investorList"
+                  item-title="nama_investor"
+                  item-value="id"
+                  :loading="investorLoading"
+                  @focus="ensureInvestorLoaded()"
+                />
+                <VSelect
+                  v-model="pdmFilter.status"
+                  label="Status"
+                  placeholder="Semua Status"
+                  clearable
+                  density="compact"
+                  variant="outlined"
+                  hide-details
+                  :items="pdmStatusOptions"
+                  item-title="label"
+                  item-value="value"
+                />
+              </div>
+            </div>
+          </VCol>
+        </VRow>
       </VCardText>
     </VCard>
 
-    <!-- Action -->
     <VCard>
       <VCardText class="d-flex flex-wrap justify-space-between align-center gap-3">
-        <div>
+        <div class="min-width-0">
           <div v-if="selectedKeys.length > 0" class="text-subtitle-1 font-weight-medium">
             {{ selectedKeys.length }} laporan dipilih
           </div>
           <div v-else class="text-subtitle-1 text-medium-emphasis">Belum ada laporan dipilih</div>
-          <div class="text-caption text-medium-emphasis mt-1">
+          <div class="text-caption text-medium-emphasis mt-1 selected-labels">
             <template v-if="selectedKeys.length > 0">
-              {{ selectedKeys.map(k => reportDefs.find(r => r.key === k)?.label).join(' · ') }}
+              {{ selectedDefs.map(r => r.label).join(' | ') }}
             </template>
-            <template v-else>Silakan pilih minimal satu laporan di atas</template>
+            <template v-else>Silakan pilih minimal satu laporan</template>
           </div>
         </div>
         <VBtn
@@ -220,370 +309,296 @@
 
 <script setup>
 import { computed, reactive, ref } from 'vue'
+import { useCrud } from '@/composables/useCrud'
+import { useLazyFetchAll } from '@/composables/useLazyFetchAll'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import api from '@/utils/axios'
 
 const { showSuccess, showError } = useSweetAlert()
+const { items: klienList, loading: klienLoading, fetchAll: fetchKlien } = useCrud('/finance/klien-ar')
+const { items: karyawanList, loading: karyawanLoading, fetchAll: fetchKaryawan } = useCrud('/master/karyawan')
+const { items: investorList, loading: investorLoading, fetchAll: fetchInvestor } = useCrud('/master/investor')
+const { ensureLoaded: ensureKlienLoaded } = useLazyFetchAll(fetchKlien)
+const { ensureLoaded: ensureKaryawanLoaded } = useLazyFetchAll(fetchKaryawan)
+const { ensureLoaded: ensureInvestorLoaded } = useLazyFetchAll(fetchInvestor)
 
 const exporting = ref(false)
 const selectedKeys = ref([])
 
-const now      = new Date()
-const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10)
-const lastDay  = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10)
-const todayStr = now.toISOString().slice(0, 10)
+const now = new Date()
+const firstDay = toDateInput(new Date(now.getFullYear(), now.getMonth(), 1))
+const lastDay = toDateInput(new Date(now.getFullYear(), now.getMonth() + 1, 0))
+const todayStr = toDateInput(now)
 
-const filters         = reactive({ dari: firstDay, sampai: lastDay })
-const agingFilter     = reactive({ as_of_date: '' })
-const jatuhTempoFilter = reactive({ filter_type: 'all', days: 30 })
-const rekapKlienFilter = reactive({ bulan: null, tahun: now.getFullYear() })
+const filters = reactive({
+  segment: 'ALL',
+  tanggal_dari: firstDay,
+  tanggal_sampai: lastDay,
+  klien_ar_id: null,
+  metode_pembayaran: null,
+})
+
+const agingFilter = reactive({ as_of_date: todayStr })
+const rekapKlienFilter = reactive({ periode_bulan: null, periode_tahun: now.getFullYear() })
+const jurnalPicFilter = reactive({ no_referensi: null, karyawan_id: null, status_rekonsiliasi: null })
+const pdmFilter = reactive({ investor_id: null, status: null })
 
 const reportDefs = [
-  { key: 'aging_report',      label: 'Aging Report',         icon: 'ri-bar-chart-grouped-line', description: 'Laporan umur piutang belum terbayar',    color: 'primary'   },
-  { key: 'rekap_klien',       label: 'Rekap Per Klien',      icon: 'ri-pie-chart-2-line',        description: 'Ringkasan outstanding piutang per klien', color: 'secondary' },
-  { key: 'riwayat_pembayaran',label: 'Riwayat Pembayaran',   icon: 'ri-money-cny-circle-line',   description: 'Daftar semua pembayaran AR',              color: 'success'   },
-  { key: 'mutasi_piutang',    label: 'Mutasi Piutang',       icon: 'ri-exchange-funds-line',     description: 'Pergerakan piutang per klien',           color: 'info'      },
-  // NEXT UPDATE: Jatuh Tempo disembunyikan sementara (kolom tanggal_jatuh_tempo dihapus dari DB)
-  // { key: 'jatuh_tempo',       label: 'Tagihan Jatuh Tempo',  icon: 'ri-time-line',               description: 'Invoice yang akan/sudah jatuh tempo',    color: 'deep-orange' },
-  { key: 'rekap_pembayaran',  label: 'Rekap Pembayaran',     icon: 'ri-bank-card-line',          description: 'Ringkasan pembayaran per metode & tanggal',color: 'error'    },
-  { key: 'kinerja_ar',        label: 'Kinerja AR',           icon: 'ri-user-star-line',          description: 'Performa penagihan per AR Officer',      color: 'deep-purple' },
+  {
+    key: 'aging_report',
+    label: 'Aging Report',
+    icon: 'ri-bar-chart-grouped-line',
+    description: 'Umur piutang belum terbayar',
+    color: 'primary',
+    endpoint: '/finance/aging-report/export-excel',
+    supportsSegment: true,
+    supportsClient: true,
+    usesAsOfDate: true,
+  },
+  {
+    key: 'jurnal_pic',
+    label: 'Jurnal Aktivitas per PIC',
+    icon: 'ri-file-list-3-line',
+    description: 'Pembayaran berdasarkan PIC dan referensi',
+    color: 'warning',
+    endpoint: '/finance/jurnal-pic/export-excel',
+    usesPeriod: true,
+    supportsClient: true,
+    supportsPaymentMethod: true,
+  },
+  {
+    key: 'rekap_klien',
+    label: 'Rekap Per Klien',
+    icon: 'ri-pie-chart-2-line',
+    description: 'Ringkasan outstanding per klien',
+    color: 'secondary',
+    frontendWorkbook: true,
+    supportsSegment: true,
+    usesMonthYear: true,
+  },
+  {
+    key: 'riwayat_pembayaran',
+    label: 'Riwayat Pembayaran',
+    icon: 'ri-money-cny-circle-line',
+    description: 'Daftar semua pembayaran AR',
+    color: 'success',
+    frontendWorkbook: true,
+    supportsSegment: true,
+    supportsClient: true,
+    supportsPaymentMethod: true,
+    usesPeriod: true,
+  },
+  {
+    key: 'mutasi_piutang',
+    label: 'Mutasi Piutang',
+    icon: 'ri-exchange-funds-line',
+    description: 'Pergerakan piutang per klien',
+    color: 'info',
+    endpoint: '/finance/mutasi-piutang/export-excel',
+    supportsSegment: true,
+    supportsClient: true,
+    usesPeriod: true,
+  },
+  {
+    key: 'rekap_pembayaran',
+    label: 'Rekap Pembayaran',
+    icon: 'ri-bank-card-line',
+    description: 'Rekap pembayaran AR per transaksi',
+    color: 'error',
+    endpoint: '/finance/rekap-pembayaran/export-excel',
+    supportsSegment: true,
+    supportsClient: true,
+    supportsPaymentMethod: true,
+    usesPeriod: true,
+  },
+  {
+    key: 'kinerja_ar',
+    label: 'Kinerja AR',
+    icon: 'ri-user-star-line',
+    description: 'Performa penagihan per PIC',
+    color: 'deep-purple',
+    endpoint: '/finance/kinerja-ar/export-excel',
+    supportsSegment: true,
+    usesPeriod: true,
+  },
+  {
+    key: 'pendapatan_di_muka',
+    label: 'Pendapatan di Muka',
+    icon: 'ri-time-line',
+    description: 'Pembayaran diterima sebelum jasa diberikan',
+    color: 'deep-purple',
+    endpoint: '/finance/pendapatan-di-muka/export-excel',
+    usesPeriod: true,
+  },
+  {
+    key: 'rekening_koran',
+    label: 'Rekening Koran',
+    icon: 'ri-book-open-line',
+    description: 'Menunggu endpoint export resmi',
+    color: 'blue-grey',
+    disabled: true,
+  },
 ]
 
-const allSelected = computed(() => selectedKeys.value.length === reportDefs.length)
+const selectableDefs = computed(() => reportDefs.filter(report => !report.disabled))
+const selectedDefs = computed(() => reportDefs.filter(report => selectedKeys.value.includes(report.key)))
+const allSelected = computed(() => selectedKeys.value.length === selectableDefs.value.length)
+const showSegmentFilter = computed(() => selectedDefs.value.some(report => report.supportsSegment))
+const showClientFilter = computed(() => selectedDefs.value.some(report => report.supportsClient))
+const showPaymentMethodFilter = computed(() => selectedDefs.value.some(report => report.supportsPaymentMethod))
+const showPeriodFilter = computed(() => selectedDefs.value.some(report => report.usesPeriod))
+const showSpecialFilters = computed(() =>
+  isSelected('aging_report')
+  || isSelected('rekap_klien')
+  || isSelected('jurnal_pic')
+  || isSelected('pendapatan_di_muka'),
+)
+
+const karyawanOptions = computed(() =>
+  karyawanList.value.filter(item => !item.deleted_at),
+)
 
 const bulanOptions = [
-  { label: 'Januari', value: 1 }, { label: 'Februari', value: 2 }, { label: 'Maret', value: 3 },
-  { label: 'April',   value: 4 }, { label: 'Mei',       value: 5 }, { label: 'Juni',  value: 6 },
-  { label: 'Juli',    value: 7 }, { label: 'Agustus',   value: 8 }, { label: 'September', value: 9 },
-  { label: 'Oktober', value: 10 },{ label: 'November',  value: 11 },{ label: 'Desember',  value: 12 },
+  { label: 'Januari', value: 1 },
+  { label: 'Februari', value: 2 },
+  { label: 'Maret', value: 3 },
+  { label: 'April', value: 4 },
+  { label: 'Mei', value: 5 },
+  { label: 'Juni', value: 6 },
+  { label: 'Juli', value: 7 },
+  { label: 'Agustus', value: 8 },
+  { label: 'September', value: 9 },
+  { label: 'Oktober', value: 10 },
+  { label: 'November', value: 11 },
+  { label: 'Desember', value: 12 },
 ]
 
-function isSelected(key) { return selectedKeys.value.includes(key) }
+const metodeOptions = [
+  { label: 'Transfer', value: 'TRANSFER' },
+  { label: 'Cash', value: 'CASH' },
+  { label: 'Giro', value: 'GIRO' },
+]
+
+const rekonStatusOptions = [
+  { label: 'Matched', value: 'MATCHED' },
+  { label: 'Possible', value: 'POSSIBLE' },
+  { label: 'Unmatched', value: 'UNMATCHED' },
+  { label: 'Diabaikan', value: 'DIABAIKAN' },
+]
+
+const pdmStatusOptions = [
+  { label: 'Aktif', value: 'AKTIF' },
+  { label: 'Dibatalkan', value: 'DIBATALKAN' },
+  { label: 'Terpakai', value: 'TERPAKAI' },
+]
+
+function isSelected(key) {
+  return selectedKeys.value.includes(key)
+}
 
 function toggleReport(key) {
+  const report = reportDefs.find(item => item.key === key)
+  if (!report || report.disabled) return
+
   const idx = selectedKeys.value.indexOf(key)
   if (idx === -1) selectedKeys.value.push(key)
   else selectedKeys.value.splice(idx, 1)
 }
 
 function toggleSelectAll() {
-  selectedKeys.value = allSelected.value ? [] : reportDefs.map(r => r.key)
+  selectedKeys.value = allSelected.value ? [] : selectableDefs.value.map(report => report.key)
 }
 
-// ── API fetchers ───────────────────────────────────────────────────────────────
-
-async function fetchAgingReport() {
-  const { data } = await api.get('/finance/aging-report', {
-    params: { as_of_date: agingFilter.as_of_date || filters.sampai },
-  })
-  return data.data
+function toDateInput(date) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 }
 
-async function fetchRekapKlien() {
+function addParam(params, key, value) {
+  if (value !== null && value !== undefined && value !== '') params[key] = value
+}
+
+function addSegment(params) {
+  if (filters.segment !== 'ALL') params.segment = filters.segment
+}
+
+function buildParams(reportKey) {
   const params = {}
-  if (rekapKlienFilter.bulan) params.periode_bulan = rekapKlienFilter.bulan
-  if (rekapKlienFilter.tahun) params.periode_tahun = rekapKlienFilter.tahun
-  const { data } = await api.get('/finance/invoices/rekap-klien', { params })
-  return data.data ?? []
-}
 
-async function fetchRiwayatPembayaran() {
-  const { data } = await api.get('/finance/pembayaran', {
-    params: { tanggal_dari: filters.dari, tanggal_sampai: filters.sampai, per_page: 9999, page: 1 },
-  })
-  return data.data ?? []
-}
-
-async function fetchMutasiPiutang() {
-  const { data } = await api.get('/finance/mutasi-piutang', {
-    params: { periode_awal: filters.dari, periode_akhir: filters.sampai },
-  })
-  return data.data
-}
-
-async function fetchJatuhTempo() {
-  const params = { filter_type: jatuhTempoFilter.filter_type }
-  if (jatuhTempoFilter.filter_type === 'upcoming') params.days = jatuhTempoFilter.days
-  const { data } = await api.get('/finance/jatuh-tempo', { params })
-  return data.data
-}
-
-async function fetchRekapPembayaran() {
-  const { data } = await api.get('/finance/rekap-pembayaran', {
-    params: { tanggal_dari: filters.dari, tanggal_sampai: filters.sampai },
-  })
-  return data.data
-}
-
-async function fetchKinerjaAr() {
-  const { data } = await api.get('/finance/kinerja-ar', {
-    params: { periode_awal: filters.dari, periode_akhir: filters.sampai },
-  })
-  return data.data
-}
-
-// ── Section builders ────────────────────────────────────────────────────────────
-
-function n(v) { return (v === null || v === undefined) ? 0 : Number(v) }
-
-function fmtDate(val) {
-  if (!val) return '-'
-  const d = new Date(val)
-  return isNaN(d) ? val : d.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })
-}
-
-function buildAgingSection(rd) {
-  const rows    = rd.rows ?? []
-  const summary = rd.summary ?? {}
-  return {
-    sheetName: 'Aging Report',
-    title: 'AGING REPORT — Laporan Umur Piutang',
-    meta:  `Per Tanggal: ${fmtDate(agingFilter.as_of_date || filters.sampai)}  ·  Total Klien: ${rows.length}`,
-    headers: ['No', 'Kode Klien', 'Nama Klien', 'Belum Jatuh Tempo', '1–30 Hari', '31–60 Hari', '61–90 Hari', '> 90 Hari', 'Total'],
-    aligns:  ['c',  '',           '',            'r',                  'r',          'r',           'r',           'r',         'r'],
-    rows: rows.map((r, i) => [i+1, r.kode_klien??'', r.nama_klien??'',
-      n(r.current), n(r.hari_1_30), n(r.hari_31_60), n(r.hari_61_90), n(r.hari_91_plus), n(r.total)]),
-    totalRow: ['', '', 'TOTAL', n(summary.current), n(summary.hari_1_30), n(summary.hari_31_60), n(summary.hari_61_90), n(summary.hari_91_plus),
-      rows.reduce((s, r) => s + n(r.total), 0)],
-    currencyCols: [3, 4, 5, 6, 7, 8],
-  }
-}
-
-function buildRekapKlienSection(rows) {
-  const bulanLabel = rekapKlienFilter.bulan
-    ? (bulanOptions.find(b => b.value === rekapKlienFilter.bulan)?.label ?? '')
-    : 'Semua Bulan'
-  return {
-    sheetName: 'Rekap Per Klien',
-    title: 'REKAP PIUTANG PER KLIEN',
-    meta:  `Periode: ${bulanLabel} ${rekapKlienFilter.tahun ?? ''}  ·  Total Klien: ${rows.length}`,
-    headers: ['No', 'Kode Klien', 'Nama Klien', 'Jml Invoice', 'Total Tagihan', 'Total Terbayar', 'Sisa Piutang', 'Draft', 'Terkirim', 'Sebagian', 'Lunas'],
-    aligns:  ['c',  '',           '',            'c',           'r',              'r',               'r',            'c',     'c',         'c',         'c'],
-    rows: rows.map((r, i) => [i+1, r.kode_klien??'', r.nama_klien??'',
-      r.total_invoice??0, n(r.total_tagihan), n(r.total_pembayaran), n(r.sisa_tagihan),
-      r.draft??0, r.terkirim??0, r.sebagian??0, r.lunas??0]),
-    totalRow: ['', '', 'TOTAL', '',
-      rows.reduce((s, r) => s + n(r.total_tagihan), 0),
-      rows.reduce((s, r) => s + n(r.total_pembayaran), 0),
-      rows.reduce((s, r) => s + n(r.sisa_tagihan), 0),
-      '', '', '', ''],
-    numericCols: [3, 7, 8, 9, 10],
-    currencyCols: [4, 5, 6],
-  }
-}
-
-function buildRiwayatPembayaranSection(rows) {
-  return {
-    sheetName: 'Riwayat Pembayaran',
-    title: 'RIWAYAT PEMBAYARAN AR',
-    meta:  `Periode: ${fmtDate(filters.dari)} s/d ${fmtDate(filters.sampai)}  ·  Total Transaksi: ${rows.length}`,
-    headers: ['No', 'Tanggal', 'No Invoice', 'Klien', 'Jumlah (Rp)', 'Metode', 'No Referensi', 'Dicatat Oleh'],
-    aligns:  ['c',  'c',       '',            '',       'r',           'c',       '',              ''],
-    rows: rows.map((r, i) => [i+1, fmtDate(r.tanggal_pembayaran), r.no_invoice??'', r.klien??'',
-      n(r.jumlah_pembayaran), r.metode_pembayaran??'', r.no_referensi??'-', r.created_by_name??'']),
-    totalRow: ['', '', '', 'TOTAL', rows.reduce((s, r) => s + n(r.jumlah_pembayaran), 0), '', '', ''],
-    currencyCols: [4],
-  }
-}
-
-function buildMutasiPiutangSection(rd) {
-  const rows    = rd.rows ?? []
-  const summary = rd.summary ?? {}
-  return {
-    sheetName: 'Mutasi Piutang',
-    title: 'MUTASI PIUTANG',
-    meta:  `Periode: ${fmtDate(filters.dari)} s/d ${fmtDate(filters.sampai)}  ·  Total Klien: ${rows.length}`,
-    headers: ['No', 'Kode Klien', 'Nama Klien', 'Saldo Awal (Rp)', 'Invoice Masuk (Rp)', 'Pembayaran (Rp)', 'Saldo Akhir (Rp)'],
-    aligns:  ['c',  '',           '',            'r',               'r',                   'r',               'r'],
-    rows: rows.map((r, i) => [i+1, r.kode_klien??'', r.nama_klien??'',
-      n(r.saldo_awal), n(r.invoice_masuk), n(r.pembayaran), n(r.saldo_akhir)]),
-    totalRow: ['', '', 'TOTAL', n(summary.saldo_awal), n(summary.invoice_masuk), n(summary.pembayaran), n(summary.saldo_akhir)],
-    currencyCols: [3, 4, 5, 6],
-  }
-}
-
-function buildJatuhTempoSection(rd) {
-  const rows    = rd.rows ?? []
-  const summary = rd.summary ?? {}
-  const selisihLabel = (hari) => {
-    if (hari === null || hari === undefined) return 'Tdk Ada JT'
-    if (hari < 0) return `${Math.abs(hari)} hari lewat`
-    if (hari === 0) return 'Hari ini'
-    return `${hari} hari lagi`
-  }
-  const ftLabel = { upcoming: 'Akan Jatuh Tempo', overdue: 'Sudah Lewat', all: 'Semua' }
-  return {
-    title: 'TAGIHAN JATUH TEMPO',
-    meta:  `Filter: ${ftLabel[jatuhTempoFilter.filter_type]}  ·  Total Invoice: ${rows.length}  ·  Total Sisa: Rp ${n(summary.total_sisa).toLocaleString('id-ID')}`,
-    headers: ['No', 'No Invoice', 'Kode Klien', 'Nama Klien', 'PIC AR', 'Jatuh Tempo', 'Status Hari', 'Status', 'Sisa Tagihan (Rp)'],
-    aligns:  ['c',  '',           '',            '',            '',        'c',            'c',           'c',      'r'],
-    rows: rows.map((r, i) => [i+1, r.no_invoice??'', r.kode_klien??'', r.nama_klien??'',
-      r.pic_ar??'-', fmtDate(r.tanggal_jatuh_tempo), selisihLabel(r.selisih_hari), r.status??'', n(r.sisa_tagihan)]),
-    totalRow: null,
-    currencyCols: [8],
-  }
-}
-
-function buildRekapPembayaranSection(rd) {
-  const rows    = rd.rows ?? []
-  const summary = rd.summary ?? {}
-  const fmtRp   = (v) => v ? `Rp ${n(v).toLocaleString('id-ID')}` : '-'
-  return {
-    sheetName: 'Rekap Pembayaran',
-    title: 'REKAP PEMBAYARAN',
-    meta:  `Periode: ${fmtDate(filters.dari)} s/d ${fmtDate(filters.sampai)}  ·  Total Transaksi: ${summary.jumlah_transaksi ?? 0}`,
-    headers: ['No', 'Tanggal', 'Client', 'Invoice', 'Ref Payment', 'Metode', 'Nominal (Rp)', 'PIC AR', 'Rekon'],
-    aligns:  ['c',  'c',       '',       '',          '',             'c',      'r',             '',       'c'],
-    rows: rows.map((r, i) => [i+1, fmtDate(r.tanggal), r.client??'', r.invoice??'-', r.ref_payment??'-',
-      r.metode??'', n(r.nominal), r.pic_ar??'-', r.is_rekon ? 'Ya' : '-']),
-    totalRow: ['', 'TOTAL', '', '', '', '', n(summary.total),
-      `T: ${fmtRp(summary.transfer)}  C: ${fmtRp(summary.cash)}  G: ${fmtRp(summary.giro)}`, ''],
-    currencyCols: [6],
-  }
-}
-
-function buildKinerjaArSection(rd) {
-  const rows    = rd.rows ?? []
-  const summary = rd.summary ?? {}
-  return {
-    sheetName: 'Kinerja AR',
-    title: 'KINERJA AR PER PIC',
-    meta:  `Periode: ${fmtDate(filters.dari)} s/d ${fmtDate(filters.sampai)}  ·  Jumlah AR Officer: ${rows.length}  ·  Collection Rate: ${summary.collection_rate ?? 0}%`,
-    headers: ['No', 'AR Officer', 'Jml Klien', 'Jml Invoice', 'Total Tagihan (Rp)', 'Terkumpul (Rp)', 'Sisa (Rp)', 'Collection Rate'],
-    aligns:  ['c',  '',           'c',          'c',           'r',                  'r',               'r',          'c'],
-    rows: rows.map((r, i) => [i+1, r.nama_karyawan??'',
-      r.jumlah_klien??0, r.jumlah_invoice??0,
-      n(r.total_tagihan), n(r.total_terkumpul), n(r.total_sisa), `${r.collection_rate ?? 0}%`]),
-    totalRow: ['', 'TOTAL', '', '',
-      n(summary.total_tagihan), n(summary.total_terkumpul),
-      n(summary.total_tagihan) - n(summary.total_terkumpul),
-      `${summary.collection_rate ?? 0}%`],
-    numericCols: [2, 3],
-    currencyCols: [4, 5, 6],
-  }
-}
-
-
-// ── Sheet data builder (write-excel-file, full styling) ──────────────
-
-function sectionToSheetData(section) {
-  const exportDate = now.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })
-  const cCols  = section.currencyCols ?? []
-  const nCols  = (section.numericCols ?? []).filter(i => !cCols.includes(i))
-  const cols   = section.headers.length
-  const aligns = section.aligns ?? []
-
-  const getAlign = (ci) => {
-    if (cCols.includes(ci) || aligns[ci] === 'r') return 'right'
-    if (aligns[ci] === 'c') return 'center'
-    return 'left'
+  if (['riwayat_pembayaran', 'rekap_pembayaran', 'pendapatan_di_muka', 'jurnal_pic'].includes(reportKey)) {
+    addParam(params, 'tanggal_dari', filters.tanggal_dari)
+    addParam(params, 'tanggal_sampai', filters.tanggal_sampai)
   }
 
-  // ── Row builders ───────────────────────────────
-  const titleRow = [
-    {
-      value: section.title, span: cols,
-      fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#0D47A1',
-      fontSize: 14, fontFamily: 'Calibri',
-      align: 'left', alignVertical: 'middle', height: 32,
-    },
-    ...Array.from({ length: cols - 1 }, () => null),
-  ]
+  if (['mutasi_piutang', 'kinerja_ar'].includes(reportKey)) {
+    addParam(params, 'periode_awal', filters.tanggal_dari)
+    addParam(params, 'periode_akhir', filters.tanggal_sampai)
+  }
 
-  const metaRow = [
-    {
-      value: `${section.meta} · Diekspor: ${exportDate} · Project Iron`, span: cols,
-      fontStyle: 'italic', color: '#90CAF9', backgroundColor: '#1565C0',
-      fontSize: 9, fontFamily: 'Calibri',
-      align: 'left', alignVertical: 'middle', height: 16,
-    },
-    ...Array.from({ length: cols - 1 }, () => null),
-  ]
+  if (['aging_report', 'rekap_klien', 'riwayat_pembayaran', 'mutasi_piutang', 'rekap_pembayaran', 'kinerja_ar'].includes(reportKey)) {
+    addSegment(params)
+  }
 
-  const headerRow = section.headers.map((h, ci) => ({
-    value: h,
-    fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#283593',
-    fontSize: 10, fontFamily: 'Calibri',
-    align: getAlign(ci), alignVertical: 'middle', height: 22,
-    borderStyle: 'thin', borderColor: '#3949AB',
-  }))
+  if (['aging_report', 'riwayat_pembayaran', 'mutasi_piutang', 'rekap_pembayaran', 'jurnal_pic'].includes(reportKey)) {
+    addParam(params, 'klien_ar_id', filters.klien_ar_id)
+  }
 
-  const dataRows = section.rows.map((row, ri) => {
-    const even = ri % 2 === 0
-    const bg   = even ? '#F3F4FD' : '#FFFFFF'
-    const bc   = even ? '#DCDFE6' : '#EEEEEE'
-    return row.map((v, ci) => {
-      const isCu = cCols.includes(ci)
-      const isN  = nCols.includes(ci)
-      return {
-        value:      v,
-        type:       (isCu || isN) && typeof v === 'number' ? Number : undefined,
-        format:     (isCu || isN) ? '#,##0' : undefined,
-        fontWeight: isCu ? 'bold' : undefined,
-        color:      isCu ? '#1A237E' : '#212121',
-        backgroundColor: bg,
-        fontSize:   10, fontFamily: 'Calibri',
-        align:      getAlign(ci), alignVertical: 'middle', height: 16,
-        borderStyle: 'thin', borderColor: bc,
-      }
-    })
-  })
+  if (['riwayat_pembayaran', 'rekap_pembayaran', 'jurnal_pic'].includes(reportKey)) {
+    addParam(params, 'metode_pembayaran', filters.metode_pembayaran)
+  }
 
-  const totalRows = section.totalRow ? [
-    section.totalRow.map((v, ci) => ({
-      value:      v,
-      type:       cCols.includes(ci) && typeof v === 'number' ? Number : undefined,
-      format:     cCols.includes(ci) ? '#,##0' : undefined,
-      fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#E65100',
-      fontSize:   10, fontFamily: 'Calibri',
-      align:      getAlign(ci), alignVertical: 'middle', height: 18,
-      borderStyle: 'thin', borderColor: '#BF360C',
-    }))
-  ] : []
+  if (reportKey === 'aging_report') {
+    addParam(params, 'as_of_date', agingFilter.as_of_date)
+  }
 
-  return [titleRow, metaRow, headerRow, ...dataRows, ...totalRows]
+  if (reportKey === 'rekap_klien') {
+    addParam(params, 'periode_bulan', rekapKlienFilter.periode_bulan)
+    addParam(params, 'periode_tahun', rekapKlienFilter.periode_tahun)
+  }
+
+  if (reportKey === 'riwayat_pembayaran') {
+    params.per_page = 9999
+    params.page = 1
+  }
+
+  if (reportKey === 'jurnal_pic') {
+    addParam(params, 'no_referensi', jurnalPicFilter.no_referensi)
+    addParam(params, 'karyawan_id', jurnalPicFilter.karyawan_id)
+    addParam(params, 'status_rekonsiliasi', jurnalPicFilter.status_rekonsiliasi)
+  }
+
+  if (reportKey === 'pendapatan_di_muka') {
+    addParam(params, 'investor_id', pdmFilter.investor_id)
+    addParam(params, 'status', pdmFilter.status)
+  }
+
+  return params
 }
-
-// ── Export handler ──────────────────────────────────────────────────────────────
 
 async function doExport() {
   if (!selectedKeys.value.length) return
+
   exporting.value = true
   try {
-    const fetchMap = {
-      aging_report:       async () => buildAgingSection(await fetchAgingReport()),
-      rekap_klien:        async () => buildRekapKlienSection(await fetchRekapKlien()),
-      riwayat_pembayaran: async () => buildRiwayatPembayaranSection(await fetchRiwayatPembayaran()),
-      mutasi_piutang:     async () => buildMutasiPiutangSection(await fetchMutasiPiutang()),
-      // NEXT UPDATE: jatuh_tempo: async () => buildJatuhTempoSection(await fetchJatuhTempo()),
-      rekap_pembayaran:   async () => buildRekapPembayaranSection(await fetchRekapPembayaran()),
-      kinerja_ar:         async () => buildKinerjaArSection(await fetchKinerjaAr()),
+    const backendDefs = selectedDefs.value.filter(report => report.endpoint)
+    const workbookDefs = selectedDefs.value.filter(report => report.frontendWorkbook)
+    let fileCount = 0
+
+    for (const report of backendDefs) {
+      await downloadBackendReport(report)
+      fileCount += 1
     }
 
-    const sections = []
-    for (const def of reportDefs) {
-      if (selectedKeys.value.includes(def.key))
-        sections.push(await fetchMap[def.key]())
+    if (workbookDefs.length) {
+      await downloadFrontendWorkbook(workbookDefs)
+      fileCount += 1
     }
-
-    // Library ekspor Excel besar (~70 kB) — dimuat hanya saat tombol Export diklik.
-    const { default: writeXlsxFile } = await import('write-excel-file/browser')
-
-    await writeXlsxFile(
-      sections.map(s => ({
-        data:    sectionToSheetData(s),
-        sheet:   s.sheetName,
-        columns: s.headers.map((h, i) => ({
-          width: (s.currencyCols ?? []).includes(i) ? 22 : Math.max((h?.length ?? 10) + 4, 14),
-        })),
-      }))
-    ).toFile(`laporan-ar-${todayStr}.xlsx`)
 
     showSuccess({
-      title: 'Export Berhasil!',
-      html: `<span style="color:#283593">${sections.length} laporan berhasil diunduh sebagai <b>file Excel</b></span>`,
-      iconColor: '#283593',
-      confirmButtonColor: '#283593',
+      title: 'Export Berhasil',
+      text: `${fileCount} file export berhasil dibuat.`,
       timerProgressBar: true,
       timer: 3000,
       showConfirmButton: false,
@@ -599,4 +614,340 @@ async function doExport() {
     exporting.value = false
   }
 }
+
+async function downloadBackendReport(report) {
+  const response = await api.get(report.endpoint, {
+    params: buildParams(report.key),
+    responseType: 'blob',
+    timeout: 120000,
+  })
+
+  const fallback = `${report.key}-${buildTimestamp()}.xlsx`
+  downloadBlob(response.data, pickFilename(response, fallback))
+}
+
+async function downloadFrontendWorkbook(workbookDefs) {
+  const sections = []
+
+  for (const report of workbookDefs) {
+    if (report.key === 'rekap_klien')
+      sections.push(buildRekapKlienSection(await fetchRekapKlien()))
+
+    if (report.key === 'riwayat_pembayaran')
+      sections.push(buildRiwayatPembayaranSection(await fetchRiwayatPembayaran()))
+  }
+
+  if (!sections.length) return
+
+  const { default: writeXlsxFile } = await import('write-excel-file/browser')
+
+  await writeXlsxFile(
+    sections.map(section => ({
+      data: sectionToSheetData(section),
+      sheet: section.sheetName,
+      columns: section.headers.map((header, index) => ({
+        width: (section.currencyCols ?? []).includes(index) ? 22 : Math.max((header?.length ?? 10) + 4, 14),
+      })),
+    })),
+  ).toFile(`laporan-ar-ringkasan-${todayStr}.xlsx`)
+}
+
+async function fetchRekapKlien() {
+  const { data } = await api.get('/finance/invoices/rekap-klien', {
+    params: buildParams('rekap_klien'),
+  })
+
+  return data.data ?? []
+}
+
+async function fetchRiwayatPembayaran() {
+  const { data } = await api.get('/finance/pembayaran', {
+    params: buildParams('riwayat_pembayaran'),
+  })
+
+  return data.data ?? []
+}
+
+function downloadBlob(data, filename) {
+  const url = URL.createObjectURL(new Blob([data], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  }))
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  link.click()
+  setTimeout(() => URL.revokeObjectURL(url), 10000)
+}
+
+function pickFilename(response, fallback) {
+  const disposition = response.headers?.['content-disposition']
+  if (!disposition) return fallback
+
+  const encoded = disposition.match(/filename\*=UTF-8''([^;]+)/i)?.[1]
+  if (encoded) return decodeURIComponent(encoded.replace(/["]/g, ''))
+
+  return disposition.match(/filename="?([^"]+)"?/i)?.[1] ?? fallback
+}
+
+function buildTimestamp() {
+  const date = new Date()
+  return (
+    String(date.getDate()).padStart(2, '0')
+    + String(date.getMonth() + 1).padStart(2, '0')
+    + String(date.getFullYear())
+    + String(date.getHours()).padStart(2, '0')
+    + String(date.getMinutes()).padStart(2, '0')
+    + String(date.getSeconds()).padStart(2, '0')
+  )
+}
+
+function n(value) {
+  return value === null || value === undefined ? 0 : Number(value)
+}
+
+function fmtDate(value) {
+  if (!value) return '-'
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    const [year, month, day] = value.split('-').map(Number)
+    return new Date(year, month - 1, day).toLocaleDateString('id-ID', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+    })
+  }
+
+  const date = new Date(value)
+  return Number.isNaN(date.getTime())
+    ? value
+    : date.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })
+}
+
+function buildRekapKlienSection(rows) {
+  const bulanLabel = rekapKlienFilter.periode_bulan
+    ? (bulanOptions.find(month => month.value === rekapKlienFilter.periode_bulan)?.label ?? '')
+    : 'Semua Bulan'
+
+  return {
+    sheetName: 'Rekap Per Klien',
+    title: 'REKAP PIUTANG PER KLIEN',
+    meta: `Periode: ${bulanLabel} ${rekapKlienFilter.periode_tahun ?? ''} | Segment: ${filters.segment} | Total Klien: ${rows.length}`,
+    headers: ['No', 'Kode Klien', 'Nama Klien', 'PIC AR', 'Entitas', 'Jml Invoice', 'Total Tagihan', 'Total Terbayar', 'Sisa Piutang', 'Overdue', 'Collection Rate', 'Draft', 'Terkirim', 'Sebagian', 'Lunas'],
+    aligns: ['c', '', '', '', '', 'c', 'r', 'r', 'r', 'r', 'c', 'c', 'c', 'c', 'c'],
+    rows: rows.map((row, index) => [
+      index + 1,
+      row.kode_klien ?? '',
+      row.nama_klien ?? '',
+      row.pic_ar ?? '',
+      row.perusahaan ?? '',
+      row.total_invoice ?? 0,
+      n(row.total_tagihan),
+      n(row.total_pembayaran),
+      n(row.sisa_tagihan),
+      n(row.overdue_amount),
+      `${row.collection_rate ?? 0}%`,
+      row.draft ?? 0,
+      row.terkirim ?? 0,
+      row.sebagian ?? 0,
+      row.lunas ?? 0,
+    ]),
+    totalRow: [
+      '',
+      '',
+      'TOTAL',
+      '',
+      '',
+      '',
+      rows.reduce((sum, row) => sum + n(row.total_tagihan), 0),
+      rows.reduce((sum, row) => sum + n(row.total_pembayaran), 0),
+      rows.reduce((sum, row) => sum + n(row.sisa_tagihan), 0),
+      rows.reduce((sum, row) => sum + n(row.overdue_amount), 0),
+      '',
+      '',
+      '',
+      '',
+      '',
+    ],
+    numericCols: [5, 11, 12, 13, 14],
+    currencyCols: [6, 7, 8, 9],
+  }
+}
+
+function buildRiwayatPembayaranSection(rows) {
+  return {
+    sheetName: 'Riwayat Pembayaran',
+    title: 'RIWAYAT PEMBAYARAN AR',
+    meta: `Periode: ${fmtDate(filters.tanggal_dari)} s/d ${fmtDate(filters.tanggal_sampai)} | Segment: ${filters.segment} | Total Transaksi: ${rows.length}`,
+    headers: ['No', 'Tanggal', 'No Invoice', 'Klien', 'Jumlah (Rp)', 'Metode', 'Status Rekon', 'No Referensi', 'Jenis', 'Dicatat Oleh'],
+    aligns: ['c', 'c', '', '', 'r', 'c', 'c', '', 'c', ''],
+    rows: rows.map((row, index) => [
+      index + 1,
+      fmtDate(row.tanggal_pembayaran),
+      row.no_invoice ?? '',
+      row.klien ?? '',
+      n(row.jumlah_pembayaran),
+      row.metode_pembayaran ?? '',
+      row.status_rekonsiliasi ?? 'MANUAL',
+      row.no_referensi ?? '-',
+      row.jenis ?? 'REG',
+      row.created_by_name ?? '',
+    ]),
+    totalRow: ['', '', '', 'TOTAL', rows.reduce((sum, row) => sum + n(row.jumlah_pembayaran), 0), '', '', '', '', ''],
+    currencyCols: [4],
+  }
+}
+
+function sectionToSheetData(section) {
+  const exportDate = new Date().toLocaleDateString('id-ID', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+  })
+  const currencyCols = section.currencyCols ?? []
+  const numericCols = (section.numericCols ?? []).filter(index => !currencyCols.includes(index))
+  const columnCount = section.headers.length
+  const aligns = section.aligns ?? []
+
+  const getAlign = index => {
+    if (currencyCols.includes(index) || aligns[index] === 'r') return 'right'
+    if (aligns[index] === 'c') return 'center'
+    return 'left'
+  }
+
+  const titleRow = [
+    {
+      value: section.title,
+      span: columnCount,
+      fontWeight: 'bold',
+      color: '#FFFFFF',
+      backgroundColor: '#0D47A1',
+      fontSize: 14,
+      fontFamily: 'Calibri',
+      align: 'left',
+      alignVertical: 'middle',
+      height: 32,
+    },
+    ...Array.from({ length: columnCount - 1 }, () => null),
+  ]
+
+  const metaRow = [
+    {
+      value: `${section.meta} | Diekspor: ${exportDate} | Project Iron`,
+      span: columnCount,
+      fontStyle: 'italic',
+      color: '#90CAF9',
+      backgroundColor: '#1565C0',
+      fontSize: 9,
+      fontFamily: 'Calibri',
+      align: 'left',
+      alignVertical: 'middle',
+      height: 16,
+    },
+    ...Array.from({ length: columnCount - 1 }, () => null),
+  ]
+
+  const headerRow = section.headers.map((header, index) => ({
+    value: header,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    backgroundColor: '#283593',
+    fontSize: 10,
+    fontFamily: 'Calibri',
+    align: getAlign(index),
+    alignVertical: 'middle',
+    height: 22,
+    borderStyle: 'thin',
+    borderColor: '#3949AB',
+  }))
+
+  const dataRows = section.rows.map((row, rowIndex) => {
+    const backgroundColor = rowIndex % 2 === 0 ? '#F3F4FD' : '#FFFFFF'
+    const borderColor = rowIndex % 2 === 0 ? '#DCDFE6' : '#EEEEEE'
+
+    return row.map((value, index) => {
+      const isCurrency = currencyCols.includes(index)
+      const isNumeric = numericCols.includes(index)
+
+      return {
+        value,
+        type: (isCurrency || isNumeric) && typeof value === 'number' ? Number : undefined,
+        format: (isCurrency || isNumeric) ? '#,##0' : undefined,
+        fontWeight: isCurrency ? 'bold' : undefined,
+        color: isCurrency ? '#1A237E' : '#212121',
+        backgroundColor,
+        fontSize: 10,
+        fontFamily: 'Calibri',
+        align: getAlign(index),
+        alignVertical: 'middle',
+        height: 16,
+        borderStyle: 'thin',
+        borderColor,
+      }
+    })
+  })
+
+  const totalRows = section.totalRow
+    ? [
+        section.totalRow.map((value, index) => ({
+          value,
+          type: currencyCols.includes(index) && typeof value === 'number' ? Number : undefined,
+          format: currencyCols.includes(index) ? '#,##0' : undefined,
+          fontWeight: 'bold',
+          color: '#FFFFFF',
+          backgroundColor: '#E65100',
+          fontSize: 10,
+          fontFamily: 'Calibri',
+          align: getAlign(index),
+          alignVertical: 'middle',
+          height: 18,
+          borderStyle: 'thin',
+          borderColor: '#BF360C',
+        })),
+      ]
+    : []
+
+  return [titleRow, metaRow, headerRow, ...dataRows, ...totalRows]
+}
 </script>
+
+<style scoped>
+.report-tile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 112px;
+  padding: 16px;
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.report-tile:hover {
+  border-color: rgba(var(--v-theme-primary), 0.55);
+}
+
+.report-tile--selected {
+  border-color: rgb(var(--v-theme-primary));
+  background: rgba(var(--v-theme-primary), 0.06);
+  box-shadow: inset 0 0 0 1px rgba(var(--v-theme-primary), 0.25);
+}
+
+.report-tile--disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
+.filter-group {
+  min-height: 100%;
+  padding: 14px;
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  border-radius: 8px;
+  background: rgba(var(--v-theme-on-surface), 0.015);
+}
+
+.selected-labels {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+</style>

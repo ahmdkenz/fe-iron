@@ -184,13 +184,9 @@ const loading = ref(false)
 const report  = reactive({ tanggal_dari: null, tanggal_sampai: null, summary: null, rows: [] })
 const segment = ref('ALL')
 
-const now      = new Date()
-const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10)
-const lastDay  = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10)
-
 const filters = reactive({
-  tanggal_dari:      firstDay,
-  tanggal_sampai:    lastDay,
+  tanggal_dari:      null,
+  tanggal_sampai:    null,
   metode_pembayaran: null,
   klien_ar_id:       null,
 })
