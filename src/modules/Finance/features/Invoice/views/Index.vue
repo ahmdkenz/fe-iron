@@ -278,9 +278,6 @@
         <template #item.klien_ar="{ item }">
           {{ item.klien_ar?.nama_klien ?? '-' }}
         </template>
-        <template #item.penerima_tagihan="{ item }">
-          {{ item.perusahaan?.nama_perusahaan ?? '-' }}
-        </template>
         <template #item.tanggal_invoice="{ item }">
           <span class="text-no-wrap">{{ formatDate(item.tanggal_invoice) }}</span>
         </template>
@@ -727,7 +724,6 @@ const headersB2B = [
   { title: 'No',               key: 'no',                   sortable: false, width: '60px' },
   { title: 'No Invoice',       key: 'no_invoice',           sortable: false },
   { title: 'Client',           key: 'klien_ar',             sortable: false },
-  { title: 'Penerima Tagihan', key: 'penerima_tagihan',     sortable: false },
   { title: 'Tgl. Invoice',     key: 'tanggal_invoice',      sortable: false, width: '115px' },
   { title: 'Total Barang',     key: 'subtotal',             sortable: false },
   { title: 'Sisa Tagihan',     key: 'sisa_tagihan',         sortable: false },
