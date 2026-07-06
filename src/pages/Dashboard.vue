@@ -33,14 +33,14 @@
           elevation="2"
           class="rounded-xl stat-card"
         >
-          <VCardText class="d-flex align-center justify-space-between fill-height bg-surface">
-            <div>
+          <VCardText class="d-flex align-center justify-space-between fill-height bg-surface gap-2">
+            <div class="min-width-0">
               <div class="text-subtitle-2 text-medium-emphasis text-uppercase font-weight-medium mb-1">
                 {{ card.title }}
               </div>
               <div
-                class="text-h4 font-weight-bold"
-                :class="card.textClass"
+                class="font-weight-bold text-truncate"
+                :class="[valueTextClass, card.textClass]"
               >
                 {{ card.value }}
               </div>
@@ -48,12 +48,12 @@
             <VAvatar
               :color="card.color"
               variant="tonal"
-              size="54"
-              class="rounded-lg"
+              :size="avatarSize"
+              class="rounded-lg flex-shrink-0"
             >
               <VIcon
                 :icon="card.icon"
-                size="30"
+                :size="avatarIconSize"
               />
             </VAvatar>
           </VCardText>
@@ -69,7 +69,7 @@
       >
         <VCard
           elevation="2"
-          class="rounded-xl h-100"
+          class="rounded-xl h-100 chart-card"
         >
           <VCardItem class="pb-0">
             <VCardTitle class="d-flex align-center text-h6 font-weight-bold">
@@ -79,26 +79,24 @@
               />
               Tren Invoicing & Pembayaran AR
             </VCardTitle>
-            <template #append>
-              <div class="d-flex flex-wrap gap-1">
-                <VBtn
-                  v-for="p in trendPeriods"
-                  :key="p.value"
-                  :variant="trendPeriod === p.value ? 'tonal' : 'text'"
-                  :color="trendPeriod === p.value ? 'primary' : undefined"
-                  size="x-small"
-                  density="compact"
-                  :loading="trendLoading && trendPeriod === p.value"
-                  @click="selectTrendPeriod(p.value)"
-                >{{ p.label }}</VBtn>
-              </div>
-            </template>
             <VCardSubtitle>{{ trendPeriodLabel }}</VCardSubtitle>
           </VCardItem>
-          <VCardText class="pt-4">
+          <div class="d-flex flex-wrap gap-1 px-4 pb-2">
+            <VBtn
+              v-for="p in trendPeriods"
+              :key="p.value"
+              :variant="trendPeriod === p.value ? 'tonal' : 'text'"
+              :color="trendPeriod === p.value ? 'primary' : undefined"
+              size="x-small"
+              density="compact"
+              :loading="trendLoading && trendPeriod === p.value"
+              @click="selectTrendPeriod(p.value)"
+            >{{ p.label }}</VBtn>
+          </div>
+          <VCardText class="pt-2">
             <DeferredApexChart
               type="area"
-              height="350"
+              height="260"
               :options="revenueChartOptions"
               :series="revenueChartSeries"
             />
@@ -113,7 +111,7 @@
       >
         <VCard
           elevation="2"
-          class="rounded-xl h-100"
+          class="rounded-xl h-100 chart-card"
         >
           <VCardItem class="pb-0">
             <VCardTitle class="text-h6 font-weight-bold">
@@ -121,12 +119,12 @@
             </VCardTitle>
             <VCardSubtitle>Proporsi tagihan aktif</VCardSubtitle>
           </VCardItem>
-          <VCardText class="d-flex align-center justify-center pt-8">
+          <VCardText class="d-flex align-center justify-center pt-4 pt-sm-8">
             <DeferredApexChart
               v-if="statusChartHasData"
               type="donut"
               width="100%"
-              height="300"
+              height="240"
               :delay="300"
               :options="donutChartOptions"
               :series="donutChartSeries"
@@ -158,39 +156,64 @@
             </VCardTitle>
           </VCardItem>
           <VCardText class="px-0">
-            <VTable class="text-no-wrap">
-              <thead>
-                <tr>
-                  <th class="text-uppercase font-weight-bold text-caption">No. Invoice</th>
-                  <th class="text-uppercase font-weight-bold text-caption">Klien</th>
-                  <th class="text-uppercase font-weight-bold text-caption">Tanggal</th>
-                  <th class="text-uppercase font-weight-bold text-caption text-right">Total Tagihan</th>
-                  <th class="text-uppercase font-weight-bold text-caption text-center">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-if="loading">
-                  <td colspan="5" class="text-center py-8 text-medium-emphasis">Memuat data...</td>
-                </tr>
-                <tr v-else-if="recentInvoices.length === 0">
-                  <td colspan="5" class="text-center py-8 text-medium-emphasis">Belum ada data invoice.</td>
-                </tr>
-                <tr
-                  v-for="invoice in recentInvoices"
-                  v-else
-                  :key="invoice.id"
-                  class="table-row-hover"
-                >
-                  <td class="font-weight-medium text-primary">{{ invoice.noInvoice }}</td>
-                  <td>{{ invoice.klien }}</td>
-                  <td class="text-body-2">{{ invoice.tanggalInvoice }}</td>
-                  <td class="text-right font-weight-medium">{{ formatCurrency(invoice.totalTagihan) }}</td>
-                  <td class="text-center">
-                    <InvoiceStatusBadge :status="invoice.status" />
-                  </td>
-                </tr>
-              </tbody>
-            </VTable>
+            <div class="d-none d-sm-block">
+              <VTable class="text-no-wrap">
+                <thead>
+                  <tr>
+                    <th class="text-uppercase font-weight-bold text-caption">No. Invoice</th>
+                    <th class="text-uppercase font-weight-bold text-caption">Klien</th>
+                    <th class="text-uppercase font-weight-bold text-caption">Tanggal</th>
+                    <th class="text-uppercase font-weight-bold text-caption text-right">Total Tagihan</th>
+                    <th class="text-uppercase font-weight-bold text-caption text-center">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-if="loading">
+                    <td colspan="5" class="text-center py-8 text-medium-emphasis">Memuat data...</td>
+                  </tr>
+                  <tr v-else-if="recentInvoices.length === 0">
+                    <td colspan="5" class="text-center py-8 text-medium-emphasis">Belum ada data invoice.</td>
+                  </tr>
+                  <tr
+                    v-for="invoice in recentInvoices"
+                    v-else
+                    :key="invoice.id"
+                    class="table-row-hover"
+                  >
+                    <td class="font-weight-medium text-primary">{{ invoice.noInvoice }}</td>
+                    <td>{{ invoice.klien }}</td>
+                    <td class="text-body-2">{{ invoice.tanggalInvoice }}</td>
+                    <td class="text-right font-weight-medium">{{ formatCurrency(invoice.totalTagihan) }}</td>
+                    <td class="text-center">
+                      <InvoiceStatusBadge :status="invoice.status" />
+                    </td>
+                  </tr>
+                </tbody>
+              </VTable>
+            </div>
+
+            <div class="d-sm-none px-4">
+              <div v-if="loading" class="text-center py-8 text-medium-emphasis">Memuat data...</div>
+              <div v-else-if="recentInvoices.length === 0" class="text-center py-8 text-medium-emphasis">Belum ada data invoice.</div>
+              <div
+                v-for="invoice in recentInvoices"
+                v-else
+                :key="invoice.id"
+                class="mobile-list-row"
+              >
+                <div class="text-caption font-weight-medium text-primary mobile-list-row__no">{{ invoice.noInvoice }}</div>
+                <div class="d-flex justify-space-between align-center gap-2 mt-1">
+                  <div class="min-width-0">
+                    <div class="text-caption text-medium-emphasis text-truncate">{{ invoice.klien }}</div>
+                    <div class="mobile-list-row__date text-medium-emphasis">{{ invoice.tanggalInvoice }}</div>
+                  </div>
+                  <div class="text-end flex-shrink-0 mobile-badge">
+                    <div class="text-caption font-weight-medium">{{ formatCurrency(invoice.totalTagihan) }}</div>
+                    <InvoiceStatusBadge :status="invoice.status" class="mt-1" />
+                  </div>
+                </div>
+              </div>
+            </div>
           </VCardText>
         </VCard>
       </VCol>
@@ -200,7 +223,7 @@
 
 <script setup>
 import { computed, defineAsyncComponent, onMounted, ref, shallowRef } from 'vue'
-import { useTheme } from 'vuetify'
+import { useDisplay, useTheme } from 'vuetify'
 import { useAuthStore } from '@/stores/auth.store'
 import DeferredApexChart from '@/components/shared/DeferredApexChart.vue'
 import InvoiceStatusBadge from '@/modules/Finance/shared/components/InvoiceStatusBadge.vue'
@@ -213,7 +236,13 @@ const SupervisorDashboardSection = defineAsyncComponent(() => import('@/modules/
 
 const authStore = useAuthStore()
 const theme     = useTheme()
+const display   = useDisplay()
 const { formatCurrency } = useFormatter()
+
+const isMobile = computed(() => display.xs.value)
+const avatarSize = computed(() => isMobile.value ? 40 : 54)
+const avatarIconSize = computed(() => isMobile.value ? 20 : 30)
+const valueTextClass = computed(() => isMobile.value ? 'text-h6' : 'text-h4')
 
 // Mirrors the template's v-if/v-else-if chain — only this branch fetches/renders the full admin dashboard.
 const showFullDashboard = computed(() => (
@@ -415,5 +444,37 @@ onMounted(() => {
 
 .opacity-80 {
   opacity: 0.8;
+}
+
+.mobile-list-row {
+  padding: 12px 0;
+  border-bottom: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+.mobile-list-row:last-child {
+  border-bottom: none;
+}
+
+.chart-card {
+  overflow: visible !important;
+}
+
+.mobile-list-row__date {
+  font-size: 0.6875rem;
+}
+
+.mobile-list-row__no {
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.mobile-badge :deep(.text-body-2) {
+  font-size: 0.6875rem;
+}
+
+.mobile-badge :deep(.v-icon) {
+  font-size: 14px !important;
+  height: 14px !important;
+  width: 14px !important;
 }
 </style>

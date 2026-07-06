@@ -2,12 +2,14 @@
   <Transition name="bulk-bar">
     <div
       v-if="selected.length > 0"
+      class="bulk-bar-root"
       style="
         position: fixed;
         bottom: 24px;
         left: 50%;
         transform: translateX(-50%);
         z-index: 2000;
+        max-width: calc(100vw - 32px);
       "
     >
       <VCard
@@ -15,11 +17,11 @@
         rounded="pill"
       >
         <VCardText class="py-2 px-4">
-          <div class="d-flex align-center gap-3">
+          <div class="d-flex flex-wrap align-center justify-center gap-3">
             <span class="text-body-2 font-weight-medium text-no-wrap">
               {{ selected.length }} data dipilih
             </span>
-            <VDivider vertical style="height: 20px;" />
+            <VDivider vertical style="height: 20px;" class="d-none d-sm-block" />
             <VBtn
               color="error"
               size="small"

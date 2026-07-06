@@ -4,6 +4,7 @@
     class="base-table-wrapper"
   >
     <VDataTableServer
+      v-if="!isMobileCardView"
       class="base-table"
       :class="{ 'base-table--wrap-text': wrapText }"
       v-bind="$attrs"
@@ -25,12 +26,72 @@
         />
       </template>
     </VDataTableServer>
+
+    <div
+      v-else
+      class="base-table-mobile-list"
+    >
+      <div
+        v-if="loading"
+        class="base-table-mobile-state"
+      >
+        <VProgressCircular
+          indeterminate
+          color="primary"
+          size="28"
+        />
+      </div>
+      <div
+        v-else-if="!items.length"
+        class="base-table-mobile-state text-medium-emphasis"
+      >
+        Tidak ada data.
+      </div>
+      <template v-else>
+        <div
+          v-for="(item, index) in items"
+          :key="item[itemValue] ?? index"
+          class="base-table-mobile-card"
+        >
+          <VCheckbox
+            v-if="showSelect"
+            :model-value="isItemSelected(item)"
+            hide-details
+            density="compact"
+            class="base-table-mobile-card__select"
+            @update:model-value="() => toggleItemSelected(item)"
+          />
+          <div class="base-table-mobile-card__body">
+            <slot
+              name="mobile-card"
+              :item="item"
+              :index="index"
+            />
+          </div>
+        </div>
+      </template>
+
+      <div
+        v-if="totalPages > 1"
+        class="base-table-mobile-pagination"
+      >
+        <VPagination
+          :model-value="page"
+          :length="totalPages"
+          density="comfortable"
+          size="small"
+          total-visible="5"
+          @update:model-value="p => handleOptionsUpdate({ page: p, itemsPerPage: perPage })"
+        />
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, useAttrs, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { useDisplay } from 'vuetify'
 
 const props = defineProps({
   headers: { type: Array, required: true },
@@ -43,11 +104,38 @@ const props = defineProps({
   resizableColumns: { type: Boolean, default: true },
   columnResizeKey: { type: String, default: '' },
   columnResizeMinWidth: { type: Number, default: 72 },
+  mobileCards: { type: Boolean, default: false },
+  itemValue: { type: String, default: 'id' },
 })
 
 const emit = defineEmits(['update:options'])
 
 defineOptions({ inheritAttrs: false })
+
+const attrs = useAttrs()
+const display = useDisplay()
+
+const isMobileCardView = computed(() => props.mobileCards && display.xs.value)
+const totalPages = computed(() => Math.max(1, Math.ceil(props.total / (props.perPage || 1))))
+
+const showSelect = computed(() => Boolean(attrs.showSelect ?? attrs['show-select']))
+
+const selectedItems = computed(() => attrs.selected ?? [])
+
+function isItemSelected(item) {
+  return selectedItems.value.some(sel => sel[props.itemValue] === item[props.itemValue])
+}
+
+function toggleItemSelected(item) {
+  const handler = attrs['onUpdate:selected']
+  if (typeof handler !== 'function') return
+
+  const current = selectedItems.value
+  const idx = current.findIndex(sel => sel[props.itemValue] === item[props.itemValue])
+  const next = idx === -1 ? [...current, item] : current.filter((_, i) => i !== idx)
+
+  handler(next)
+}
 
 function handleOptionsUpdate(options) {
   if (options.page === props.page && options.itemsPerPage === props.perPage)
@@ -303,6 +391,46 @@ onBeforeUnmount(() => {
 .base-table :deep(th.base-table__th--resizable:hover::after),
 .base-table :deep(th.base-table__th--resizable:active::after) {
   background-color: rgba(var(--v-theme-on-surface), 0.16);
+}
+
+.base-table-mobile-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px 2px;
+}
+
+.base-table-mobile-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  border-radius: 10px;
+  padding: 12px;
+  background: rgba(var(--v-theme-surface), 1);
+}
+
+.base-table-mobile-card__select {
+  flex-shrink: 0;
+  margin-top: -6px;
+}
+
+.base-table-mobile-card__body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.base-table-mobile-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 0;
+}
+
+.base-table-mobile-pagination {
+  display: flex;
+  justify-content: center;
+  padding-top: 8px;
 }
 </style>
 

@@ -7,6 +7,7 @@ import { themeConfig } from '@themeConfig'
 
 // Components
 import Footer from '@/layouts/components/Footer.vue'
+import MobileBottomNav from '@/layouts/components/MobileBottomNav.vue'
 import NavbarThemeSwitcher from '@/layouts/components/NavbarThemeSwitcher.vue'
 import NavSidebarProfile from '@/layouts/components/NavSidebarProfile.vue'
 import UserProfile from '@/layouts/components/UserProfile.vue'
@@ -157,16 +158,8 @@ watch([
     </template>
 
     <!-- 👉 navbar -->
-    <template #navbar="{ toggleVerticalOverlayNavActive }">
+    <template #navbar>
       <div class="d-flex h-100 align-center">
-        <IconBtn
-          id="vertical-nav-toggle-btn"
-          class="ms-n2 d-lg-none"
-          @click="toggleVerticalOverlayNavActive(true)"
-        >
-          <VIcon icon="ri-menu-line" />
-        </IconBtn>
-
         <NavbarThemeSwitcher />
 
         <VSpacer />
@@ -177,6 +170,8 @@ watch([
         />
         <UserProfile />
       </div>
+
+      <MobileBottomNav :nav-items="filteredNavItems" />
     </template>
 
     <!-- 👉 Ambient decorative backdrop (behind page content) -->
@@ -218,5 +213,10 @@ watch([
       transform: rotate(0deg);
     }
   }
+}
+
+// 👉 Reserve space for the fixed mobile bottom nav so page content/footer aren't hidden behind it
+.layout-wrapper.layout-overlay-nav .layout-content-wrapper {
+  padding-block-end: calc(60px + env(safe-area-inset-bottom, 0px));
 }
 </style>

@@ -91,4 +91,14 @@ defineEmits(['update:modelValue'])
 .detail-label {
   letter-spacing: 0.08em;
 }
+
+@media (max-width: 599.98px) {
+  .detail-band {
+    height: 90px;
+  }
+
+  .detail-profile {
+    padding: 0 16px 12px;
+  }
+}
 </style>

@@ -2,15 +2,16 @@
   <VDialog
     v-model="isOpen"
     :max-width="width"
+    scrollable
     persistent
   >
     <VCard>
       <VCardTitle
-        class="pa-4 d-flex align-center justify-space-between"
+        class="pa-4 d-flex align-center justify-space-between ga-2"
         style="background: rgba(var(--v-theme-primary), 0.07); border-left: 4px solid rgb(var(--v-theme-primary))"
       >
-        <span class="text-body-1 font-weight-bold">{{ title }}</span>
-        <div class="d-flex ga-1">
+        <span class="text-body-1 font-weight-bold text-truncate">{{ title }}</span>
+        <div class="d-flex ga-1 flex-shrink-0">
           <VBtn
             v-if="minimizable"
             icon
@@ -41,7 +42,7 @@
         <slot />
       </VCardText>
       <VDivider />
-      <VCardActions class="pa-4 justify-end gap-2">
+      <VCardActions class="pa-4 justify-end gap-2 flex-wrap">
         <slot name="actions">
           <VBtn
             variant="tonal"

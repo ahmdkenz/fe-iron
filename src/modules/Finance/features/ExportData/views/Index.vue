@@ -11,7 +11,7 @@
 
     <VCard class="mb-4">
       <VCardText>
-        <div class="d-flex flex-wrap justify-space-between align-center gap-3 mb-4">
+        <div class="d-flex flex-column flex-sm-row justify-sm-space-between align-start align-sm-center gap-3 mb-4">
           <div>
             <div class="text-h6 font-weight-bold">
               Pilih Laporan
@@ -24,67 +24,98 @@
             variant="tonal"
             size="small"
             color="primary"
+            class="w-100 w-sm-auto"
             @click="toggleSelectAll"
           >
             {{ allSelected ? 'Batal Semua' : 'Pilih Semua' }}
           </VBtn>
         </div>
 
-        <VRow>
-          <VCol
-            v-for="rpt in reportDefs"
-            :key="rpt.key"
-            cols="12"
-            sm="6"
-            md="4"
+        <VExpansionPanels
+          v-model="openGroups"
+          multiple
+          variant="accordion"
+        >
+          <VExpansionPanel
+            v-for="grp in groupedReports"
+            :key="grp.key"
+            :value="grp.key"
           >
-            <div
-              class="report-tile"
-              :class="{
-                'report-tile--selected': isSelected(rpt.key),
-                'report-tile--disabled': rpt.disabled,
-              }"
-              @click="toggleReport(rpt.key)"
-            >
-              <VCheckbox
-                :model-value="isSelected(rpt.key)"
-                hide-details
-                density="compact"
-                :color="rpt.color"
-                :disabled="rpt.disabled"
-                @click.stop
-                @update:model-value="toggleReport(rpt.key)"
-              />
-              <VAvatar
-                :color="rpt.color"
-                variant="tonal"
-                size="42"
-              >
+            <VExpansionPanelTitle>
+              <div class="d-flex align-center gap-2">
                 <VIcon
-                  :icon="rpt.icon"
-                  size="22"
+                  :icon="grp.icon"
+                  :color="grp.color"
+                  size="20"
                 />
-              </VAvatar>
-              <div class="min-width-0">
-                <div class="font-weight-semibold text-body-1">
-                  {{ rpt.label }}
-                </div>
-                <div class="text-caption text-medium-emphasis mt-1">
-                  {{ rpt.description }}
-                </div>
+                <span class="font-weight-medium">{{ grp.label }}</span>
                 <VChip
-                  v-if="rpt.disabled"
                   size="x-small"
-                  color="warning"
-                  variant="tonal"
-                  class="mt-2"
+                  :color="grp.selectedCount > 0 ? 'primary' : undefined"
+                  :variant="grp.selectedCount > 0 ? 'flat' : 'tonal'"
                 >
-                  Belum tersedia
+                  {{ grp.selectedCount }}/{{ grp.reports.length }}
                 </VChip>
               </div>
-            </div>
-          </VCol>
-        </VRow>
+            </VExpansionPanelTitle>
+            <VExpansionPanelText>
+              <VRow>
+                <VCol
+                  v-for="rpt in grp.reports"
+                  :key="rpt.key"
+                  cols="12"
+                  sm="6"
+                >
+                  <div
+                    class="report-tile"
+                    :class="{
+                      'report-tile--selected': isSelected(rpt.key),
+                      'report-tile--disabled': rpt.disabled,
+                    }"
+                    @click="toggleReport(rpt.key)"
+                  >
+                    <VCheckbox
+                      :model-value="isSelected(rpt.key)"
+                      hide-details
+                      density="compact"
+                      :color="rpt.color"
+                      :disabled="rpt.disabled"
+                      @click.stop
+                      @update:model-value="toggleReport(rpt.key)"
+                    />
+                    <VAvatar
+                      :color="rpt.color"
+                      variant="tonal"
+                      size="42"
+                    >
+                      <VIcon
+                        :icon="rpt.icon"
+                        size="22"
+                      />
+                    </VAvatar>
+                    <div class="min-width-0">
+                      <div class="font-weight-semibold text-body-1">
+                        {{ rpt.label }}
+                      </div>
+                      <div class="text-caption text-medium-emphasis mt-1">
+                        {{ rpt.description }}
+                      </div>
+                      <VChip
+                        v-if="rpt.disabled"
+                        size="x-small"
+                        color="warning"
+                        variant="tonal"
+                        class="mt-2"
+                      >
+                        Belum tersedia
+                      </VChip>
+                    </div>
+                  </div>
+                </VCol>
+              </VRow>
+            </VExpansionPanelText>
+          </VExpansionPanel>
+        </VExpansionPanels>
       </VCardText>
     </VCard>
 
@@ -369,33 +400,22 @@
       </VCardText>
     </VCard>
 
-    <VCard>
-      <VCardText class="d-flex flex-wrap justify-space-between align-center gap-3">
-        <div class="min-width-0">
-          <div
+    <VCard class="export-footer">
+      <VCardText class="d-flex align-center justify-space-between gap-3 py-3">
+        <div class="d-flex align-center gap-2 min-width-0">
+          <VChip
             v-if="selectedKeys.length > 0"
-            class="text-subtitle-1 font-weight-medium"
+            size="small"
+            color="primary"
           >
-            {{ selectedKeys.length }} laporan dipilih
-          </div>
-          <div
-            v-else
-            class="text-subtitle-1 text-medium-emphasis"
-          >
-            Belum ada laporan dipilih
-          </div>
-          <div class="text-caption text-medium-emphasis mt-1 selected-labels">
-            <template v-if="selectedKeys.length > 0">
-              {{ selectedDefs.map(r => r.label).join(' | ') }}
-            </template>
-            <template v-else>
-              Silakan pilih minimal satu laporan
-            </template>
-          </div>
+            {{ selectedKeys.length }}
+          </VChip>
+          <span class="text-body-2 text-medium-emphasis text-truncate">
+            {{ selectedKeys.length > 0 ? selectedDefs.map(r => r.label).join(', ') : 'Pilih minimal satu laporan' }}
+          </span>
         </div>
         <VBtn
           color="primary"
-          size="large"
           :loading="exporting"
           :disabled="selectedKeys.length === 0"
           prepend-icon="ri-download-2-line"
@@ -442,6 +462,14 @@ const rekapKlienFilter = reactive({ periode_bulan: null, periode_tahun: now.getF
 const jurnalPicFilter = reactive({ no_referensi: null, karyawan_id: null, status_rekonsiliasi: null })
 const pdmFilter = reactive({ status: null })
 
+const GROUPS = [
+  { key: 'piutang', label: 'Piutang & Aging', icon: 'ri-file-list-3-line', color: 'primary' },
+  { key: 'pembayaran', label: 'Pembayaran', icon: 'ri-money-cny-circle-line', color: 'success' },
+  { key: 'kinerja', label: 'Kinerja & Aktivitas PIC', icon: 'ri-user-star-line', color: 'deep-purple' },
+]
+
+const openGroups = ref(['piutang'])
+
 const reportDefs = [
   {
     key: 'aging_report',
@@ -449,19 +477,10 @@ const reportDefs = [
     icon: 'ri-bar-chart-grouped-line',
     description: 'Umur piutang belum terbayar',
     color: 'primary',
+    group: 'piutang',
     supportsSegment: true,
     supportsClient: true,
     usesAsOfDate: true,
-  },
-  {
-    key: 'jurnal_pic',
-    label: 'Jurnal Aktivitas per PIC',
-    icon: 'ri-file-list-3-line',
-    description: 'Pembayaran berdasarkan PIC dan referensi',
-    color: 'warning',
-    usesPeriod: true,
-    supportsClient: true,
-    supportsPaymentMethod: true,
   },
   {
     key: 'rekap_klien',
@@ -469,19 +488,9 @@ const reportDefs = [
     icon: 'ri-pie-chart-2-line',
     description: 'Ringkasan outstanding per klien',
     color: 'secondary',
+    group: 'piutang',
     supportsSegment: true,
     usesMonthYear: true,
-  },
-  {
-    key: 'riwayat_pembayaran',
-    label: 'Riwayat Pembayaran',
-    icon: 'ri-money-cny-circle-line',
-    description: 'Daftar semua pembayaran AR',
-    color: 'success',
-    supportsSegment: true,
-    supportsClient: true,
-    supportsPaymentMethod: true,
-    usesPeriod: true,
   },
   {
     key: 'mutasi_piutang',
@@ -489,36 +498,8 @@ const reportDefs = [
     icon: 'ri-exchange-funds-line',
     description: 'Pergerakan piutang per klien',
     color: 'info',
+    group: 'piutang',
     supportsSegment: true,
-    supportsClient: true,
-    usesPeriod: true,
-  },
-  {
-    key: 'rekap_pembayaran',
-    label: 'Rekap Pembayaran',
-    icon: 'ri-bank-card-line',
-    description: 'Rekap pembayaran AR per transaksi',
-    color: 'error',
-    supportsSegment: true,
-    supportsClient: true,
-    supportsPaymentMethod: true,
-    usesPeriod: true,
-  },
-  {
-    key: 'kinerja_ar',
-    label: 'Kinerja AR',
-    icon: 'ri-user-star-line',
-    description: 'Performa penagihan per PIC',
-    color: 'deep-purple',
-    supportsSegment: true,
-    usesPeriod: true,
-  },
-  {
-    key: 'pendapatan_di_muka',
-    label: 'Pendapatan di Muka',
-    icon: 'ri-time-line',
-    description: 'Pembayaran diterima sebelum jasa diberikan',
-    color: 'deep-purple',
     supportsClient: true,
     usesPeriod: true,
   },
@@ -528,13 +509,80 @@ const reportDefs = [
     icon: 'ri-book-open-line',
     description: 'Menunggu endpoint export resmi',
     color: 'blue-grey',
+    group: 'piutang',
     disabled: true,
+  },
+  {
+    key: 'riwayat_pembayaran',
+    label: 'Riwayat Pembayaran',
+    icon: 'ri-money-cny-circle-line',
+    description: 'Daftar semua pembayaran AR',
+    color: 'success',
+    group: 'pembayaran',
+    supportsSegment: true,
+    supportsClient: true,
+    supportsPaymentMethod: true,
+    usesPeriod: true,
+  },
+  {
+    key: 'rekap_pembayaran',
+    label: 'Rekap Pembayaran',
+    icon: 'ri-bank-card-line',
+    description: 'Rekap pembayaran AR per transaksi',
+    color: 'error',
+    group: 'pembayaran',
+    supportsSegment: true,
+    supportsClient: true,
+    supportsPaymentMethod: true,
+    usesPeriod: true,
+  },
+  {
+    key: 'pendapatan_di_muka',
+    label: 'Pendapatan di Muka',
+    icon: 'ri-time-line',
+    description: 'Pembayaran diterima sebelum jasa diberikan',
+    color: 'deep-purple',
+    group: 'pembayaran',
+    supportsClient: true,
+    usesPeriod: true,
+  },
+  {
+    key: 'jurnal_pic',
+    label: 'Jurnal Aktivitas per PIC',
+    icon: 'ri-file-list-3-line',
+    description: 'Pembayaran berdasarkan PIC dan referensi',
+    color: 'warning',
+    group: 'kinerja',
+    usesPeriod: true,
+    supportsClient: true,
+    supportsPaymentMethod: true,
+  },
+  {
+    key: 'kinerja_ar',
+    label: 'Kinerja AR',
+    icon: 'ri-user-star-line',
+    description: 'Performa penagihan per PIC',
+    color: 'deep-purple',
+    group: 'kinerja',
+    supportsSegment: true,
+    usesPeriod: true,
   },
 ]
 
 const selectableDefs = computed(() => reportDefs.filter(report => !report.disabled))
 const selectedDefs = computed(() => reportDefs.filter(report => selectedKeys.value.includes(report.key)))
 const allSelected = computed(() => selectedKeys.value.length === selectableDefs.value.length)
+
+const groupedReports = computed(() => GROUPS.map(grp => {
+  const reports = reportDefs.filter(report => report.group === grp.key)
+
+  return {
+    ...grp,
+    reports,
+    selectedCount: reports.filter(report => selectedKeys.value.includes(report.key)).length,
+  }
+}))
+
 const showSegmentFilter = computed(() => selectedDefs.value.some(report => report.supportsSegment))
 const showClientFilter = computed(() => selectedDefs.value.some(report => report.supportsClient))
 const showPaymentMethodFilter = computed(() => selectedDefs.value.some(report => report.supportsPaymentMethod))
@@ -1362,9 +1410,17 @@ const SHEET_BUILDERS = {
   background: rgba(var(--v-theme-on-surface), 0.015);
 }
 
-.selected-labels {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.export-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  box-shadow: 0 -2px 8px rgba(var(--v-theme-on-surface), 0.08);
+}
+
+@media (max-width: 599.98px) {
+  .report-tile {
+    min-height: auto;
+    padding: 12px;
+  }
 }
 </style>

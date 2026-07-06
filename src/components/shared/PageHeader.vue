@@ -4,6 +4,7 @@
     <div
       v-if="breadcrumbs && breadcrumbs.length"
       class="modern-breadcrumb-wrapper d-flex align-center mb-3"
+      style="overflow-x: auto; max-width: 100%;"
     >
       <template
         v-for="(item, index) in breadcrumbs"
@@ -47,8 +48,8 @@
       </template>
     </div>
 
-    <div class="d-flex align-center justify-space-between">
-      <div>
+    <div class="d-flex flex-column flex-sm-row align-start align-sm-center justify-sm-space-between gap-3">
+      <div class="min-width-0">
         <h4 class="text-h5 font-weight-bold">
           {{ title }}
         </h4>
@@ -59,7 +60,7 @@
           {{ subtitle }}
         </p>
       </div>
-      <div class="d-flex gap-2">
+      <div class="d-flex flex-wrap gap-2 w-100 w-sm-auto">
         <slot />
       </div>
     </div>

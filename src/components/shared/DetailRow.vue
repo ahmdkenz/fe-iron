@@ -1,5 +1,5 @@
 <template>
-  <div class="detail-row-item d-flex align-start px-5 py-3">
+  <div class="detail-row-item d-flex flex-column flex-sm-row align-sm-start gap-1 px-4 px-sm-5 py-3">
     <span
       class="text-body-2 text-medium-emphasis flex-shrink-0"
       :style="{ minWidth: labelWidth }"

@@ -34,14 +34,14 @@
           elevation="2"
           class="rounded-xl stat-card"
         >
-          <VCardText class="d-flex align-center justify-space-between fill-height bg-surface">
-            <div>
+          <VCardText class="d-flex align-center justify-space-between fill-height bg-surface gap-2">
+            <div class="min-width-0">
               <div class="text-subtitle-2 text-medium-emphasis text-uppercase font-weight-medium mb-1">
                 {{ card.title }}
               </div>
               <div
-                class="text-h4 font-weight-bold"
-                :class="card.textClass"
+                class="font-weight-bold text-truncate"
+                :class="[valueTextClass, card.textClass]"
               >
                 {{ card.value }}
               </div>
@@ -52,12 +52,12 @@
             <VAvatar
               :color="card.color"
               variant="tonal"
-              size="54"
-              class="rounded-lg"
+              :size="avatarSize"
+              class="rounded-lg flex-shrink-0"
             >
               <VIcon
                 :icon="card.icon"
-                size="30"
+                :size="avatarIconSize"
               />
             </VAvatar>
           </VCardText>
@@ -110,7 +110,7 @@
       >
         <VCard
           elevation="2"
-          class="rounded-xl h-100"
+          class="rounded-xl h-100 chart-card"
         >
           <VCardItem class="pb-0">
             <VCardTitle class="d-flex align-center text-h6 font-weight-bold">
@@ -125,7 +125,7 @@
           <VCardText class="pt-4">
             <DeferredApexChart
               type="area"
-              height="350"
+              height="260"
               :options="revenueChartOptions"
               :series="revenueChartSeries"
             />
@@ -139,7 +139,7 @@
       >
         <VCard
           elevation="2"
-          class="rounded-xl h-100"
+          class="rounded-xl h-100 chart-card"
         >
           <VCardItem class="pb-0">
             <VCardTitle class="text-h6 font-weight-bold">
@@ -147,7 +147,7 @@
             </VCardTitle>
             <VCardSubtitle>Breakdown invoice berdasarkan status</VCardSubtitle>
           </VCardItem>
-          <VCardText class="pt-8">
+          <VCardText class="pt-4 pt-sm-8">
             <div
               v-if="statusChartHasData"
               class="d-flex align-center justify-center"
@@ -155,7 +155,7 @@
               <DeferredApexChart
                 type="donut"
                 width="100%"
-                height="300"
+                height="240"
                 :delay="300"
                 :options="donutChartOptions"
                 :series="donutChartSeries"
@@ -177,7 +177,7 @@
       <VCol cols="12">
         <VCard
           elevation="2"
-          class="rounded-xl"
+          class="rounded-xl chart-card"
         >
           <VCardItem class="pb-0">
             <VCardTitle class="d-flex align-center text-h6 font-weight-bold">
@@ -192,7 +192,7 @@
           <VCardText class="pt-4">
             <DeferredApexChart
               type="bar"
-              height="200"
+              height="170"
               :delay="400"
               :options="agingChartOptions"
               :series="agingChartSeries"
@@ -218,81 +218,111 @@
             </VCardTitle>
           </VCardItem>
           <VCardText class="px-0">
-            <VTable class="text-no-wrap">
-              <thead>
-                <tr>
-                  <th class="text-uppercase font-weight-bold text-caption">
-                    No. Invoice
-                  </th>
-                  <th class="text-uppercase font-weight-bold text-caption">
-                    Klien / Resto
-                  </th>
-                  <th class="text-uppercase font-weight-bold text-caption">
-                    Tanggal
-                  </th>
-                  <th class="text-uppercase font-weight-bold text-caption text-right">
-                    Total Tagihan
-                  </th>
-                  <th class="text-uppercase font-weight-bold text-caption text-right">
-                    Sisa
-                  </th>
-                  <th class="text-uppercase font-weight-bold text-caption text-center">
-                    Status
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-if="loading">
-                  <td
-                    colspan="6"
-                    class="text-center py-8 text-medium-emphasis"
+            <div class="d-none d-sm-block">
+              <VTable class="text-no-wrap">
+                <thead>
+                  <tr>
+                    <th class="text-uppercase font-weight-bold text-caption">
+                      No. Invoice
+                    </th>
+                    <th class="text-uppercase font-weight-bold text-caption">
+                      Klien / Resto
+                    </th>
+                    <th class="text-uppercase font-weight-bold text-caption">
+                      Tanggal
+                    </th>
+                    <th class="text-uppercase font-weight-bold text-caption text-right">
+                      Total Tagihan
+                    </th>
+                    <th class="text-uppercase font-weight-bold text-caption text-right">
+                      Sisa
+                    </th>
+                    <th class="text-uppercase font-weight-bold text-caption text-center">
+                      Status
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-if="loading">
+                    <td
+                      colspan="6"
+                      class="text-center py-8 text-medium-emphasis"
+                    >
+                      Memuat data dashboard...
+                    </td>
+                  </tr>
+                  <tr v-else-if="recentInvoices.length === 0">
+                    <td
+                      colspan="6"
+                      class="text-center py-8 text-medium-emphasis"
+                    >
+                      Belum ada invoice yang ditangani AR ini.
+                    </td>
+                  </tr>
+                  <tr
+                    v-for="invoice in recentInvoices"
+                    v-else
+                    :key="invoice.id"
+                    class="table-row-hover"
                   >
-                    Memuat data dashboard...
-                  </td>
-                </tr>
-                <tr v-else-if="recentInvoices.length === 0">
-                  <td
-                    colspan="6"
-                    class="text-center py-8 text-medium-emphasis"
-                  >
-                    Belum ada invoice yang ditangani AR ini.
-                  </td>
-                </tr>
-                <tr
-                  v-for="invoice in recentInvoices"
-                  v-else
-                  :key="invoice.id"
-                  class="table-row-hover"
-                >
-                  <td class="font-weight-medium text-primary">
-                    {{ invoice.noInvoice }}
-                  </td>
-                  <td>
-                    <div class="d-flex flex-column py-2">
-                      <span>{{ invoice.klien || '-' }}</span>
-                      <span class="text-caption text-medium-emphasis">
-                        {{ invoice.resto || 'Tanpa resto' }}
-                      </span>
+                    <td class="font-weight-medium text-primary">
+                      {{ invoice.noInvoice }}
+                    </td>
+                    <td>
+                      <div class="d-flex flex-column py-2">
+                        <span>{{ invoice.klien || '-' }}</span>
+                        <span class="text-caption text-medium-emphasis">
+                          {{ invoice.resto || 'Tanpa resto' }}
+                        </span>
+                      </div>
+                    </td>
+                    <td class="text-body-2">
+                      {{ formatDate(invoice.tanggalInvoice) }}
+                    </td>
+                    <td class="text-right font-weight-medium">
+                      {{ formatCurrency(invoice.totalTagihan) }}
+                    </td>
+                    <td
+                      class="text-right font-weight-medium"
+                      :class="invoice.sisaTagihan > 0 ? 'text-error' : 'text-success'"
+                    >
+                      {{ formatCurrency(invoice.sisaTagihan) }}
+                    </td>
+                    <td class="text-center">
+                      <InvoiceStatusBadge :status="invoice.status" />
+                    </td>
+                  </tr>
+                </tbody>
+              </VTable>
+            </div>
+
+            <div class="d-sm-none px-4">
+              <div v-if="loading" class="text-center py-8 text-medium-emphasis">Memuat data dashboard...</div>
+              <div v-else-if="recentInvoices.length === 0" class="text-center py-8 text-medium-emphasis">Belum ada invoice yang ditangani AR ini.</div>
+              <div
+                v-for="invoice in recentInvoices"
+                v-else
+                :key="invoice.id"
+                class="mobile-list-row"
+              >
+                <div class="text-caption font-weight-medium text-primary mobile-list-row__no">{{ invoice.noInvoice }}</div>
+                <div class="d-flex justify-space-between align-center gap-2 mt-1">
+                  <div class="min-width-0">
+                    <div class="text-caption text-medium-emphasis text-truncate">{{ invoice.klien || '-' }} · {{ invoice.resto || 'Tanpa resto' }}</div>
+                    <div class="mobile-list-row__date text-medium-emphasis">{{ formatDate(invoice.tanggalInvoice) }}</div>
+                  </div>
+                  <div class="text-end flex-shrink-0 mobile-badge">
+                    <div
+                      class="text-caption font-weight-medium"
+                      :class="invoice.sisaTagihan > 0 ? 'text-error' : 'text-success'"
+                    >
+                      {{ formatCurrency(invoice.sisaTagihan) }}
                     </div>
-                  </td>
-                  <td class="text-body-2">
-                    {{ formatDate(invoice.tanggalInvoice) }}
-                  </td>
-                  <td class="text-right font-weight-medium">
-                    {{ formatCurrency(invoice.totalTagihan) }}
-                  </td>
-                  <td
-                    class="text-right font-weight-medium"
-                    :class="invoice.sisaTagihan > 0 ? 'text-error' : 'text-success'"
-                  >
-                    {{ formatCurrency(invoice.sisaTagihan) }}
-                  </td>
-                  <td class="text-center">
-                    <InvoiceStatusBadge :status="invoice.status" />
-                  </td>
-                </tr>
-              </tbody>
-            </VTable>
+                    <InvoiceStatusBadge :status="invoice.status" class="mt-1" />
+                  </div>
+                </div>
+              </div>
+            </div>
           </VCardText>
         </VCard>
       </VCol>
@@ -320,72 +350,109 @@
             </VCardTitle>
           </VCardItem>
           <VCardText class="px-0">
-            <VTable class="text-no-wrap">
-              <thead>
-                <tr>
-                  <th class="text-uppercase font-weight-bold text-caption">No. Referensi</th>
-                  <th class="text-uppercase font-weight-bold text-caption">Invoice / Klien</th>
-                  <th class="text-uppercase font-weight-bold text-caption">Tgl Bayar</th>
-                  <th class="text-uppercase font-weight-bold text-caption text-right">Jumlah</th>
-                  <th class="text-uppercase font-weight-bold text-caption text-center">Metode</th>
-                  <th class="text-uppercase font-weight-bold text-caption text-center">Status Rekon</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-if="loadingPayments">
-                  <td colspan="6" class="text-center py-8 text-medium-emphasis">
-                    Memuat data pembayaran...
-                  </td>
-                </tr>
-                <tr v-else-if="recentPayments.length === 0">
-                  <td colspan="6" class="text-center py-8 text-medium-emphasis">
-                    Belum ada pembayaran tercatat.
-                  </td>
-                </tr>
-                <tr
-                  v-for="pay in recentPayments"
-                  v-else
-                  :key="pay.id"
-                  class="table-row-hover"
-                >
-                  <td class="font-weight-medium text-mono">{{ pay.no_referensi ?? '—' }}</td>
-                  <td>
-                    <div class="d-flex flex-column py-2">
-                      <span class="font-weight-medium">{{ pay.no_invoice ?? '—' }}</span>
-                      <span class="text-caption text-medium-emphasis">{{ pay.klien ?? '' }}</span>
-                    </div>
-                  </td>
-                  <td class="text-body-2">{{ formatDate(pay.tanggal_pembayaran) }}</td>
-                  <td class="text-right font-weight-medium text-success">
-                    {{ formatCurrency(pay.jumlah_pembayaran) }}
-                  </td>
-                  <td class="text-center">
-                    <VChip
-                      :color="metodeColorMap[pay.metode_pembayaran] ?? 'default'"
-                      size="x-small"
-                      variant="tonal"
-                      label
-                    >
-                      {{ pay.metode_pembayaran }}
-                    </VChip>
-                  </td>
-                  <td class="text-center">
+            <div class="d-none d-sm-block">
+              <VTable class="text-no-wrap">
+                <thead>
+                  <tr>
+                    <th class="text-uppercase font-weight-bold text-caption">No. Referensi</th>
+                    <th class="text-uppercase font-weight-bold text-caption">Invoice / Klien</th>
+                    <th class="text-uppercase font-weight-bold text-caption">Tgl Bayar</th>
+                    <th class="text-uppercase font-weight-bold text-caption text-right">Jumlah</th>
+                    <th class="text-uppercase font-weight-bold text-caption text-center">Metode</th>
+                    <th class="text-uppercase font-weight-bold text-caption text-center">Status Rekon</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-if="loadingPayments">
+                    <td colspan="6" class="text-center py-8 text-medium-emphasis">
+                      Memuat data pembayaran...
+                    </td>
+                  </tr>
+                  <tr v-else-if="recentPayments.length === 0">
+                    <td colspan="6" class="text-center py-8 text-medium-emphasis">
+                      Belum ada pembayaran tercatat.
+                    </td>
+                  </tr>
+                  <tr
+                    v-for="pay in recentPayments"
+                    v-else
+                    :key="pay.id"
+                    class="table-row-hover"
+                  >
+                    <td class="font-weight-medium text-mono">{{ pay.no_referensi ?? '—' }}</td>
+                    <td>
+                      <div class="d-flex flex-column py-2">
+                        <span class="font-weight-medium">{{ pay.no_invoice ?? '—' }}</span>
+                        <span class="text-caption text-medium-emphasis">{{ pay.klien ?? '' }}</span>
+                      </div>
+                    </td>
+                    <td class="text-body-2">{{ formatDate(pay.tanggal_pembayaran) }}</td>
+                    <td class="text-right font-weight-medium text-success">
+                      {{ formatCurrency(pay.jumlah_pembayaran) }}
+                    </td>
+                    <td class="text-center">
+                      <VChip
+                        :color="metodeColorMap[pay.metode_pembayaran] ?? 'default'"
+                        size="x-small"
+                        variant="tonal"
+                        label
+                      >
+                        {{ pay.metode_pembayaran }}
+                      </VChip>
+                    </td>
+                    <td class="text-center">
+                      <VChip
+                        v-if="pay.status_rekonsiliasi"
+                        :color="rekonColorMap[pay.status_rekonsiliasi] ?? 'default'"
+                        size="x-small"
+                        variant="tonal"
+                        label
+                      >
+                        {{ pay.status_rekonsiliasi }}
+                      </VChip>
+                      <VChip v-else size="x-small" variant="tonal" color="warning" label>
+                        Belum Diproses
+                      </VChip>
+                    </td>
+                  </tr>
+                </tbody>
+              </VTable>
+            </div>
+
+            <div class="d-sm-none px-4">
+              <div v-if="loadingPayments" class="text-center py-8 text-medium-emphasis">Memuat data pembayaran...</div>
+              <div v-else-if="recentPayments.length === 0" class="text-center py-8 text-medium-emphasis">Belum ada pembayaran tercatat.</div>
+              <div
+                v-for="pay in recentPayments"
+                v-else
+                :key="pay.id"
+                class="mobile-list-row"
+              >
+                <div class="text-caption font-weight-medium mobile-list-row__no">{{ pay.no_invoice ?? '—' }}</div>
+                <div class="d-flex justify-space-between align-center gap-2 mt-1">
+                  <div class="min-width-0">
+                    <div class="text-caption text-medium-emphasis text-truncate">{{ pay.klien ?? '' }}</div>
+                    <div class="mobile-list-row__date text-medium-emphasis">{{ formatDate(pay.tanggal_pembayaran) }}</div>
+                  </div>
+                  <div class="text-end flex-shrink-0">
+                    <div class="text-caption font-weight-medium text-success">{{ formatCurrency(pay.jumlah_pembayaran) }}</div>
                     <VChip
                       v-if="pay.status_rekonsiliasi"
                       :color="rekonColorMap[pay.status_rekonsiliasi] ?? 'default'"
                       size="x-small"
                       variant="tonal"
                       label
+                      class="mt-1"
                     >
                       {{ pay.status_rekonsiliasi }}
                     </VChip>
-                    <VChip v-else size="x-small" variant="tonal" color="warning" label>
+                    <VChip v-else size="x-small" variant="tonal" color="warning" label class="mt-1">
                       Belum Diproses
                     </VChip>
-                  </td>
-                </tr>
-              </tbody>
-            </VTable>
+                  </div>
+                </div>
+              </div>
+            </div>
           </VCardText>
         </VCard>
       </VCol>
@@ -395,7 +462,7 @@
 
 <script setup>
 import { computed, onMounted, ref, shallowRef } from 'vue'
-import { useTheme } from 'vuetify'
+import { useDisplay, useTheme } from 'vuetify'
 import { useAuthStore } from '@/stores/auth.store'
 import DeferredApexChart from '@/components/shared/DeferredApexChart.vue'
 import { useFormatter } from '@/composables/useFormatter'
@@ -404,7 +471,13 @@ import InvoiceStatusBadge from '@/modules/Finance/shared/components/InvoiceStatu
 
 const authStore = useAuthStore()
 const theme = useTheme()
+const display = useDisplay()
 const { formatCurrency, formatDate } = useFormatter()
+
+const isMobile = computed(() => display.xs.value)
+const avatarSize = computed(() => isMobile.value ? 40 : 54)
+const avatarIconSize = computed(() => isMobile.value ? 20 : 30)
+const valueTextClass = computed(() => isMobile.value ? 'text-h6' : 'text-h4')
 
 const compactNumberFormatter = new Intl.NumberFormat('id-ID', {
   notation: 'compact',
@@ -889,5 +962,37 @@ onMounted(() => {
 
 .table-row-hover:hover {
   background-color: rgba(var(--v-theme-on-surface), 0.03);
+}
+
+.mobile-list-row {
+  padding: 12px 0;
+  border-bottom: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+.mobile-list-row:last-child {
+  border-bottom: none;
+}
+
+.chart-card {
+  overflow: visible !important;
+}
+
+.mobile-list-row__date {
+  font-size: 0.6875rem;
+}
+
+.mobile-list-row__no {
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.mobile-badge :deep(.text-body-2) {
+  font-size: 0.6875rem;
+}
+
+.mobile-badge :deep(.v-icon) {
+  font-size: 14px !important;
+  height: 14px !important;
+  width: 14px !important;
 }
 </style>

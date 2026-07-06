@@ -25,7 +25,7 @@
           clearable
           hide-details
           density="compact"
-          style="max-width: 280px"
+          class="search-field"
           prepend-inner-icon="ri-search-line"
           @update:model-value="debouncedFetch"
         />
@@ -40,10 +40,43 @@
         :page="meta.current_page"
         wrap-text
         show-select
+        mobile-cards
         v-model:selected="selectedItems"
         class="mt-2"
         @update:options="onTableOptions"
       >
+        <template #mobile-card="{ item }">
+          <div class="d-flex align-center justify-space-between gap-2 mb-2">
+            <div class="d-flex align-center gap-2 min-width-0">
+              <VAvatar size="36" color="primary">
+                <span class="text-body-2 font-weight-bold text-white">{{ item.username?.charAt(0)?.toUpperCase() }}</span>
+              </VAvatar>
+              <div class="min-width-0">
+                <div class="font-weight-medium text-truncate">{{ item.username }}</div>
+                <div class="text-caption text-medium-emphasis text-truncate">{{ item.email ?? '-' }}</div>
+              </div>
+            </div>
+            <StatusChip :active="item.status" />
+          </div>
+          <div class="d-flex align-center justify-space-between gap-2">
+            <VChip v-if="item.role" color="primary" size="small" variant="tonal" label>
+              {{ item.role.nama_role }}
+            </VChip>
+            <span v-else class="text-caption text-medium-emphasis">Tanpa role</span>
+            <div class="d-flex gap-1">
+              <VBtn icon size="small" variant="text" color="info" @click="openDetail(item)">
+                <VIcon icon="ri-eye-line" size="18" />
+              </VBtn>
+              <VBtn icon size="small" variant="text" color="primary" @click="openEdit(item)">
+                <VIcon icon="ri-pencil-line" size="18" />
+              </VBtn>
+              <VBtn icon size="small" variant="text" color="error" @click="confirmDelete(item)">
+                <VIcon icon="ri-delete-bin-line" size="18" />
+              </VBtn>
+            </div>
+          </div>
+        </template>
+
         <template #item.no="{ index }">
           {{ (meta.current_page - 1) * meta.per_page + index + 1 }}
         </template>
@@ -358,3 +391,15 @@ async function doBulkDelete() {
 
 onMounted(() => fetchList())
 </script>
+
+<style scoped>
+.search-field {
+  max-width: 280px;
+}
+
+@media (max-width: 599.98px) {
+  .search-field {
+    max-width: 100%;
+  }
+}
+</style>
