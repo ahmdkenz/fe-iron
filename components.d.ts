@@ -7,6 +7,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AccountingAmbientBackdrop: typeof import('./src/components/shared/AccountingAmbientBackdrop.vue')['default']
     AppDrawerHeaderSection: typeof import('./src/@core/components/AppDrawerHeaderSection.vue')['default']
     AppLoadingIndicator: typeof import('./src/components/AppLoadingIndicator.vue')['default']
     ApprovalStatusBadge: typeof import('./src/modules/Finance/shared/components/ApprovalStatusBadge.vue')['default']
