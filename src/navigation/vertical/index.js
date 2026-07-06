@@ -40,7 +40,7 @@
     title: 'Import Master Data',
     to: { name: 'master-unified-import' },
     icon: { icon: 'ri-file-upload-line' },
-    roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'],
+    roles: ['ADMIN', 'MANAGER', 'SUPERVISOR'],
   },
   {
     title: 'Data Investor',
