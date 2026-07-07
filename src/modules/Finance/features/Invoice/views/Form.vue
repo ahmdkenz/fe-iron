@@ -205,11 +205,12 @@
                     density="compact"
                     variant="outlined"
                     :items="klienList"
-                    item-title="nama_klien"
+                    :item-title="klienDisplayTitle"
                     item-value="id"
                     prepend-inner-icon="ri-user-3-line"
                     :rules="[v => !!v || 'Klien wajib dipilih']"
                     :loading="klienLoading"
+                    :custom-filter="klienCustomFilter"
                     clearable
                     @focus="ensureKlienLoaded()"
                     @update:model-value="onKlienChange"
@@ -218,14 +219,22 @@
                       <VListItem
                         v-bind="p"
                         :title="item.raw.nama_klien"
-                        :subtitle="[
-                          `${item.raw.kode_klien} · ${item.raw.tipe_klien}`,
-                          item.raw.resto?.investor?.nama_investor || item.raw.perusahaan?.nama_perusahaan || '',
-                        ].filter(Boolean).join(' · ')"
-                        lines="two"
+                        :subtitle="klienItemSubtitle(item.raw)"
+                        lines="three"
                       />
                     </template>
                   </VAutocomplete>
+
+                  <VTextField
+                    v-if="restoTerdaftarLabel"
+                    :model-value="restoTerdaftarLabel"
+                    label="Resto Terdaftar"
+                    density="compact"
+                    variant="outlined"
+                    prepend-inner-icon="ri-store-2-line"
+                    readonly
+                    class="mt-3"
+                  />
                 </VCol>
 
                 <VCol
@@ -277,7 +286,13 @@
                       <VListItem
                         v-bind="p"
                         :title="item.raw.nama_resto"
-                        :subtitle="item.raw.kode_resto"
+                        :subtitle="[
+                          item.raw.kode_resto,
+                          item.raw.investor?.pengelola
+                            ? `${item.raw.investor?.nama_investor ?? ''} · Pengelola: ${item.raw.investor.pengelola}`
+                            : item.raw.investor?.nama_investor,
+                        ].filter(Boolean).join(' · ')"
+                        lines="two"
                       />
                     </template>
                   </VAutocomplete>
@@ -640,6 +655,65 @@ const currentKlienAr = computed(() =>
 )
 
 const currentInvestor = computed(() => currentKlienAr.value?.resto?.investor)
+
+function klienRestoLabel(klien) {
+  const resto = klien?.resto
+  if (!resto) return ''
+
+  return resto.kode_resto ? `${resto.nama_resto} (${resto.kode_resto})` : resto.nama_resto
+}
+
+function klienInvestorLabel(klien) {
+  const investor = klien?.resto?.investor
+  if (!investor) return klien?.perusahaan?.nama_perusahaan || ''
+
+  return investor.pengelola ? `${investor.nama_investor} · Pengelola: ${investor.pengelola}` : investor.nama_investor
+}
+
+// Teks item terpilih di dropdown, mis. "ADAM RAISYAH BUANA, SH - Cinangka Baru (Ex. TRUSMI)"
+function klienDisplayTitle(klien) {
+  if (!klien) return ''
+
+  const investorNama = klien.resto?.investor?.nama_investor
+  const restoNama     = klien.resto?.nama_resto
+  if (investorNama && restoNama) return `${investorNama} - ${restoNama}`
+
+  return klien.nama_klien
+}
+
+function klienItemSubtitle(klien) {
+  const parts = [`${klien.kode_klien} · ${klien.tipe_klien}`]
+
+  const restoLabel = klienRestoLabel(klien)
+  if (restoLabel) parts.push(restoLabel)
+
+  const investorLabel = klienInvestorLabel(klien)
+  if (investorLabel) parts.push(investorLabel)
+
+  return parts.filter(Boolean).join(' · ')
+}
+
+function klienSearchText(klien) {
+  return [
+    klien.nama_klien,
+    klien.kode_klien,
+    klien.resto?.nama_resto,
+    klien.resto?.kode_resto,
+    klien.resto?.investor?.nama_investor,
+    klien.resto?.investor?.pengelola,
+    klien.karyawan_ar?.nama_karyawan,
+  ].filter(Boolean).join(' ').toLocaleLowerCase()
+}
+
+function klienCustomFilter(_titleValue, query, item) {
+  if (!query) return true
+
+  const raw = item?.raw ?? item ?? {}
+
+  return klienSearchText(raw).includes(String(query).toLocaleLowerCase())
+}
+
+const restoTerdaftarLabel = computed(() => klienRestoLabel(currentKlienAr.value))
 
 const penerimaTagihan = computed(() => {
   if (currentInvestor.value) return currentInvestor.value.nama_investor
