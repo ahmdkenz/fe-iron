@@ -868,13 +868,17 @@ async function exportExcel() {
   showLoading({ title: 'Mengeksport Data Invoice', text: 'Mohon tunggu sebentar...' })
   try {
     const { tanggal_dari, tanggal_sampai } = monthToRange(exportMonth.value)
+    const isB2B   = canSeeAll && activeSegmentTab.value === 'b2b'
+    const filters = isB2B ? filtersB2B : filtersB2C
+
     const query = new URLSearchParams()
-    if (filtersB2C.status)      query.set('status', filtersB2C.status)
-    if (filtersB2C.klien_ar_id) query.set('klien_ar_id', filtersB2C.klien_ar_id)
+    if (filters.status)      query.set('status', filters.status)
+    if (filters.klien_ar_id) query.set('klien_ar_id', filters.klien_ar_id)
     query.set('tanggal_dari', tanggal_dari)
     query.set('tanggal_sampai', tanggal_sampai)
+    query.set('segment', isB2B ? 'B2B' : 'B2C')
 
-    const res = await api.get(`/finance/invoices/export-excel?${query}`, { responseType: 'blob' })
+    const res = await api.get(`/finance/invoices/export-excel?${query}`, { responseType: 'blob', timeout: 300000 })
     const url  = URL.createObjectURL(res.data)
     const a    = document.createElement('a')
     a.href     = url
