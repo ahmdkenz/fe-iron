@@ -145,7 +145,9 @@
         </template>
         <template #item.nama_klien="{ item }">
           <div class="font-weight-medium">{{ item.nama_klien }}</div>
-          <div class="text-caption text-medium-emphasis">{{ item.kode_klien }}</div>
+          <div class="text-caption text-medium-emphasis">
+            {{ item.kode_klien }}<template v-if="item.nama_resto"> · {{ item.nama_resto }}</template>
+          </div>
         </template>
         <template #item.perusahaan="{ item }">
           <VChip v-if="item.perusahaan" color="secondary" size="small" variant="tonal" label>

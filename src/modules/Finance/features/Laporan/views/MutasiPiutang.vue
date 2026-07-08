@@ -187,7 +187,9 @@
         
         <template #item.nama_klien="{ item }">
           <div class="font-weight-medium text-high-emphasis">{{ item.nama_klien }}</div>
-          <div class="text-caption text-medium-emphasis mt-1">{{ item.kode_klien }}</div>
+          <div class="text-caption text-medium-emphasis mt-1">
+            {{ item.kode_klien }}<template v-if="item.nama_resto"> · {{ item.nama_resto }}</template>
+          </div>
         </template>
         
         <template #item.pic_ar="{ item }">

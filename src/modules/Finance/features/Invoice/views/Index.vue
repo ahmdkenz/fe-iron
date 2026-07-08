@@ -497,6 +497,9 @@
         <template #item.klien_ar="{ item }">
           {{ item.klien_ar?.nama_klien ?? '-' }}
         </template>
+        <template #item.outlet="{ item }">
+          {{ item.resto?.nama_resto ?? '-' }}
+        </template>
         <template #item.tanggal_invoice="{ item }">
           <span class="text-no-wrap">{{ formatDate(item.tanggal_invoice) }}</span>
         </template>
@@ -713,6 +716,7 @@ const headers = [
   { title: 'No',           key: 'no',              sortable: false, width: '60px' },
   { title: 'No Invoice',   key: 'no_invoice',      sortable: false },
   { title: 'Klien',        key: 'klien_ar',        sortable: false },
+  { title: 'Outlet',       key: 'outlet',          sortable: false },
   { title: 'Tanggal',      key: 'tanggal_invoice', sortable: false, width: '115px' },
   { title: 'Total Barang', key: 'subtotal',        sortable: false },
   { title: 'Sisa Tagihan', key: 'sisa_tagihan',    sortable: false },

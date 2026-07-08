@@ -190,7 +190,7 @@
             {{ item.nama_klien }}
           </div>
           <div class="text-caption text-medium-emphasis">
-            {{ item.kode_klien }}
+            {{ item.kode_klien }}<template v-if="item.nama_resto"> · {{ item.nama_resto }}</template>
           </div>
         </template>
         <template #item.pic_ar="{ item }">
@@ -232,7 +232,7 @@
             >
               <div class="pa-4">
                 <div class="text-caption font-weight-medium mb-2">
-                  Detail Invoice — {{ item.nama_klien }}
+                  Detail Invoice — {{ item.nama_klien }}<template v-if="item.nama_resto"> ({{ item.nama_resto }})</template>
                   <span class="text-medium-emphasis">({{ displayDetails(item).length }} invoice)</span>
                 </div>
                 <div class="aging-detail-scroll">

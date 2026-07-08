@@ -122,7 +122,9 @@
         <template #item.nama_klien="{ item }">
           <div>
             <div class="font-weight-medium">{{ item.nama_klien }}</div>
-            <div class="text-caption text-medium-emphasis">{{ item.kode_klien }}</div>
+            <div class="text-caption text-medium-emphasis">
+              {{ item.kode_klien }}<template v-if="item.nama_resto"> · {{ item.nama_resto }}</template>
+            </div>
           </div>
         </template>
         <template #item.total_tagihan="{ item }">

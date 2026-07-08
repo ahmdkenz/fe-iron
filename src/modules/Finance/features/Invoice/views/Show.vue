@@ -269,6 +269,11 @@
                         label="Kode Klien"
                         :value="invoice.klien_ar?.kode_klien"
                       />
+                      <DetailRow
+                        v-if="invoice.klien_ar?.resto"
+                        label="Outlet"
+                        :value="invoice.klien_ar.resto.nama_resto + (invoice.klien_ar.resto.kode_resto ? ' (' + invoice.klien_ar.resto.kode_resto + ')' : '')"
+                      />
                       <template v-if="invoice.klien_ar?.resto?.investor">
                         <DetailRow
                           label="Investor"
