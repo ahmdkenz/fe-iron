@@ -415,7 +415,221 @@
                 </VRow>
               </VCardText>
             </VCard>
+          </div>
+        </VCol>
 
+        <VCol
+          cols="12"
+          lg="4"
+        >
+          <div class="invoice-show-stack">
+            <VCard class="rounded-xl elevation-2 border">
+              <VCardTitle
+                class="pa-4 pb-2 font-weight-bold d-flex align-center"
+                :class="isB2B ? 'text-info' : 'text-primary'"
+              >
+                <VIcon
+                  icon="ri-calculator-line"
+                  class="me-2"
+                />
+                Ringkasan Tagihan
+              </VCardTitle>
+              <VDivider />
+              <VCardText>
+                <DetailRow
+                  label="Subtotal"
+                  :value="formatCurrency(invoice.subtotal)"
+                />
+                <DetailRow
+                  label="Tagihan Sebelumnya"
+                  :value="formatCurrency(invoice.tagihan_periode_sebelumnya)"
+                />
+                <VDivider class="my-2" />
+                <DetailRow
+                  label="Total Tagihan"
+                  :value="formatCurrency(invoice.subtotal)"
+                />
+                <DetailRow
+                  label="Total Terbayar"
+                  :value="formatCurrency(invoice.total_pembayaran)"
+                />
+                <DetailRow
+                  v-if="(invoice.total_penyesuaian ?? 0) !== 0"
+                  label="Penyesuaian (CN/DN)"
+                >
+                  <span class="text-error">− {{ formatCurrency(invoice.total_penyesuaian) }}</span>
+                </DetailRow>
+                <VDivider class="my-2" />
+                <div class="d-flex py-2">
+                  <span
+                    class="text-body-2 text-medium-emphasis"
+                    style="min-width: 130px"
+                  >Sisa Tagihan</span>
+                  <span
+                    class="text-body-1 font-weight-bold"
+                    :class="sisaTagihan > 0 ? 'text-error' : 'text-success'"
+                  >
+                    {{ formatCurrency(sisaTagihan) }}
+                  </span>
+                </div>
+              </VCardText>
+            </VCard>
+
+            <!-- Sidebar widget khusus B2B -->
+            <VCard
+              v-if="isB2B"
+              class="rounded-xl elevation-2 border b2b-client-card"
+            >
+              <VCardTitle class="pa-4 pb-2 font-weight-bold text-info d-flex align-center">
+                <VIcon
+                  icon="ri-building-4-line"
+                  class="me-2"
+                />
+                Konteks B2B
+              </VCardTitle>
+              <VDivider color="info" />
+              <VCardText class="pt-3">
+                <div class="d-flex align-center mb-3">
+                  <VAvatar
+                    color="info"
+                    variant="tonal"
+                    size="36"
+                    class="me-3"
+                  >
+                    <VIcon
+                      icon="ri-building-4-line"
+                      size="18"
+                    />
+                  </VAvatar>
+                  <div>
+                    <div class="text-body-2 font-weight-semibold">
+                      {{ invoice.klien_ar?.nama_klien }}
+                    </div>
+                    <div class="text-caption text-medium-emphasis">
+                      {{ invoice.klien_ar?.kode_klien }}
+                    </div>
+                  </div>
+                </div>
+                <VDivider class="mb-3" />
+                <div class="mb-3">
+                  <template v-if="invoice.resto">
+                    <div class="text-caption text-medium-emphasis mb-1">
+                      Outlet Ditagihkan
+                    </div>
+                    <div class="d-flex align-center gap-2">
+                      <VIcon
+                        icon="ri-store-line"
+                        color="info"
+                        size="16"
+                      />
+                      <span class="text-body-2 font-weight-medium">{{ invoice.resto.nama_resto }}</span>
+                    </div>
+                    <div class="text-caption text-medium-emphasis ms-6">
+                      {{ invoice.resto.kode_resto }}
+                    </div>
+                  </template>
+                  <template v-else>
+                    <div class="text-caption text-medium-emphasis mb-1">
+                      Mode Tagihan
+                    </div>
+                    <VChip
+                      color="info"
+                      size="small"
+                      variant="tonal"
+                      label
+                      prepend-icon="ri-merge-cells-horizontal"
+                    >
+                      Konsolidasi
+                    </VChip>
+                  </template>
+                </div>
+                <div v-if="invoice.karyawan?.perusahaan?.nama_perusahaan">
+                  <div class="text-caption text-medium-emphasis mb-1">
+                    Entitas Penagih
+                  </div>
+                  <div class="d-flex align-center gap-2">
+                    <VIcon
+                      icon="ri-briefcase-4-line"
+                      color="info"
+                      size="16"
+                    />
+                    <span class="text-body-2 font-weight-medium">{{ invoice.karyawan.perusahaan.nama_perusahaan }}</span>
+                  </div>
+                </div>
+              </VCardText>
+            </VCard>
+
+            <VCard
+              v-if="isOpeningBalance"
+              class="rounded-xl elevation-2 border"
+            >
+              <VCardTitle
+                class="pa-4 pb-2 font-weight-bold d-flex align-center"
+                :class="isB2B ? 'text-info' : 'text-primary'"
+              >
+                <VIcon
+                  icon="ri-shield-check-line"
+                  class="me-2"
+                />
+                Persetujuan Opening Balance
+              </VCardTitle>
+              <VDivider />
+              <VCardText>
+                <div class="d-flex align-center justify-space-between mb-4">
+                  <span class="text-body-2 text-medium-emphasis">Status Approval</span>
+                  <ApprovalStatusBadge :status="invoice.approval_status" />
+                </div>
+
+                <DetailRow
+                  label="Diajukan Oleh"
+                  :value="invoice.submitted_by_name ?? invoice.created_by_name"
+                />
+                <DetailRow
+                  label="Diajukan Pada"
+                  :value="formatDateTime(invoice.submitted_at)"
+                />
+                <DetailRow
+                  label="Disetujui Oleh"
+                  :value="invoice.approved_by_name"
+                />
+                <DetailRow
+                  label="Disetujui Pada"
+                  :value="formatDateTime(invoice.approved_at)"
+                />
+                <DetailRow
+                  label="Ditolak Oleh"
+                  :value="invoice.rejected_by_name"
+                />
+                <DetailRow
+                  label="Ditolak Pada"
+                  :value="formatDateTime(invoice.rejected_at)"
+                />
+                <DetailRow
+                  v-if="invoice.last_decision_note"
+                  :label="invoice.approval_status === 'REJECTED' ? 'Catatan Penolakan' : 'Catatan Approval'"
+                  :value="invoice.last_decision_note"
+                />
+
+                <VAlert
+                  v-if="approvalNotice"
+                  :type="approvalNotice.type"
+                  variant="tonal"
+                  class="mt-4"
+                >
+                  <div class="font-weight-medium mb-1">
+                    {{ approvalNotice.title }}
+                  </div>
+                  <div>{{ approvalNotice.text }}</div>
+                </VAlert>
+              </VCardText>
+            </VCard>
+          </div>
+        </VCol>
+      </VRow>
+
+      <VRow class="mt-6">
+        <VCol cols="12">
+          <div class="invoice-show-stack">
             <VExpansionPanels
               v-if="isOpeningBalance"
               v-model="openPanels"
@@ -892,214 +1106,6 @@
                   </tr>
                 </tbody>
               </VTable>
-            </VCard>
-          </div>
-        </VCol>
-
-        <VCol
-          cols="12"
-          lg="4"
-        >
-          <div class="invoice-show-stack">
-            <VCard class="rounded-xl elevation-2 border">
-              <VCardTitle
-                class="pa-4 pb-2 font-weight-bold d-flex align-center"
-                :class="isB2B ? 'text-info' : 'text-primary'"
-              >
-                <VIcon
-                  icon="ri-calculator-line"
-                  class="me-2"
-                />
-                Ringkasan Tagihan
-              </VCardTitle>
-              <VDivider />
-              <VCardText>
-                <DetailRow
-                  label="Subtotal"
-                  :value="formatCurrency(invoice.subtotal)"
-                />
-                <DetailRow
-                  label="Tagihan Sebelumnya"
-                  :value="formatCurrency(invoice.tagihan_periode_sebelumnya)"
-                />
-                <VDivider class="my-2" />
-                <DetailRow
-                  label="Total Tagihan"
-                  :value="formatCurrency(invoice.subtotal)"
-                />
-                <DetailRow
-                  label="Total Terbayar"
-                  :value="formatCurrency(invoice.total_pembayaran)"
-                />
-                <DetailRow
-                  v-if="(invoice.total_penyesuaian ?? 0) !== 0"
-                  label="Penyesuaian (CN/DN)"
-                >
-                  <span class="text-error">− {{ formatCurrency(invoice.total_penyesuaian) }}</span>
-                </DetailRow>
-                <VDivider class="my-2" />
-                <div class="d-flex py-2">
-                  <span
-                    class="text-body-2 text-medium-emphasis"
-                    style="min-width: 130px"
-                  >Sisa Tagihan</span>
-                  <span
-                    class="text-body-1 font-weight-bold"
-                    :class="sisaTagihan > 0 ? 'text-error' : 'text-success'"
-                  >
-                    {{ formatCurrency(sisaTagihan) }}
-                  </span>
-                </div>
-              </VCardText>
-            </VCard>
-
-            <!-- Sidebar widget khusus B2B -->
-            <VCard
-              v-if="isB2B"
-              class="rounded-xl elevation-2 border b2b-client-card"
-            >
-              <VCardTitle class="pa-4 pb-2 font-weight-bold text-info d-flex align-center">
-                <VIcon
-                  icon="ri-building-4-line"
-                  class="me-2"
-                />
-                Konteks B2B
-              </VCardTitle>
-              <VDivider color="info" />
-              <VCardText class="pt-3">
-                <div class="d-flex align-center mb-3">
-                  <VAvatar
-                    color="info"
-                    variant="tonal"
-                    size="36"
-                    class="me-3"
-                  >
-                    <VIcon
-                      icon="ri-building-4-line"
-                      size="18"
-                    />
-                  </VAvatar>
-                  <div>
-                    <div class="text-body-2 font-weight-semibold">
-                      {{ invoice.klien_ar?.nama_klien }}
-                    </div>
-                    <div class="text-caption text-medium-emphasis">
-                      {{ invoice.klien_ar?.kode_klien }}
-                    </div>
-                  </div>
-                </div>
-                <VDivider class="mb-3" />
-                <div class="mb-3">
-                  <template v-if="invoice.resto">
-                    <div class="text-caption text-medium-emphasis mb-1">
-                      Outlet Ditagihkan
-                    </div>
-                    <div class="d-flex align-center gap-2">
-                      <VIcon
-                        icon="ri-store-line"
-                        color="info"
-                        size="16"
-                      />
-                      <span class="text-body-2 font-weight-medium">{{ invoice.resto.nama_resto }}</span>
-                    </div>
-                    <div class="text-caption text-medium-emphasis ms-6">
-                      {{ invoice.resto.kode_resto }}
-                    </div>
-                  </template>
-                  <template v-else>
-                    <div class="text-caption text-medium-emphasis mb-1">
-                      Mode Tagihan
-                    </div>
-                    <VChip
-                      color="info"
-                      size="small"
-                      variant="tonal"
-                      label
-                      prepend-icon="ri-merge-cells-horizontal"
-                    >
-                      Konsolidasi
-                    </VChip>
-                  </template>
-                </div>
-                <div v-if="invoice.karyawan?.perusahaan?.nama_perusahaan">
-                  <div class="text-caption text-medium-emphasis mb-1">
-                    Entitas Penagih
-                  </div>
-                  <div class="d-flex align-center gap-2">
-                    <VIcon
-                      icon="ri-briefcase-4-line"
-                      color="info"
-                      size="16"
-                    />
-                    <span class="text-body-2 font-weight-medium">{{ invoice.karyawan.perusahaan.nama_perusahaan }}</span>
-                  </div>
-                </div>
-              </VCardText>
-            </VCard>
-
-            <VCard
-              v-if="isOpeningBalance"
-              class="rounded-xl elevation-2 border"
-            >
-              <VCardTitle
-                class="pa-4 pb-2 font-weight-bold d-flex align-center"
-                :class="isB2B ? 'text-info' : 'text-primary'"
-              >
-                <VIcon
-                  icon="ri-shield-check-line"
-                  class="me-2"
-                />
-                Persetujuan Opening Balance
-              </VCardTitle>
-              <VDivider />
-              <VCardText>
-                <div class="d-flex align-center justify-space-between mb-4">
-                  <span class="text-body-2 text-medium-emphasis">Status Approval</span>
-                  <ApprovalStatusBadge :status="invoice.approval_status" />
-                </div>
-
-                <DetailRow
-                  label="Diajukan Oleh"
-                  :value="invoice.submitted_by_name ?? invoice.created_by_name"
-                />
-                <DetailRow
-                  label="Diajukan Pada"
-                  :value="formatDateTime(invoice.submitted_at)"
-                />
-                <DetailRow
-                  label="Disetujui Oleh"
-                  :value="invoice.approved_by_name"
-                />
-                <DetailRow
-                  label="Disetujui Pada"
-                  :value="formatDateTime(invoice.approved_at)"
-                />
-                <DetailRow
-                  label="Ditolak Oleh"
-                  :value="invoice.rejected_by_name"
-                />
-                <DetailRow
-                  label="Ditolak Pada"
-                  :value="formatDateTime(invoice.rejected_at)"
-                />
-                <DetailRow
-                  v-if="invoice.last_decision_note"
-                  :label="invoice.approval_status === 'REJECTED' ? 'Catatan Penolakan' : 'Catatan Approval'"
-                  :value="invoice.last_decision_note"
-                />
-
-                <VAlert
-                  v-if="approvalNotice"
-                  :type="approvalNotice.type"
-                  variant="tonal"
-                  class="mt-4"
-                >
-                  <div class="font-weight-medium mb-1">
-                    {{ approvalNotice.title }}
-                  </div>
-                  <div>{{ approvalNotice.text }}</div>
-                </VAlert>
-              </VCardText>
             </VCard>
           </div>
         </VCol>
