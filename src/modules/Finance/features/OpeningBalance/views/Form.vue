@@ -680,7 +680,7 @@ const formattedSaldoAwal = computed(() => {
 watch(() => form.details, newDetails => {
   if (newDetails.length > 0)
     form.saldo_awal = newDetails.reduce((sum, d) => sum + (Number(d.sisa_tagihan_asal) || 0), 0)
-}, { deep: true })
+})
 
 const formattedTanggal = computed(() => form.tanggal ? formatDate(form.tanggal) : '-')
 

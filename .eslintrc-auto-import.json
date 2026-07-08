@@ -364,6 +364,7 @@
     "whenever": true,
     "useGenerateImageVariant": true,
     "useLazyFetchAll": true,
-    "toISODate": true
+    "toISODate": true,
+    "readBlobError": true
   }
 }

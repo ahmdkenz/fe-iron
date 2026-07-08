@@ -835,6 +835,7 @@ import { useCrud } from '@/composables/useCrud'
 import { useFormatter } from '@/composables/useFormatter'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import api from '@/utils/axios'
+import { readBlobError } from '@/utils/readBlobError'
 import { useAuthStore } from '@/stores/auth.store'
 import { useFinanceNotificationStore } from '@/stores/finance-notification.store'
 import ApprovalStatusBadge from '@/modules/Finance/shared/components/ApprovalStatusBadge.vue'
@@ -968,12 +969,12 @@ async function exportExcelB2B() {
 // ── Print ──────────────────────────────────────────────────────────────────
 async function printInvoice(id) {
   try {
-    const res = await api.get(`/finance/invoices/${id}/print`, { responseType: 'blob' })
-    const blobUrl = URL.createObjectURL(res.data)
+    const res = await api.get(`/finance/invoices/${id}/print`, { responseType: 'blob', timeout: 300000 })
+    const blobUrl = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }))
     window.open(blobUrl, '_blank')
     setTimeout(() => URL.revokeObjectURL(blobUrl), 30_000)
-  } catch {
-    window.alert('Gagal membuka dokumen cetak')
+  } catch (err) {
+    showError(await readBlobError(err, 'Gagal membuka dokumen cetak'))
   }
 }
 

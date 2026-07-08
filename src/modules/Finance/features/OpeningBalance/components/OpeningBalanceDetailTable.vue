@@ -291,15 +291,27 @@
                 Opsional
               </VChip>
             </div>
-            <VBtn
-              size="x-small"
-              color="primary"
-              variant="tonal"
-              prepend-icon="ri-add-line"
-              @click="addItem(i)"
-            >
-              Tambah Item
-            </VBtn>
+            <div class="d-flex align-center gap-2">
+              <VBtn
+                v-if="row.items && row.items.length > 0"
+                size="x-small"
+                color="secondary"
+                variant="text"
+                :prepend-icon="isExpanded(i) ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'"
+                @click="toggleExpand(i)"
+              >
+                {{ isExpanded(i) ? 'Sembunyikan' : 'Lihat Detail' }}
+              </VBtn>
+              <VBtn
+                size="x-small"
+                color="primary"
+                variant="tonal"
+                prepend-icon="ri-add-line"
+                @click="addItem(i)"
+              >
+                Tambah Item
+              </VBtn>
+            </div>
           </div>
 
           <div
@@ -309,6 +321,14 @@
             <span class="text-caption text-medium-emphasis">
               Belum ada item. Klik "Tambah Item" untuk mendetailkan barang/jasa dalam invoice ini.
             </span>
+          </div>
+
+          <div
+            v-else-if="!isExpanded(i)"
+            class="ob-items-total ob-items-total--collapsed"
+          >
+            <span class="text-caption text-medium-emphasis">{{ row.items.length }} item · Total:</span>
+            <span class="text-caption font-weight-bold ms-1">{{ formatCurrency(calcItemsTotal(row.items)) }}</span>
           </div>
 
           <div
@@ -549,10 +569,33 @@ const createItem = () => ({
 
 const rows = ref(props.details.map(d => ({ items: [], ...d })))
 const pickerOpen = ref(false)
+const expandedRows = ref(new Set())
+
+let isInternalUpdate = false
 
 watch(() => props.details, val => {
+  if (isInternalUpdate) { isInternalUpdate = false; return }
   rows.value = val.map(d => ({ items: [], ...d }))
-}, { deep: true })
+  expandedRows.value = new Set()
+})
+
+function isExpanded(i) {
+  return expandedRows.value.has(i)
+}
+
+function toggleExpand(i) {
+  const next = new Set(expandedRows.value)
+  if (next.has(i)) next.delete(i)
+  else next.add(i)
+  expandedRows.value = next
+}
+
+function expand(i) {
+  if (expandedRows.value.has(i)) return
+  const next = new Set(expandedRows.value)
+  next.add(i)
+  expandedRows.value = next
+}
 
 const totalSisa = computed(() =>
   rows.value.reduce((sum, r) => sum + (Number(r.sisa_tagihan_asal) || 0), 0)
@@ -581,6 +624,7 @@ function addItem(detailIndex) {
     rows.value[detailIndex].items = []
   }
   rows.value[detailIndex].items.push(createItem())
+  expand(detailIndex)
   emitRows()
 }
 
@@ -639,10 +683,12 @@ function loadSelectedOutstanding(selected) {
     keterangan:           inv.keterangan ?? '',
     items:                mapInvoiceItems(inv.items),
   }))
+  expandedRows.value = new Set()
   emitRows()
 }
 
 function emitRows() {
+  isInternalUpdate = true
   emit('update:details', rows.value.map(r => ({
     ...r,
     jumlah_tagihan_asal: r.items && r.items.length > 0

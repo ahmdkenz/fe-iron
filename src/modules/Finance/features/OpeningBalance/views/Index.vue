@@ -1607,6 +1607,7 @@ import { useFormatter } from '@/composables/useFormatter'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useFinanceNotificationStore } from '@/stores/finance-notification.store'
 import api from '@/utils/axios'
+import { readBlobError } from '@/utils/readBlobError'
 import ApprovalStatusBadge from '@/modules/Finance/shared/components/ApprovalStatusBadge.vue'
 import InvoiceStatusBadge from '@/modules/Finance/shared/components/InvoiceStatusBadge.vue'
 import ShareInvoicesDialog from '@/modules/Finance/shared/components/ShareInvoicesDialog.vue'
@@ -1881,12 +1882,12 @@ async function exportDirExcelB2B() {
 async function printInvoice(id) {
   printingId.value = id
   try {
-    const res = await api.get(`/finance/invoices/${id}/print`, { responseType: 'blob' })
-    const blobUrl = URL.createObjectURL(res.data)
+    const res = await api.get(`/finance/invoices/${id}/print`, { responseType: 'blob', timeout: 300000 })
+    const blobUrl = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }))
     window.open(blobUrl, '_blank')
     setTimeout(() => URL.revokeObjectURL(blobUrl), 30_000)
-  } catch {
-    await showError('Gagal membuka dokumen cetak')
+  } catch (err) {
+    await showError(await readBlobError(err, 'Gagal membuka dokumen cetak'))
   } finally {
     printingId.value = null
   }

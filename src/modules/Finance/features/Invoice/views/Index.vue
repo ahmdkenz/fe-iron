@@ -668,6 +668,7 @@ import { useLazyFetchAll } from '@/composables/useLazyFetchAll.js'
 import { useFormatter } from '@/composables/useFormatter.js'
 import { useAuthStore } from '@/stores/auth.store'
 import api from '@/utils/axios.js'
+import { readBlobError } from '@/utils/readBlobError.js'
 import InvoiceStatusBadge from '@/modules/Finance/shared/components/InvoiceStatusBadge.vue'
 import ShareInvoicesDialog from '@/modules/Finance/shared/components/ShareInvoicesDialog.vue'
 import BulkActionBar from '@/modules/Finance/shared/components/BulkActionBar.vue'
@@ -911,12 +912,12 @@ function onPembayaranSaved() {
 async function printInvoice(id) {
   printingId.value = id
   try {
-    const res = await api.get(`/finance/invoices/${id}/print`, { responseType: 'blob' })
-    const blobUrl = URL.createObjectURL(res.data)
+    const res = await api.get(`/finance/invoices/${id}/print`, { responseType: 'blob', timeout: 300000 })
+    const blobUrl = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }))
     window.open(blobUrl, '_blank')
     setTimeout(() => URL.revokeObjectURL(blobUrl), 30_000)
-  } catch {
-    await showError('Gagal membuka dokumen cetak')
+  } catch (err) {
+    await showError(await readBlobError(err, 'Gagal membuka dokumen cetak'))
   } finally {
     printingId.value = null
   }
