@@ -301,111 +301,6 @@
               </VRow>
             </VCardText>
           </VCard>
-
-          <!-- Section 3: Item Tagihan -->
-          <VCard class="mb-4 section-card">
-            <div class="section-header">
-              <div class="d-flex align-center gap-3">
-                <div class="section-icon bg-warning">
-                  <VIcon
-                    icon="ri-list-check-2"
-                    size="16"
-                    color="white"
-                  />
-                </div>
-                <span class="text-subtitle-1 font-weight-semibold">Item Tagihan</span>
-                <VChip
-                  v-if="form.items.length > 0"
-                  size="x-small"
-                  color="warning"
-                  variant="tonal"
-                  class="font-weight-medium"
-                >
-                  {{ form.items.length }} item
-                </VChip>
-              </div>
-              <VBtn
-                color="primary"
-                size="small"
-                prepend-icon="ri-add-line"
-                variant="tonal"
-                @click="addItem"
-              >
-                Tambah Baris
-              </VBtn>
-            </div>
-            <VDivider />
-
-            <VCardText>
-              <div
-                v-if="form.items.length === 0"
-                class="text-center text-medium-emphasis py-10"
-              >
-                <VIcon
-                  icon="ri-inbox-line"
-                  size="44"
-                  class="mb-3 d-block opacity-40"
-                />
-                <div class="text-body-2">
-                  Belum ada item.
-                </div>
-                <div class="text-caption mt-1">
-                  Klik "Tambah Baris" untuk mulai menambahkan tagihan.
-                </div>
-              </div>
-
-              <InvoiceItemRow
-                v-for="(itm, idx) in form.items"
-                :key="idx"
-                :item="itm"
-                :barang-list="barangList"
-                :barang-loading="barangLoading"
-                @update:item="updateItem(idx, $event)"
-                @remove="removeItem(idx)"
-              />
-
-              <VAlert
-                v-if="itemsError"
-                type="error"
-                variant="tonal"
-                density="compact"
-                class="mt-1"
-              >
-                {{ itemsError }}
-              </VAlert>
-            </VCardText>
-          </VCard>
-
-          <!-- Section 4: Keterangan -->
-          <VCard class="mb-4">
-            <div class="section-header">
-              <div class="section-icon bg-secondary">
-                <VIcon
-                  icon="ri-sticky-note-line"
-                  size="16"
-                  color="white"
-                />
-              </div>
-              <span class="text-subtitle-1 font-weight-semibold">Keterangan</span>
-              <VChip
-                size="x-small"
-                color="secondary"
-                variant="tonal"
-              >
-                Opsional
-              </VChip>
-            </div>
-            <VDivider />
-            <VCardText class="pt-4">
-              <VTextField
-                v-model="form.keterangan"
-                label="Keterangan tambahan"
-                density="compact"
-                variant="outlined"
-                prepend-inner-icon="ri-chat-1-line"
-              />
-            </VCardText>
-          </VCard>
         </VCol>
 
         <!-- ─── Sidebar Ringkasan ─── -->
@@ -545,6 +440,113 @@
               </VCardText>
             </VCard>
           </div>
+        </VCol>
+
+        <!-- ─── Item Tagihan (full width) ─── -->
+        <VCol cols="12">
+          <VCard class="mb-4 section-card">
+            <div class="section-header">
+              <div class="d-flex align-center gap-3">
+                <div class="section-icon bg-warning">
+                  <VIcon
+                    icon="ri-list-check-2"
+                    size="16"
+                    color="white"
+                  />
+                </div>
+                <span class="text-subtitle-1 font-weight-semibold">Item Tagihan</span>
+                <VChip
+                  v-if="form.items.length > 0"
+                  size="x-small"
+                  color="warning"
+                  variant="tonal"
+                  class="font-weight-medium"
+                >
+                  {{ form.items.length }} item
+                </VChip>
+              </div>
+              <VBtn
+                color="primary"
+                size="small"
+                prepend-icon="ri-add-line"
+                variant="tonal"
+                @click="addItem"
+              >
+                Tambah Baris
+              </VBtn>
+            </div>
+            <VDivider />
+
+            <VCardText>
+              <div
+                v-if="form.items.length === 0"
+                class="text-center text-medium-emphasis py-10"
+              >
+                <VIcon
+                  icon="ri-inbox-line"
+                  size="44"
+                  class="mb-3 d-block opacity-40"
+                />
+                <div class="text-body-2">
+                  Belum ada item.
+                </div>
+                <div class="text-caption mt-1">
+                  Klik "Tambah Baris" untuk mulai menambahkan tagihan.
+                </div>
+              </div>
+
+              <InvoiceItemRow
+                v-for="(itm, idx) in form.items"
+                :key="idx"
+                :item="itm"
+                :barang-list="barangList"
+                :barang-loading="barangLoading"
+                @update:item="updateItem(idx, $event)"
+                @remove="removeItem(idx)"
+              />
+
+              <VAlert
+                v-if="itemsError"
+                type="error"
+                variant="tonal"
+                density="compact"
+                class="mt-1"
+              >
+                {{ itemsError }}
+              </VAlert>
+            </VCardText>
+          </VCard>
+
+          <!-- Section 4: Keterangan -->
+          <VCard class="mb-4">
+            <div class="section-header">
+              <div class="section-icon bg-secondary">
+                <VIcon
+                  icon="ri-sticky-note-line"
+                  size="16"
+                  color="white"
+                />
+              </div>
+              <span class="text-subtitle-1 font-weight-semibold">Keterangan</span>
+              <VChip
+                size="x-small"
+                color="secondary"
+                variant="tonal"
+              >
+                Opsional
+              </VChip>
+            </div>
+            <VDivider />
+            <VCardText class="pt-4">
+              <VTextField
+                v-model="form.keterangan"
+                label="Keterangan tambahan"
+                density="compact"
+                variant="outlined"
+                prepend-inner-icon="ri-chat-1-line"
+              />
+            </VCardText>
+          </VCard>
         </VCol>
       </VRow>
     </VForm>
