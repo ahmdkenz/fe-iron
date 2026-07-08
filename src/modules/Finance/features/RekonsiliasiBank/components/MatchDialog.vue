@@ -76,10 +76,20 @@
                     <span class="text-caption text-medium-emphasis">Total: {{ formatCurrency(inv.total_tagihan) }}</span>
                     <span class="text-caption font-weight-medium text-warning">Sisa: {{ formatCurrency(inv.sisa_tagihan) }}</span>
                   </div>
+                  <div v-if="inv.nama_resto" class="d-flex flex-wrap gap-x-2 mt-0.5">
+                    <span class="text-caption text-primary">{{ inv.nama_resto }}</span>
+                  </div>
                 </div>
               </div>
             </VCardText>
           </VCard>
+        </div>
+
+        <div v-if="obCandidates.length > 0" class="d-flex align-center justify-space-between mt-2">
+          <span class="text-caption text-medium-emphasis">Menampilkan {{ obCandidates.length }} dari {{ obTotal }}</span>
+          <VBtn v-if="obHasMore" size="small" variant="text" color="primary" :loading="obLoadingMore" @click="loadMore('ob')">
+            Muat lagi
+          </VBtn>
         </div>
 
         <!-- ── OB: pilih invoice reguler periode sebelumnya yang ikut dilunaskan ── -->
@@ -186,10 +196,20 @@
                     <span class="text-caption text-medium-emphasis">Total: {{ formatCurrency(inv.total_tagihan) }}</span>
                     <span class="text-caption font-weight-medium text-warning">Sisa: {{ formatCurrency(inv.sisa_tagihan) }}</span>
                   </div>
+                  <div v-if="inv.nama_resto" class="d-flex flex-wrap gap-x-2 mt-0.5">
+                    <span class="text-caption text-primary">{{ inv.nama_resto }}</span>
+                  </div>
                 </div>
               </div>
             </VCardText>
           </VCard>
+        </div>
+
+        <div v-if="regularCandidates.length > 0" class="d-flex align-center justify-space-between mt-2">
+          <span class="text-caption text-medium-emphasis">Menampilkan {{ regularCandidates.length }} dari {{ regularTotal }}</span>
+          <VBtn v-if="regularHasMore" size="small" variant="text" color="primary" :loading="regularLoadingMore" @click="loadMore('regular')">
+            Muat lagi
+          </VBtn>
         </div>
 
         <VAlert v-if="matchError" type="error" variant="tonal" class="mt-3" density="compact">{{ matchError }}</VAlert>
@@ -226,17 +246,30 @@ const selectedInvoiceId  = ref(null)
 const matchSaving        = ref(false)
 const matchError         = ref(null)
 
+const PER_PAGE = 50
+
 // Section: Invoice Opening Balance
-const obCandidates = ref([])
-const obSearch     = ref('')
-const obLoading    = ref(false)
-let   obTimer      = null
+const obCandidates  = ref([])
+const obSearch      = ref('')
+const obLoading     = ref(false)
+const obLoadingMore = ref(false)
+const obPage        = ref(1)
+const obLastPage    = ref(1)
+const obTotal       = ref(0)
+let   obTimer       = null
 
 // Section: Invoice Reguler
-const regularCandidates = ref([])
-const regularSearch     = ref('')
-const regularLoading    = ref(false)
-let   regularTimer      = null
+const regularCandidates  = ref([])
+const regularSearch      = ref('')
+const regularLoading     = ref(false)
+const regularLoadingMore = ref(false)
+const regularPage        = ref(1)
+const regularLastPage    = ref(1)
+const regularTotal       = ref(0)
+let   regularTimer       = null
+
+const obHasMore      = computed(() => obPage.value < obLastPage.value)
+const regularHasMore = computed(() => regularPage.value < regularLastPage.value)
 
 // OB: pelunasan invoice reguler periode sebelumnya
 const settleableLoading  = ref(false)
@@ -290,30 +323,62 @@ watch(selectedInvoiceId, id => {
   }
 })
 
-async function fetchCandidates(type, detailId) {
-  const id = detailId ?? props.item?.id
+async function fetchCandidates(type, { append = false } = {}) {
+  const id = props.item?.id
   if (!id) return
-  const isOb = type === 'ob'
+  const isOb   = type === 'ob'
   const search = isOb ? obSearch.value : regularSearch.value
-  if (isOb) obLoading.value = true
-  else regularLoading.value = true
+  const page   = append ? (isOb ? obPage.value : regularPage.value) + 1 : 1
+
+  if (append) {
+    if (isOb) obLoadingMore.value = true
+    else regularLoadingMore.value = true
+  } else {
+    if (isOb) obLoading.value = true
+    else regularLoading.value = true
+  }
+
   try {
     const { data } = await api.get(`/finance/rekonsiliasi-bank/detail/${id}/invoice-candidates`, {
-      params: { search: search || undefined, type },
+      params: { search: search || undefined, type, page, per_page: PER_PAGE },
     })
-    if (isOb) obCandidates.value = data.data ?? []
-    else regularCandidates.value = data.data ?? []
+    const items    = data.data?.data ?? []
+    const lastPage = data.data?.last_page ?? 1
+    const total    = data.data?.total ?? items.length
+
+    if (isOb) {
+      obCandidates.value = append ? [...obCandidates.value, ...items] : items
+      obPage.value       = page
+      obLastPage.value   = lastPage
+      obTotal.value      = total
+    } else {
+      regularCandidates.value = append ? [...regularCandidates.value, ...items] : items
+      regularPage.value       = page
+      regularLastPage.value   = lastPage
+      regularTotal.value      = total
+    }
   } catch (err) {
     // Jangan sembunyikan kegagalan sebagai "daftar kosong": kosongkan daftar
     // terkait lalu tampilkan pesan error agar bisa dibedakan dari hasil nihil.
-    if (isOb) obCandidates.value = []
-    else regularCandidates.value = []
+    if (!append) {
+      if (isOb) obCandidates.value = []
+      else regularCandidates.value = []
+    }
     matchError.value = err?.response?.data?.message
       ?? 'Gagal memuat daftar invoice. Periksa koneksi lalu coba lagi.'
   } finally {
-    if (isOb) obLoading.value = false
-    else regularLoading.value = false
+    if (append) {
+      if (isOb) obLoadingMore.value = false
+      else regularLoadingMore.value = false
+    } else {
+      if (isOb) obLoading.value = false
+      else regularLoading.value = false
+    }
   }
+}
+
+function loadMore(type) {
+  fetchCandidates(type, { append: true })
 }
 
 function onObSearchInput() {
@@ -330,8 +395,15 @@ function resetState() {
   selectedInvoiceId.value  = null
   obCandidates.value       = []
   obSearch.value           = ''
+  obPage.value              = 1
+  obLastPage.value          = 1
+  obTotal.value             = 0
+
   regularCandidates.value  = []
   regularSearch.value      = ''
+  regularPage.value        = 1
+  regularLastPage.value    = 1
+  regularTotal.value       = 0
   matchError.value         = null
   settleableInvoices.value = []
   selectedSettleIds.value  = []
