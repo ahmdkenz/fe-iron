@@ -411,86 +411,126 @@
               </VCardText>
             </VCard>
 
-            <VCard
+            <VExpansionPanels
               v-if="isOpeningBalance"
+              v-model="openPanels"
+              multiple
+              variant="accordion"
               class="rounded-xl elevation-2 border"
             >
-              <VCardTitle
-                class="pa-4 pb-2 font-weight-bold d-flex align-center"
-                :class="isB2B ? 'text-info' : 'text-primary'"
-              >
-                <VIcon
-                  icon="ri-file-list-2-line"
-                  class="me-2"
-                />
-                Rincian Invoice Asal
-              </VCardTitle>
-              <VDivider />
-              <OpeningBalanceDetailTable
-                :details="invoice.opening_balance_details ?? []"
-                readonly
-              />
-            </VCard>
-
-            <VCard
-              v-if="isOpeningBalance"
-              class="rounded-xl elevation-2 border"
-            >
-              <VCardTitle
-                class="pa-4 pb-2 font-weight-bold d-flex align-center"
-                :class="isB2B ? 'text-info' : 'text-primary'"
-              >
-                <VIcon
-                  icon="ri-history-line"
-                  class="me-2"
-                />
-                Riwayat Approval
-              </VCardTitle>
-              <VDivider />
-              <VTable
-                density="compact"
-                class="invoice-table"
-              >
-                <thead>
-                  <tr>
-                    <th>No</th>
-                    <th>Waktu</th>
-                    <th>Aksi</th>
-                    <th>Pengguna</th>
-                    <th>Catatan</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-if="approvalLogs.length === 0">
-                    <td
-                      colspan="5"
-                      class="text-center text-medium-emphasis py-4"
-                    >
-                      Belum ada riwayat approval
-                    </td>
-                  </tr>
-                  <tr
-                    v-for="(log, index) in approvalLogs"
-                    :key="log.id"
+              <VExpansionPanel value="ob-details">
+                <VExpansionPanelTitle>
+                  <VIcon
+                    icon="ri-file-list-2-line"
+                    class="me-2"
+                  />
+                  Rincian Invoice Asal
+                </VExpansionPanelTitle>
+                <VExpansionPanelText>
+                  <div
+                    v-if="obDetailsLoading"
+                    class="text-center py-8"
                   >
-                    <td>{{ index + 1 }}</td>
-                    <td>{{ formatDateTime(log.created_at) }}</td>
-                    <td>
-                      <VChip
-                        size="small"
-                        :color="approvalActionColor(log.action)"
-                        variant="tonal"
-                        label
+                    <VProgressCircular
+                      indeterminate
+                      color="primary"
+                    />
+                  </div>
+                  <VAlert
+                    v-else-if="obDetailsError"
+                    type="error"
+                    density="compact"
+                  >
+                    {{ obDetailsError }}
+                  </VAlert>
+                  <OpeningBalanceDetailTable
+                    v-else-if="obDetailsLoaded"
+                    :details="obDetailsData"
+                    readonly
+                  />
+                </VExpansionPanelText>
+              </VExpansionPanel>
+            </VExpansionPanels>
+
+            <VExpansionPanels
+              v-if="isOpeningBalance"
+              v-model="openPanels"
+              multiple
+              variant="accordion"
+              class="rounded-xl elevation-2 border"
+            >
+              <VExpansionPanel value="approval">
+                <VExpansionPanelTitle>
+                  <VIcon
+                    icon="ri-history-line"
+                    class="me-2"
+                  />
+                  Riwayat Approval
+                </VExpansionPanelTitle>
+                <VExpansionPanelText>
+                  <div
+                    v-if="approvalLogsLoading"
+                    class="text-center py-8"
+                  >
+                    <VProgressCircular
+                      indeterminate
+                      color="primary"
+                    />
+                  </div>
+                  <VAlert
+                    v-else-if="approvalLogsError"
+                    type="error"
+                    density="compact"
+                  >
+                    {{ approvalLogsError }}
+                  </VAlert>
+                  <VTable
+                    v-else
+                    density="compact"
+                    class="invoice-table"
+                  >
+                    <thead>
+                      <tr>
+                        <th>No</th>
+                        <th>Waktu</th>
+                        <th>Aksi</th>
+                        <th>Pengguna</th>
+                        <th>Catatan</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-if="approvalLogs.length === 0">
+                        <td
+                          colspan="5"
+                          class="text-center text-medium-emphasis py-4"
+                        >
+                          Belum ada riwayat approval
+                        </td>
+                      </tr>
+                      <tr
+                        v-for="(log, index) in approvalLogs"
+                        :key="log.id"
                       >
-                        {{ approvalActionLabel(log.action) }}
-                      </VChip>
-                    </td>
-                    <td>{{ log.actor_name ?? '-' }}</td>
-                    <td>{{ log.note ?? '-' }}</td>
-                  </tr>
-                </tbody>
-              </VTable>
-            </VCard>
+                        <td>{{ index + 1 }}</td>
+                        <td>{{ formatDateTime(log.created_at) }}</td>
+                        <td>
+                          <VChip
+                            size="small"
+                            :color="approvalActionColor(log.action)"
+                            variant="tonal"
+                            label
+                          >
+                            {{ approvalActionLabel(log.action) }}
+                          </VChip>
+                        </td>
+                        <td>{{ log.actor_name ?? '-' }}</td>
+                        <td>{{ log.note ?? '-' }}</td>
+                      </tr>
+                    </tbody>
+                  </VTable>
+                </VExpansionPanelText>
+              </VExpansionPanel>
+            </VExpansionPanels>
 
             <VCard
               v-if="!invoice.is_opening_balance"
@@ -507,7 +547,25 @@
                 Item Tagihan
               </VCardTitle>
               <VDivider />
+              <div
+                v-if="itemsLoading"
+                class="text-center py-8"
+              >
+                <VProgressCircular
+                  indeterminate
+                  color="primary"
+                />
+              </div>
+              <VAlert
+                v-else-if="itemsError"
+                type="error"
+                density="compact"
+                class="ma-4"
+              >
+                {{ itemsError }}
+              </VAlert>
               <VTable
+                v-else
                 density="compact"
                 class="invoice-table"
               >
@@ -539,7 +597,7 @@
                 </thead>
                 <tbody>
                   <tr
-                    v-for="(it, i) in invoice.items"
+                    v-for="(it, i) in invoiceItems"
                     :key="it.id"
                   >
                     <td>{{ i + 1 }}</td>
@@ -589,110 +647,138 @@
               </VTable>
             </VCard>
 
-            <VCard
-              v-if="koreksiList.length"
+            <VExpansionPanels
+              v-model="openPanels"
+              multiple
+              variant="accordion"
               class="rounded-xl elevation-2 border"
             >
-              <VCardTitle
-                class="pa-4 pb-2 font-weight-bold d-flex align-center"
-                :class="isB2B ? 'text-info' : 'text-primary'"
-              >
-                <VIcon
-                  icon="ri-edit-2-line"
-                  class="me-2"
-                />
-                Riwayat Penyesuaian (Credit Note / Debit Note / Koreksi)
-                <VChip
-                  size="x-small"
-                  color="info"
-                  variant="tonal"
-                  label
-                  class="ms-2"
-                >
-                  {{ koreksiList.length }}
-                </VChip>
-              </VCardTitle>
-              <VDivider />
-              <VTable
-                density="compact"
-                class="invoice-table"
-              >
-                <thead>
-                  <tr>
-                    <th>Tipe</th>
-                    <th>No Dokumen</th>
-                    <th class="text-right">
-                      Nilai
-                    </th>
-                    <th>Status</th>
-                    <th>Alasan</th>
-                    <th>Penyetuju</th>
-                    <th>Aksi</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr
-                    v-for="k in koreksiList"
-                    :key="k.id"
+              <VExpansionPanel value="koreksi">
+                <VExpansionPanelTitle>
+                  <VIcon
+                    icon="ri-edit-2-line"
+                    class="me-2"
+                  />
+                  Riwayat Penyesuaian (Credit Note / Debit Note / Koreksi)
+                  <VChip
+                    v-if="koreksiList.length"
+                    size="x-small"
+                    color="info"
+                    variant="tonal"
+                    label
+                    class="ms-2"
                   >
-                    <td>
-                      <VChip
-                        size="x-small"
-                        :color="koreksiTipeColor(k.tipe)"
-                        variant="tonal"
-                        label
+                    {{ koreksiList.length }}
+                  </VChip>
+                </VExpansionPanelTitle>
+                <VExpansionPanelText>
+                  <div
+                    v-if="koreksiLoading"
+                    class="text-center py-8"
+                  >
+                    <VProgressCircular
+                      indeterminate
+                      color="primary"
+                    />
+                  </div>
+                  <VAlert
+                    v-else-if="koreksiError"
+                    type="error"
+                    density="compact"
+                  >
+                    {{ koreksiError }}
+                  </VAlert>
+                  <VTable
+                    v-else
+                    density="compact"
+                    class="invoice-table"
+                  >
+                    <thead>
+                      <tr>
+                        <th>Tipe</th>
+                        <th>No Dokumen</th>
+                        <th class="text-right">
+                          Nilai
+                        </th>
+                        <th>Status</th>
+                        <th>Alasan</th>
+                        <th>Penyetuju</th>
+                        <th>Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-if="koreksiList.length === 0">
+                        <td
+                          colspan="7"
+                          class="text-center text-medium-emphasis py-4"
+                        >
+                          Belum ada riwayat penyesuaian
+                        </td>
+                      </tr>
+                      <tr
+                        v-for="k in koreksiList"
+                        :key="k.id"
                       >
-                        {{ koreksiTipeLabel(k.tipe) }}
-                      </VChip>
-                    </td>
-                    <td class="text-no-wrap">
-                      {{ k.no_dokumen ?? '—' }}
-                    </td>
-                    <td
-                      class="text-right text-no-wrap font-weight-bold"
-                      :class="k.nilai_koreksi >= 0 ? 'text-success' : 'text-error'"
-                    >
-                      {{ k.nilai_koreksi >= 0 ? '+' : '' }}{{ formatCurrency(k.nilai_koreksi) }}
-                    </td>
-                    <td>
-                      <VChip
-                        size="x-small"
-                        :color="koreksiStatusColor(k.status)"
-                        variant="tonal"
-                        label
-                      >
-                        {{ koreksiStatusLabel(k.status) }}
-                      </VChip>
-                    </td>
-                    <td style="max-width: 220px; white-space: normal;">
-                      {{ k.alasan_koreksi }}
-                    </td>
-                    <td class="text-caption text-no-wrap">
-                      <template v-if="k.manager">
-                        <span class="font-weight-medium">{{ k.manager }}</span><br>
-                        <span class="text-medium-emphasis">{{ formatDateTime(k.manager_actioned_at) }}</span>
-                      </template>
-                      <span
-                        v-else
-                        class="text-medium-emphasis"
-                      >—</span>
-                    </td>
-                    <td>
-                      <VBtn
-                        v-if="canPrintKoreksi && (k.tipe === 'CREDIT_NOTE' || k.tipe === 'DEBIT_NOTE')"
-                        size="x-small"
-                        variant="tonal"
-                        color="primary"
-                        prepend-icon="ri-printer-line"
-                        @click="openKoreksiPrint(k)"
-                      >
-                        Cetak
-                      </VBtn>
-                    </td>
-                  </tr>
-                </tbody>
-              </VTable>
-            </VCard>
+                        <td>
+                          <VChip
+                            size="x-small"
+                            :color="koreksiTipeColor(k.tipe)"
+                            variant="tonal"
+                            label
+                          >
+                            {{ koreksiTipeLabel(k.tipe) }}
+                          </VChip>
+                        </td>
+                        <td class="text-no-wrap">
+                          {{ k.no_dokumen ?? '—' }}
+                        </td>
+                        <td
+                          class="text-right text-no-wrap font-weight-bold"
+                          :class="k.nilai_koreksi >= 0 ? 'text-success' : 'text-error'"
+                        >
+                          {{ k.nilai_koreksi >= 0 ? '+' : '' }}{{ formatCurrency(k.nilai_koreksi) }}
+                        </td>
+                        <td>
+                          <VChip
+                            size="x-small"
+                            :color="koreksiStatusColor(k.status)"
+                            variant="tonal"
+                            label
+                          >
+                            {{ koreksiStatusLabel(k.status) }}
+                          </VChip>
+                        </td>
+                        <td style="max-width: 220px; white-space: normal;">
+                          {{ k.alasan_koreksi }}
+                        </td>
+                        <td class="text-caption text-no-wrap">
+                          <template v-if="k.manager">
+                            <span class="font-weight-medium">{{ k.manager }}</span><br>
+                            <span class="text-medium-emphasis">{{ formatDateTime(k.manager_actioned_at) }}</span>
+                          </template>
+                          <span
+                            v-else
+                            class="text-medium-emphasis"
+                          >—</span>
+                        </td>
+                        <td>
+                          <VBtn
+                            v-if="canPrintKoreksi && (k.tipe === 'CREDIT_NOTE' || k.tipe === 'DEBIT_NOTE')"
+                            size="x-small"
+                            variant="tonal"
+                            color="primary"
+                            prepend-icon="ri-printer-line"
+                            @click="openKoreksiPrint(k)"
+                          >
+                            Cetak
+                          </VBtn>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </VTable>
+                </VExpansionPanelText>
+              </VExpansionPanel>
+            </VExpansionPanels>
 
             <VCard class="rounded-xl elevation-2 border">
               <VCardTitle
@@ -716,7 +802,27 @@
               >
                 Opening balance belum aktif sebagai piutang. Pembayaran baru bisa dicatat setelah approval disetujui.
               </VAlert>
-              <VTable density="compact">
+              <div
+                v-if="pembayaranLoading"
+                class="text-center py-8"
+              >
+                <VProgressCircular
+                  indeterminate
+                  color="primary"
+                />
+              </div>
+              <VAlert
+                v-else-if="pembayaranError"
+                type="error"
+                density="compact"
+                class="ma-4"
+              >
+                {{ pembayaranError }}
+              </VAlert>
+              <VTable
+                v-else
+                density="compact"
+              >
                 <thead>
                   <tr>
                     <th>No</th>
@@ -731,7 +837,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-if="invoice.pembayarans?.length === 0">
+                  <tr v-if="pembayaranList.length === 0">
                     <td
                       colspan="7"
                       class="text-center text-medium-emphasis py-4"
@@ -740,7 +846,7 @@
                     </td>
                   </tr>
                   <tr
-                    v-for="(p, i) in invoice.pembayarans"
+                    v-for="(p, i) in pembayaranList"
                     :key="p.id"
                   >
                     <td>{{ i + 1 }}</td>
@@ -972,9 +1078,9 @@
                   :value="formatDateTime(invoice.rejected_at)"
                 />
                 <DetailRow
-                  v-if="latestDecisionLog?.note"
+                  v-if="invoice.last_decision_note"
                   :label="invoice.approval_status === 'REJECTED' ? 'Catatan Penolakan' : 'Catatan Approval'"
-                  :value="latestDecisionLog.note"
+                  :value="invoice.last_decision_note"
                 />
 
                 <VAlert
@@ -1174,7 +1280,31 @@ const actionMessage = ref('')
 const actionErrorMessage = ref('')
 let loadInvoiceController = null
 
-const koreksiList = computed(() => invoice.value?.koreksi ?? [])
+const invoiceItems = ref([])
+const itemsLoading = ref(false)
+const itemsError = ref('')
+
+const pembayaranList = ref([])
+const pembayaranLoading = ref(false)
+const pembayaranError = ref('')
+
+const approvalLogs = ref([])
+const approvalLogsLoading = ref(false)
+const approvalLogsError = ref('')
+const approvalLogsLoaded = ref(false)
+
+const koreksiList = ref([])
+const koreksiLoading = ref(false)
+const koreksiError = ref('')
+const koreksiLoaded = ref(false)
+
+const obDetailsData = ref([])
+const obDetailsLoading = ref(false)
+const obDetailsError = ref('')
+const obDetailsLoaded = ref(false)
+
+const openPanels = ref([])
+
 const canPrintKoreksi = computed(() => authStore.canOperateEndingBalance)
 const sisaTagihan = computed(() => {
   const inv = invoice.value
@@ -1213,7 +1343,7 @@ const statusTransitions = {
 const isOpeningBalance = computed(() => invoice.value?.is_opening_balance === true)
 const isB2B = computed(() => invoice.value?.klien_ar?.tipe_klien === 'PT')
 const showNoInvoiceResto = computed(() =>
-  isB2B.value || (invoice.value?.items ?? []).some(it => it.no_invoice_resto),
+  isB2B.value || invoiceItems.value.some(it => it.no_invoice_resto),
 )
 const documentLabel = computed(() => isOpeningBalance.value ? 'Opening Balance' : 'Invoice')
 
@@ -1226,11 +1356,6 @@ const canManagePayments = computed(() => !!invoice.value && invoice.value.can_re
 
 const canChangeStatus = computed(() =>
   !!invoice.value && invoice.value.status !== 'DRAFT' && invoice.value.can_record_payment)
-
-const approvalLogs = computed(() => invoice.value?.approval_logs ?? [])
-
-const latestDecisionLog = computed(() =>
-  approvalLogs.value.find(log => ['APPROVED', 'REJECTED'].includes(log.action)))
 
 const listRoute = computed(() => {
   return isOpeningBalance.value
@@ -1358,6 +1483,21 @@ async function loadInvoice() {
 
   loadInvoiceController = controller
 
+  invoiceItems.value = []
+  itemsError.value = ''
+  pembayaranList.value = []
+  pembayaranError.value = ''
+  approvalLogs.value = []
+  approvalLogsLoaded.value = false
+  approvalLogsError.value = ''
+  koreksiList.value = []
+  koreksiLoaded.value = false
+  koreksiError.value = ''
+  obDetailsData.value = []
+  obDetailsLoaded.value = false
+  obDetailsError.value = ''
+  openPanels.value = []
+
   const data = await fetchOne(id.value, {
     signal: controller.signal,
   })
@@ -1368,12 +1508,95 @@ async function loadInvoice() {
   invoice.value = data
   newStatus.value = ''
 
-  if (data?.is_opening_balance && data?.can_print)
-    api.post(`/finance/invoices/${id.value}/sync-gdrive`).catch(() => {})
-
-  if (!data)
+  if (!data) {
     pageErrorMessage.value = error.value ?? 'Data invoice tidak ditemukan'
+
+    return
+  }
+
+  if (!data.is_opening_balance) fetchItems()
+  fetchPembayaran()
 }
+
+async function fetchItems() {
+  itemsLoading.value = true
+  itemsError.value = ''
+  try {
+    const { data } = await api.get(`/finance/invoices/${id.value}/items`)
+    invoiceItems.value = data.data ?? []
+  } catch (err) {
+    itemsError.value = err.response?.data?.message ?? 'Gagal memuat item tagihan'
+  } finally {
+    itemsLoading.value = false
+  }
+}
+
+async function fetchPembayaran() {
+  pembayaranLoading.value = true
+  pembayaranError.value = ''
+  try {
+    const { data } = await api.get(`/finance/invoices/${id.value}/pembayaran`)
+    pembayaranList.value = data.data ?? []
+  } catch (err) {
+    pembayaranError.value = err.response?.data?.message ?? 'Gagal memuat riwayat pembayaran'
+  } finally {
+    pembayaranLoading.value = false
+  }
+}
+
+async function ensureApprovalLogsLoaded() {
+  if (approvalLogsLoaded.value || approvalLogsLoading.value) return
+
+  approvalLogsLoading.value = true
+  approvalLogsError.value = ''
+  try {
+    const { data } = await api.get(`/finance/invoices/${id.value}/approval-logs`)
+    approvalLogs.value = data.data ?? []
+    approvalLogsLoaded.value = true
+  } catch (err) {
+    approvalLogsError.value = err.response?.data?.message ?? 'Gagal memuat riwayat approval'
+  } finally {
+    approvalLogsLoading.value = false
+  }
+}
+
+async function ensureKoreksiLoaded() {
+  if (koreksiLoaded.value || koreksiLoading.value) return
+
+  koreksiLoading.value = true
+  koreksiError.value = ''
+  try {
+    const { data } = await api.get(`/finance/invoices/${id.value}/koreksi`)
+    koreksiList.value = data.data ?? []
+    koreksiLoaded.value = true
+  } catch (err) {
+    koreksiError.value = err.response?.data?.message ?? 'Gagal memuat riwayat penyesuaian'
+  } finally {
+    koreksiLoading.value = false
+  }
+}
+
+async function ensureObDetailsLoaded() {
+  if (!isOpeningBalance.value || obDetailsLoaded.value || obDetailsLoading.value) return
+
+  obDetailsLoading.value = true
+  obDetailsError.value = ''
+  try {
+    const { data } = await api.get(`/finance/opening-balance/${id.value}/details`)
+    obDetailsData.value = data.data ?? []
+    obDetailsLoaded.value = true
+  } catch (err) {
+    obDetailsError.value = err.response?.data?.message ?? 'Gagal memuat rincian invoice asal'
+  } finally {
+    obDetailsLoading.value = false
+  }
+}
+
+watch(openPanels, panels => {
+  if (panels.includes('approval')) ensureApprovalLogsLoaded()
+  if (panels.includes('koreksi')) ensureKoreksiLoaded()
+  if (panels.includes('ob-details')) ensureObDetailsLoaded()
+})
 
 async function doUbahStatus() {
   if (!newStatus.value) return
@@ -1514,6 +1737,9 @@ async function submitResubmit() {
 }
 
 async function printInvoice() {
+  if (invoice.value?.is_opening_balance && invoice.value?.can_print)
+    api.post(`/finance/invoices/${id.value}/sync-gdrive`).catch(() => {})
+
   try {
     const res = await api.get(`/finance/invoices/${id.value}/print`, { responseType: 'blob' })
     const blobUrl = URL.createObjectURL(res.data)

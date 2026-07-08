@@ -690,8 +690,8 @@ if (canSeeAll) {
   paramsB2B.segment = 'B2B'
 }
 
-Object.assign(paramsB2C, { tanggal_dari: defaultDari, tanggal_sampai: defaultSampai })
-Object.assign(paramsB2B, { tanggal_dari: defaultDari, tanggal_sampai: defaultSampai })
+Object.assign(paramsB2C, { tanggal_dari: defaultDari, tanggal_sampai: defaultSampai, per_page: 25 })
+Object.assign(paramsB2B, { tanggal_dari: defaultDari, tanggal_sampai: defaultSampai, per_page: 25 })
 
 const summary          = reactive({ total_invoice: null, total_tagihan: null, total_pembayaran: null, total_sisa: null })
 const showDelete       = ref(false)
