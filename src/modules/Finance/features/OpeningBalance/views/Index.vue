@@ -24,14 +24,6 @@
         <VBtn
           v-if="authStore.canOperateOpeningBalance"
           color="primary"
-          prepend-icon="ri-upload-line"
-          @click="openImport"
-        >
-          Import
-        </VBtn>
-        <VBtn
-          v-if="authStore.canOperateOpeningBalance"
-          color="primary"
           prepend-icon="ri-add-line"
           :to="{ name: 'finance-opening-balance-create' }"
         >
@@ -995,14 +987,6 @@
           <VBtn
             v-if="authStore.canOperateOpeningBalance"
             color="primary"
-            prepend-icon="ri-upload-line"
-            @click="openImport"
-          >
-            Import
-          </VBtn>
-          <VBtn
-            v-if="authStore.canOperateOpeningBalance"
-            color="primary"
             prepend-icon="ri-add-line"
             :to="{ name: 'finance-opening-balance-create' }"
           >
@@ -1585,169 +1569,6 @@
       @saved="onPembayaranSaved"
     />
 
-    <!-- Import Dialog (operator only) -->
-    <VDialog
-      v-if="authStore.canOperateOpeningBalance"
-      v-model="showImport"
-      max-width="600"
-      persistent
-    >
-      <VCard>
-        <VCardTitle class="d-flex align-center justify-space-between pa-4">
-          <span>Import Data Opening Balance</span>
-          <VBtn
-            icon
-            size="small"
-            variant="text"
-            @click="closeImport"
-          >
-            <VIcon icon="ri-close-line" />
-          </VBtn>
-        </VCardTitle>
-        <VDivider />
-        <VCardText class="pt-4">
-          <VAlert
-            type="warning"
-            variant="tonal"
-            class="mb-3"
-            density="compact"
-          >
-            <div class="text-body-2">
-              <strong>Kapan menggunakan Opening Balance?</strong>
-              Hanya untuk piutang <em>historis</em> yang berasal dari luar sistem (spreadsheet, sistem lama, atau manual).
-              Jika invoice sudah pernah diinput di sistem ini, sisa tagihan sudah otomatis terbawa — tidak perlu Opening Balance.
-            </div>
-          </VAlert>
-
-          <VAlert
-            type="info"
-            variant="tonal"
-            class="mb-4"
-          >
-            <div class="mb-2 font-weight-medium">
-              Panduan Import:
-            </div>
-            <ul class="ps-4">
-              <li>Download template Excel, isi data, lalu upload file <strong>(.xlsx)</strong> atau <strong>(.csv)</strong>.</li>
-              <li>
-                Template Excel terdiri dari <strong>3 sheet data</strong>:
-                <ul class="ps-3 mt-1">
-                  <li><strong>Sheet 1</strong> — Data Opening Balance utama (wajib diisi, termasuk kolom <code>no_urut</code>)</li>
-                  <li><strong>Sheet 2</strong> — Rincian Invoice Asal (opsional, referensi via <code>no_urut_ob</code>)</li>
-                  <li><strong>Sheet 3</strong> — Item per Invoice Asal (opsional, referensi via <code>no_urut_ob</code> + <code>no_invoice_asal</code>)</li>
-                </ul>
-              </li>
-              <li class="mt-1">
-                <strong>File CSV</strong> hanya mengimpor data OB utama (Sheet 1 saja).
-              </li>
-              <li>Kolom <strong>nama_klien</strong> harus cocok persis dengan nama klien di sistem.</li>
-              <li>
-                Kolom <strong>tanggal</strong> = tanggal pengajuan OB (hari ini).
-              </li>
-              <li>Semua tanggal diisi format <strong>YYYY-MM-DD</strong> (contoh: <code>2024-01-15</code>).</li>
-              <li>Data berhasil diimport berstatus <strong>DRAFT</strong> dan perlu persetujuan Manager.</li>
-            </ul>
-          </VAlert>
-
-          <VBtn
-            variant="outlined"
-            color="primary"
-            prepend-icon="ri-file-excel-line"
-            class="mb-4"
-            @click="downloadTemplate"
-          >
-            Download Template
-          </VBtn>
-
-          <VFileInput
-            v-model="importFile"
-            label="Pilih File (.xlsx, .xls, atau .csv)"
-            accept=".xlsx,.xls,.csv"
-            prepend-icon="ri-file-upload-line"
-            variant="outlined"
-            density="compact"
-            clearable
-            hide-details="auto"
-            @update:model-value="importResult = null"
-          />
-
-          <div
-            v-if="importResult"
-            class="mt-4"
-          >
-            <VAlert
-              :type="(importResult.failed_ob + importResult.failed_detail + importResult.failed_item) > 0 ? 'warning' : 'success'"
-              variant="tonal"
-              class="mb-3"
-            >
-              <div class="font-weight-medium mb-1">
-                {{ importResult.inserted_ob === 0 && (importResult.failed_ob + importResult.failed_detail + importResult.failed_item) > 0 ? 'Import dibatalkan — tidak ada data yang disimpan' : 'Import selesai' }}
-              </div>
-              <div class="text-body-2">
-                <span class="text-success font-weight-medium">{{ importResult.inserted_ob }}</span> OB ditambahkan
-                <template v-if="!importResult.is_csv">
-                  &nbsp;·&nbsp;<span class="text-success font-weight-medium">{{ importResult.inserted_detail }}</span> rincian
-                  &nbsp;·&nbsp;<span class="text-success font-weight-medium">{{ importResult.inserted_item }}</span> item
-                </template>
-                <span
-                  v-if="(importResult.failed_ob + importResult.failed_detail + importResult.failed_item) > 0"
-                  class="text-error font-weight-medium"
-                >
-                  &nbsp;·&nbsp;{{ importResult.failed_ob + importResult.failed_detail + importResult.failed_item }} gagal
-                </span>
-              </div>
-            </VAlert>
-
-            <div v-if="importResult.errors?.length">
-              <div class="text-subtitle-2 mb-2">
-                Detail Error:
-              </div>
-              <VTable
-                density="compact"
-                class="border rounded"
-              >
-                <thead>
-                  <tr>
-                    <th>Sheet</th>
-                    <th>Baris</th>
-                    <th>Pesan</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr
-                    v-for="(err, idx) in importResult.errors"
-                    :key="idx"
-                  >
-                    <td>{{ err.sheet }}</td>
-                    <td>{{ err.row }}</td>
-                    <td>{{ err.message }}</td>
-                  </tr>
-                </tbody>
-              </VTable>
-            </div>
-          </div>
-        </VCardText>
-        <VDivider />
-        <VCardActions class="pa-4 gap-2 justify-end">
-          <VBtn
-            variant="outlined"
-            @click="closeImport"
-          >
-            Tutup
-          </VBtn>
-          <VBtn
-            color="warning"
-            :loading="importing"
-            :disabled="!importFile"
-            prepend-icon="ri-upload-line"
-            @click="doImport"
-          >
-            Import
-          </VBtn>
-        </VCardActions>
-      </VCard>
-    </VDialog>
-
     <!-- Export Modal -->
     <BaseModal
       v-if="showExportModal"
@@ -2052,73 +1873,6 @@ async function exportDirExcelB2B() {
     await showError('Gagal mengunduh data export.')
   } finally {
     isDirExportingB2B.value = false
-    closeAlert({ onlyLoading: true })
-  }
-}
-
-// ── Import (non-director) ──────────────────────────────────────────────────
-const showImport   = ref(false)
-const importing    = ref(false)
-const importFile   = ref(null)
-const importResult = ref(null)
-
-function openImport() {
-  importFile.value   = null
-  importResult.value = null
-  showImport.value   = true
-}
-
-function closeImport() {
-  showImport.value = false
-  if (importResult.value?.inserted_ob > 0) {
-    if (authStore.canApproveOpeningBalance) {
-      doDirFetch()
-      financeNotificationStore.fetchPendingOpeningBalanceCount()
-    } else {
-      doFetchB2C()
-      doFetchB2B()
-    }
-  }
-}
-
-async function downloadTemplate() {
-  try {
-    const res  = await api.get('/finance/opening-balance/import-template', { responseType: 'blob' })
-    const url  = URL.createObjectURL(res.data)
-    const a    = document.createElement('a')
-    a.href     = url
-    a.download = 'Template OB (Saldo Awal).xlsx'
-    a.click()
-    URL.revokeObjectURL(url)
-  } catch {
-    await showError('Gagal mengunduh template.')
-  }
-}
-
-async function doImport() {
-  if (!importFile.value) return
-  importing.value    = true
-  importResult.value = null
-  showLoading({ title: 'Mengimport Data Opening Balance', text: 'Mohon tunggu sebentar...' })
-  try {
-    const formData = new FormData()
-    formData.append('file', importFile.value)
-    const res = await api.post('/finance/opening-balance/import', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-      timeout: 300000,
-    })
-    importResult.value = res.data.data
-    importFile.value   = null
-  } catch (err) {
-    const errResponse = err?.response?.data
-    // Tampilkan tabel error jika backend mengembalikan daftar baris bermasalah (HTTP 422)
-    if (errResponse?.errors?.errors?.length) {
-      importResult.value = errResponse.errors
-    }
-    const message = errResponse?.message || 'Gagal mengimport data.'
-    await showError(message)
-  } finally {
-    importing.value = false
     closeAlert({ onlyLoading: true })
   }
 }
