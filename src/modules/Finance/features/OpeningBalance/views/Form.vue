@@ -303,99 +303,7 @@
                   :error-messages="errors.keterangan"
                 />
               </div>
-
-              <div class="form-section">
-                <div class="form-section__header">
-                  <div class="d-flex align-center gap-2 flex-wrap">
-                    <div>
-                      <h4 class="text-subtitle-1 font-weight-bold mb-1">
-                        Rincian Invoice Asal
-                        <VChip
-                          size="x-small"
-                          color="secondary"
-                          variant="tonal"
-                          label
-                          class="ms-1"
-                        >
-                          Opsional
-                        </VChip>
-                      </h4>
-                      <p class="text-body-2 text-medium-emphasis mb-0">
-                        Daftarkan invoice-invoice asli yang membentuk saldo ini untuk keperluan audit dan aging per dokumen.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <VCard
-                  variant="outlined"
-                  rounded="lg"
-                  class="ob-detail-wrapper"
-                >
-                  <OpeningBalanceDetailTable
-                    :details="form.details"
-                    :saldo-awal="Number(form.saldo_awal) || 0"
-                    :barang-list="barangList"
-                    :barang-loading="barangLoading"
-                    :outstanding-invoices="outstandingInvoices"
-                    :loading-outstanding="loadingOutstanding"
-                    @update:details="form.details = $event"
-                  />
-                </VCard>
-
-                <VAlert
-                  v-if="errors.details?.length"
-                  type="error"
-                  variant="tonal"
-                  density="compact"
-                  class="mt-2"
-                >
-                  {{ errors.details[0] }}
-                </VAlert>
-              </div>
-
-              <VAlert
-                v-if="errorMessage"
-                type="error"
-                variant="tonal"
-                class="mt-6"
-              >
-                {{ errorMessage }}
-              </VAlert>
             </VCardText>
-
-            <VDivider />
-
-            <VCardActions class="opening-balance-card__actions px-6 px-md-8 py-4">
-              <div class="action-note text-body-2 text-medium-emphasis">
-                <VIcon
-                  icon="ri-information-line"
-                  size="18"
-                  class="me-2"
-                />
-                Setelah berhasil, halaman akan diarahkan ke detail opening balance.
-              </div>
-
-              <div class="d-flex flex-wrap gap-3">
-                <VBtn
-                  variant="tonal"
-                  color="secondary"
-                  :to="{ name: 'finance-opening-balance' }"
-                >
-                  Kembali
-                </VBtn>
-
-                <VBtn
-                  type="submit"
-                  color="primary"
-                  prepend-icon="ri-send-plane-2-line"
-                  :loading="saving"
-                  :disabled="saving"
-                >
-                  {{ submitLabel }}
-                </VBtn>
-              </div>
-            </VCardActions>
           </VCard>
         </VCol>
 
@@ -509,6 +417,104 @@
           >
             Gunakan periode yang sesuai dengan saldo awal piutang agar approval lebih mudah diverifikasi.
           </VAlert>
+        </VCol>
+
+        <VCol cols="12">
+          <VCard class="opening-balance-card">
+            <VCardText class="pa-6 pa-md-8">
+              <div class="form-section">
+                <div class="form-section__header">
+                  <div class="d-flex align-center gap-2 flex-wrap">
+                    <div>
+                      <h4 class="text-subtitle-1 font-weight-bold mb-1">
+                        Rincian Invoice Asal
+                        <VChip
+                          size="x-small"
+                          color="secondary"
+                          variant="tonal"
+                          label
+                          class="ms-1"
+                        >
+                          Opsional
+                        </VChip>
+                      </h4>
+                      <p class="text-body-2 text-medium-emphasis mb-0">
+                        Daftarkan invoice-invoice asli yang membentuk saldo ini untuk keperluan audit dan aging per dokumen.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <VCard
+                  variant="outlined"
+                  rounded="lg"
+                  class="ob-detail-wrapper"
+                >
+                  <OpeningBalanceDetailTable
+                    :details="form.details"
+                    :saldo-awal="Number(form.saldo_awal) || 0"
+                    :barang-list="barangList"
+                    :barang-loading="barangLoading"
+                    :outstanding-invoices="outstandingInvoices"
+                    :loading-outstanding="loadingOutstanding"
+                    @update:details="form.details = $event"
+                  />
+                </VCard>
+
+                <VAlert
+                  v-if="errors.details?.length"
+                  type="error"
+                  variant="tonal"
+                  density="compact"
+                  class="mt-2"
+                >
+                  {{ errors.details[0] }}
+                </VAlert>
+              </div>
+
+              <VAlert
+                v-if="errorMessage"
+                type="error"
+                variant="tonal"
+                class="mt-6"
+              >
+                {{ errorMessage }}
+              </VAlert>
+            </VCardText>
+
+            <VDivider />
+
+            <VCardActions class="opening-balance-card__actions px-6 px-md-8 py-4">
+              <div class="action-note text-body-2 text-medium-emphasis">
+                <VIcon
+                  icon="ri-information-line"
+                  size="18"
+                  class="me-2"
+                />
+                Setelah berhasil, halaman akan diarahkan ke detail opening balance.
+              </div>
+
+              <div class="d-flex flex-wrap gap-3">
+                <VBtn
+                  variant="tonal"
+                  color="secondary"
+                  :to="{ name: 'finance-opening-balance' }"
+                >
+                  Kembali
+                </VBtn>
+
+                <VBtn
+                  type="submit"
+                  color="primary"
+                  prepend-icon="ri-send-plane-2-line"
+                  :loading="saving"
+                  :disabled="saving"
+                >
+                  {{ submitLabel }}
+                </VBtn>
+              </div>
+            </VCardActions>
+          </VCard>
         </VCol>
       </VRow>
     </VForm>
