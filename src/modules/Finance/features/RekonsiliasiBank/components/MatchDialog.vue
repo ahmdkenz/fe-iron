@@ -1,5 +1,5 @@
 <template>
-  <VDialog :model-value="modelValue" max-width="680" persistent scrollable @update:model-value="onDialogUpdate">
+  <VDialog :model-value="modelValue && !showBuktiStep" max-width="680" persistent scrollable @update:model-value="onDialogUpdate">
     <VCard>
       <VCardTitle class="pa-4 pb-2"><span class="text-h6">Cocokkan Transaksi</span></VCardTitle>
       <VDivider />
@@ -218,18 +218,30 @@
       <VCardActions class="pa-4">
         <VSpacer />
         <VBtn variant="text" @click="onDialogUpdate(false)">Batal</VBtn>
-        <VBtn color="primary" variant="tonal" :disabled="!selectedInvoiceId || obLoading || regularLoading" :loading="matchSaving" @click="doManualMatch">
-          <VIcon start size="16">ri-link-m</VIcon>Cocokkan
+        <VBtn color="primary" variant="tonal" :disabled="!selectedInvoiceId || obLoading || regularLoading" @click="proceedToBuktiStep">
+          <VIcon start size="16">ri-arrow-right-line</VIcon>Lanjutkan
         </VBtn>
       </VCardActions>
     </VCard>
   </VDialog>
+
+  <BuktiBayarDialog
+    v-model:file="buktiBayar"
+    :model-value="modelValue && showBuktiStep"
+    :saving="matchSaving"
+    :error-message="matchError"
+    :file-error="buktiBayarError"
+    @update:model-value="onDialogUpdate"
+    @back="showBuktiStep = false"
+    @confirm="doManualMatch"
+  />
 </template>
 
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { useFormatter } from '@/composables/useFormatter'
 import api from '@/utils/axios'
+import BuktiBayarDialog from './BuktiBayarDialog.vue'
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
@@ -245,6 +257,9 @@ const statusInvoiceColor = s => ({ LUNAS: 'success', SEBAGIAN: 'warning', TERKIR
 const selectedInvoiceId  = ref(null)
 const matchSaving        = ref(false)
 const matchError         = ref(null)
+const buktiBayar         = ref([])
+const buktiBayarError    = ref(null)
+const showBuktiStep      = ref(false)
 
 const PER_PAGE = 50
 
@@ -405,6 +420,9 @@ function resetState() {
   regularLastPage.value    = 1
   regularTotal.value       = 0
   matchError.value         = null
+  buktiBayar.value         = []
+  buktiBayarError.value    = null
+  showBuktiStep.value      = false
   settleableInvoices.value = []
   selectedSettleIds.value  = []
   clearTimeout(obTimer)
@@ -425,22 +443,38 @@ function onDialogUpdate(value) {
   emit('update:modelValue', value)
 }
 
+function proceedToBuktiStep() {
+  if (!selectedInvoiceId.value || !props.item) return
+  if (selectedIsOb.value && settleExceeds.value) {
+    matchError.value = 'Total invoice reguler yang dipilih melebihi jumlah transaksi bank.'
+    return
+  }
+  matchError.value = null
+  showBuktiStep.value = true
+}
+
 async function doManualMatch() {
   if (!selectedInvoiceId.value || !props.item) return
   if (selectedIsOb.value && settleExceeds.value) {
     matchError.value = 'Total invoice reguler yang dipilih melebihi jumlah transaksi bank.'
     return
   }
-  matchSaving.value = true
-  matchError.value  = null
+  matchSaving.value    = true
+  matchError.value     = null
+  buktiBayarError.value = null
   try {
-    const payload = { invoice_id: selectedInvoiceId.value }
+    const payload = new FormData()
+    payload.append('invoice_id', selectedInvoiceId.value)
     if (selectedIsOb.value) {
-      payload.settle_original_invoice_ids = selectedSettleIds.value
+      selectedSettleIds.value.forEach(id => payload.append('settle_original_invoice_ids[]', id))
     }
+    const file = Array.isArray(buktiBayar.value) ? buktiBayar.value[0] : buktiBayar.value
+    if (file instanceof File) payload.append('bukti_pembayaran', file)
+
     const { data } = await api.post(
       `/finance/rekonsiliasi-bank/detail/${props.item.id}/catat-bayar`,
       payload,
+      { headers: { 'Content-Type': 'multipart/form-data' } },
     )
     emit('matched', { itemId: props.item.id, updated: data.data })
     emit('update:modelValue', false)
@@ -451,7 +485,13 @@ async function doManualMatch() {
       emit('update:modelValue', false)
       emit('connection-error', 'Koneksi terputus saat menyimpan. Data telah dimuat ulang — silakan periksa status transaksi.')
     } else {
-      matchError.value = err?.response?.data?.message ?? 'Terjadi kesalahan, coba lagi.'
+      const fieldErrors = err?.response?.data?.errors
+      if (fieldErrors?.bukti_pembayaran) {
+        buktiBayarError.value = fieldErrors.bukti_pembayaran[0]
+      }
+      matchError.value = fieldErrors
+        ? Object.values(fieldErrors).flat()[0]
+        : (err?.response?.data?.message ?? 'Terjadi kesalahan, coba lagi.')
     }
   } finally {
     matchSaving.value = false
