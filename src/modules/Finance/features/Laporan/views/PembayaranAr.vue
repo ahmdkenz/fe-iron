@@ -138,14 +138,14 @@
           <VChip v-else-if="item.jenis === 'PDM'" size="x-small" color="secondary" label>PDM</VChip>
           <span v-else class="text-caption text-medium-emphasis">REG</span>
         </template>
-        <template #item.bukti_gdrive_url="{ item }">
+        <template #item.bukti_url="{ item }">
           <VBtn
-            v-if="item.bukti_gdrive_url"
+            v-if="item.bukti_url"
             icon
             size="small"
             variant="text"
             color="primary"
-            :href="item.bukti_gdrive_url"
+            :href="item.bukti_url"
             target="_blank"
             rel="noopener"
           >
@@ -242,7 +242,7 @@ const headers = [
   { title: 'Rekon',       key: 'status_rekonsiliasi',sortable: false },
   { title: 'No Referensi',key: 'no_referensi',       sortable: false },
   { title: 'Jenis',       key: 'jenis',              sortable: false },
-  { title: 'Bukti',       key: 'bukti_gdrive_url',   sortable: false, align: 'center', width: '70px' },
+  { title: 'Bukti',       key: 'bukti_url',   sortable: false, align: 'center', width: '70px' },
   { title: 'Dicatat oleh',key: 'created_by_name',   sortable: false },
 ]
 

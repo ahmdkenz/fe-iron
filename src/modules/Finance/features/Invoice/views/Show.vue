@@ -1794,9 +1794,6 @@ async function submitResubmit() {
 }
 
 async function printInvoice() {
-  if (invoice.value?.is_opening_balance && invoice.value?.can_print)
-    api.post(`/finance/invoices/${id.value}/sync-gdrive`).catch(() => {})
-
   const printWindow = window.open('', '_blank')
   try {
     const res = await api.get(`/finance/invoices/${id.value}/print`, { responseType: 'blob', timeout: 300000 })
