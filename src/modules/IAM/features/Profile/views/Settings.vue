@@ -261,7 +261,7 @@
             density="compact"
             icon="ri-information-line"
           >
-            Password harus minimal 8 karakter dan mengandung huruf besar, huruf kecil, angka, dan karakter spesial.
+            Password minimal 8 karakter.
           </VAlert>
         </VCardText>
 
