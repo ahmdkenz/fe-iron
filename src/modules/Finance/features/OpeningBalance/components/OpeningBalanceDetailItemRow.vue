@@ -22,21 +22,21 @@
         cols="12"
         sm="7"
       >
-        <VAutocomplete
-          :model-value="localItem.barang_id"
+        <VCombobox
+          :model-value="localItem.nama_barang"
           label="Barang / Jasa"
           density="compact"
           variant="outlined"
           :items="barangList"
           item-title="nama_barang"
-          item-value="id"
+          item-value="nama_barang"
           :loading="barangLoading"
           no-filter
           clearable
           hide-details
           @focus="() => barangList.length === 0 && searchBarangNow()"
           @update:search="searchBarang"
-          @update:model-value="onBarangChange"
+          @update:model-value="onNamaBarangChange"
         >
           <template #item="{ props: p, item }">
             <VListItem
@@ -45,7 +45,7 @@
               :subtitle="item.raw.kode_barang"
             />
           </template>
-        </VAutocomplete>
+        </VCombobox>
       </VCol>
 
       <VCol
@@ -186,7 +186,7 @@ const emit = defineEmits(['update:item', 'remove'])
 const numberFormatter = new Intl.NumberFormat('id-ID')
 const localItem = reactive(createDefault())
 
-const { items: barangList, loading: barangLoading, search: searchBarang, searchNow: searchBarangNow, ensureItem: ensureBarangItem } = useRemoteSearch('/master/barang')
+const { items: barangList, loading: barangLoading, search: searchBarang, searchNow: searchBarangNow } = useRemoteSearch('/master/barang')
 
 // Gunakan immediate:true agar sync terjadi saat mount tanpa perlu memanggil fungsi manual
 watch(
@@ -196,12 +196,8 @@ watch(
     if (!localItem.kode_barang && val?.barang?.kode_barang) {
       localItem.kode_barang = val.barang.kode_barang
     }
-    if (localItem.barang_id) {
-      ensureBarangItem({
-        id: localItem.barang_id,
-        nama_barang: localItem.nama_barang,
-        kode_barang: localItem.kode_barang,
-      })
+    if (!localItem.nama_barang && val?.barang?.nama_barang) {
+      localItem.nama_barang = val.barang.nama_barang
     }
   },
   { immediate: true },
@@ -221,15 +217,17 @@ function updateNumberField(field, value) {
   recalculate()
 }
 
-function onBarangChange(id) {
-  localItem.barang_id = id ?? null
-  const found = barangList.value.find(b => b.id === id)
-  if (found) {
-    localItem.kode_barang = found.kode_barang || ''
-    localItem.nama_barang = found.nama_barang
-    if (found.satuan) localItem.satuan = found.satuan
+function onNamaBarangChange(value) {
+  if (value && typeof value === 'object') {
+    // User memilih dari dropdown
+    localItem.barang_id   = value.id ?? null
+    localItem.kode_barang = value.kode_barang ?? localItem.kode_barang
+    localItem.nama_barang = value.nama_barang ?? ''
+    if (value.satuan) localItem.satuan = value.satuan
   } else {
-    localItem.kode_barang = ''
+    // User mengetik bebas, atau clear
+    localItem.barang_id   = null
+    localItem.nama_barang = value ?? ''
   }
   recalculate()
 }

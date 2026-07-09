@@ -26,7 +26,7 @@
             <li>Upload <strong>1 file Excel</strong> dengan <strong>4 sheet</strong>: <strong>MASTER DATA</strong> (Investor + Resto + Client AR), <strong>MASTER BARANG</strong> (Produk/Barang), <strong>MASTER INVOICE</strong> (Invoice B2B &amp; B2C), dan <strong>Petunjuk Pengisian</strong>.</li>
             <li>Urutan import: MASTER DATA → MASTER BARANG → MASTER INVOICE. Invoice dapat langsung menggunakan data master yang baru diimport.</li>
             <li>Sheet <strong>MASTER DATA</strong>: 1 baris = 1 outlet. Field Client AR: <strong>pic_ar</strong> (PIC AR) wajib jika <code>tipe_klien</code> diisi. Kolom <strong>nama_entitas wajib</strong> jika <code>tipe_klien = PT</code>.</li>
-            <li>Sheet <strong>MASTER BARANG</strong>: kode_barang wajib untuk barang baru. Kolom: kode_barang, nama_barang, spesifikasi, keterangan, status.</li>
+            <li>Sheet <strong>MASTER BARANG</strong>: <strong>kode_barang wajib</strong> untuk setiap baris (identitas unik barang, boleh nama sama untuk barang berbeda). Kolom: kode_barang, nama_barang, spesifikasi, keterangan, status.</li>
             <li>Sheet <strong>MASTER INVOICE</strong>: 1 baris = 1 item. Baris dengan <code>tipe_invoice + no_urut</code> sama digabung jadi 1 invoice. <code>tipe_invoice</code>: <strong>B2C</strong> atau <strong>B2B</strong>. Invoice LUNAS atau periode terkunci → dilewati otomatis.</li>
             <li>Setelah invoice berhasil disimpan, <strong>PDF otomatis diupload ke Google Drive</strong> (proses antrian). Link share muncul setelah antrian selesai.</li>
             <li>Import hanya dapat dilakukan oleh role <strong>ADMIN, MANAGER, atau SUPERVISOR</strong>.</li>
@@ -213,7 +213,7 @@
             <ul class="ps-4">
               <li>File harus berformat <strong>.xlsx</strong> dengan <strong>4 sheet</strong>: <strong>MASTER DATA</strong>, <strong>MASTER BARANG</strong>, <strong>MASTER INVOICE</strong>, dan <strong>Petunjuk Pengisian</strong>.</li>
               <li>Sheet <strong>MASTER DATA</strong>: 1 baris = Investor + Resto + Client AR. Kolom <strong>tipe_klien</strong> (PT/RESTO) &amp; <strong>pic_ar</strong> wajib untuk membuat Client AR.</li>
-              <li>Sheet <strong>MASTER BARANG</strong>: kode_barang, nama_barang, spesifikasi, keterangan, status. kode_barang wajib untuk produk baru.</li>
+              <li>Sheet <strong>MASTER BARANG</strong>: kode_barang, nama_barang, spesifikasi, keterangan, status. <strong>kode_barang wajib</strong> di setiap baris (identitas unik barang).</li>
               <li>Sheet <strong>MASTER INVOICE</strong>: 1 baris = 1 item. Baris dengan <code>tipe_invoice + no_urut</code> sama digabung jadi 1 invoice. Kolom no_invoice_resto/kode_resto/nama_resto wajib untuk B2B, opsional untuk B2C (referensi nomor asli).</li>
               <li>Setelah invoice disimpan, PDF <strong>otomatis diqueue ke Google Drive</strong>. Link share tersedia setelah job antrian selesai.</li>
             </ul>
@@ -346,6 +346,10 @@
                 />
                 Barang: <strong>+{{ importProgress.barang_inserted }}</strong>
                 ~{{ importProgress.barang_updated }}
+                <span
+                  v-if="importProgress.barang_skipped > 0"
+                  class="text-medium-emphasis"
+                >⊘{{ importProgress.barang_skipped }} dilewati</span>
                 <span
                   v-if="importProgress.barang_failed > 0"
                   class="text-error"
@@ -601,12 +605,13 @@ const summaryCards = [
   },
   {
     label:   'Barang',
-    hint:    'Upsert by nama_barang',
+    hint:    'Upsert by kode_barang',
     icon:    'ri-box-3-line',
     color:   'info',
     insKey:  'barang_inserted',
     updKey:  'barang_updated',
     failKey: 'barang_failed',
+    skipKey: 'barang_skipped',
   },
 ]
 
@@ -618,7 +623,7 @@ const resultStats = computed(() => {
     { label: 'Investor',  icon: 'ri-money-dollar-circle-line', color: 'primary', inserted: r.investor_inserted ?? 0, updated: r.investor_updated ?? 0, skipped: 0,                    failed: r.investor_failed ?? 0 },
     { label: 'Resto',     icon: 'ri-store-2-line',             color: 'success', inserted: r.resto_inserted ?? 0,    updated: r.resto_updated ?? 0,    skipped: 0,                    failed: r.resto_failed ?? 0 },
     { label: 'Client AR', icon: 'ri-building-4-line',          color: 'warning', inserted: r.klien_inserted ?? 0,    updated: r.klien_updated ?? 0,    skipped: r.klien_skipped ?? 0,   failed: r.klien_failed ?? 0 },
-    { label: 'Barang',    icon: 'ri-box-3-line',               color: 'info',    inserted: r.barang_inserted ?? 0,   updated: r.barang_updated ?? 0,   skipped: 0,                    failed: r.barang_failed ?? 0 },
+    { label: 'Barang',    icon: 'ri-box-3-line',               color: 'info',    inserted: r.barang_inserted ?? 0,   updated: r.barang_updated ?? 0,   skipped: r.barang_skipped ?? 0,  failed: r.barang_failed ?? 0 },
     { label: 'Invoice',   icon: 'ri-file-list-3-line',         color: 'purple',  inserted: r.invoice_inserted ?? 0,  updated: r.invoice_updated ?? 0,  skipped: r.invoice_skipped ?? 0, failed: r.invoice_failed ?? 0 },
   ]
 })

@@ -13,7 +13,7 @@ function initialProgress() {
     investor_inserted: 0, investor_updated: 0, investor_failed: 0,
     resto_inserted: 0,    resto_updated: 0,    resto_failed: 0,
     klien_inserted: 0,    klien_updated: 0,    klien_failed: 0,    klien_skipped: 0,
-    barang_inserted: 0,   barang_updated: 0,   barang_failed: 0,
+    barang_inserted: 0,   barang_updated: 0,   barang_skipped: 0,   barang_failed: 0,
     invoice_inserted: 0,  invoice_updated: 0,  invoice_skipped: 0, invoice_failed: 0,
   }
 }

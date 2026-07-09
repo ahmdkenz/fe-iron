@@ -431,7 +431,7 @@
               >
                 <td>{{ j + 1 }}</td>
                 <td class="text-medium-emphasis">
-                  {{ item.barang?.kode_barang || '-' }}
+                  {{ item.kode_barang || item.barang?.kode_barang || '-' }}
                 </td>
                 <td>{{ item.nama_barang }}</td>
                 <td class="text-right">
