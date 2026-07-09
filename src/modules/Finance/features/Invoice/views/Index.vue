@@ -221,25 +221,33 @@
         <div>
           <div class="text-caption text-medium-emphasis mb-2">Dari</div>
           <VTextField
-            v-model="filtersB2B.tanggal_dari"
+            v-model="dateFiltersB2B.tanggal_dari"
             type="date"
             hide-details
             density="compact"
             style="min-width: 150px; max-width: 170px;"
-            @update:model-value="debouncedFetchB2B"
           />
         </div>
         <div>
           <div class="text-caption text-medium-emphasis mb-2">Sampai</div>
           <VTextField
-            v-model="filtersB2B.tanggal_sampai"
+            v-model="dateFiltersB2B.tanggal_sampai"
             type="date"
             hide-details
             density="compact"
             style="min-width: 150px; max-width: 170px;"
-            @update:model-value="debouncedFetchB2B"
           />
         </div>
+        <VBtn
+          color="primary"
+          variant="tonal"
+          size="small"
+          prepend-icon="ri-filter-3-line"
+          style="align-self: flex-end;"
+          @click="applyDateFiltersB2B"
+        >
+          Filter
+        </VBtn>
       </div>
       <VDivider />
       <BaseTable
@@ -442,25 +450,33 @@
         <div>
           <div class="text-caption text-medium-emphasis mb-2">Dari</div>
           <VTextField
-            v-model="filtersB2C.tanggal_dari"
+            v-model="dateFiltersB2C.tanggal_dari"
             type="date"
             hide-details
             density="compact"
             style="min-width: 150px; max-width: 170px;"
-            @update:model-value="debouncedFetchB2C"
           />
         </div>
         <div>
           <div class="text-caption text-medium-emphasis mb-2">Sampai</div>
           <VTextField
-            v-model="filtersB2C.tanggal_sampai"
+            v-model="dateFiltersB2C.tanggal_sampai"
             type="date"
             hide-details
             density="compact"
             style="min-width: 150px; max-width: 170px;"
-            @update:model-value="debouncedFetchB2C"
           />
         </div>
+        <VBtn
+          color="primary"
+          variant="tonal"
+          size="small"
+          prepend-icon="ri-filter-3-line"
+          style="align-self: flex-end;"
+          @click="applyDateFiltersB2C"
+        >
+          Filter
+        </VBtn>
       </div>
       <VDivider />
       <BaseTable
@@ -689,8 +705,10 @@ const { formatCurrency, formatDate } = useFormatter()
 const canSeeAll = authStore.hasAnyRole(['ADMIN', 'MANAGER', 'SUPERVISOR'])
 
 const { tanggal_dari: defaultDari, tanggal_sampai: defaultSampai } = getDefaultMonthRange()
-const filtersB2B = reactive({ search: '', status: '', klien_ar_id: null, tanggal_dari: defaultDari, tanggal_sampai: defaultSampai })
-const filtersB2C = reactive({ search: '', status: '', klien_ar_id: null, tanggal_dari: defaultDari, tanggal_sampai: defaultSampai })
+const filtersB2B = reactive({ search: '', status: '', klien_ar_id: null })
+const filtersB2C = reactive({ search: '', status: '', klien_ar_id: null })
+const dateFiltersB2B = reactive({ tanggal_dari: defaultDari, tanggal_sampai: defaultSampai })
+const dateFiltersB2C = reactive({ tanggal_dari: defaultDari, tanggal_sampai: defaultSampai })
 
 if (canSeeAll) {
   paramsB2C.segment = 'B2C'
@@ -823,16 +841,34 @@ function debouncedFetchB2C() {
   debounceTimerB2C = setTimeout(doFetchB2C, 400)
 }
 
+function applyDateFiltersB2B() {
+  Object.assign(paramsB2B, dateFiltersB2B)
+  paramsB2B.page = 1
+  loadListB2B()
+}
+
+function applyDateFiltersB2C() {
+  Object.assign(paramsB2C, dateFiltersB2C)
+  paramsB2C.page = 1
+  loadListB2C()
+}
+
 function resetFiltersB2B() {
   const { tanggal_dari, tanggal_sampai } = getDefaultMonthRange()
-  Object.assign(filtersB2B, { search: '', status: '', klien_ar_id: null, tanggal_dari, tanggal_sampai })
-  doFetchB2B()
+  Object.assign(filtersB2B, { search: '', status: '', klien_ar_id: null })
+  Object.assign(dateFiltersB2B, { tanggal_dari, tanggal_sampai })
+  Object.assign(paramsB2B, filtersB2B, dateFiltersB2B)
+  paramsB2B.page = 1
+  loadListB2B()
 }
 
 function resetFiltersB2C() {
   const { tanggal_dari, tanggal_sampai } = getDefaultMonthRange()
-  Object.assign(filtersB2C, { search: '', status: '', klien_ar_id: null, tanggal_dari, tanggal_sampai })
-  doFetchB2C()
+  Object.assign(filtersB2C, { search: '', status: '', klien_ar_id: null })
+  Object.assign(dateFiltersB2C, { tanggal_dari, tanggal_sampai })
+  Object.assign(paramsB2C, filtersB2C, dateFiltersB2C)
+  paramsB2C.page = 1
+  loadListB2C()
 }
 
 function onSegmentTabChange(tab) {

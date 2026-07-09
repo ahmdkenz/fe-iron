@@ -238,25 +238,33 @@
           <div>
             <div class="text-caption text-medium-emphasis mb-2">Dari</div>
             <VTextField
-              v-model="paramsB2B.tanggal_dari"
+              v-model="dateDraftB2B.tanggal_dari"
               type="date"
               hide-details
               density="compact"
               style="min-width: 150px; max-width: 170px;"
-              @update:model-value="debouncedFetchB2B"
             />
           </div>
           <div>
             <div class="text-caption text-medium-emphasis mb-2">Sampai</div>
             <VTextField
-              v-model="paramsB2B.tanggal_sampai"
+              v-model="dateDraftB2B.tanggal_sampai"
               type="date"
               hide-details
               density="compact"
               style="min-width: 150px; max-width: 170px;"
-              @update:model-value="debouncedFetchB2B"
             />
           </div>
+          <VBtn
+            color="primary"
+            variant="tonal"
+            size="small"
+            prepend-icon="ri-filter-3-line"
+            style="align-self: flex-end;"
+            @click="applyDateFiltersB2B"
+          >
+            Filter
+          </VBtn>
         </div>
         <VDivider />
         <BaseTable
@@ -485,25 +493,33 @@
           <div>
             <div class="text-caption text-medium-emphasis mb-2">Dari</div>
             <VTextField
-              v-model="params.tanggal_dari"
+              v-model="dateDraftB2C.tanggal_dari"
               type="date"
               hide-details
               density="compact"
               style="min-width: 150px; max-width: 170px;"
-              @update:model-value="debouncedFetchB2C"
             />
           </div>
           <div>
             <div class="text-caption text-medium-emphasis mb-2">Sampai</div>
             <VTextField
-              v-model="params.tanggal_sampai"
+              v-model="dateDraftB2C.tanggal_sampai"
               type="date"
               hide-details
               density="compact"
               style="min-width: 150px; max-width: 170px;"
-              @update:model-value="debouncedFetchB2C"
             />
           </div>
+          <VBtn
+            color="primary"
+            variant="tonal"
+            size="small"
+            prepend-icon="ri-filter-3-line"
+            style="align-self: flex-end;"
+            @click="applyDateFiltersB2C"
+          >
+            Filter
+          </VBtn>
         </div>
         <VDivider />
         <BaseTable
@@ -844,25 +860,33 @@
             <div>
               <div class="text-caption text-medium-emphasis mb-2">Dari</div>
               <VTextField
-                v-model="dirApprovalParams.tanggal_dari"
+                v-model="dateDraftDirApproval.tanggal_dari"
                 type="date"
                 hide-details
                 density="compact"
                 style="min-width: 150px; max-width: 170px;"
-                @update:model-value="debouncedDirFetch"
               />
             </div>
             <div>
               <div class="text-caption text-medium-emphasis mb-2">Sampai</div>
               <VTextField
-                v-model="dirApprovalParams.tanggal_sampai"
+                v-model="dateDraftDirApproval.tanggal_sampai"
                 type="date"
                 hide-details
                 density="compact"
                 style="min-width: 150px; max-width: 170px;"
-                @update:model-value="debouncedDirFetch"
               />
             </div>
+            <VBtn
+              color="primary"
+              variant="tonal"
+              size="small"
+              prepend-icon="ri-filter-3-line"
+              style="align-self: flex-end;"
+              @click="applyDateFiltersDirApproval"
+            >
+              Filter
+            </VBtn>
           </div>
         </VCardText>
       </VCard>
@@ -1205,25 +1229,33 @@
           <div>
             <div class="text-caption text-medium-emphasis mb-2">Dari</div>
             <VTextField
-              v-model="dirObParamsB2B.tanggal_dari"
+              v-model="dateDraftDirObB2B.tanggal_dari"
               type="date"
               hide-details
               density="compact"
               style="min-width: 150px; max-width: 170px;"
-              @update:model-value="debouncedDirObFetchB2B"
             />
           </div>
           <div>
             <div class="text-caption text-medium-emphasis mb-2">Sampai</div>
             <VTextField
-              v-model="dirObParamsB2B.tanggal_sampai"
+              v-model="dateDraftDirObB2B.tanggal_sampai"
               type="date"
               hide-details
               density="compact"
               style="min-width: 150px; max-width: 170px;"
-              @update:model-value="debouncedDirObFetchB2B"
             />
           </div>
+          <VBtn
+            color="primary"
+            variant="tonal"
+            size="small"
+            prepend-icon="ri-filter-3-line"
+            style="align-self: flex-end;"
+            @click="applyDateFiltersDirObB2B"
+          >
+            Filter
+          </VBtn>
         </div>
         <VDivider />
         <BaseTable
@@ -1434,25 +1466,33 @@
           <div>
             <div class="text-caption text-medium-emphasis mb-2">Dari</div>
             <VTextField
-              v-model="dirObParams.tanggal_dari"
+              v-model="dateDraftDirOb.tanggal_dari"
               type="date"
               hide-details
               density="compact"
               style="min-width: 150px; max-width: 170px;"
-              @update:model-value="debouncedDirObFetch"
             />
           </div>
           <div>
             <div class="text-caption text-medium-emphasis mb-2">Sampai</div>
             <VTextField
-              v-model="dirObParams.tanggal_sampai"
+              v-model="dateDraftDirOb.tanggal_sampai"
               type="date"
               hide-details
               density="compact"
               style="min-width: 150px; max-width: 170px;"
-              @update:model-value="debouncedDirObFetch"
             />
           </div>
+          <VBtn
+            color="primary"
+            variant="tonal"
+            size="small"
+            prepend-icon="ri-filter-3-line"
+            style="align-self: flex-end;"
+            @click="applyDateFiltersDirOb"
+          >
+            Filter
+          </VBtn>
         </div>
         <VDivider />
         <BaseTable
@@ -1659,6 +1699,9 @@ paramsB2B.klien_ar_id = null
 paramsB2B.tanggal_dari = defaultDari
 paramsB2B.tanggal_sampai = defaultSampai
 
+const dateDraftB2C = reactive({ tanggal_dari: defaultDari, tanggal_sampai: defaultSampai })
+const dateDraftB2B = reactive({ tanggal_dari: defaultDari, tanggal_sampai: defaultSampai })
+
 if (canSeeAll) {
   params.segment = 'B2C'
   paramsB2B.segment = 'B2B'
@@ -1678,6 +1721,8 @@ dirApprovalParams.approval_status = 'PENDING'
 dirApprovalParams.klien_ar_id = null
 dirApprovalParams.tanggal_dari = defaultDari
 dirApprovalParams.tanggal_sampai = defaultSampai
+
+const dateDraftDirApproval = reactive({ tanggal_dari: defaultDari, tanggal_sampai: defaultSampai })
 
 const dirApprovalSummary = reactive({
   total_invoice: null,
@@ -1708,6 +1753,9 @@ dirObParamsB2B.klien_ar_id = null
 dirObParamsB2B.tanggal_dari = defaultDari
 dirObParamsB2B.tanggal_sampai = defaultSampai
 dirObParamsB2B.segment = 'B2B'
+
+const dateDraftDirOb = reactive({ tanggal_dari: defaultDari, tanggal_sampai: defaultSampai })
+const dateDraftDirObB2B = reactive({ tanggal_dari: defaultDari, tanggal_sampai: defaultSampai })
 
 const dirObSummary = reactive({
   total_invoice: null,
@@ -2180,6 +2228,16 @@ function onTableOptionsB2B({ page, itemsPerPage }) {
   loadListB2B()
 }
 
+function applyDateFiltersB2C() {
+  Object.assign(params, dateDraftB2C)
+  doFetchB2C()
+}
+
+function applyDateFiltersB2B() {
+  Object.assign(paramsB2B, dateDraftB2B)
+  doFetchB2B()
+}
+
 function resetFiltersB2C() {
   const { tanggal_dari, tanggal_sampai } = getDefaultMonthRange()
   params.search          = ''
@@ -2188,6 +2246,7 @@ function resetFiltersB2C() {
   params.klien_ar_id     = null
   params.tanggal_dari    = tanggal_dari
   params.tanggal_sampai  = tanggal_sampai
+  Object.assign(dateDraftB2C, { tanggal_dari, tanggal_sampai })
   doFetchB2C()
 }
 
@@ -2199,6 +2258,7 @@ function resetFiltersB2B() {
   paramsB2B.klien_ar_id     = null
   paramsB2B.tanggal_dari    = tanggal_dari
   paramsB2B.tanggal_sampai  = tanggal_sampai
+  Object.assign(dateDraftB2B, { tanggal_dari, tanggal_sampai })
   doFetchB2B()
 }
 
@@ -2209,6 +2269,7 @@ function resetDirApprovalFilter() {
   dirApprovalParams.klien_ar_id     = null
   dirApprovalParams.tanggal_dari    = tanggal_dari
   dirApprovalParams.tanggal_sampai  = tanggal_sampai
+  Object.assign(dateDraftDirApproval, { tanggal_dari, tanggal_sampai })
   doDirFetch()
 }
 
@@ -2220,6 +2281,7 @@ function resetDirObFilter() {
   dirObParams.klien_ar_id     = null
   dirObParams.tanggal_dari    = tanggal_dari
   dirObParams.tanggal_sampai  = tanggal_sampai
+  Object.assign(dateDraftDirOb, { tanggal_dari, tanggal_sampai })
   doDirObFetch()
 }
 
@@ -2234,6 +2296,11 @@ let dirDebounceTimer = null
 function debouncedDirFetch() {
   clearDirDebounceTimer()
   dirDebounceTimer = setTimeout(doDirFetch, 400)
+}
+
+function applyDateFiltersDirApproval() {
+  Object.assign(dirApprovalParams, dateDraftDirApproval)
+  doDirFetch()
 }
 
 function onDirApprovalTableOptions({ page, itemsPerPage }) {
@@ -2257,6 +2324,11 @@ function debouncedDirObFetch() {
   dirObDebounceTimer = setTimeout(doDirObFetch, 400)
 }
 
+function applyDateFiltersDirOb() {
+  Object.assign(dirObParams, dateDraftDirOb)
+  doDirObFetch()
+}
+
 function onDirObTableOptions({ page, itemsPerPage }) {
   dirObParams.page = page
   dirObParams.per_page = itemsPerPage
@@ -2276,6 +2348,11 @@ function debouncedDirObFetchB2B() {
   dirObDebounceTimerB2B = setTimeout(doDirObFetchB2B, 400)
 }
 
+function applyDateFiltersDirObB2B() {
+  Object.assign(dirObParamsB2B, dateDraftDirObB2B)
+  doDirObFetchB2B()
+}
+
 function onDirObTableOptionsB2B({ page, itemsPerPage }) {
   dirObParamsB2B.page = page
   dirObParamsB2B.per_page = itemsPerPage
@@ -2292,6 +2369,7 @@ function resetDirObFilterB2B() {
   dirObParamsB2B.klien_ar_id     = null
   dirObParamsB2B.tanggal_dari    = tanggal_dari
   dirObParamsB2B.tanggal_sampai  = tanggal_sampai
+  Object.assign(dateDraftDirObB2B, { tanggal_dari, tanggal_sampai })
   doDirObFetchB2B()
 }
 
@@ -2303,6 +2381,7 @@ function resetDirObFilterB2C() {
   dirObParams.klien_ar_id     = null
   dirObParams.tanggal_dari    = tanggal_dari
   dirObParams.tanggal_sampai  = tanggal_sampai
+  Object.assign(dateDraftDirOb, { tanggal_dari, tanggal_sampai })
   doDirObFetch()
 }
 

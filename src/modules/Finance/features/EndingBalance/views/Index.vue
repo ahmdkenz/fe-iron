@@ -22,24 +22,22 @@
         <VIcon icon="ri-building-line" size="20" color="primary" />
         Ending Balance B2B
       </VCardTitle>
-      <VCardText class="d-flex flex-wrap gap-3 pb-0">
+      <VCardText class="d-flex flex-wrap align-center gap-3 pb-0">
         <VTextField
-          v-model="filtersB2B.periode_awal"
+          v-model="periodeDraftB2B.periode_awal"
           label="Dari Periode"
           type="date"
           density="compact"
           hide-details
           style="max-width: 180px"
-          @update:model-value="doFetchB2B(1)"
         />
         <VTextField
-          v-model="filtersB2B.periode_akhir"
+          v-model="periodeDraftB2B.periode_akhir"
           label="Sampai Periode"
           type="date"
           density="compact"
           hide-details
           style="max-width: 180px"
-          @update:model-value="doFetchB2B(1)"
         />
         <VSelect
           v-model="filtersB2B.status"
@@ -51,6 +49,15 @@
           :items="[{ title: 'Draft', value: 'DRAFT' }, { title: 'Locked', value: 'LOCKED' }]"
           @update:model-value="doFetchB2B(1)"
         />
+        <VBtn
+          color="primary"
+          variant="tonal"
+          size="small"
+          prepend-icon="ri-filter-3-line"
+          @click="applyPeriodeFiltersB2B"
+        >
+          Filter
+        </VBtn>
       </VCardText>
       <BaseTable
         :headers="headers"
@@ -193,24 +200,22 @@
         <VIcon icon="ri-store-line" size="20" color="secondary" />
         Ending Balance B2C
       </VCardTitle>
-      <VCardText class="d-flex flex-wrap gap-3 pb-0">
+      <VCardText class="d-flex flex-wrap align-center gap-3 pb-0">
         <VTextField
-          v-model="filtersB2C.periode_awal"
+          v-model="periodeDraftB2C.periode_awal"
           label="Dari Periode"
           type="date"
           density="compact"
           hide-details
           style="max-width: 180px"
-          @update:model-value="doFetch(1)"
         />
         <VTextField
-          v-model="filtersB2C.periode_akhir"
+          v-model="periodeDraftB2C.periode_akhir"
           label="Sampai Periode"
           type="date"
           density="compact"
           hide-details
           style="max-width: 180px"
-          @update:model-value="doFetch(1)"
         />
         <VSelect
           v-model="filtersB2C.status"
@@ -222,6 +227,15 @@
           :items="[{ title: 'Draft', value: 'DRAFT' }, { title: 'Locked', value: 'LOCKED' }]"
           @update:model-value="doFetch(1)"
         />
+        <VBtn
+          color="primary"
+          variant="tonal"
+          size="small"
+          prepend-icon="ri-filter-3-line"
+          @click="applyPeriodeFiltersB2C"
+        >
+          Filter
+        </VBtn>
       </VCardText>
       <BaseTable
         :headers="headers"
@@ -659,6 +673,16 @@ const filtersB2C = reactive({
   status: null,
 })
 
+const periodeDraftB2B = reactive({
+  periode_awal:  toDateStr(firstDay),
+  periode_akhir: toDateStr(lastDay),
+})
+
+const periodeDraftB2C = reactive({
+  periode_awal:  toDateStr(firstDay),
+  periode_akhir: toDateStr(lastDay),
+})
+
 const lockingId       = ref(null)
 const showLockDialog  = ref(false)
 const lockTarget      = ref(null)
@@ -755,6 +779,16 @@ async function doFetchB2B(page = 1) {
   } finally {
     loadingB2B.value = false
   }
+}
+
+function applyPeriodeFiltersB2C() {
+  Object.assign(filtersB2C, periodeDraftB2C)
+  doFetch(1)
+}
+
+function applyPeriodeFiltersB2B() {
+  Object.assign(filtersB2B, periodeDraftB2B)
+  doFetchB2B(1)
 }
 
 function onSegmentTabChange(tab) {
