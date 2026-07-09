@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div>
     <PageHeader
       :title="pageTitle"
@@ -287,7 +287,7 @@
                       </template>
                       <DetailRow
                         label="Entitas Penagih"
-                        :value="invoice.perusahaan?.nama_perusahaan"
+                        :value="entitasPenagihName"
                       />
                       <DetailRow
                         label="Staff AR"
@@ -307,7 +307,7 @@
                       />
                       <DetailRow
                         label="Entitas Penagih"
-                        :value="invoice.karyawan?.perusahaan?.nama_perusahaan"
+                        :value="entitasPenagihName"
                       />
                     </template>
                   </VCol>
@@ -543,7 +543,7 @@
                     </VChip>
                   </template>
                 </div>
-                <div v-if="invoice.karyawan?.perusahaan?.nama_perusahaan">
+                <div v-if="entitasPenagihName">
                   <div class="text-caption text-medium-emphasis mb-1">
                     Entitas Penagih
                   </div>
@@ -553,7 +553,7 @@
                       color="info"
                       size="16"
                     />
-                    <span class="text-body-2 font-weight-medium">{{ invoice.karyawan.perusahaan.nama_perusahaan }}</span>
+                    <span class="text-body-2 font-weight-medium">{{ entitasPenagihName }}</span>
                   </div>
                 </div>
               </VCardText>
@@ -1381,6 +1381,12 @@ const statusTransitions = {
 
 const isOpeningBalance = computed(() => invoice.value?.is_opening_balance === true)
 const isB2B = computed(() => invoice.value?.klien_ar?.tipe_klien === 'PT')
+const entitasPenagihName = computed(() =>
+  invoice.value?.entitas_penagih?.nama_perusahaan
+  ?? invoice.value?.karyawan?.perusahaan?.nama_perusahaan
+  ?? invoice.value?.perusahaan?.nama_perusahaan
+  ?? null,
+)
 const showNoInvoiceResto = computed(() =>
   isB2B.value || invoiceItems.value.some(it => it.no_invoice_resto),
 )

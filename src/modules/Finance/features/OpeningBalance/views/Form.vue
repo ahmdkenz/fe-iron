@@ -617,10 +617,10 @@ const selectedKlien = computed(() =>
   klienList.value.find(item => item.id === form.klien_ar_id) ?? null)
 
 const selectedCompanyName = computed(() =>
-  selectedKlien.value?.karyawan_ar?.perusahaan?.nama_perusahaan
-  ?? selectedKlien.value?.perusahaan?.nama_perusahaan
-  ?? selectedKlien.value?.karyawan_ar?.perusahaan?.nama_singkatan_perusahaan
+  selectedKlien.value?.perusahaan?.nama_perusahaan
   ?? selectedKlien.value?.perusahaan?.nama_singkatan_perusahaan
+  ?? selectedKlien.value?.karyawan_ar?.perusahaan?.nama_perusahaan
+  ?? selectedKlien.value?.karyawan_ar?.perusahaan?.nama_singkatan_perusahaan
   ?? '')
 
 const selectedKlienMeta = computed(() => {
