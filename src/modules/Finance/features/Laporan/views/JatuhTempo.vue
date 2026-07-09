@@ -118,8 +118,8 @@
       <VProgressLinear v-if="loading" indeterminate color="primary" />
       <BaseTable
         :headers="headers"
-        :items="paginatedRows"
-        :total="report.rows.length"
+        :items="report.rows"
+        :total="report.meta?.total ?? 0"
         :loading="loading"
         :per-page="perPage"
         :page="page"
@@ -179,7 +179,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { useAuthStore } from '@/stores/auth.store'
 import { useCrud } from '@/composables/useCrud'
 import { useLazyFetchAll } from '@/composables/useLazyFetchAll'
@@ -192,7 +192,7 @@ const { items: klienList, loading: klienLoading, fetchAll: fetchKlien } = useCru
 const { ensureLoaded: ensureKlienLoaded } = useLazyFetchAll(fetchKlien)
 
 const loading = ref(false)
-const report  = reactive({ as_of_date: null, summary: null, rows: [] })
+const report  = reactive({ as_of_date: null, summary: null, rows: [], meta: null })
 const segment = ref('ALL')
 
 const filters = reactive({
@@ -205,13 +205,10 @@ const filters = reactive({
 const page    = ref(1)
 const perPage = ref(15)
 
-const paginatedRows = computed(() =>
-  report.rows.slice((page.value - 1) * perPage.value, page.value * perPage.value)
-)
-
 function onTableOptions({ page: p, itemsPerPage }) {
   page.value    = p
   perPage.value = itemsPerPage
+  doFetch({ resetPage: false })
 }
 
 const daysOptions = [
@@ -255,11 +252,11 @@ function statusColor(status) {
   return { TERKIRIM: 'info', SEBAGIAN: 'warning' }[status] ?? 'default'
 }
 
-async function doFetch() {
-  page.value    = 1
+async function doFetch({ resetPage = true } = {}) {
+  if (resetPage) page.value = 1
   loading.value = true
   try {
-    const params = { filter_type: filters.filter_type }
+    const params = { filter_type: filters.filter_type, page: page.value, per_page: perPage.value }
     if (filters.filter_type === 'upcoming') params.days = filters.days
     if (filters.klien_ar_id)     params.klien_ar_id     = filters.klien_ar_id
     if (filters.karyawan_ar_id)  params.karyawan_ar_id  = filters.karyawan_ar_id

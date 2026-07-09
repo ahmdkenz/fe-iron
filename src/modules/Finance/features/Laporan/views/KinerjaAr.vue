@@ -59,7 +59,7 @@
               </VAvatar>
               <div>
                 <div class="text-caption text-medium-emphasis">Jumlah PIC</div>
-                <div class="text-h6 font-weight-bold">{{ report.rows?.length ?? 0 }}</div>
+                <div class="text-h6 font-weight-bold">{{ report.meta?.total ?? report.rows?.length ?? 0 }}</div>
               </div>
             </div>
           </VCardText>
@@ -117,8 +117,8 @@
       <VProgressLinear v-if="loading" indeterminate color="primary" />
       <BaseTable
         :headers="headers"
-        :items="paginatedRows"
-        :total="report.rows.length"
+        :items="report.rows"
+        :total="report.meta?.total ?? 0"
         :loading="loading"
         :per-page="perPage"
         :page="page"
@@ -161,14 +161,14 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { useFormatter } from '@/composables/useFormatter'
 import api from '@/utils/axios'
 
 const { formatCurrency } = useFormatter()
 
 const loading = ref(false)
-const report  = reactive({ periode_awal: null, periode_akhir: null, summary: null, rows: [] })
+const report  = reactive({ periode_awal: null, periode_akhir: null, summary: null, rows: [], meta: null })
 const segment = ref('ALL')
 
 const filters = reactive({
@@ -179,13 +179,10 @@ const filters = reactive({
 const page    = ref(1)
 const perPage = ref(15)
 
-const paginatedRows = computed(() =>
-  report.rows.slice((page.value - 1) * perPage.value, page.value * perPage.value)
-)
-
 function onTableOptions({ page: p, itemsPerPage }) {
   page.value    = p
   perPage.value = itemsPerPage
+  doFetch({ resetPage: false })
 }
 
 const headers = [
@@ -205,11 +202,11 @@ function collectionRateColor(rate) {
   return 'error'
 }
 
-async function doFetch() {
-  page.value    = 1
+async function doFetch({ resetPage = true } = {}) {
+  if (resetPage) page.value = 1
   loading.value = true
   try {
-    const params = {}
+    const params = { page: page.value, per_page: perPage.value }
     if (filters.periode_awal)    params.periode_awal  = filters.periode_awal
     if (filters.periode_akhir)   params.periode_akhir = filters.periode_akhir
     if (segment.value !== 'ALL') params.segment       = segment.value

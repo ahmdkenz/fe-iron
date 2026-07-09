@@ -31,8 +31,11 @@
           item-title="nama_barang"
           item-value="id"
           :loading="barangLoading"
+          no-filter
           clearable
           hide-details
+          @focus="() => barangList.length === 0 && searchBarangNow()"
+          @update:search="searchBarang"
           @update:model-value="onBarangChange"
         >
           <template #item="{ props: p, item }">
@@ -149,6 +152,7 @@
 
 <script setup>
 import { reactive, watch } from 'vue'
+import { useRemoteSearch } from '@/composables/useRemoteSearch'
 
 const createDefault = () => ({
   barang_id: null,
@@ -175,20 +179,14 @@ const props = defineProps({
       keterangan: '',
     }),
   },
-  barangList: {
-    type: Array,
-    default: () => [],
-  },
-  barangLoading: {
-    type: Boolean,
-    default: false,
-  },
 })
 
 const emit = defineEmits(['update:item', 'remove'])
 
 const numberFormatter = new Intl.NumberFormat('id-ID')
 const localItem = reactive(createDefault())
+
+const { items: barangList, loading: barangLoading, search: searchBarang, searchNow: searchBarangNow, ensureItem: ensureBarangItem } = useRemoteSearch('/master/barang')
 
 // Gunakan immediate:true agar sync terjadi saat mount tanpa perlu memanggil fungsi manual
 watch(
@@ -197,6 +195,13 @@ watch(
     Object.assign(localItem, createDefault(), val ?? {})
     if (!localItem.kode_barang && val?.barang?.kode_barang) {
       localItem.kode_barang = val.barang.kode_barang
+    }
+    if (localItem.barang_id) {
+      ensureBarangItem({
+        id: localItem.barang_id,
+        nama_barang: localItem.nama_barang,
+        kode_barang: localItem.kode_barang,
+      })
     }
   },
   { immediate: true },
@@ -218,7 +223,7 @@ function updateNumberField(field, value) {
 
 function onBarangChange(id) {
   localItem.barang_id = id ?? null
-  const found = props.barangList.find(b => b.id === id)
+  const found = barangList.value.find(b => b.id === id)
   if (found) {
     localItem.kode_barang = found.kode_barang || ''
     localItem.nama_barang = found.nama_barang

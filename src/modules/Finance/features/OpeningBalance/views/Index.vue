@@ -228,6 +228,9 @@
               item-title="nama_klien"
               item-value="id"
               :loading="klienLoading"
+              no-filter
+              @focus="() => klienList.length === 0 && searchKlienNow()"
+              @update:search="searchKlien"
               @update:model-value="doFetchB2B"
             />
           </div>
@@ -472,6 +475,9 @@
               item-title="nama_klien"
               item-value="id"
               :loading="klienLoading"
+              no-filter
+              @focus="() => klienList.length === 0 && searchKlienNow()"
+              @update:search="searchKlien"
               @update:model-value="doFetchB2C"
             />
           </div>
@@ -828,6 +834,9 @@
                 item-title="nama_klien"
                 item-value="id"
                 :loading="klienLoading"
+                no-filter
+                @focus="() => klienList.length === 0 && searchKlienNow()"
+                @update:search="searchKlien"
                 @update:model-value="doDirFetch"
               />
             </div>
@@ -1186,6 +1195,9 @@
               item-title="nama_klien"
               item-value="id"
               :loading="klienLoading"
+              no-filter
+              @focus="() => klienList.length === 0 && searchKlienNow()"
+              @update:search="searchKlien"
               @update:model-value="doDirObFetchB2B"
             />
           </div>
@@ -1412,6 +1424,9 @@
               item-title="nama_klien"
               item-value="id"
               :loading="klienLoading"
+              no-filter
+              @focus="() => klienList.length === 0 && searchKlienNow()"
+              @update:search="searchKlien"
               @update:model-value="doDirObFetch"
             />
           </div>
@@ -1603,6 +1618,7 @@ function getDefaultMonthRange() {
 }
 import { useAuthStore } from '@/stores/auth.store'
 import { useCrud } from '@/composables/useCrud'
+import { useRemoteSearch } from '@/composables/useRemoteSearch'
 import { useFormatter } from '@/composables/useFormatter'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useFinanceNotificationStore } from '@/stores/finance-notification.store'
@@ -1620,7 +1636,7 @@ const { showAlert, showSuccess, showError, showLoading, closeAlert, confirmDelet
 const financeNotificationStore = useFinanceNotificationStore()
 
 // ── Shared: klien list ─────────────────────────────────────────────────────
-const { items: klienList, loading: klienLoading, fetchAll: fetchKlien } = useCrud('/finance/klien-ar')
+const { items: klienList, loading: klienLoading, search: searchKlien, searchNow: searchKlienNow } = useRemoteSearch('/finance/klien-ar')
 
 // ── Non-director: single table ─────────────────────────────────────────────
 const { items, loading, meta, params, fetchList } = useCrud('/finance/opening-balance')
@@ -1964,7 +1980,6 @@ const approvalStatusOptions = [
 let listController          = null
 let listControllerB2B       = null
 let summaryController       = null
-let klienController         = null
 let dirApprovalController   = null
 let dirApprovalSumCtrl      = null
 let dirObController         = null
@@ -1990,7 +2005,6 @@ function abortPendingRequests() {
   listController?.abort()
   listControllerB2B?.abort()
   summaryController?.abort()
-  klienController?.abort()
   dirApprovalController?.abort()
   dirApprovalSumCtrl?.abort()
   dirObController?.abort()
@@ -1999,21 +2013,11 @@ function abortPendingRequests() {
   listController        = null
   listControllerB2B     = null
   summaryController     = null
-  klienController       = null
   dirApprovalController = null
   dirApprovalSumCtrl    = null
   dirObController       = null
   dirObB2BController    = null
   dirObSumCtrl          = null
-}
-
-// ── Loaders: shared ────────────────────────────────────────────────────────
-async function loadKlien() {
-  klienController?.abort()
-  const controller = new AbortController()
-  klienController = controller
-  await fetchKlien({ signal: controller.signal })
-  if (klienController === controller) klienController = null
 }
 
 // ── Loaders: non-director ──────────────────────────────────────────────────
@@ -2424,7 +2428,6 @@ async function confirmApproveAll() {
 
 // ── Lifecycle ──────────────────────────────────────────────────────────────
 function initLoad() {
-  loadKlien()
   if (authStore.canApproveOpeningBalance) {
     loadDirApprovalList()
     loadDirApprovalSummary()

@@ -13,6 +13,7 @@
       :items-length="total"
       :loading="loading"
       :items-per-page="perPage"
+      :items-per-page-options="itemsPerPageOptions"
       :page="page"
       @update:options="handleOptionsUpdate"
     >
@@ -118,6 +119,16 @@ const display = useDisplay()
 const isMobileCardView = computed(() => props.mobileCards && display.xs.value)
 const totalPages = computed(() => Math.max(1, Math.ceil(props.total / (props.perPage || 1))))
 
+// ─── Safe pagination defaults ──────────────────────────────────────────────
+// Tabel server-side tidak boleh menawarkan opsi "Semua" secara default agar
+// user tidak bisa tidak sengaja merender ribuan baris sekaligus.
+const DEFAULT_ITEMS_PER_PAGE_OPTIONS = [10, 15, 25, 50, 100]
+const MAX_SAFE_ITEMS_PER_PAGE = 100
+
+const itemsPerPageOptions = computed(() =>
+  attrs['items-per-page-options'] ?? attrs.itemsPerPageOptions ?? DEFAULT_ITEMS_PER_PAGE_OPTIONS,
+)
+
 const showSelect = computed(() => Boolean(attrs.showSelect ?? attrs['show-select']))
 
 const selectedItems = computed(() => attrs.selected ?? [])
@@ -138,10 +149,14 @@ function toggleItemSelected(item) {
 }
 
 function handleOptionsUpdate(options) {
-  if (options.page === props.page && options.itemsPerPage === props.perPage)
+  const safeOptions = options.itemsPerPage === -1
+    ? { ...options, itemsPerPage: MAX_SAFE_ITEMS_PER_PAGE }
+    : options
+
+  if (safeOptions.page === props.page && safeOptions.itemsPerPage === props.perPage)
     return
 
-  emit('update:options', options)
+  emit('update:options', safeOptions)
 }
 
 // ─── Column resize ────────────────────────────────────────────────────────

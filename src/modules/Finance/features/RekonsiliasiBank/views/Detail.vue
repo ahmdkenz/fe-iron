@@ -69,7 +69,7 @@
     <!-- Filter Tabs + Table -->
     <VCard>
       <VCardText class="pb-0">
-        <VBtnToggle v-model="filterStatus" variant="outlined" mandatory divided density="compact">
+        <VBtnToggle :model-value="filterStatus" @update:model-value="onFilterChange" variant="outlined" mandatory divided density="compact">
           <VBtn value="SEMUA"     size="small" style="min-width: 80px">Semua</VBtn>
           <VBtn value="MATCHED"   size="small" style="min-width: 90px"><span class="text-success">MATCHED</span></VBtn>
           <VBtn value="UNMATCHED" size="small" style="min-width: 105px"><span class="text-error">UNMATCHED</span></VBtn>
@@ -79,8 +79,8 @@
       <VProgressLinear v-if="loading" indeterminate color="primary" />
       <BaseTable
         :headers="headers"
-        :items="paginatedRows"
-        :total="filteredRows.length"
+        :items="rows"
+        :total="meta.total"
         :loading="loading"
         :per-page="perPage"
         :page="page"
@@ -252,7 +252,7 @@
 </template>
 
 <script setup>
-import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue'
+import { defineAsyncComponent, reactive, ref, watch } from 'vue'
 import { useFormatter } from '@/composables/useFormatter'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import api from '@/utils/axios'
@@ -276,14 +276,17 @@ const report  = reactive({
   total_transaksi: 0, total_kredit: 0,
   jumlah_matched: 0, jumlah_unmatched: 0,
   uploaded_by: null, created_at: null,
-  details: [],
 })
+
+const rows = ref([])
+const meta = reactive({ current_page: 1, per_page: 25, total: 0, last_page: 1 })
 
 const filterStatus    = ref('SEMUA')
 const page            = ref(1)
 const perPage         = ref(25)
 const abaikanLoading  = ref(null)
 const unmatchLoading  = ref(null)
+let fetchRowsAbort    = null
 
 // ── Match dialog — komponen async MatchDialog ──
 const matchDialog  = ref(false)
@@ -304,22 +307,16 @@ const postingDialog    = ref(false)
 const postingTarget    = ref(null)
 const postingSaving    = ref(false)
 
-const filteredRows = computed(() => {
-  if (filterStatus.value === 'SEMUA') return report.details
-  return report.details.filter(d => d.status_cocok === filterStatus.value)
-})
-
-const paginatedRows = computed(() => {
-  if (perPage.value === -1) return filteredRows.value
-  const start = (page.value - 1) * perPage.value
-  return filteredRows.value.slice(start, start + perPage.value)
-})
-
-watch(filterStatus, () => { page.value = 1 })
+function onFilterChange(status) {
+  filterStatus.value = status
+  page.value = 1
+  fetchRows()
+}
 
 function onTableOptions({ page: p, itemsPerPage }) {
   page.value    = p
   perPage.value = itemsPerPage
+  fetchRows()
 }
 
 const bankColor   = (t) => ({ BCA: 'info', MANDIRI: 'warning', BNI: 'error', BRI: 'primary', CIMB: 'deep-purple', BSI: 'green' }[t] ?? 'secondary')
@@ -341,28 +338,43 @@ const headers = [
   { title: 'Aksi',           key: 'aksi',          sortable: false, width: '160px' },
 ]
 
-async function fetchDetail() {
+async function fetchRows() {
+  fetchRowsAbort?.abort()
+  const controller = new AbortController()
+  fetchRowsAbort = controller
   loading.value = true
-  filterStatus.value = 'SEMUA'
-  page.value = 1
   try {
-    const { data } = await api.get(`/finance/rekonsiliasi-bank/${props.reportId}`)
-    Object.assign(report, data.data)
+    const { data } = await api.get(`/finance/rekonsiliasi-bank/${props.reportId}/details`, {
+      params: { status: filterStatus.value, page: page.value, per_page: perPage.value },
+      signal: controller.signal,
+    })
+    Object.assign(report, data.data.header)
+    rows.value = data.data.rows
+    Object.assign(meta, data.data.meta)
+  } catch (err) {
+    if (err?.code === 'ERR_CANCELED' || err?.name === 'CanceledError') return
+    throw err
   } finally {
-    loading.value = false
+    if (fetchRowsAbort === controller) {
+      loading.value    = false
+      fetchRowsAbort = null
+    }
   }
 }
 
-watch(() => props.reportId, fetchDetail, { immediate: true })
+function loadReport() {
+  filterStatus.value = 'SEMUA'
+  page.value = 1
+  fetchRows()
+}
+
+watch(() => props.reportId, loadReport, { immediate: true })
 
 async function doAbaikan(item) {
   abaikanLoading.value = item.id
   try {
     await api.patch(`/finance/rekonsiliasi-bank/detail/${item.id}/abaikan`)
-    const wasUnmatched = item.status_cocok === 'UNMATCHED'
-    item.status_cocok = 'DIABAIKAN'
-    item.pembayaran   = null
-    if (wasUnmatched) report.jumlah_unmatched = Math.max(0, report.jumlah_unmatched - 1)
+    await fetchRows()
   } finally {
     abaikanLoading.value = null
   }
@@ -374,23 +386,13 @@ function openMatchDialog(item) {
   matchDialog.value  = true
 }
 
-function onMatched({ itemId, updated }) {
-  const row = report.details.find(d => d.id === itemId)
-  if (row) {
-    const wasUnmatched = row.status_cocok === 'UNMATCHED'
-    row.status_cocok    = updated.status_cocok
-    row.pembayaran      = updated.pembayaran
-    row.matched_by      = updated.matched_by
-    row.selisih_bank    = updated.selisih_bank ?? 0
-    row.kelebihan_bayar = updated.kelebihan_bayar ?? null
-    report.jumlah_matched++
-    if (wasUnmatched) report.jumlah_unmatched = Math.max(0, report.jumlah_unmatched - 1)
-  }
+async function onMatched() {
   showSuccess('Pembayaran berhasil dicatat.')
+  await fetchRows()
 }
 
 async function onMatchConnectionError(message) {
-  await fetchDetail()
+  await fetchRows()
   showError(message)
 }
 
@@ -406,26 +408,17 @@ async function doUnmatch() {
   unmatchLoading.value = unmatchItem.value.id
   try {
     await api.patch(`/finance/rekonsiliasi-bank/detail/${unmatchItem.value.id}/unmatch`)
-    const row = report.details.find(d => d.id === unmatchItem.value.id)
-    if (row) {
-      row.status_cocok    = 'UNMATCHED'
-      row.pembayaran      = null
-      row.matched_by      = null
-      row.selisih_bank    = null
-      row.kelebihan_bayar = null
-      report.jumlah_matched   = Math.max(0, report.jumlah_matched - 1)
-      report.jumlah_unmatched++
-    }
     unmatchDialog.value  = false
     unmatchItem.value    = null
     showSuccess('Pencocokan berhasil dibatalkan.')
+    await fetchRows()
   } catch (err) {
     unmatchDialog.value = false
     unmatchItem.value   = null
     if (!err?.response || err?.code === 'ECONNABORTED') {
       // Koneksi terputus/timeout: server mungkin sudah memproses. Muat ulang data
       // otoritatif agar status baris sesuai kondisi sebenarnya.
-      await fetchDetail()
+      await fetchRows()
       showError('Koneksi terputus. Data telah dimuat ulang — silakan periksa status transaksi.')
     } else {
       showError(err?.response?.data?.message ?? 'Gagal membatalkan pencocokan, coba lagi.')
@@ -449,8 +442,8 @@ async function doPosting() {
     await api.patch(`/finance/rekening-koran/${postingTarget.value.id}/posting`, {
       status_posting_2: 'POSTED',
     })
-    postingTarget.value.status_posting_2 = 'POSTED'
     postingDialog.value = false
+    await fetchRows()
   } finally {
     postingSaving.value    = false
     postingLoadingId.value = null
@@ -464,8 +457,8 @@ function openKelebihanDialog(item) {
 }
 
 async function onKelebihanChanged(itemId) {
-  await fetchDetail()
-  const updatedItem = report.details.find(d => d.id === itemId)
+  await fetchRows()
+  const updatedItem = rows.value.find(d => d.id === itemId)
   if (updatedItem) kelebihanItem.value = updatedItem
 }
 </script>

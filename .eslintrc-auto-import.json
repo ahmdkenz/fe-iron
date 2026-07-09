@@ -365,6 +365,7 @@
     "useGenerateImageVariant": true,
     "useLazyFetchAll": true,
     "toISODate": true,
-    "readBlobError": true
+    "readBlobError": true,
+    "useRemoteSearch": true
   }
 }

@@ -613,7 +613,7 @@ async function loadJatuhTempo() {
   loadingJatuhTempo.value = true
   try {
     const { data } = await api.get('/finance/jatuh-tempo', { params: { per_page: 10 } })
-    jatuhTempoList.value = data.data ?? []
+    jatuhTempoList.value = data.data?.rows ?? []
   } catch {
     // non-critical
   } finally {

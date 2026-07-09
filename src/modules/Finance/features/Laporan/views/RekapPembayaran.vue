@@ -130,8 +130,8 @@
       <VProgressLinear v-if="loading" indeterminate color="primary" />
       <BaseTable
         :headers="headers"
-        :items="paginatedRows"
-        :total="report.rows.length"
+        :items="report.rows"
+        :total="report.meta?.total ?? 0"
         :loading="loading"
         :per-page="perPage"
         :page="page"
@@ -170,7 +170,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { useCrud } from '@/composables/useCrud'
 import { useLazyFetchAll } from '@/composables/useLazyFetchAll'
 import { useFormatter } from '@/composables/useFormatter'
@@ -181,7 +181,7 @@ const { items: klienList, loading: klienLoading, fetchAll: fetchKlien } = useCru
 const { ensureLoaded: ensureKlienLoaded } = useLazyFetchAll(fetchKlien)
 
 const loading = ref(false)
-const report  = reactive({ tanggal_dari: null, tanggal_sampai: null, summary: null, rows: [] })
+const report  = reactive({ tanggal_dari: null, tanggal_sampai: null, summary: null, rows: [], meta: null })
 const segment = ref('ALL')
 
 const filters = reactive({
@@ -194,13 +194,10 @@ const filters = reactive({
 const page    = ref(1)
 const perPage = ref(15)
 
-const paginatedRows = computed(() =>
-  report.rows.slice((page.value - 1) * perPage.value, page.value * perPage.value)
-)
-
 function onTableOptions({ page: p, itemsPerPage }) {
   page.value    = p
   perPage.value = itemsPerPage
+  doFetch({ resetPage: false })
 }
 
 const headers = [
@@ -225,11 +222,11 @@ function metodeColor(metode) {
   return { TRANSFER: 'info', CASH: 'success', GIRO: 'warning' }[metode] ?? 'default'
 }
 
-async function doFetch() {
-  page.value    = 1
+async function doFetch({ resetPage = true } = {}) {
+  if (resetPage) page.value = 1
   loading.value = true
   try {
-    const params = {}
+    const params = { page: page.value, per_page: perPage.value }
     if (filters.tanggal_dari)      params.tanggal_dari      = filters.tanggal_dari
     if (filters.tanggal_sampai)    params.tanggal_sampai    = filters.tanggal_sampai
     if (filters.metode_pembayaran) params.metode_pembayaran = filters.metode_pembayaran

@@ -155,6 +155,9 @@
           item-title="nama_klien"
           item-value="id"
           :loading="klienLoading"
+          no-filter
+          @focus="() => klienList.length === 0 && searchKlienNow()"
+          @update:search="searchKlien"
           @update:model-value="doFetch"
         />
         <VSelect
@@ -472,6 +475,9 @@
             item-title="nama_klien"
             item-value="id"
             :loading="klienLoading"
+            no-filter
+            @focus="() => klienList.length === 0 && searchKlienNow()"
+            @update:search="searchKlien"
             @update:model-value="doObFetchB2B"
           />
         </div>
@@ -685,6 +691,9 @@
             item-title="nama_klien"
             item-value="id"
             :loading="klienLoading"
+            no-filter
+            @focus="() => klienList.length === 0 && searchKlienNow()"
+            @update:search="searchKlien"
             @update:model-value="doObFetch"
           />
         </div>
@@ -832,6 +841,7 @@
 /* eslint-disable camelcase */
 import { defineAsyncComponent, onBeforeUnmount, onDeactivated, onMounted, reactive, ref } from 'vue'
 import { useCrud } from '@/composables/useCrud'
+import { useRemoteSearch } from '@/composables/useRemoteSearch'
 import { useFormatter } from '@/composables/useFormatter'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import api from '@/utils/axios'
@@ -844,7 +854,7 @@ import InvoiceStatusBadge from '@/modules/Finance/shared/components/InvoiceStatu
 const PembayaranForm = defineAsyncComponent(() => import('@/modules/Finance/shared/components/PembayaranForm.vue'))
 
 const { items, loading, meta, params, fetchList } = useCrud('/finance/opening-balance')
-const { items: klienList, loading: klienLoading, fetchAll: fetchKlien } = useCrud('/finance/klien-ar')
+const { items: klienList, loading: klienLoading, search: searchKlien, searchNow: searchKlienNow } = useRemoteSearch('/finance/klien-ar')
 const { items: obItems, loading: obLoading, meta: obMeta, params: obParams, fetchList: fetchObList } = useCrud('/finance/opening-balance')
 const { items: obItemsB2B, loading: obLoadingB2B, meta: obMetaB2B, params: obParamsB2B, fetchList: fetchObListB2B } = useCrud('/finance/opening-balance')
 const { formatCurrency, formatDate } = useFormatter()
@@ -1049,7 +1059,6 @@ const bulanOptions = [
 // ── Abort controllers ──────────────────────────────────────────────────────
 let listController      = null
 let summaryController   = null
-let klienController     = null
 let obListController    = null
 let obListB2BController = null
 let obSummaryController = null
@@ -1072,27 +1081,17 @@ function clearObDebounceTimerB2B() {
 function abortPendingRequests() {
   listController?.abort()
   summaryController?.abort()
-  klienController?.abort()
   obListController?.abort()
   obListB2BController?.abort()
   obSummaryController?.abort()
   listController      = null
   summaryController   = null
-  klienController     = null
   obListController    = null
   obListB2BController = null
   obSummaryController = null
 }
 
 // ── Loaders: approval table ────────────────────────────────────────────────
-async function loadKlien() {
-  klienController?.abort()
-  const controller = new AbortController()
-  klienController = controller
-  await fetchKlien({ signal: controller.signal })
-  if (klienController === controller) klienController = null
-}
-
 async function loadList() {
   listController?.abort()
   const controller = new AbortController()
@@ -1287,7 +1286,6 @@ async function confirmApprove(item) {
 
 // ── Lifecycle ──────────────────────────────────────────────────────────────
 onMounted(() => {
-  loadKlien()
   loadList()
   loadSummary()
   loadObList()

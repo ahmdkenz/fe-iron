@@ -342,8 +342,6 @@
             >
               <OpeningBalanceDetailItemRow
                 :item="item"
-                :barang-list="barangList"
-                :barang-loading="barangLoading"
                 @update:item="v => updateItem(i, j, v)"
                 @remove="removeItem(i, j)"
               />
@@ -524,14 +522,6 @@ const props = defineProps({
   saldoAwal: {
     type: Number,
     default: 0,
-  },
-  barangList: {
-    type: Array,
-    default: () => [],
-  },
-  barangLoading: {
-    type: Boolean,
-    default: false,
   },
   outstandingInvoices: {
     type: Array,

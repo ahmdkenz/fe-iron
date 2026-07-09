@@ -150,10 +150,12 @@
                       :loading="klienLoading"
                       prepend-inner-icon="ri-user-star-line"
                       clearable
-                      :custom-filter="klienFilter"
+                      no-filter
                       placeholder="Cari nama klien, kode, atau PIC AR..."
                       hint="Ketik nama PIC AR untuk menyaring semua klien miliknya"
                       persistent-hint
+                      @focus="() => sortedKlienList.length === 0 && searchKlienNow()"
+                      @update:search="searchKlien"
                     >
                       <template #item="{ props: p, item }">
                         <VListItem
@@ -453,8 +455,6 @@
                   <OpeningBalanceDetailTable
                     :details="form.details"
                     :saldo-awal="Number(form.saldo_awal) || 0"
-                    :barang-list="barangList"
-                    :barang-loading="barangLoading"
                     :outstanding-invoices="outstandingInvoices"
                     :loading-outstanding="loadingOutstanding"
                     @update:details="form.details = $event"
@@ -528,6 +528,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useFormatter, toISODate } from '@/composables/useFormatter'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useCrud } from '@/composables/useCrud'
+import { useRemoteSearch } from '@/composables/useRemoteSearch'
 import { setFlashAlert } from '@/utils/flashAlert'
 import api from '@/utils/axios'
 import OpeningBalanceDetailTable from '../components/OpeningBalanceDetailTable.vue'
@@ -538,8 +539,7 @@ const { formatCurrency, formatDate } = useFormatter()
 const { showError, showLoading, closeAlert } = useSweetAlert()
 const id = computed(() => route.params.id)
 const isEditing = computed(() => !!id.value)
-const { items: klienList, loading: klienLoading, fetchAll: fetchKlien } = useCrud('/finance/klien-ar')
-const { items: barangList, loading: barangLoading, fetchAll: fetchBarang } = useCrud('/master/barang')
+const { items: klienList, loading: klienLoading, search: searchKlien, searchNow: searchKlienNow, ensureItem: ensureKlienItem } = useRemoteSearch('/finance/klien-ar')
 const { fetchOne } = useCrud('/finance/invoices')
 
 const formRef = ref(null)
@@ -608,21 +608,6 @@ const sortedKlienList = computed(() =>
     return (a.nama_klien ?? '').localeCompare(b.nama_klien ?? '', 'id')
   }),
 )
-
-function klienFilter(value, query, item) {
-  if (!query) return true
-  const q = query.toLowerCase()
-  const raw = item?.raw
-  if (!raw) return false
-
-  return (
-    (raw.nama_klien ?? '').toLowerCase().includes(q)
-    || (raw.kode_klien ?? '').toLowerCase().includes(q)
-    || (raw.tipe_klien ?? '').toLowerCase().includes(q)
-    || (raw.karyawan_ar?.nama_karyawan ?? '').toLowerCase().includes(q)
-    || (raw.resto?.nama_resto ?? '').toLowerCase().includes(q)
-  )
-}
 
 function klienTipeColor(tipe) {
   return { RESTO: 'success', PT: 'info' }[tipe] ?? 'default'
@@ -721,6 +706,7 @@ async function loadOpeningBalance() {
       keterangan: data.keterangan ?? '',
       details: data.opening_balance_details ?? [],
     })
+    ensureKlienItem(data.klien_ar)
   } catch (err) {
     errorMessage.value = err.response?.data?.message ?? 'Gagal memuat opening balance'
   } finally {
@@ -778,7 +764,6 @@ async function handleSubmit() {
 }
 
 onMounted(async () => {
-  await Promise.all([fetchKlien(), fetchBarang()])
   await loadOpeningBalance()
 })
 </script>

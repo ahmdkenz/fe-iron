@@ -159,18 +159,18 @@
           </div>
         </div>
         <VChip size="small" color="primary" variant="tonal" class="font-weight-medium">
-          Total: {{ report.rows?.length ?? 0 }} Klien
+          Total: {{ report.meta?.total ?? report.rows?.length ?? 0 }} Klien
         </VChip>
       </div>
-      
+
       <VDivider />
       <VProgressLinear v-if="loading" indeterminate color="primary" height="3" />
 
       <BaseTable
         v-model:expanded="expanded"
         :headers="headers"
-        :items="paginatedRows"
-        :total="report.rows.length"
+        :items="report.rows"
+        :total="report.meta?.total ?? 0"
         :loading="loading"
         :per-page="perPage"
         :page="page"
@@ -306,7 +306,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { useCrud } from '@/composables/useCrud'
 import { useLazyFetchAll } from '@/composables/useLazyFetchAll'
 import { useFormatter } from '@/composables/useFormatter'
@@ -317,7 +317,7 @@ const { items: klienList, loading: klienLoading, fetchAll: fetchKlien } = useCru
 const { ensureLoaded: ensureKlienLoaded } = useLazyFetchAll(fetchKlien)
 
 const loading = ref(false)
-const report  = reactive({ periode_awal: null, periode_akhir: null, summary: null, rows: [] })
+const report  = reactive({ periode_awal: null, periode_akhir: null, summary: null, rows: [], meta: null })
 const segment = ref('ALL')
 const expanded = ref([])
 
@@ -330,13 +330,10 @@ const filters = reactive({
 const page    = ref(1)
 const perPage = ref(15)
 
-const paginatedRows = computed(() =>
-  report.rows.slice((page.value - 1) * perPage.value, page.value * perPage.value)
-)
-
 function onTableOptions({ page: p, itemsPerPage }) {
   page.value    = p
   perPage.value = itemsPerPage
+  doFetch({ resetPage: false })
 }
 
 const headers = [
@@ -375,11 +372,11 @@ function onRowClick(_event, { item } = {}) {
     : [...expanded.value, key]
 }
 
-async function doFetch() {
-  page.value    = 1
+async function doFetch({ resetPage = true } = {}) {
+  if (resetPage) page.value = 1
   loading.value = true
   try {
-    const params = {}
+    const params = { page: page.value, per_page: perPage.value }
     if (filters.periode_awal)    params.periode_awal  = filters.periode_awal
     if (filters.periode_akhir)   params.periode_akhir = filters.periode_akhir
     if (filters.klien_ar_id)     params.klien_ar_id   = filters.klien_ar_id

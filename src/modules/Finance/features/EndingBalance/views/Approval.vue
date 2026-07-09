@@ -24,7 +24,7 @@
         :items="b2bRows"
         :loading="loading"
         :items-per-page="10"
-        :items-per-page-options="[{ value: 10, title: '10' }, { value: 25, title: '25' }, { value: 50, title: '50' }, { value: -1, title: 'Semua' }]"
+        :items-per-page-options="[{ value: 10, title: '10' }, { value: 25, title: '25' }, { value: 50, title: '50' }, { value: 100, title: '100' }]"
         no-data-text="Tidak ada koreksi B2B yang menunggu persetujuan Anda."
         density="comfortable"
       >
@@ -77,7 +77,7 @@
         :items="b2cRows"
         :loading="loading"
         :items-per-page="10"
-        :items-per-page-options="[{ value: 10, title: '10' }, { value: 25, title: '25' }, { value: 50, title: '50' }, { value: -1, title: 'Semua' }]"
+        :items-per-page-options="[{ value: 10, title: '10' }, { value: 25, title: '25' }, { value: 50, title: '50' }, { value: 100, title: '100' }]"
         no-data-text="Tidak ada koreksi B2C yang menunggu persetujuan Anda."
         density="comfortable"
       >
@@ -125,14 +125,16 @@
         Ending Balance B2B — Sudah Approve
       </VCardTitle>
 
-      <VDataTable
+      <BaseTable
         :headers="approvedHeaders"
-        :items="approvedB2bRows"
-        :loading="loadingApproved"
-        :items-per-page="10"
-        :items-per-page-options="[{ value: 10, title: '10' }, { value: 25, title: '25' }, { value: 50, title: '50' }, { value: -1, title: 'Semua' }]"
+        :items="approvedB2B.rows"
+        :total="approvedB2B.meta?.total ?? 0"
+        :loading="loadingApprovedB2B"
+        :per-page="approvedB2BPerPage"
+        :page="approvedB2BPage"
         no-data-text="Belum ada koreksi B2B yang disetujui."
         density="comfortable"
+        @update:options="onApprovedB2BOptions"
       >
         <template #item.status="{ item }">
           <VChip size="x-small" :color="item.status === 'APPROVED' ? 'success' : 'warning'" label>
@@ -174,7 +176,7 @@
             <VTooltip activator="parent">Lihat Detail EB</VTooltip>
           </VBtn>
         </template>
-      </VDataTable>
+      </BaseTable>
     </VCard>
 
     <!-- B2C Approved -->
@@ -184,13 +186,15 @@
         Ending Balance B2C — Sudah Approve
       </VCardTitle>
 
-      <VDataTable
+      <BaseTable
         :headers="approvedHeaders"
-        :items="approvedB2cRows"
-        :loading="loadingApproved"
-        :items-per-page="10"
-        :items-per-page-options="[{ value: 10, title: '10' }, { value: 25, title: '25' }, { value: 50, title: '50' }, { value: -1, title: 'Semua' }]"
+        :items="approvedB2C.rows"
+        :total="approvedB2C.meta?.total ?? 0"
+        :loading="loadingApprovedB2C"
+        :per-page="approvedB2CPerPage"
+        :page="approvedB2CPage"
         no-data-text="Belum ada koreksi B2C yang disetujui."
+        @update:options="onApprovedB2COptions"
         density="comfortable"
       >
         <template #item.status="{ item }">
@@ -233,7 +237,7 @@
             <VTooltip activator="parent">Lihat Detail EB</VTooltip>
           </VBtn>
         </template>
-      </VDataTable>
+      </BaseTable>
     </VCard>
 
     <!-- Action Dialog -->
@@ -406,9 +410,6 @@ const headers = [
 const b2bRows = computed(() => rows.value.filter(k => k.segment === 'B2B'))
 const b2cRows = computed(() => rows.value.filter(k => k.segment === 'B2C'))
 
-const loadingApproved = ref(false)
-const approvedRows    = ref([])
-
 const approvedHeaders = [
   { title: 'STATUS',            key: 'status',             sortable: false },
   { title: 'TIPE',              key: 'tipe',               sortable: false },
@@ -424,8 +425,14 @@ const approvedHeaders = [
   { title: 'AKSI',              key: 'actions',            sortable: false, align: 'center' },
 ]
 
-const approvedB2bRows = computed(() => approvedRows.value.filter(k => k.segment === 'B2B'))
-const approvedB2cRows = computed(() => approvedRows.value.filter(k => k.segment === 'B2C'))
+const loadingApprovedB2B = ref(false)
+const loadingApprovedB2C = ref(false)
+const approvedB2B = reactive({ rows: [], meta: null })
+const approvedB2C = reactive({ rows: [], meta: null })
+const approvedB2BPage    = ref(1)
+const approvedB2BPerPage = ref(10)
+const approvedB2CPage    = ref(1)
+const approvedB2CPerPage = ref(10)
 
 const dialog = reactive({
   open      : false,
@@ -463,14 +470,39 @@ async function fetchPending() {
   }
 }
 
-async function fetchApproved() {
-  loadingApproved.value = true
+async function fetchApprovedSegment(segment) {
+  const isB2B     = segment === 'B2B'
+  const state     = isB2B ? approvedB2B : approvedB2C
+  const page      = isB2B ? approvedB2BPage : approvedB2CPage
+  const perPage   = isB2B ? approvedB2BPerPage : approvedB2CPerPage
+  const loadingRef = isB2B ? loadingApprovedB2B : loadingApprovedB2C
+
+  loadingRef.value = true
   try {
-    const { data } = await api.get('/finance/ending-balance/koreksi/approved')
-    approvedRows.value = data.data ?? []
+    const { data } = await api.get('/finance/ending-balance/koreksi/approved', {
+      params: { segment, page: page.value, per_page: perPage.value },
+    })
+    state.rows = data.data?.rows ?? []
+    state.meta = data.data?.meta ?? null
   } finally {
-    loadingApproved.value = false
+    loadingRef.value = false
   }
+}
+
+function onApprovedB2BOptions({ page: p, itemsPerPage }) {
+  approvedB2BPage.value    = p
+  approvedB2BPerPage.value = itemsPerPage
+  fetchApprovedSegment('B2B')
+}
+
+function onApprovedB2COptions({ page: p, itemsPerPage }) {
+  approvedB2CPage.value    = p
+  approvedB2CPerPage.value = itemsPerPage
+  fetchApprovedSegment('B2C')
+}
+
+async function fetchApproved() {
+  await Promise.all([fetchApprovedSegment('B2B'), fetchApprovedSegment('B2C')])
 }
 
 function openDialog(koreksi, action) {

@@ -158,7 +158,7 @@
       <VCardText class="pb-0">
         <div class="text-caption text-medium-emphasis">
           Per tanggal: <strong>{{ formatDate(report.as_of_date) ?? '-' }}</strong>
-          &nbsp;·&nbsp; {{ filteredRows.length }} klien
+          &nbsp;·&nbsp; {{ report.meta?.total ?? report.rows.length }} klien
           <span class="text-disabled">&nbsp;·&nbsp; klik baris untuk lihat detail invoice</span>
         </div>
       </VCardText>
@@ -171,8 +171,8 @@
       <BaseTable
         v-model:expanded="expanded"
         :headers="headers"
-        :items="paginatedRows"
-        :total="filteredRows.length"
+        :items="report.rows"
+        :total="report.meta?.total ?? 0"
         :loading="loading"
         :per-page="perPage"
         :page="page"
@@ -328,7 +328,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { useCrud } from '@/composables/useCrud'
 import { useLazyFetchAll } from '@/composables/useLazyFetchAll'
 import { useFormatter } from '@/composables/useFormatter'
@@ -340,7 +340,7 @@ const { ensureLoaded: ensureKlienLoaded } = useLazyFetchAll(fetchKlien)
 
 const loading   = ref(false)
 const exporting = ref(false)
-const report    = reactive({ as_of_date: null, summary: null, rows: [] })
+const report    = reactive({ as_of_date: null, summary: null, rows: [], meta: null })
 const segment   = ref('ALL')
 const expanded  = ref([])
 
@@ -380,16 +380,6 @@ const headers = [
   { title: 'Total',             key: 'total',        sortable: false, align: 'end' },
 ]
 
-const filteredRows = computed(() => {
-  if (!bucketFilter.value) return report.rows
-
-  return report.rows.filter(r => (r[bucketFilter.value] ?? 0) > 0)
-})
-
-const paginatedRows = computed(() =>
-  filteredRows.value.slice((page.value - 1) * perPage.value, page.value * perPage.value),
-)
-
 function displayDetails(item) {
   const list = item.details ?? []
   if (!bucketFilter.value) return list
@@ -399,17 +389,18 @@ function displayDetails(item) {
 
 function toggleBucket(key) {
   bucketFilter.value = bucketFilter.value === key ? null : key
-  page.value = 1
+  doFetch()
 }
 
 function resetBucket() {
   bucketFilter.value = null
-  page.value = 1
+  doFetch()
 }
 
 function onTableOptions({ page: p, itemsPerPage }) {
   page.value    = p
   perPage.value = itemsPerPage
+  doFetch({ resetPage: false })
 }
 
 // Klik baris untuk toggle expand detail invoice (ikon panah tetap berfungsi sebagai fallback).
@@ -431,11 +422,16 @@ function buildParams() {
   return params
 }
 
-async function doFetch() {
-  page.value    = 1
+async function doFetch({ resetPage = true } = {}) {
+  if (resetPage) page.value = 1
   loading.value = true
   try {
-    const { data } = await api.get('/finance/aging-report', { params: buildParams() })
+    const params = buildParams()
+    if (bucketFilter.value) params.bucket_filter = bucketFilter.value
+    params.page     = page.value
+    params.per_page = perPage.value
+
+    const { data } = await api.get('/finance/aging-report', { params })
 
     Object.assign(report, data.data)
     expanded.value = []

@@ -67,7 +67,7 @@
               </VAvatar>
               <div>
                 <div class="text-caption text-medium-emphasis">Total Klien</div>
-                <div class="text-h6 font-weight-bold">{{ rows.length }}</div>
+                <div class="text-h6 font-weight-bold">{{ report.meta?.total ?? report.summary?.total_klien ?? 0 }}</div>
               </div>
             </div>
           </VCardText>
@@ -82,7 +82,7 @@
               </VAvatar>
               <div>
                 <div class="text-caption text-medium-emphasis">Total Tagihan</div>
-                <div class="text-h6 font-weight-bold">{{ formatCurrency(totalTagihan) }}</div>
+                <div class="text-h6 font-weight-bold">{{ formatCurrency(report.summary?.total_tagihan ?? 0) }}</div>
               </div>
             </div>
           </VCardText>
@@ -97,7 +97,7 @@
               </VAvatar>
               <div>
                 <div class="text-caption text-medium-emphasis">Total Terbayar</div>
-                <div class="text-h6 font-weight-bold">{{ formatCurrency(totalPembayaran) }}</div>
+                <div class="text-h6 font-weight-bold">{{ formatCurrency(report.summary?.total_pembayaran ?? 0) }}</div>
               </div>
             </div>
           </VCardText>
@@ -112,7 +112,7 @@
               </VAvatar>
               <div>
                 <div class="text-caption text-medium-emphasis">Sisa Piutang</div>
-                <div class="text-h6 font-weight-bold">{{ formatCurrency(totalSisa) }}</div>
+                <div class="text-h6 font-weight-bold">{{ formatCurrency(report.summary?.total_sisa ?? 0) }}</div>
               </div>
             </div>
           </VCardText>
@@ -126,20 +126,20 @@
       <BaseTable
         v-model:expanded="expanded"
         :headers="headers"
-        :items="rows"
-        :total="rows.length"
+        :items="report.rows"
+        :total="report.meta?.total ?? 0"
         :loading="loading"
-        :per-page="rows.length || 10"
-        :page="1"
+        :per-page="perPage"
+        :page="page"
         show-expand
         item-value="klien_id"
         hover
-        hide-footer
         wrap-text
+        @update:options="onTableOptions"
         @click:row="onRowClick"
       >
         <template #item.no="{ index }">
-          {{ index + 1 }}
+          {{ (page - 1) * perPage + index + 1 }}
         </template>
         <template #item.nama_klien="{ item }">
           <div>
@@ -256,18 +256,21 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { useFormatter } from '@/composables/useFormatter'
 import api from '@/utils/axios'
 
 const { formatCurrency, formatDate } = useFormatter()
 
 const loading = ref(false)
-const rows    = ref([])
+const report  = reactive({ summary: null, rows: [], meta: null })
 const segment = ref('ALL')
 const expanded = ref([])
 
 const filters = reactive({ periode_bulan: null, periode_tahun: null })
+
+const page    = ref(1)
+const perPage = ref(15)
 
 const headers = [
   { title: 'No',         key: 'no',               sortable: false, width: '50px' },
@@ -291,9 +294,11 @@ const bulanOptions = [
   { label: 'Oktober', value: 10 },{ label: 'November', value: 11 },{ label: 'Desember', value: 12 },
 ]
 
-const totalTagihan    = computed(() => rows.value.reduce((s, r) => s + r.total_tagihan, 0))
-const totalPembayaran = computed(() => rows.value.reduce((s, r) => s + r.total_pembayaran, 0))
-const totalSisa       = computed(() => rows.value.reduce((s, r) => s + r.sisa_tagihan, 0))
+function onTableOptions({ page: p, itemsPerPage }) {
+  page.value    = p
+  perPage.value = itemsPerPage
+  doFetch({ resetPage: false })
+}
 
 let debounceTimer = null
 
@@ -326,16 +331,17 @@ function onRowClick(_event, { item } = {}) {
     : [...expanded.value, key]
 }
 
-async function doFetch() {
+async function doFetch({ resetPage = true } = {}) {
+  if (resetPage) page.value = 1
   loading.value = true
   try {
-    const params = {}
+    const params = { page: page.value, per_page: perPage.value }
     if (filters.periode_bulan)   params.periode_bulan = filters.periode_bulan
     if (filters.periode_tahun)   params.periode_tahun = filters.periode_tahun
     if (segment.value !== 'ALL') params.segment       = segment.value
 
     const { data } = await api.get('/finance/invoices/rekap-klien', { params })
-    rows.value = data.data ?? []
+    Object.assign(report, data.data)
     expanded.value = []
   } finally {
     loading.value = false

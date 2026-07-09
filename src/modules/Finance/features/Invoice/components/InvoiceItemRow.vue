@@ -66,9 +66,12 @@
             item-title="nama_barang"
             item-value="nama_barang"
             :loading="barangLoading"
+            no-filter
             clearable
             hide-details="auto"
             :rules="[v => !!v || 'Nama barang wajib diisi']"
+            @focus="() => barangList.length === 0 && searchBarangNow()"
+            @update:search="searchBarang"
             @update:model-value="onNamaBarangChange"
           >
             <template #item="{ props: p, item }">
@@ -165,6 +168,8 @@
 
 <script setup>
 import { reactive, watch } from 'vue'
+import { useRemoteSearch } from '@/composables/useRemoteSearch'
+import api from '@/utils/axios'
 
 const createDefaultItem = () => ({
   barang_id: null,
@@ -193,19 +198,13 @@ const props = defineProps({
       no_invoice_resto: '',
     }),
   },
-  barangList: {
-    type: Array,
-    default: () => [],
-  },
-  barangLoading: {
-    type: Boolean,
-    default: false,
-  },
 })
 
 const emit = defineEmits(['update:item', 'remove'])
 const numberFormatter = new Intl.NumberFormat('id-ID')
 const localItem = reactive(createDefaultItem())
+
+const { items: barangList, loading: barangLoading, search: searchBarang, searchNow: searchBarangNow } = useRemoteSearch('/master/barang')
 
 syncLocalItem(props.item)
 
@@ -213,19 +212,21 @@ watch(() => props.item, value => {
   syncLocalItem(value)
 })
 
-// Resolve kode_barang dari master barang jika item punya barang_id tapi kode belum ada
-watch(() => props.barangList, list => {
-  if (localItem.barang_id && !localItem.kode_barang && list.length > 0) {
-    const found = list.find(b => b.id === localItem.barang_id)
-    if (found) localItem.kode_barang = found.kode_barang ?? ''
-  }
-})
-
 function syncLocalItem(item = {}) {
   Object.assign(localItem, createDefaultItem(), item)
-  if (localItem.barang_id && !localItem.kode_barang && props.barangList.length > 0) {
-    const found = props.barangList.find(b => b.id === localItem.barang_id)
-    if (found) localItem.kode_barang = found.kode_barang ?? ''
+  resolveKodeBarang()
+}
+
+// Data lama bisa punya barang_id tanpa kode_barang tersimpan; ambil satu kali
+// langsung by-id (bukan dari daftar pencarian yang sekarang hanya sebagian).
+async function resolveKodeBarang() {
+  if (!localItem.barang_id || localItem.kode_barang) return
+
+  try {
+    const { data } = await api.get(`/master/barang/${localItem.barang_id}`)
+    if (data.data?.kode_barang) localItem.kode_barang = data.data.kode_barang
+  } catch {
+    // biarkan kosong jika gagal, tidak kritikal untuk pengisian form
   }
 }
 

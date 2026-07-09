@@ -211,7 +211,9 @@
             item-title="nama_klien"
             item-value="id"
             :loading="klienLoading"
-            @focus="ensureKlienLoaded()"
+            no-filter
+            @focus="() => klienList.length === 0 && searchKlienNow()"
+            @update:search="searchKlien"
             @update:model-value="doFetchB2B"
           />
         </div>
@@ -430,7 +432,9 @@
             item-title="nama_klien"
             item-value="id"
             :loading="klienLoading"
-            @focus="ensureKlienLoaded()"
+            no-filter
+            @focus="() => klienList.length === 0 && searchKlienNow()"
+            @update:search="searchKlien"
             @update:model-value="doFetchB2C"
           />
         </div>
@@ -664,7 +668,7 @@ function getDefaultMonthRange() {
 }
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useCrud } from '@/composables/useCrud.js'
-import { useLazyFetchAll } from '@/composables/useLazyFetchAll.js'
+import { useRemoteSearch } from '@/composables/useRemoteSearch.js'
 import { useFormatter } from '@/composables/useFormatter.js'
 import { useAuthStore } from '@/stores/auth.store'
 import api from '@/utils/axios.js'
@@ -679,8 +683,7 @@ const { showSuccess, showError, showLoading, closeAlert, confirmDelete: confirmD
 const authStore = useAuthStore()
 const { items: itemsB2C, loading: loadingB2C, meta: metaB2C, params: paramsB2C, fetchList: fetchListB2C, remove } = useCrud('/finance/invoices')
 const { items: itemsB2B, loading: loadingB2B, meta: metaB2B, params: paramsB2B, fetchList: fetchListB2B } = useCrud('/finance/invoices')
-const { items: klienList, loading: klienLoading, fetchAll: fetchKlien } = useCrud('/finance/klien-ar')
-const { ensureLoaded: ensureKlienLoaded } = useLazyFetchAll(fetchKlien)
+const { items: klienList, loading: klienLoading, search: searchKlien, searchNow: searchKlienNow } = useRemoteSearch('/finance/klien-ar')
 const { formatCurrency, formatDate } = useFormatter()
 
 const canSeeAll = authStore.hasAnyRole(['ADMIN', 'MANAGER', 'SUPERVISOR'])

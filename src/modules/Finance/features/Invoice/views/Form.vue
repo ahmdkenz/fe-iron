@@ -210,9 +210,10 @@
                     prepend-inner-icon="ri-user-3-line"
                     :rules="[v => !!v || 'Klien wajib dipilih']"
                     :loading="klienLoading"
-                    :custom-filter="klienCustomFilter"
+                    no-filter
                     clearable
-                    @focus="ensureKlienLoaded()"
+                    @focus="() => klienList.length === 0 && searchKlienNow()"
+                    @update:search="searchKlien"
                     @update:model-value="onKlienChange"
                   >
                     <template #item="{ props: p, item }">
@@ -499,8 +500,6 @@
                 v-for="(itm, idx) in form.items"
                 :key="idx"
                 :item="itm"
-                :barang-list="barangList"
-                :barang-loading="barangLoading"
                 @update:item="updateItem(idx, $event)"
                 @remove="removeItem(idx)"
               />
@@ -557,7 +556,7 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useCrud } from '@/composables/useCrud'
-import { useLazyFetchAll } from '@/composables/useLazyFetchAll'
+import { useRemoteSearch } from '@/composables/useRemoteSearch'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useFormatter, toISODate } from '@/composables/useFormatter'
 import { setFlashAlert } from '@/utils/flashAlert'
@@ -572,25 +571,8 @@ const id        = route.params.id
 const isEditing = computed(() => !!id)
 
 const { create, fetchOne, update, saving } = useCrud('/finance/invoices')
-const { items: barangList, loading: barangLoading, fetchAll: fetchBarang } = useCrud('/master/barang')
-const { ensureLoaded: ensureBarangLoaded } = useLazyFetchAll(fetchBarang)
 
-const klienList    = ref([])
-const klienLoading = ref(false)
-
-async function fetchKlienAll() {
-  klienLoading.value = true
-  try {
-    const { data } = await api.get('/finance/klien-ar/all')
-    klienList.value = data.data ?? []
-  } catch {
-    klienList.value = []
-  } finally {
-    klienLoading.value = false
-  }
-}
-
-const { ensureLoaded: ensureKlienLoaded } = useLazyFetchAll(fetchKlienAll)
+const { items: klienList, loading: klienLoading, search: searchKlien, searchNow: searchKlienNow, ensureItem: ensureKlienItem } = useRemoteSearch('/finance/klien-ar')
 const { formatCurrency } = useFormatter()
 
 const formRef          = ref(null)
@@ -695,26 +677,6 @@ function klienItemSubtitle(klien) {
   return parts.filter(Boolean).join(' · ')
 }
 
-function klienSearchText(klien) {
-  return [
-    klien.nama_klien,
-    klien.kode_klien,
-    klien.resto?.nama_resto,
-    klien.resto?.kode_resto,
-    klien.resto?.investor?.nama_investor,
-    klien.resto?.investor?.pengelola,
-    klien.karyawan_ar?.nama_karyawan,
-  ].filter(Boolean).join(' ').toLocaleLowerCase()
-}
-
-function klienCustomFilter(_titleValue, query, item) {
-  if (!query) return true
-
-  const raw = item?.raw ?? item ?? {}
-
-  return klienSearchText(raw).includes(String(query).toLocaleLowerCase())
-}
-
 const restoTerdaftarLabel = computed(() => klienRestoLabel(currentKlienAr.value))
 
 const penerimaTagihan = computed(() => {
@@ -782,8 +744,6 @@ async function loadCarryover(klienId) {
 }
 
 function addItem() {
-  void ensureBarangLoaded()
-
   form.items.push({
     barang_id: null,
     kode_barang: '',
@@ -840,16 +800,13 @@ async function submitAs(status = null) {
 onMounted(async () => {
   if (!isEditing.value) return
 
-  const [, , data] = await Promise.all([
-    ensureKlienLoaded(),
-    ensureBarangLoaded(),
-    fetchOne(id),
-  ])
+  const data = await fetchOne(id)
 
   loadingData.value = false
   if (!data || data.status !== 'DRAFT') return
 
   invoice.value = data
+  ensureKlienItem(data.klien_ar)
   noInvoiceResto.value = data.items?.[0]?.no_invoice_resto ?? ''
   if (data.klien_ar?.tipe_klien === 'PT' && data.klien_ar?.perusahaan_id) {
     await loadRestoByPerusahaan(data.klien_ar.perusahaan_id)

@@ -411,7 +411,12 @@
             {{ selectedKeys.length }}
           </VChip>
           <span class="text-body-2 text-medium-emphasis text-truncate">
-            {{ selectedKeys.length > 0 ? selectedDefs.map(r => r.label).join(', ') : 'Pilih minimal satu laporan' }}
+            <template v-if="exporting">
+              Mengambil data: {{ exportProgress.label }} ({{ exportProgress.current }}/{{ exportProgress.total }})
+            </template>
+            <template v-else>
+              {{ selectedKeys.length > 0 ? selectedDefs.map(r => r.label).join(', ') : 'Pilih minimal satu laporan' }}
+            </template>
           </span>
         </div>
         <VBtn
@@ -442,6 +447,7 @@ const { ensureLoaded: ensureKlienLoaded } = useLazyFetchAll(fetchKlien)
 const { ensureLoaded: ensureKaryawanLoaded } = useLazyFetchAll(fetchKaryawan)
 
 const exporting = ref(false)
+const exportProgress = reactive({ current: 0, total: 0, label: '' })
 const selectedKeys = ref([])
 
 const now = new Date()
@@ -700,11 +706,6 @@ function buildParams(reportKey) {
     addParam(params, 'periode_tahun', rekapKlienFilter.periode_tahun)
   }
 
-  if (reportKey === 'riwayat_pembayaran') {
-    params.per_page = 9999
-    params.page = 1
-  }
-
   if (reportKey === 'jurnal_pic') {
     addParam(params, 'no_referensi', jurnalPicFilter.no_referensi)
     addParam(params, 'karyawan_id', jurnalPicFilter.karyawan_id)
@@ -722,9 +723,22 @@ async function doExport() {
   if (!selectedKeys.value.length) return
 
   exporting.value = true
+  exportProgress.current = 0
+  exportProgress.total   = selectedDefs.value.length
+  exportProgress.label   = ''
   try {
-    const builders = selectedDefs.value.map(report => SHEET_BUILDERS[report.key]).filter(Boolean)
-    const sheets = await Promise.all(builders.map(build => build()))
+    // Ambil data satu laporan per satu (bukan Promise.all) supaya progress bisa
+    // ditampilkan per laporan dan browser tidak menembakkan semua query berat
+    // sekaligus ke backend.
+    const sheets = []
+    for (const report of selectedDefs.value) {
+      const build = SHEET_BUILDERS[report.key]
+      if (!build) continue
+
+      exportProgress.label = report.label
+      sheets.push(await build())
+      exportProgress.current += 1
+    }
 
     if (!sheets.length) return
 
@@ -748,6 +762,7 @@ async function doExport() {
     })
   } finally {
     exporting.value = false
+    exportProgress.label = ''
   }
 }
 
@@ -760,11 +775,21 @@ async function fetchRekapKlien() {
 }
 
 async function fetchRiwayatPembayaran() {
-  const { data } = await api.get('/finance/pembayaran', {
-    params: buildParams('riwayat_pembayaran'),
-  })
+  const rows = []
+  let page = 1
+  let lastPage = 1
 
-  return data.data ?? []
+  do {
+    const { data } = await api.get('/finance/pembayaran', {
+      params: { ...buildParams('riwayat_pembayaran'), per_page: 100, page },
+    })
+
+    rows.push(...(data.data ?? []))
+    lastPage = data.meta?.last_page ?? 1
+    page += 1
+  } while (page <= lastPage)
+
+  return rows
 }
 
 function n(value) {
