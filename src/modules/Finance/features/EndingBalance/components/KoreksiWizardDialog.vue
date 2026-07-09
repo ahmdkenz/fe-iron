@@ -577,7 +577,7 @@ async function onInvoiceSelectedForKoreksiItem(invoiceId) {
 
   itemsLoading.value = true
   try {
-    const { data } = await api.get(`/finance/invoices/${invoiceId}/items`)
+    const { data } = await api.get(`/finance/invoices/${invoiceId}/items`, { params: { all: true } })
     const items = data.data ?? []
     koreksiItems.value = items.map(i => ({
       id:           i.id,

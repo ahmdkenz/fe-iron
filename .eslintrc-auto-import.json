@@ -366,6 +366,7 @@
     "useLazyFetchAll": true,
     "toISODate": true,
     "readBlobError": true,
-    "useRemoteSearch": true
+    "useRemoteSearch": true,
+    "useSettleWaterfall": true
   }
 }

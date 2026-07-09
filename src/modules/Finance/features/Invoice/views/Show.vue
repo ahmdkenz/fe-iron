@@ -764,6 +764,16 @@
                   class="me-2"
                 />
                 Item Tagihan
+                <VChip
+                  v-if="itemsTotal"
+                  size="x-small"
+                  color="secondary"
+                  variant="tonal"
+                  label
+                  class="ms-2"
+                >
+                  {{ itemsTotal }}
+                </VChip>
               </VCardTitle>
               <VDivider />
               <div
@@ -819,7 +829,7 @@
                     v-for="(it, i) in invoiceItems"
                     :key="it.id"
                   >
-                    <td>{{ i + 1 }}</td>
+                    <td>{{ (itemsPage - 1) * itemsPerPage + i + 1 }}</td>
                     <td v-if="showNoInvoiceResto">
                       <VChip
                         v-if="it.no_invoice_resto"
@@ -864,6 +874,19 @@
                   </tr>
                 </tbody>
               </VTable>
+              <template v-if="!itemsLoading && !itemsError && itemsLastPage > 1">
+                <VDivider />
+                <div class="d-flex justify-center py-3">
+                  <VPagination
+                    :model-value="itemsPage"
+                    :length="itemsLastPage"
+                    density="comfortable"
+                    size="small"
+                    total-visible="5"
+                    @update:model-value="onItemsPageChange"
+                  />
+                </div>
+              </template>
             </VCard>
 
             <VExpansionPanels
@@ -1295,6 +1318,10 @@ let loadInvoiceController = null
 const invoiceItems = ref([])
 const itemsLoading = ref(false)
 const itemsError = ref('')
+const itemsPage = ref(1)
+const itemsPerPage = ref(50)
+const itemsTotal = ref(0)
+const itemsLastPage = ref(1)
 
 const pembayaranList = ref([])
 const pembayaranLoading = ref(false)
@@ -1497,6 +1524,9 @@ async function loadInvoice() {
 
   invoiceItems.value = []
   itemsError.value = ''
+  itemsPage.value = 1
+  itemsTotal.value = 0
+  itemsLastPage.value = 1
   pembayaranList.value = []
   pembayaranError.value = ''
   approvalLogs.value = []
@@ -1530,17 +1560,26 @@ async function loadInvoice() {
   fetchPembayaran()
 }
 
-async function fetchItems() {
+async function fetchItems(page = 1) {
   itemsLoading.value = true
   itemsError.value = ''
   try {
-    const { data } = await api.get(`/finance/invoices/${id.value}/items`)
+    const { data } = await api.get(`/finance/invoices/${id.value}/items`, {
+      params: { page, per_page: itemsPerPage.value },
+    })
     invoiceItems.value = data.data ?? []
+    itemsPage.value = data.meta?.current_page ?? page
+    itemsTotal.value = data.meta?.total ?? invoiceItems.value.length
+    itemsLastPage.value = data.meta?.last_page ?? 1
   } catch (err) {
     itemsError.value = err.response?.data?.message ?? 'Gagal memuat item tagihan'
   } finally {
     itemsLoading.value = false
   }
+}
+
+function onItemsPageChange(page) {
+  fetchItems(page)
 }
 
 async function fetchPembayaran() {
@@ -1752,12 +1791,22 @@ async function printInvoice() {
   if (invoice.value?.is_opening_balance && invoice.value?.can_print)
     api.post(`/finance/invoices/${id.value}/sync-gdrive`).catch(() => {})
 
+  const printWindow = window.open('', '_blank')
   try {
     const res = await api.get(`/finance/invoices/${id.value}/print`, { responseType: 'blob', timeout: 300000 })
     const blobUrl = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }))
-    window.open(blobUrl, '_blank')
+
+    if (!printWindow) {
+      URL.revokeObjectURL(blobUrl)
+      await showError('Popup diblokir browser. Izinkan popup untuk membuka dokumen cetak.')
+
+      return
+    }
+
+    printWindow.location.href = blobUrl
     setTimeout(() => URL.revokeObjectURL(blobUrl), 30_000)
   } catch (err) {
+    printWindow?.close()
     await showError(await readBlobError(err, 'Gagal membuka dokumen cetak'))
   }
 }

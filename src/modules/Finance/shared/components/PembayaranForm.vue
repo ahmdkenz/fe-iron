@@ -3,6 +3,7 @@
     :model-value="modelValue"
     title="Catat Pembayaran"
     :loading="saving"
+    :disabled="!canProceedSettle"
     width="500"
     @update:model-value="$emit('update:modelValue', $event)"
     @confirm="handleSubmit"
@@ -151,18 +152,26 @@
           <template v-else>
             <div class="border rounded pa-1" style="max-height: 220px; overflow-y: auto;">
               <VCheckbox
-                v-for="inv in settleableInvoices"
-                :key="inv.id"
+                v-for="row in settleRows"
+                :key="row.id"
                 v-model="selectedSettleIds"
-                :value="inv.id"
+                :value="row.id"
                 density="compact"
                 hide-details
               >
                 <template #label>
                   <div class="d-flex flex-column">
-                    <span class="text-body-2">{{ inv.no_invoice }}</span>
+                    <div class="d-flex align-center gap-2">
+                      <span class="text-body-2">{{ row.no_invoice }}</span>
+                      <VChip v-if="row.selected && row.predictedStatus" :color="statusSettleColor(row.predictedStatus)" size="x-small" variant="tonal">
+                        {{ statusSettleLabel(row.predictedStatus) }}
+                      </VChip>
+                    </div>
                     <span class="text-caption text-medium-emphasis">
-                      {{ inv.tanggal_invoice }} · Sisa {{ formatCurrency(inv.sisa_tagihan) }}
+                      {{ row.tanggal_invoice }} · Sisa {{ formatCurrency(row.sisa_tagihan) }}
+                      <template v-if="row.selected && row.predictedStatus === 'SEBAGIAN'">
+                        · Estimasi terbayar {{ formatCurrency(row.predictedAmount) }}
+                      </template>
                     </span>
                   </div>
                 </template>
@@ -170,18 +179,33 @@
             </div>
             <div class="d-flex justify-space-between text-caption mt-2">
               <span>Total dipilih:</span>
-              <strong :class="settleExceeds ? 'text-error' : 'text-success'">
+              <strong :class="settleHasShortfall ? 'text-error' : 'text-success'">
                 {{ formatCurrency(selectedSettleTotal) }}
               </strong>
             </div>
+            <div class="d-flex justify-space-between text-caption text-medium-emphasis">
+              <span>Estimasi dana OB tersedia (setelah pembayaran ini):</span>
+              <strong>{{ formatCurrency(settlePredictedAvailable) }}</strong>
+            </div>
             <VAlert
-              v-if="settleExceeds"
+              v-if="settleHasShortfall"
               type="warning"
               variant="tonal"
               density="compact"
               class="mt-2"
             >
-              Total invoice yang dipilih melebihi jumlah pembayaran ({{ formatCurrency(form.jumlah_pembayaran || 0) }}).
+              <div class="text-body-2 mb-2">
+                Estimasi dana tidak cukup untuk seluruh invoice terpilih:
+                {{ settleSummary.fullCount }} invoice akan LUNAS<template v-if="settleSummary.partialCount">,
+                1 invoice akan SEBAGIAN sebesar {{ formatCurrency(settleSummary.partialAmount) }}</template><template v-if="settleSummary.unpaidCount">,
+                {{ settleSummary.unpaidCount }} invoice tidak akan terbayar</template>.
+                Sisanya tetap pada status saat ini.
+              </div>
+              <VCheckbox v-model="settleShortfallAck" density="compact" hide-details color="warning">
+                <template #label>
+                  <span class="text-caption">Saya paham dana diperkirakan tidak mencukupi seluruh invoice terpilih dan tetap ingin melanjutkan pembayaran sebagian.</span>
+                </template>
+              </VCheckbox>
             </VAlert>
           </template>
         </VCol>
@@ -222,6 +246,7 @@
 import { computed, ref, reactive, watch } from 'vue'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useFormatter } from '@/composables/useFormatter.js'
+import { useSettleWaterfall } from '@/composables/useSettleWaterfall'
 import api from '@/utils/axios.js'
 
 const checkingRef  = ref(false)
@@ -270,16 +295,29 @@ const form = reactive(defaultForm())
 const settleableLoading  = ref(false)
 const settleableInvoices = ref([])
 const selectedSettleIds  = ref([])
+const settleAvailable    = ref(0)
+const settleShortfallAck = ref(false)
 
-const selectedSettleTotal = computed(() =>
-  settleableInvoices.value
-    .filter(inv => selectedSettleIds.value.includes(inv.id))
-    .reduce((sum, inv) => sum + Number(inv.sisa_tagihan || 0), 0),
+const {
+  rows: settleRows,
+  predictedAvailable: settlePredictedAvailable,
+  selectedTotal: selectedSettleTotal,
+  hasShortfall: settleHasShortfall,
+  summary: settleSummary,
+} = useSettleWaterfall(
+  settleableInvoices,
+  selectedSettleIds,
+  settleAvailable,
+  () => Number(form.jumlah_pembayaran || 0),
+  () => Number(props.sisaTagihan || 0),
 )
 
-const settleExceeds = computed(() =>
-  selectedSettleTotal.value > Number(form.jumlah_pembayaran || 0) + 0.01,
+const canProceedSettle = computed(() =>
+  !props.isOpeningBalance || !settleHasShortfall.value || settleShortfallAck.value,
 )
+
+const statusSettleColor = s => ({ LUNAS: 'success', SEBAGIAN: 'warning', UNPAID: 'grey' }[s] ?? 'grey')
+const statusSettleLabel = s => ({ LUNAS: 'Estimasi Lunas', SEBAGIAN: 'Estimasi Sebagian', UNPAID: 'Belum Terbayar' }[s] ?? '')
 
 function toggleSelectAllSettle() {
   selectedSettleIds.value = selectedSettleIds.value.length === settleableInvoices.value.length
@@ -290,17 +328,21 @@ function toggleSelectAllSettle() {
 async function loadSettleableOriginals() {
   settleableInvoices.value = []
   selectedSettleIds.value  = []
+  settleAvailable.value    = 0
+  settleShortfallAck.value = false
   if (!props.isOpeningBalance || !props.invoiceId) return
 
   settleableLoading.value = true
   try {
     const res = await api.get(`/finance/invoices/${props.invoiceId}/settleable-originals`)
     settleableInvoices.value = res.data?.data?.invoices ?? []
+    settleAvailable.value    = Number(res.data?.data?.available ?? 0)
     // default: semua tercentang (pembayaran penuh = lunaskan semua)
     selectedSettleIds.value = settleableInvoices.value.map(inv => inv.id)
   } catch {
     settleableInvoices.value = []
     selectedSettleIds.value  = []
+    settleAvailable.value    = 0
   } finally {
     settleableLoading.value = false
   }
@@ -315,6 +357,11 @@ watch(() => props.modelValue, val => {
     loadSettleableOriginals()
   }
 })
+
+// Reset konfirmasi shortfall bila seleksi atau nominal pembayaran berubah,
+// supaya konfirmasi lama tidak terbawa ke kondisi shortfall yang berbeda.
+watch(selectedSettleIds, () => { settleShortfallAck.value = false }, { deep: true })
+watch(() => form.jumlah_pembayaran, () => { settleShortfallAck.value = false })
 
 function handleJumlahInput(val) {
   if (val > props.sisaTagihan) {
@@ -342,11 +389,7 @@ async function handleSubmit() {
   const { valid } = await formRef.value.validate()
   if (!valid) return
 
-  if (props.isOpeningBalance && settleExceeds.value) {
-    errorMessage.value = 'Total invoice reguler yang dipilih melebihi jumlah pembayaran.'
-    await showError(errorMessage.value)
-    return
-  }
+  if (!canProceedSettle.value) return
 
   errorMessage.value = ''
   Object.keys(errors).forEach(k => (errors[k] = []))

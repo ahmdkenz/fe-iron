@@ -950,12 +950,22 @@ function onPembayaranSaved() {
 
 async function printInvoice(id) {
   printingId.value = id
+  const printWindow = window.open('', '_blank')
   try {
     const res = await api.get(`/finance/invoices/${id}/print`, { responseType: 'blob', timeout: 300000 })
     const blobUrl = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }))
-    window.open(blobUrl, '_blank')
+
+    if (!printWindow) {
+      URL.revokeObjectURL(blobUrl)
+      await showError('Popup diblokir browser. Izinkan popup untuk membuka dokumen cetak.')
+
+      return
+    }
+
+    printWindow.location.href = blobUrl
     setTimeout(() => URL.revokeObjectURL(blobUrl), 30_000)
   } catch (err) {
+    printWindow?.close()
     await showError(await readBlobError(err, 'Gagal membuka dokumen cetak'))
   } finally {
     printingId.value = null

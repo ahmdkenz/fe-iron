@@ -55,6 +55,7 @@
           <VBtn
             color="primary"
             :loading="loading"
+            :disabled="disabled"
             @click="$emit('confirm')"
           >
             <VIcon
@@ -75,6 +76,7 @@ defineProps({
   title: { type: String, default: '' },
   width: { type: [String, Number], default: 600 },
   loading: { type: Boolean, default: false },
+  disabled: { type: Boolean, default: false },
   minimizable: { type: Boolean, default: false },
 })
 defineEmits(['confirm', 'minimize'])

@@ -118,18 +118,26 @@
             <template v-else>
               <div style="max-height: 200px; overflow-y: auto;">
                 <VCheckbox
-                  v-for="inv in settleableInvoices"
-                  :key="inv.id"
+                  v-for="row in settleRows"
+                  :key="row.id"
                   v-model="selectedSettleIds"
-                  :value="inv.id"
+                  :value="row.id"
                   density="compact"
                   hide-details
                 >
                   <template #label>
                     <div class="d-flex flex-column">
-                      <span class="text-body-2">{{ inv.no_invoice }}</span>
+                      <div class="d-flex align-center gap-2">
+                        <span class="text-body-2">{{ row.no_invoice }}</span>
+                        <VChip v-if="row.selected && row.predictedStatus" :color="statusSettleColor(row.predictedStatus)" size="x-small" variant="tonal">
+                          {{ statusSettleLabel(row.predictedStatus) }}
+                        </VChip>
+                      </div>
                       <span class="text-caption text-medium-emphasis">
-                        {{ formatDate(inv.tanggal_invoice) }} · Sisa {{ formatCurrency(inv.sisa_tagihan) }}
+                        {{ formatDate(row.tanggal_invoice) }} · Sisa {{ formatCurrency(row.sisa_tagihan) }}
+                        <template v-if="row.selected && row.predictedStatus === 'SEBAGIAN'">
+                          · Estimasi terbayar {{ formatCurrency(row.predictedAmount) }}
+                        </template>
                       </span>
                     </div>
                   </template>
@@ -137,10 +145,25 @@
               </div>
               <div class="d-flex justify-space-between text-caption mt-2">
                 <span>Total dipilih:</span>
-                <strong :class="settleExceeds ? 'text-error' : 'text-success'">{{ formatCurrency(selectedSettleTotal) }}</strong>
+                <strong :class="settleHasShortfall ? 'text-error' : 'text-success'">{{ formatCurrency(selectedSettleTotal) }}</strong>
               </div>
-              <VAlert v-if="settleExceeds" type="warning" variant="tonal" density="compact" class="mt-2">
-                Total invoice yang dipilih melebihi jumlah transaksi bank ({{ formatCurrency(item?.kredit ?? 0) }}).
+              <div class="d-flex justify-space-between text-caption text-medium-emphasis">
+                <span>Estimasi dana OB tersedia (setelah transaksi ini):</span>
+                <strong>{{ formatCurrency(settlePredictedAvailable) }}</strong>
+              </div>
+              <VAlert v-if="settleHasShortfall" type="warning" variant="tonal" density="compact" class="mt-2">
+                <div class="text-body-2 mb-2">
+                  Estimasi dana tidak cukup untuk seluruh invoice terpilih:
+                  {{ settleSummary.fullCount }} invoice akan LUNAS<template v-if="settleSummary.partialCount">,
+                  1 invoice akan SEBAGIAN sebesar {{ formatCurrency(settleSummary.partialAmount) }}</template><template v-if="settleSummary.unpaidCount">,
+                  {{ settleSummary.unpaidCount }} invoice tidak akan terbayar</template>.
+                  Sisanya tetap pada status saat ini dan bisa dilunaskan pada pembayaran OB berikutnya.
+                </div>
+                <VCheckbox v-model="settleShortfallAck" density="compact" hide-details color="warning">
+                  <template #label>
+                    <span class="text-caption">Saya paham dana diperkirakan tidak mencukupi seluruh invoice terpilih dan tetap ingin melanjutkan pembayaran sebagian.</span>
+                  </template>
+                </VCheckbox>
               </VAlert>
             </template>
           </VCard>
@@ -218,7 +241,7 @@
       <VCardActions class="pa-4">
         <VSpacer />
         <VBtn variant="text" @click="onDialogUpdate(false)">Batal</VBtn>
-        <VBtn color="primary" variant="tonal" :disabled="!selectedInvoiceId || obLoading || regularLoading" @click="proceedToBuktiStep">
+        <VBtn color="primary" variant="tonal" :disabled="!selectedInvoiceId || obLoading || regularLoading || !canProceedSettle" @click="proceedToBuktiStep">
           <VIcon start size="16">ri-arrow-right-line</VIcon>Lanjutkan
         </VBtn>
       </VCardActions>
@@ -240,6 +263,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { useFormatter } from '@/composables/useFormatter'
+import { useSettleWaterfall } from '@/composables/useSettleWaterfall'
 import api from '@/utils/axios'
 import BuktiBayarDialog from './BuktiBayarDialog.vue'
 
@@ -290,20 +314,38 @@ const regularHasMore = computed(() => regularPage.value < regularLastPage.value)
 const settleableLoading  = ref(false)
 const settleableInvoices = ref([])
 const selectedSettleIds  = ref([])
+const settleAvailable    = ref(0)
+const settleShortfallAck = ref(false)
 
 const selectedIsOb = computed(() =>
   obCandidates.value.some(inv => inv.id === selectedInvoiceId.value),
 )
 
-const selectedSettleTotal = computed(() =>
-  settleableInvoices.value
-    .filter(inv => selectedSettleIds.value.includes(inv.id))
-    .reduce((sum, inv) => sum + Number(inv.sisa_tagihan || 0), 0),
+// sisa_tagihan OB terpilih, sudah tersedia di kartu OB (lihat template baris 77)
+const selectedObSisa = computed(() =>
+  Number(obCandidates.value.find(inv => inv.id === selectedInvoiceId.value)?.sisa_tagihan ?? 0),
 )
 
-const settleExceeds = computed(() =>
-  selectedSettleTotal.value > Number(props.item?.kredit || 0) + 0.01,
+const {
+  rows: settleRows,
+  predictedAvailable: settlePredictedAvailable,
+  selectedTotal: selectedSettleTotal,
+  hasShortfall: settleHasShortfall,
+  summary: settleSummary,
+} = useSettleWaterfall(
+  settleableInvoices,
+  selectedSettleIds,
+  settleAvailable,
+  () => Number(props.item?.kredit || 0),
+  selectedObSisa,
 )
+
+const canProceedSettle = computed(() =>
+  !selectedIsOb.value || !settleHasShortfall.value || settleShortfallAck.value,
+)
+
+const statusSettleColor = s => ({ LUNAS: 'success', SEBAGIAN: 'warning', UNPAID: 'grey' }[s] ?? 'grey')
+const statusSettleLabel = s => ({ LUNAS: 'Estimasi Lunas', SEBAGIAN: 'Estimasi Sebagian', UNPAID: 'Belum Terbayar' }[s] ?? '')
 
 function toggleSelectAllSettle() {
   selectedSettleIds.value = selectedSettleIds.value.length === settleableInvoices.value.length
@@ -314,16 +356,20 @@ function toggleSelectAllSettle() {
 async function loadSettleableOriginals(obInvoiceId) {
   settleableInvoices.value = []
   selectedSettleIds.value  = []
+  settleAvailable.value    = 0
+  settleShortfallAck.value = false
   if (!obInvoiceId) return
 
   settleableLoading.value = true
   try {
     const { data } = await api.get(`/finance/invoices/${obInvoiceId}/settleable-originals`)
     settleableInvoices.value = data?.data?.invoices ?? []
+    settleAvailable.value    = Number(data?.data?.available ?? 0)
     selectedSettleIds.value  = settleableInvoices.value.map(inv => inv.id)
   } catch {
     settleableInvoices.value = []
     selectedSettleIds.value  = []
+    settleAvailable.value    = 0
   } finally {
     settleableLoading.value = false
   }
@@ -335,8 +381,15 @@ watch(selectedInvoiceId, id => {
   } else {
     settleableInvoices.value = []
     selectedSettleIds.value  = []
+    settleAvailable.value    = 0
+    settleShortfallAck.value = false
   }
 })
+
+// Reset konfirmasi shortfall bila seleksi atau nominal transaksi bank berubah,
+// supaya konfirmasi lama tidak terbawa ke kondisi shortfall yang berbeda.
+watch(selectedSettleIds, () => { settleShortfallAck.value = false }, { deep: true })
+watch(() => props.item?.kredit, () => { settleShortfallAck.value = false })
 
 async function fetchCandidates(type, { append = false } = {}) {
   const id = props.item?.id
@@ -425,6 +478,8 @@ function resetState() {
   showBuktiStep.value      = false
   settleableInvoices.value = []
   selectedSettleIds.value  = []
+  settleAvailable.value    = 0
+  settleShortfallAck.value = false
   clearTimeout(obTimer)
   clearTimeout(regularTimer)
 }
@@ -444,21 +499,13 @@ function onDialogUpdate(value) {
 }
 
 function proceedToBuktiStep() {
-  if (!selectedInvoiceId.value || !props.item) return
-  if (selectedIsOb.value && settleExceeds.value) {
-    matchError.value = 'Total invoice reguler yang dipilih melebihi jumlah transaksi bank.'
-    return
-  }
+  if (!selectedInvoiceId.value || !props.item || !canProceedSettle.value) return
   matchError.value = null
   showBuktiStep.value = true
 }
 
 async function doManualMatch() {
-  if (!selectedInvoiceId.value || !props.item) return
-  if (selectedIsOb.value && settleExceeds.value) {
-    matchError.value = 'Total invoice reguler yang dipilih melebihi jumlah transaksi bank.'
-    return
-  }
+  if (!selectedInvoiceId.value || !props.item || !canProceedSettle.value) return
   matchSaving.value    = true
   matchError.value     = null
   buktiBayarError.value = null
