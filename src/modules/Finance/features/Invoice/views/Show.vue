@@ -1075,13 +1075,14 @@
                     </th>
                     <th>No. Referensi</th>
                     <th>Keterangan</th>
+                    <th>Bukti Bayar</th>
                     <th>Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr v-if="pembayaranList.length === 0">
                     <td
-                      colspan="7"
+                      colspan="8"
                       class="text-center text-medium-emphasis py-4"
                     >
                       Belum ada pembayaran
@@ -1108,6 +1109,28 @@
                     </td>
                     <td>{{ p.no_referensi ?? '-' }}</td>
                     <td>{{ p.keterangan ?? '-' }}</td>
+                    <td>
+                      <VBtn
+                        v-if="p.bukti_url"
+                        icon
+                        size="x-small"
+                        variant="text"
+                        color="primary"
+                        @click="openBuktiPreview(p)"
+                      >
+                        <VIcon
+                          icon="ri-image-line"
+                          size="16"
+                        />
+                        <VTooltip activator="parent">
+                          Lihat Bukti Bayar
+                        </VTooltip>
+                      </VBtn>
+                      <span
+                        v-else
+                        class="text-medium-emphasis"
+                      >-</span>
+                    </td>
                     <td>
                       <VBtn
                         v-if="canManagePayments"
@@ -1159,6 +1182,52 @@
       @confirm="doDeletePembayaran"
     >
       <p>Apakah Anda yakin ingin menghapus catatan pembayaran ini?</p>
+    </BaseModal>
+
+    <BaseModal
+      v-model="showBuktiPreview"
+      title="Bukti Bayar"
+      width="500"
+    >
+      <template #default>
+        <VImg
+          v-if="buktiPreview?.mime?.startsWith('image/')"
+          :src="buktiPreview.url"
+          max-height="500"
+          contain
+        />
+        <div
+          v-else
+          class="text-center py-6"
+        >
+          <VIcon
+            icon="ri-file-text-line"
+            size="40"
+            class="mb-2"
+          />
+          <div class="text-body-2 mb-3">
+            {{ buktiPreview?.name ?? 'File bukti bayar' }}
+          </div>
+          <VBtn
+            color="primary"
+            variant="tonal"
+            :href="buktiPreview?.url"
+            target="_blank"
+            rel="noopener"
+          >
+            Buka File
+          </VBtn>
+        </div>
+      </template>
+      <template #actions>
+        <VBtn
+          variant="tonal"
+          color="secondary"
+          @click="showBuktiPreview = false"
+        >
+          Tutup
+        </VBtn>
+      </template>
     </BaseModal>
 
     <BaseModal
@@ -1326,6 +1395,13 @@ const itemsLastPage = ref(1)
 const pembayaranList = ref([])
 const pembayaranLoading = ref(false)
 const pembayaranError = ref('')
+const showBuktiPreview = ref(false)
+const buktiPreview = ref(null)
+
+function openBuktiPreview(p) {
+  buktiPreview.value = { url: p.bukti_url, mime: p.bukti_mime_type, name: p.bukti_file_name }
+  showBuktiPreview.value = true
+}
 
 const approvalLogs = ref([])
 const approvalLogsLoading = ref(false)
