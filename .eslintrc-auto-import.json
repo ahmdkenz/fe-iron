@@ -367,6 +367,7 @@
     "toISODate": true,
     "readBlobError": true,
     "useRemoteSearch": true,
-    "useSettleWaterfall": true
+    "useSettleWaterfall": true,
+    "ensureCsrfCookie": true
   }
 }

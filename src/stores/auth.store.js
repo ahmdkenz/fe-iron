@@ -81,25 +81,7 @@ export const useAuthStore = defineStore('auth', {
 
     async login(username, password) {
       const { data } = await api.post('/auth/login', { username, password })
-      const { user, token, refresh_token } = data.data
-      localStorage.setItem('auth_token', token)
-      if (refresh_token) {
-        localStorage.setItem('refresh_token', refresh_token)
-      }
-      this.user = user
-    },
-
-    async refreshAccessToken() {
-      const refreshToken = localStorage.getItem('refresh_token')
-      if (!refreshToken) throw new Error('No refresh token')
-
-      const { data } = await api.post('/auth/refresh', { refresh_token: refreshToken })
-      const { token, refresh_token } = data.data
-      localStorage.setItem('auth_token', token)
-      if (refresh_token) {
-        localStorage.setItem('refresh_token', refresh_token)
-      }
-      return token
+      this.user = data.data.user
     },
 
     async fetchMe() {
