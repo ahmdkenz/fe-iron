@@ -2,7 +2,9 @@
   <div>
     <PageHeader
       title="Ending Balance"
-      subtitle="Saldo akhir piutang per klien per periode"
+      :subtitle="authStore.canApproveEndingBalanceManager
+        ? 'Tinjau dan proses koreksi ending balance yang memerlukan persetujuan'
+        : 'Saldo akhir piutang per klien per periode'"
       :breadcrumbs="[
         { title: 'Dashboard', to: { name: 'dashboard' } },
         { title: 'Ending Balance', disabled: true },
@@ -10,367 +12,802 @@
     >
       </PageHeader>
 
-    <!-- Tab Selector B2B/B2C -->
-    <VTabs :model-value="activeSegmentTab" class="mb-4" @update:model-value="onSegmentTabChange">
-      <VTab value="b2b">Ending Balance B2B</VTab>
-      <VTab value="b2c">Ending Balance B2C</VTab>
-    </VTabs>
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- Tampilan non-approver (AR): hanya list Ending Balance biasa          -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <template v-if="!authStore.canApproveEndingBalanceManager">
+      <!-- Tab Selector B2B/B2C -->
+      <VTabs :model-value="activeSegmentTab" class="mb-4" @update:model-value="onSegmentTabChange">
+        <VTab value="b2b">Ending Balance B2B</VTab>
+        <VTab value="b2c">Ending Balance B2C</VTab>
+      </VTabs>
 
-    <!-- Tabel B2B -->
-    <VCard v-if="activeSegmentTab === 'b2b'" class="mb-4">
-      <VCardTitle class="px-4 pt-4 pb-0 text-body-1 font-weight-bold d-flex align-center gap-2">
-        <VIcon icon="ri-building-line" size="20" color="primary" />
-        Ending Balance B2B
-      </VCardTitle>
-      <VCardText class="d-flex flex-wrap align-center gap-3 pb-0">
-        <VTextField
-          v-model="periodeDraftB2B.periode_awal"
-          label="Dari Periode"
-          type="date"
-          density="compact"
-          hide-details
-          style="max-width: 180px"
-        />
-        <VTextField
-          v-model="periodeDraftB2B.periode_akhir"
-          label="Sampai Periode"
-          type="date"
-          density="compact"
-          hide-details
-          style="max-width: 180px"
-        />
-        <VSelect
-          v-model="filtersB2B.status"
-          label="Status"
-          density="compact"
-          hide-details
-          clearable
-          style="max-width: 160px"
-          :items="[{ title: 'Draft', value: 'DRAFT' }, { title: 'Locked', value: 'LOCKED' }]"
-          @update:model-value="doFetchB2B(1)"
-        />
-        <VBtn
-          color="primary"
-          variant="tonal"
-          size="small"
-          prepend-icon="ri-filter-3-line"
-          @click="applyPeriodeFiltersB2B"
-        >
-          Filter
-        </VBtn>
-      </VCardText>
-      <BaseTable
-        :headers="headers"
-        :items="rowsB2B"
-        :total="metaB2B.total"
-        :loading="loadingB2B"
-        :per-page="metaB2B.per_page"
-        :page="currentPageB2B"
-        item-value="id"
-        show-expand
-        v-model:expanded="expandedB2B"
-        column-resize-key="finance-ending-balance-b2b"
-        @update:options="onTableOptionsB2B"
-      >
-        <template #item.no="{ index }">
-          <span class="text-medium-emphasis">{{ (currentPageB2B - 1) * metaB2B.per_page + index + 1 }}</span>
-        </template>
-
-        <template #item.nama_klien="{ item }">
-          <div class="font-weight-medium text-no-wrap">{{ item.nama_klien }}</div>
-        </template>
-
-        <template #item.periode="{ item }">
-          <div class="text-caption text-no-wrap">
-            {{ formatDate(item.periode_awal) }} – {{ formatDate(item.periode_akhir) }}
-          </div>
-        </template>
-
-        <template #item.saldo_awal="{ item }">
-          {{ formatRp(item.saldo_awal) }}
-        </template>
-
-        <template #item.invoice_masuk="{ item }">
-          {{ formatRp(item.invoice_masuk) }}
-        </template>
-
-        <template #item.pembayaran="{ item }">
-          {{ formatRp(item.pembayaran) }}
-        </template>
-
-        <template #item.saldo_akhir_final="{ item }">
-          <div :class="item.saldo_akhir_sistem !== item.saldo_akhir_final ? 'text-warning font-weight-bold' : 'font-weight-bold'">
-            {{ formatRp(item.saldo_akhir_final) }}
-          </div>
-          <div v-if="item.saldo_akhir_sistem !== item.saldo_akhir_final" class="text-caption text-medium-emphasis">
-            (sistem: {{ formatRp(item.saldo_akhir_sistem) }})
-          </div>
-        </template>
-
-        <template #item.outstanding="{ item }">
-          <div :class="item.outstanding > 0 ? 'font-weight-medium' : 'text-medium-emphasis'">
-            {{ formatRp(item.outstanding) }}
-          </div>
-          <div class="text-caption text-medium-emphasis">{{ item.outstanding_count }} Invoice</div>
-        </template>
-
-        <template #item.overdue="{ item }">
-          <div :class="item.overdue > 0 ? 'text-error font-weight-medium' : 'text-medium-emphasis'">
-            {{ formatRp(item.overdue) }}
-          </div>
-          <div class="text-caption text-medium-emphasis">{{ item.overdue_count }} Invoice</div>
-        </template>
-
-        <template #item.status="{ item }">
-          <EndingBalanceStatusBadge :status="item.status" />
-          <VChip
-            v-if="item.has_active_koreksi"
-            color="info"
-            size="x-small"
-            class="ml-1"
-            label
+      <!-- Tabel B2B -->
+      <VCard v-if="activeSegmentTab === 'b2b'" class="mb-4">
+        <VCardTitle class="px-4 pt-4 pb-0 text-body-1 font-weight-bold d-flex align-center gap-2">
+          <VIcon icon="ri-building-line" size="20" color="primary" />
+          Ending Balance B2B
+        </VCardTitle>
+        <VCardText class="d-flex flex-wrap align-center gap-3 pb-0">
+          <VTextField
+            v-model="periodeDraftB2B.periode_awal"
+            label="Dari Periode"
+            type="date"
+            density="compact"
+            hide-details
+            style="max-width: 180px"
+          />
+          <VTextField
+            v-model="periodeDraftB2B.periode_akhir"
+            label="Sampai Periode"
+            type="date"
+            density="compact"
+            hide-details
+            style="max-width: 180px"
+          />
+          <VSelect
+            v-model="filtersB2B.status"
+            label="Status"
+            density="compact"
+            hide-details
+            clearable
+            style="max-width: 160px"
+            :items="[{ title: 'Draft', value: 'DRAFT' }, { title: 'Locked', value: 'LOCKED' }]"
+            @update:model-value="doFetchB2B(1)"
+          />
+          <VBtn
+            color="primary"
+            variant="tonal"
+            size="small"
+            prepend-icon="ri-filter-3-line"
+            @click="applyPeriodeFiltersB2B"
           >
-            Ada Koreksi
-          </VChip>
-        </template>
-
-        <template #expanded-row="{ item }">
-          <tr>
-            <td :colspan="headers.length + 1" class="pa-0">
-              <EbInvoiceBreakdown :eb-id="item.id" />
-            </td>
-          </tr>
-        </template>
-
-        <template #item.actions="{ item }">
-          <div class="d-flex gap-1">
-            <VBtn
-              icon
-              size="x-small"
-              variant="text"
-              color="primary"
-              :to="{ name: 'finance-ending-balance-show', params: { id: item.id } }"
-            >
-              <VIcon icon="ri-eye-line" />
-              <VTooltip activator="parent">Detail</VTooltip>
-            </VBtn>
-            <VBtn
-              v-if="authStore.canOperateEndingBalance && !item.has_active_koreksi"
-              icon
-              size="x-small"
-              variant="tonal"
-              color="info"
-              @click="openKoreksiDialog(item)"
-            >
-              <VIcon icon="ri-pencil-line" />
-              <VTooltip activator="parent">{{ item.status === 'LOCKED' ? 'Ajukan Koreksi' : 'Penyesuaian Invoice' }}</VTooltip>
-            </VBtn>
-            <VBtn
-              v-if="item.status === 'DRAFT' && authStore.canLockEndingBalance"
-              icon
-              size="x-small"
-              variant="tonal"
-              color="success"
-              :loading="lockingId === item.id"
-              @click="confirmLock(item)"
-            >
-              <VIcon icon="ri-lock-line" />
-              <VTooltip activator="parent">Kunci Periode</VTooltip>
-            </VBtn>
-            <VBtn
-              v-if="item.status === 'LOCKED' && authStore.canLockEndingBalance"
-              icon
-              size="x-small"
-              variant="tonal"
-              color="warning"
-              :loading="unlockingId === item.id"
-              @click="confirmUnlock(item)"
-            >
-              <VIcon icon="ri-lock-unlock-line" />
-              <VTooltip activator="parent">Buka Periode</VTooltip>
-            </VBtn>
-          </div>
-        </template>
-      </BaseTable>
-    </VCard>
-
-    <!-- Tabel B2C -->
-    <VCard v-if="activeSegmentTab === 'b2c'">
-      <VCardTitle class="px-4 pt-4 pb-0 text-body-1 font-weight-bold d-flex align-center gap-2">
-        <VIcon icon="ri-store-line" size="20" color="secondary" />
-        Ending Balance B2C
-      </VCardTitle>
-      <VCardText class="d-flex flex-wrap align-center gap-3 pb-0">
-        <VTextField
-          v-model="periodeDraftB2C.periode_awal"
-          label="Dari Periode"
-          type="date"
-          density="compact"
-          hide-details
-          style="max-width: 180px"
-        />
-        <VTextField
-          v-model="periodeDraftB2C.periode_akhir"
-          label="Sampai Periode"
-          type="date"
-          density="compact"
-          hide-details
-          style="max-width: 180px"
-        />
-        <VSelect
-          v-model="filtersB2C.status"
-          label="Status"
-          density="compact"
-          hide-details
-          clearable
-          style="max-width: 160px"
-          :items="[{ title: 'Draft', value: 'DRAFT' }, { title: 'Locked', value: 'LOCKED' }]"
-          @update:model-value="doFetch(1)"
-        />
-        <VBtn
-          color="primary"
-          variant="tonal"
-          size="small"
-          prepend-icon="ri-filter-3-line"
-          @click="applyPeriodeFiltersB2C"
+            Filter
+          </VBtn>
+        </VCardText>
+        <BaseTable
+          :headers="headers"
+          :items="rowsB2B"
+          :total="metaB2B.total"
+          :loading="loadingB2B"
+          :per-page="metaB2B.per_page"
+          :page="currentPageB2B"
+          item-value="id"
+          show-expand
+          v-model:expanded="expandedB2B"
+          column-resize-key="finance-ending-balance-b2b"
+          @update:options="onTableOptionsB2B"
         >
-          Filter
-        </VBtn>
-      </VCardText>
-      <BaseTable
-        :headers="headers"
-        :items="rows"
-        :total="meta.total"
-        :loading="loading"
-        :per-page="meta.per_page"
-        :page="currentPage"
-        item-value="id"
-        show-expand
-        v-model:expanded="expanded"
-        column-resize-key="finance-ending-balance-b2c"
-        @update:options="onTableOptions"
-      >
-        <template #item.no="{ index }">
-          <span class="text-medium-emphasis">{{ (currentPage - 1) * meta.per_page + index + 1 }}</span>
-        </template>
+          <template #item.no="{ index }">
+            <span class="text-medium-emphasis">{{ (currentPageB2B - 1) * metaB2B.per_page + index + 1 }}</span>
+          </template>
 
-        <template #item.nama_klien="{ item }">
-          <div class="font-weight-medium text-no-wrap">{{ item.nama_klien }}</div>
-        </template>
+          <template #item.nama_klien="{ item }">
+            <div class="font-weight-medium text-no-wrap">{{ item.nama_klien }}</div>
+          </template>
 
-        <template #item.periode="{ item }">
-          <div class="text-caption text-no-wrap">
-            {{ formatDate(item.periode_awal) }} – {{ formatDate(item.periode_akhir) }}
-          </div>
-        </template>
+          <template #item.periode="{ item }">
+            <div class="text-caption text-no-wrap">
+              {{ formatDate(item.periode_awal) }} – {{ formatDate(item.periode_akhir) }}
+            </div>
+          </template>
 
-        <template #item.saldo_awal="{ item }">
-          {{ formatRp(item.saldo_awal) }}
-        </template>
+          <template #item.saldo_awal="{ item }">
+            {{ formatRp(item.saldo_awal) }}
+          </template>
 
-        <template #item.invoice_masuk="{ item }">
-          {{ formatRp(item.invoice_masuk) }}
-        </template>
+          <template #item.invoice_masuk="{ item }">
+            {{ formatRp(item.invoice_masuk) }}
+          </template>
 
-        <template #item.pembayaran="{ item }">
-          {{ formatRp(item.pembayaran) }}
-        </template>
+          <template #item.pembayaran="{ item }">
+            {{ formatRp(item.pembayaran) }}
+          </template>
 
-        <template #item.saldo_akhir_final="{ item }">
-          <div :class="item.saldo_akhir_sistem !== item.saldo_akhir_final ? 'text-warning font-weight-bold' : 'font-weight-bold'">
-            {{ formatRp(item.saldo_akhir_final) }}
-          </div>
-          <div v-if="item.saldo_akhir_sistem !== item.saldo_akhir_final" class="text-caption text-medium-emphasis">
-            (sistem: {{ formatRp(item.saldo_akhir_sistem) }})
-          </div>
-        </template>
+          <template #item.saldo_akhir_final="{ item }">
+            <div :class="item.saldo_akhir_sistem !== item.saldo_akhir_final ? 'text-warning font-weight-bold' : 'font-weight-bold'">
+              {{ formatRp(item.saldo_akhir_final) }}
+            </div>
+            <div v-if="item.saldo_akhir_sistem !== item.saldo_akhir_final" class="text-caption text-medium-emphasis">
+              (sistem: {{ formatRp(item.saldo_akhir_sistem) }})
+            </div>
+          </template>
 
-        <template #item.outstanding="{ item }">
-          <div :class="item.outstanding > 0 ? 'font-weight-medium' : 'text-medium-emphasis'">
-            {{ formatRp(item.outstanding) }}
-          </div>
-          <div class="text-caption text-medium-emphasis">{{ item.outstanding_count }} Invoice</div>
-        </template>
+          <template #item.outstanding="{ item }">
+            <div :class="item.outstanding > 0 ? 'font-weight-medium' : 'text-medium-emphasis'">
+              {{ formatRp(item.outstanding) }}
+            </div>
+            <div class="text-caption text-medium-emphasis">{{ item.outstanding_count }} Invoice</div>
+          </template>
 
-        <template #item.overdue="{ item }">
-          <div :class="item.overdue > 0 ? 'text-error font-weight-medium' : 'text-medium-emphasis'">
-            {{ formatRp(item.overdue) }}
-          </div>
-          <div class="text-caption text-medium-emphasis">{{ item.overdue_count }} Invoice</div>
-        </template>
+          <template #item.overdue="{ item }">
+            <div :class="item.overdue > 0 ? 'text-error font-weight-medium' : 'text-medium-emphasis'">
+              {{ formatRp(item.overdue) }}
+            </div>
+            <div class="text-caption text-medium-emphasis">{{ item.overdue_count }} Invoice</div>
+          </template>
 
-        <template #item.status="{ item }">
-          <EndingBalanceStatusBadge :status="item.status" />
-          <VChip
-            v-if="item.has_active_koreksi"
-            color="info"
-            size="x-small"
-            class="ml-1"
-            label
-          >
-            Ada Koreksi
-          </VChip>
-        </template>
-
-        <template #expanded-row="{ item }">
-          <tr>
-            <td :colspan="headers.length + 1" class="pa-0">
-              <EbInvoiceBreakdown :eb-id="item.id" />
-            </td>
-          </tr>
-        </template>
-
-        <template #item.actions="{ item }">
-          <div class="d-flex gap-1">
-            <VBtn
-              icon
-              size="x-small"
-              variant="text"
-              color="primary"
-              :to="{ name: 'finance-ending-balance-show', params: { id: item.id } }"
-            >
-              <VIcon icon="ri-eye-line" />
-              <VTooltip activator="parent">Detail</VTooltip>
-            </VBtn>
-            <VBtn
-              v-if="authStore.canOperateEndingBalance && !item.has_active_koreksi"
-              icon
-              size="x-small"
-              variant="tonal"
+          <template #item.status="{ item }">
+            <EndingBalanceStatusBadge :status="item.status" />
+            <VChip
+              v-if="item.has_active_koreksi"
               color="info"
-              @click="openKoreksiDialog(item)"
-            >
-              <VIcon icon="ri-pencil-line" />
-              <VTooltip activator="parent">{{ item.status === 'LOCKED' ? 'Ajukan Koreksi' : 'Penyesuaian Invoice' }}</VTooltip>
-            </VBtn>
-            <VBtn
-              v-if="item.status === 'DRAFT' && authStore.canLockEndingBalance"
-              icon
               size="x-small"
-              variant="tonal"
-              color="success"
-              :loading="lockingId === item.id"
-              @click="confirmLock(item)"
+              class="ml-1"
+              label
             >
-              <VIcon icon="ri-lock-line" />
-              <VTooltip activator="parent">Kunci Periode</VTooltip>
-            </VBtn>
-            <VBtn
-              v-if="item.status === 'LOCKED' && authStore.canLockEndingBalance"
-              icon
+              Ada Koreksi
+            </VChip>
+          </template>
+
+          <template #expanded-row="{ item }">
+            <tr>
+              <td :colspan="headers.length + 1" class="pa-0">
+                <EbInvoiceBreakdown :eb-id="item.id" />
+              </td>
+            </tr>
+          </template>
+
+          <template #item.actions="{ item }">
+            <div class="d-flex gap-1">
+              <VBtn
+                icon
+                size="x-small"
+                variant="text"
+                color="primary"
+                :to="{ name: 'finance-ending-balance-show', params: { id: item.id } }"
+              >
+                <VIcon icon="ri-eye-line" />
+                <VTooltip activator="parent">Detail</VTooltip>
+              </VBtn>
+              <VBtn
+                v-if="authStore.canOperateEndingBalance && !item.has_active_koreksi"
+                icon
+                size="x-small"
+                variant="tonal"
+                color="info"
+                @click="openKoreksiDialog(item)"
+              >
+                <VIcon icon="ri-pencil-line" />
+                <VTooltip activator="parent">{{ item.status === 'LOCKED' ? 'Ajukan Koreksi' : 'Penyesuaian Invoice' }}</VTooltip>
+              </VBtn>
+              <VBtn
+                v-if="item.status === 'DRAFT' && authStore.canLockEndingBalance"
+                icon
+                size="x-small"
+                variant="tonal"
+                color="success"
+                :loading="lockingId === item.id"
+                @click="confirmLock(item)"
+              >
+                <VIcon icon="ri-lock-line" />
+                <VTooltip activator="parent">Kunci Periode</VTooltip>
+              </VBtn>
+              <VBtn
+                v-if="item.status === 'LOCKED' && authStore.canLockEndingBalance"
+                icon
+                size="x-small"
+                variant="tonal"
+                color="warning"
+                :loading="unlockingId === item.id"
+                @click="confirmUnlock(item)"
+              >
+                <VIcon icon="ri-lock-unlock-line" />
+                <VTooltip activator="parent">Buka Periode</VTooltip>
+              </VBtn>
+            </div>
+          </template>
+        </BaseTable>
+      </VCard>
+
+      <!-- Tabel B2C -->
+      <VCard v-if="activeSegmentTab === 'b2c'">
+        <VCardTitle class="px-4 pt-4 pb-0 text-body-1 font-weight-bold d-flex align-center gap-2">
+          <VIcon icon="ri-store-line" size="20" color="secondary" />
+          Ending Balance B2C
+        </VCardTitle>
+        <VCardText class="d-flex flex-wrap align-center gap-3 pb-0">
+          <VTextField
+            v-model="periodeDraftB2C.periode_awal"
+            label="Dari Periode"
+            type="date"
+            density="compact"
+            hide-details
+            style="max-width: 180px"
+          />
+          <VTextField
+            v-model="periodeDraftB2C.periode_akhir"
+            label="Sampai Periode"
+            type="date"
+            density="compact"
+            hide-details
+            style="max-width: 180px"
+          />
+          <VSelect
+            v-model="filtersB2C.status"
+            label="Status"
+            density="compact"
+            hide-details
+            clearable
+            style="max-width: 160px"
+            :items="[{ title: 'Draft', value: 'DRAFT' }, { title: 'Locked', value: 'LOCKED' }]"
+            @update:model-value="doFetch(1)"
+          />
+          <VBtn
+            color="primary"
+            variant="tonal"
+            size="small"
+            prepend-icon="ri-filter-3-line"
+            @click="applyPeriodeFiltersB2C"
+          >
+            Filter
+          </VBtn>
+        </VCardText>
+        <BaseTable
+          :headers="headers"
+          :items="rows"
+          :total="meta.total"
+          :loading="loading"
+          :per-page="meta.per_page"
+          :page="currentPage"
+          item-value="id"
+          show-expand
+          v-model:expanded="expanded"
+          column-resize-key="finance-ending-balance-b2c"
+          @update:options="onTableOptions"
+        >
+          <template #item.no="{ index }">
+            <span class="text-medium-emphasis">{{ (currentPage - 1) * meta.per_page + index + 1 }}</span>
+          </template>
+
+          <template #item.nama_klien="{ item }">
+            <div class="font-weight-medium text-no-wrap">{{ item.nama_klien }}</div>
+          </template>
+
+          <template #item.periode="{ item }">
+            <div class="text-caption text-no-wrap">
+              {{ formatDate(item.periode_awal) }} – {{ formatDate(item.periode_akhir) }}
+            </div>
+          </template>
+
+          <template #item.saldo_awal="{ item }">
+            {{ formatRp(item.saldo_awal) }}
+          </template>
+
+          <template #item.invoice_masuk="{ item }">
+            {{ formatRp(item.invoice_masuk) }}
+          </template>
+
+          <template #item.pembayaran="{ item }">
+            {{ formatRp(item.pembayaran) }}
+          </template>
+
+          <template #item.saldo_akhir_final="{ item }">
+            <div :class="item.saldo_akhir_sistem !== item.saldo_akhir_final ? 'text-warning font-weight-bold' : 'font-weight-bold'">
+              {{ formatRp(item.saldo_akhir_final) }}
+            </div>
+            <div v-if="item.saldo_akhir_sistem !== item.saldo_akhir_final" class="text-caption text-medium-emphasis">
+              (sistem: {{ formatRp(item.saldo_akhir_sistem) }})
+            </div>
+          </template>
+
+          <template #item.outstanding="{ item }">
+            <div :class="item.outstanding > 0 ? 'font-weight-medium' : 'text-medium-emphasis'">
+              {{ formatRp(item.outstanding) }}
+            </div>
+            <div class="text-caption text-medium-emphasis">{{ item.outstanding_count }} Invoice</div>
+          </template>
+
+          <template #item.overdue="{ item }">
+            <div :class="item.overdue > 0 ? 'text-error font-weight-medium' : 'text-medium-emphasis'">
+              {{ formatRp(item.overdue) }}
+            </div>
+            <div class="text-caption text-medium-emphasis">{{ item.overdue_count }} Invoice</div>
+          </template>
+
+          <template #item.status="{ item }">
+            <EndingBalanceStatusBadge :status="item.status" />
+            <VChip
+              v-if="item.has_active_koreksi"
+              color="info"
               size="x-small"
-              variant="tonal"
-              color="warning"
-              :loading="unlockingId === item.id"
-              @click="confirmUnlock(item)"
+              class="ml-1"
+              label
             >
-              <VIcon icon="ri-lock-unlock-line" />
-              <VTooltip activator="parent">Buka Periode</VTooltip>
-            </VBtn>
-          </div>
-        </template>
-      </BaseTable>
-    </VCard>
+              Ada Koreksi
+            </VChip>
+          </template>
+
+          <template #expanded-row="{ item }">
+            <tr>
+              <td :colspan="headers.length + 1" class="pa-0">
+                <EbInvoiceBreakdown :eb-id="item.id" />
+              </td>
+            </tr>
+          </template>
+
+          <template #item.actions="{ item }">
+            <div class="d-flex gap-1">
+              <VBtn
+                icon
+                size="x-small"
+                variant="text"
+                color="primary"
+                :to="{ name: 'finance-ending-balance-show', params: { id: item.id } }"
+              >
+                <VIcon icon="ri-eye-line" />
+                <VTooltip activator="parent">Detail</VTooltip>
+              </VBtn>
+              <VBtn
+                v-if="authStore.canOperateEndingBalance && !item.has_active_koreksi"
+                icon
+                size="x-small"
+                variant="tonal"
+                color="info"
+                @click="openKoreksiDialog(item)"
+              >
+                <VIcon icon="ri-pencil-line" />
+                <VTooltip activator="parent">{{ item.status === 'LOCKED' ? 'Ajukan Koreksi' : 'Penyesuaian Invoice' }}</VTooltip>
+              </VBtn>
+              <VBtn
+                v-if="item.status === 'DRAFT' && authStore.canLockEndingBalance"
+                icon
+                size="x-small"
+                variant="tonal"
+                color="success"
+                :loading="lockingId === item.id"
+                @click="confirmLock(item)"
+              >
+                <VIcon icon="ri-lock-line" />
+                <VTooltip activator="parent">Kunci Periode</VTooltip>
+              </VBtn>
+              <VBtn
+                v-if="item.status === 'LOCKED' && authStore.canLockEndingBalance"
+                icon
+                size="x-small"
+                variant="tonal"
+                color="warning"
+                :loading="unlockingId === item.id"
+                @click="confirmUnlock(item)"
+              >
+                <VIcon icon="ri-lock-unlock-line" />
+                <VTooltip activator="parent">Buka Periode</VTooltip>
+              </VBtn>
+            </div>
+          </template>
+        </BaseTable>
+      </VCard>
+    </template>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- Tampilan approver (ADMIN/MANAGER/SUPERVISOR): approval + list -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <template v-if="authStore.canApproveEndingBalanceManager">
+      <!-- Section 1: Menunggu Persetujuan -->
+      <div class="mb-4 d-flex align-center gap-3">
+        <span class="text-h6 font-weight-semibold">Ending Balance Menunggu Persetujuan</span>
+        <VChip v-if="pendingRows.length" size="small" color="error" label>{{ pendingRows.length }} menunggu</VChip>
+      </div>
+
+      <VCard class="mb-6">
+        <VDataTable
+          :headers="pendingHeaders"
+          :items="pendingRows"
+          :loading="pendingLoading"
+          :items-per-page="10"
+          :items-per-page-options="[{ value: 10, title: '10' }, { value: 25, title: '25' }, { value: 50, title: '50' }, { value: 100, title: '100' }]"
+          no-data-text="Tidak ada koreksi yang menunggu persetujuan Anda."
+          density="comfortable"
+        >
+          <template #item.segment="{ item }">
+            <VChip size="x-small" :color="item.segment === 'B2B' ? 'primary' : 'secondary'" label>
+              {{ item.segment }}
+            </VChip>
+          </template>
+          <template #item.tipe="{ item }">
+            <VChip size="x-small" :color="tipeBadgeColor(item.tipe)" label>{{ tipeLabel(item.tipe) }}</VChip>
+          </template>
+          <template #item.no_dokumen="{ item }">
+            <span class="text-caption font-weight-medium">{{ item.no_dokumen || '—' }}</span>
+          </template>
+          <template #item.nama_klien="{ item }">
+            <span class="font-weight-medium">{{ item.nama_klien }}</span>
+          </template>
+          <template #item.nilai_koreksi="{ item }">
+            <span class="font-weight-bold" :class="item.nilai_koreksi >= 0 ? 'text-success' : 'text-error'">
+              {{ item.nilai_koreksi >= 0 ? '+' : '' }}{{ formatRp(item.nilai_koreksi) }}
+            </span>
+          </template>
+          <template #item.submitted_at="{ item }">
+            <span class="text-caption">{{ formatDatetime(item.submitted_at) }}</span>
+          </template>
+          <template #item.actions="{ item }">
+            <div class="d-flex gap-1 justify-center">
+              <VBtn icon size="small" variant="text" color="primary"
+                :to="{ name: 'finance-ending-balance-show', params: { id: item.ending_balance_id } }">
+                <VIcon icon="ri-eye-line" size="18" />
+                <VTooltip activator="parent">Lihat EB</VTooltip>
+              </VBtn>
+              <VBtn icon size="small" color="success" variant="tonal" @click="openApprovalActionDialog(item, 'approve')">
+                <VIcon icon="ri-check-line" size="18" />
+                <VTooltip activator="parent">Setujui</VTooltip>
+              </VBtn>
+              <VBtn icon size="small" color="error" variant="tonal" @click="openApprovalActionDialog(item, 'reject')">
+                <VIcon icon="ri-close-line" size="18" />
+                <VTooltip activator="parent">Tolak</VTooltip>
+              </VBtn>
+            </div>
+          </template>
+        </VDataTable>
+      </VCard>
+
+      <!-- Section 2: List Ending Balance -->
+      <div class="d-flex align-center gap-3 mt-6 mb-4">
+        <span class="text-h6 font-weight-semibold">List Ending Balance</span>
+        <VDivider />
+      </div>
+
+      <VTabs :model-value="activeSegmentTab" class="mb-4" @update:model-value="onSegmentTabChange">
+        <VTab value="b2b">Ending Balance B2B</VTab>
+        <VTab value="b2c">Ending Balance B2C</VTab>
+      </VTabs>
+
+      <!-- Tabel B2B -->
+      <VCard v-if="activeSegmentTab === 'b2b'" class="mb-4">
+        <VCardTitle class="px-4 pt-4 pb-0 text-body-1 font-weight-bold d-flex align-center gap-2">
+          <VIcon icon="ri-building-line" size="20" color="primary" />
+          Ending Balance B2B
+        </VCardTitle>
+        <VCardText class="d-flex flex-wrap align-center gap-3 pb-0">
+          <VTextField
+            v-model="periodeDraftB2B.periode_awal"
+            label="Dari Periode"
+            type="date"
+            density="compact"
+            hide-details
+            style="max-width: 180px"
+          />
+          <VTextField
+            v-model="periodeDraftB2B.periode_akhir"
+            label="Sampai Periode"
+            type="date"
+            density="compact"
+            hide-details
+            style="max-width: 180px"
+          />
+          <VSelect
+            v-model="filtersB2B.status"
+            label="Status"
+            density="compact"
+            hide-details
+            clearable
+            style="max-width: 160px"
+            :items="[{ title: 'Draft', value: 'DRAFT' }, { title: 'Locked', value: 'LOCKED' }]"
+            @update:model-value="doFetchB2B(1)"
+          />
+          <VBtn
+            color="primary"
+            variant="tonal"
+            size="small"
+            prepend-icon="ri-filter-3-line"
+            @click="applyPeriodeFiltersB2B"
+          >
+            Filter
+          </VBtn>
+        </VCardText>
+        <BaseTable
+          :headers="headers"
+          :items="rowsB2B"
+          :total="metaB2B.total"
+          :loading="loadingB2B"
+          :per-page="metaB2B.per_page"
+          :page="currentPageB2B"
+          item-value="id"
+          show-expand
+          v-model:expanded="expandedB2B"
+          column-resize-key="finance-ending-balance-b2b"
+          @update:options="onTableOptionsB2B"
+        >
+          <template #item.no="{ index }">
+            <span class="text-medium-emphasis">{{ (currentPageB2B - 1) * metaB2B.per_page + index + 1 }}</span>
+          </template>
+
+          <template #item.nama_klien="{ item }">
+            <div class="font-weight-medium text-no-wrap">{{ item.nama_klien }}</div>
+          </template>
+
+          <template #item.periode="{ item }">
+            <div class="text-caption text-no-wrap">
+              {{ formatDate(item.periode_awal) }} – {{ formatDate(item.periode_akhir) }}
+            </div>
+          </template>
+
+          <template #item.saldo_awal="{ item }">
+            {{ formatRp(item.saldo_awal) }}
+          </template>
+
+          <template #item.invoice_masuk="{ item }">
+            {{ formatRp(item.invoice_masuk) }}
+          </template>
+
+          <template #item.pembayaran="{ item }">
+            {{ formatRp(item.pembayaran) }}
+          </template>
+
+          <template #item.saldo_akhir_final="{ item }">
+            <div :class="item.saldo_akhir_sistem !== item.saldo_akhir_final ? 'text-warning font-weight-bold' : 'font-weight-bold'">
+              {{ formatRp(item.saldo_akhir_final) }}
+            </div>
+            <div v-if="item.saldo_akhir_sistem !== item.saldo_akhir_final" class="text-caption text-medium-emphasis">
+              (sistem: {{ formatRp(item.saldo_akhir_sistem) }})
+            </div>
+          </template>
+
+          <template #item.outstanding="{ item }">
+            <div :class="item.outstanding > 0 ? 'font-weight-medium' : 'text-medium-emphasis'">
+              {{ formatRp(item.outstanding) }}
+            </div>
+            <div class="text-caption text-medium-emphasis">{{ item.outstanding_count }} Invoice</div>
+          </template>
+
+          <template #item.overdue="{ item }">
+            <div :class="item.overdue > 0 ? 'text-error font-weight-medium' : 'text-medium-emphasis'">
+              {{ formatRp(item.overdue) }}
+            </div>
+            <div class="text-caption text-medium-emphasis">{{ item.overdue_count }} Invoice</div>
+          </template>
+
+          <template #item.status="{ item }">
+            <EndingBalanceStatusBadge :status="item.status" />
+            <VChip
+              v-if="item.has_active_koreksi"
+              color="info"
+              size="x-small"
+              class="ml-1"
+              label
+            >
+              Ada Koreksi
+            </VChip>
+          </template>
+
+          <template #expanded-row="{ item }">
+            <tr>
+              <td :colspan="headers.length + 1" class="pa-0">
+                <EbInvoiceBreakdown :eb-id="item.id" />
+              </td>
+            </tr>
+          </template>
+
+          <template #item.actions="{ item }">
+            <div class="d-flex gap-1">
+              <VBtn
+                icon
+                size="x-small"
+                variant="text"
+                color="primary"
+                :to="{ name: 'finance-ending-balance-show', params: { id: item.id } }"
+              >
+                <VIcon icon="ri-eye-line" />
+                <VTooltip activator="parent">Detail</VTooltip>
+              </VBtn>
+              <VBtn
+                v-if="authStore.canOperateEndingBalance && !item.has_active_koreksi"
+                icon
+                size="x-small"
+                variant="tonal"
+                color="info"
+                @click="openKoreksiDialog(item)"
+              >
+                <VIcon icon="ri-pencil-line" />
+                <VTooltip activator="parent">{{ item.status === 'LOCKED' ? 'Ajukan Koreksi' : 'Penyesuaian Invoice' }}</VTooltip>
+              </VBtn>
+              <VBtn
+                v-if="item.status === 'DRAFT' && authStore.canLockEndingBalance"
+                icon
+                size="x-small"
+                variant="tonal"
+                color="success"
+                :loading="lockingId === item.id"
+                @click="confirmLock(item)"
+              >
+                <VIcon icon="ri-lock-line" />
+                <VTooltip activator="parent">Kunci Periode</VTooltip>
+              </VBtn>
+              <VBtn
+                v-if="item.status === 'LOCKED' && authStore.canLockEndingBalance"
+                icon
+                size="x-small"
+                variant="tonal"
+                color="warning"
+                :loading="unlockingId === item.id"
+                @click="confirmUnlock(item)"
+              >
+                <VIcon icon="ri-lock-unlock-line" />
+                <VTooltip activator="parent">Buka Periode</VTooltip>
+              </VBtn>
+            </div>
+          </template>
+        </BaseTable>
+      </VCard>
+
+      <!-- Tabel B2C -->
+      <VCard v-if="activeSegmentTab === 'b2c'">
+        <VCardTitle class="px-4 pt-4 pb-0 text-body-1 font-weight-bold d-flex align-center gap-2">
+          <VIcon icon="ri-store-line" size="20" color="secondary" />
+          Ending Balance B2C
+        </VCardTitle>
+        <VCardText class="d-flex flex-wrap align-center gap-3 pb-0">
+          <VTextField
+            v-model="periodeDraftB2C.periode_awal"
+            label="Dari Periode"
+            type="date"
+            density="compact"
+            hide-details
+            style="max-width: 180px"
+          />
+          <VTextField
+            v-model="periodeDraftB2C.periode_akhir"
+            label="Sampai Periode"
+            type="date"
+            density="compact"
+            hide-details
+            style="max-width: 180px"
+          />
+          <VSelect
+            v-model="filtersB2C.status"
+            label="Status"
+            density="compact"
+            hide-details
+            clearable
+            style="max-width: 160px"
+            :items="[{ title: 'Draft', value: 'DRAFT' }, { title: 'Locked', value: 'LOCKED' }]"
+            @update:model-value="doFetch(1)"
+          />
+          <VBtn
+            color="primary"
+            variant="tonal"
+            size="small"
+            prepend-icon="ri-filter-3-line"
+            @click="applyPeriodeFiltersB2C"
+          >
+            Filter
+          </VBtn>
+        </VCardText>
+        <BaseTable
+          :headers="headers"
+          :items="rows"
+          :total="meta.total"
+          :loading="loading"
+          :per-page="meta.per_page"
+          :page="currentPage"
+          item-value="id"
+          show-expand
+          v-model:expanded="expanded"
+          column-resize-key="finance-ending-balance-b2c"
+          @update:options="onTableOptions"
+        >
+          <template #item.no="{ index }">
+            <span class="text-medium-emphasis">{{ (currentPage - 1) * meta.per_page + index + 1 }}</span>
+          </template>
+
+          <template #item.nama_klien="{ item }">
+            <div class="font-weight-medium text-no-wrap">{{ item.nama_klien }}</div>
+          </template>
+
+          <template #item.periode="{ item }">
+            <div class="text-caption text-no-wrap">
+              {{ formatDate(item.periode_awal) }} – {{ formatDate(item.periode_akhir) }}
+            </div>
+          </template>
+
+          <template #item.saldo_awal="{ item }">
+            {{ formatRp(item.saldo_awal) }}
+          </template>
+
+          <template #item.invoice_masuk="{ item }">
+            {{ formatRp(item.invoice_masuk) }}
+          </template>
+
+          <template #item.pembayaran="{ item }">
+            {{ formatRp(item.pembayaran) }}
+          </template>
+
+          <template #item.saldo_akhir_final="{ item }">
+            <div :class="item.saldo_akhir_sistem !== item.saldo_akhir_final ? 'text-warning font-weight-bold' : 'font-weight-bold'">
+              {{ formatRp(item.saldo_akhir_final) }}
+            </div>
+            <div v-if="item.saldo_akhir_sistem !== item.saldo_akhir_final" class="text-caption text-medium-emphasis">
+              (sistem: {{ formatRp(item.saldo_akhir_sistem) }})
+            </div>
+          </template>
+
+          <template #item.outstanding="{ item }">
+            <div :class="item.outstanding > 0 ? 'font-weight-medium' : 'text-medium-emphasis'">
+              {{ formatRp(item.outstanding) }}
+            </div>
+            <div class="text-caption text-medium-emphasis">{{ item.outstanding_count }} Invoice</div>
+          </template>
+
+          <template #item.overdue="{ item }">
+            <div :class="item.overdue > 0 ? 'text-error font-weight-medium' : 'text-medium-emphasis'">
+              {{ formatRp(item.overdue) }}
+            </div>
+            <div class="text-caption text-medium-emphasis">{{ item.overdue_count }} Invoice</div>
+          </template>
+
+          <template #item.status="{ item }">
+            <EndingBalanceStatusBadge :status="item.status" />
+            <VChip
+              v-if="item.has_active_koreksi"
+              color="info"
+              size="x-small"
+              class="ml-1"
+              label
+            >
+              Ada Koreksi
+            </VChip>
+          </template>
+
+          <template #expanded-row="{ item }">
+            <tr>
+              <td :colspan="headers.length + 1" class="pa-0">
+                <EbInvoiceBreakdown :eb-id="item.id" />
+              </td>
+            </tr>
+          </template>
+
+          <template #item.actions="{ item }">
+            <div class="d-flex gap-1">
+              <VBtn
+                icon
+                size="x-small"
+                variant="text"
+                color="primary"
+                :to="{ name: 'finance-ending-balance-show', params: { id: item.id } }"
+              >
+                <VIcon icon="ri-eye-line" />
+                <VTooltip activator="parent">Detail</VTooltip>
+              </VBtn>
+              <VBtn
+                v-if="authStore.canOperateEndingBalance && !item.has_active_koreksi"
+                icon
+                size="x-small"
+                variant="tonal"
+                color="info"
+                @click="openKoreksiDialog(item)"
+              >
+                <VIcon icon="ri-pencil-line" />
+                <VTooltip activator="parent">{{ item.status === 'LOCKED' ? 'Ajukan Koreksi' : 'Penyesuaian Invoice' }}</VTooltip>
+              </VBtn>
+              <VBtn
+                v-if="item.status === 'DRAFT' && authStore.canLockEndingBalance"
+                icon
+                size="x-small"
+                variant="tonal"
+                color="success"
+                :loading="lockingId === item.id"
+                @click="confirmLock(item)"
+              >
+                <VIcon icon="ri-lock-line" />
+                <VTooltip activator="parent">Kunci Periode</VTooltip>
+              </VBtn>
+              <VBtn
+                v-if="item.status === 'LOCKED' && authStore.canLockEndingBalance"
+                icon
+                size="x-small"
+                variant="tonal"
+                color="warning"
+                :loading="unlockingId === item.id"
+                @click="confirmUnlock(item)"
+              >
+                <VIcon icon="ri-lock-unlock-line" />
+                <VTooltip activator="parent">Buka Periode</VTooltip>
+              </VBtn>
+            </div>
+          </template>
+        </BaseTable>
+      </VCard>
+    </template>
 
     <!-- Dialog Konfirmasi Lock -->
     <VDialog v-model="showLockDialog" max-width="400">
@@ -533,6 +970,153 @@
           <VBtn variant="text" :disabled="submittingKoreksi" @click="showKoreksiDialog = false">Batal</VBtn>
           <VBtn color="primary" :loading="submittingKoreksi" @click="submitKoreksiDialog">
             {{ isKoreksiDraft ? 'Terapkan Penyesuaian' : 'Ajukan Koreksi' }}
+          </VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
+
+    <!-- Dialog Aksi Approval (Setujui/Tolak koreksi) -->
+    <VDialog v-model="approvalActionDialog.open" max-width="480" persistent>
+      <VCard class="overflow-hidden">
+        <!-- Gradient band -->
+        <div :class="['action-band', approvalActionDialog.action === 'approve' ? 'action-band--success' : 'action-band--error']">
+          <VBtn icon variant="text" size="small" class="action-band-close" @click="closeApprovalActionDialog">
+            <VIcon icon="ri-close-line" size="20" color="white" />
+          </VBtn>
+        </div>
+
+        <!-- Floating avatar + title -->
+        <div class="action-hero text-center">
+          <VAvatar
+            :color="approvalActionDialog.action === 'approve' ? 'success' : 'error'"
+            size="68"
+            class="action-avatar"
+          >
+            <VIcon
+              :icon="approvalActionDialog.action === 'approve' ? 'ri-check-double-line' : 'ri-close-circle-line'"
+              size="32"
+              color="white"
+            />
+          </VAvatar>
+          <div class="text-h6 font-weight-bold mt-3">
+            {{ approvalActionDialog.action === 'approve' ? 'Setujui Koreksi' : 'Tolak Koreksi' }}
+          </div>
+          <div class="text-body-2 text-medium-emphasis mt-1">
+            {{ approvalActionDialog.action === 'approve'
+              ? 'Pastikan data sudah benar sebelum menyetujui.'
+              : 'Berikan alasan penolakan yang jelas.' }}
+          </div>
+        </div>
+
+        <VDivider class="mt-4" />
+
+        <VCardText class="pa-5">
+          <!-- Info summary -->
+          <div class="info-box rounded-lg pa-4 mb-4">
+            <div class="d-flex justify-space-between align-center mb-3">
+              <span class="info-label d-flex align-center gap-1">
+                <VIcon icon="ri-building-line" size="15" />
+                Klien
+              </span>
+              <span class="text-body-2 font-weight-semibold">{{ approvalActionDialog.koreksi?.nama_klien }}</span>
+            </div>
+            <div v-if="approvalActionDialog.koreksi?.no_invoice" class="d-flex justify-space-between align-center mb-3">
+              <span class="info-label d-flex align-center gap-1">
+                <VIcon icon="ri-file-list-3-line" size="15" />
+                Invoice Tertaut
+              </span>
+              <span class="text-body-2 font-weight-semibold">{{ approvalActionDialog.koreksi?.no_invoice }}</span>
+            </div>
+            <div class="d-flex justify-space-between align-center mb-3">
+              <span class="info-label d-flex align-center gap-1">
+                <VIcon icon="ri-money-dollar-circle-line" size="15" />
+                Nilai Koreksi
+              </span>
+              <span
+                class="text-body-2 font-weight-bold"
+                :class="(approvalActionDialog.koreksi?.nilai_koreksi ?? 0) >= 0 ? 'text-success' : 'text-error'"
+              >
+                {{ (approvalActionDialog.koreksi?.nilai_koreksi ?? 0) >= 0 ? '+' : '' }}{{ formatRp(approvalActionDialog.koreksi?.nilai_koreksi) }}
+              </span>
+            </div>
+            <div class="d-flex justify-space-between align-center mb-3">
+              <span class="info-label d-flex align-center gap-1">
+                <VIcon icon="ri-price-tag-3-line" size="15" />
+                Tipe
+              </span>
+              <VChip size="x-small" :color="tipeBadgeColor(approvalActionDialog.koreksi?.tipe)" label>{{ tipeLabel(approvalActionDialog.koreksi?.tipe) }}</VChip>
+            </div>
+            <div v-if="approvalActionDialog.koreksi?.no_dokumen" class="d-flex justify-space-between align-center mb-3">
+              <span class="info-label d-flex align-center gap-1">
+                <VIcon icon="ri-file-text-line" size="15" />
+                No Dokumen
+              </span>
+              <span class="text-body-2 font-weight-semibold">{{ approvalActionDialog.koreksi?.no_dokumen }}</span>
+            </div>
+            <div class="d-flex justify-space-between align-start gap-4">
+              <span class="info-label d-flex align-center gap-1 flex-shrink-0">
+                <VIcon icon="ri-chat-1-line" size="15" />
+                Alasan
+              </span>
+              <span class="text-body-2 text-right">{{ approvalActionDialog.koreksi?.alasan_koreksi ?? '-' }}</span>
+            </div>
+          </div>
+
+          <!-- Detail item untuk KOREKSI_QTY_HARGA -->
+          <template v-if="approvalActionDialog.koreksi?.tipe === 'KOREKSI_QTY_HARGA' && approvalActionDialog.koreksi?.items?.length">
+            <div class="text-caption text-medium-emphasis font-weight-bold mb-1 mt-3">Detail Perubahan Item:</div>
+            <VTable density="compact" class="mb-3" style="font-size: 0.78rem">
+              <thead>
+                <tr>
+                  <th>Barang</th>
+                  <th class="text-end">Qty Lama</th>
+                  <th class="text-end">Qty Baru</th>
+                  <th class="text-end">Harga Lama</th>
+                  <th class="text-end">Harga Baru</th>
+                  <th class="text-end">Selisih</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="item in approvalActionDialog.koreksi.items" :key="item.id">
+                  <td>{{ item.nama_barang }}</td>
+                  <td class="text-end">{{ item.qty_lama }}</td>
+                  <td class="text-end">{{ item.qty_baru }}</td>
+                  <td class="text-end">{{ formatRp(item.harga_satuan_lama) }}</td>
+                  <td class="text-end">{{ formatRp(item.harga_satuan_baru) }}</td>
+                  <td class="text-end font-weight-bold" :class="item.selisih >= 0 ? 'text-success' : 'text-error'">
+                    {{ item.selisih >= 0 ? '+' : '' }}{{ formatRp(item.selisih) }}
+                  </td>
+                </tr>
+              </tbody>
+            </VTable>
+          </template>
+
+          <!-- Keterangan -->
+          <VTextarea
+            v-model="approvalActionDialog.keterangan"
+            :label="approvalActionDialog.action === 'reject' ? 'Keterangan (Wajib)' : 'Keterangan (Opsional)'"
+            :placeholder="approvalActionDialog.action === 'reject'
+              ? 'Tuliskan alasan penolakan...'
+              : 'Tambahkan catatan jika diperlukan...'"
+            rows="3"
+            auto-grow
+            variant="outlined"
+            density="compact"
+            hide-details="auto"
+            :error-messages="approvalActionDialog.error ? [approvalActionDialog.error] : []"
+          />
+        </VCardText>
+
+        <VDivider />
+        <VCardActions class="pa-4 justify-end gap-2">
+          <VBtn variant="tonal" color="secondary" @click="closeApprovalActionDialog">Batal</VBtn>
+          <VBtn
+            :color="approvalActionDialog.action === 'approve' ? 'success' : 'error'"
+            :loading="approvalActionDialog.loading"
+            :prepend-icon="approvalActionDialog.action === 'approve' ? 'ri-check-line' : 'ri-close-line'"
+            @click="confirmApprovalAction"
+          >
+            {{ approvalActionDialog.action === 'approve' ? 'Setujui' : 'Tolak' }}
           </VBtn>
         </VCardActions>
       </VCard>
@@ -752,6 +1336,10 @@ function formatDate(d) {
   if (!d) return '-'
   return new Date(d).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
 }
+function formatDatetime(d) {
+  if (!d) return '-'
+  return new Date(d).toLocaleString('id-ID')
+}
 
 async function doFetch(page = 1) {
   loading.value = true
@@ -926,11 +1514,100 @@ async function submitKoreksiDialog() {
   }
 }
 
+// ─── State & fungsi Approval Koreksi (dipindah dari Approval.vue) ────────────
+const pendingLoading = ref(false)
+const pendingRows    = ref([])
+
+const pendingHeaders = [
+  { title: 'SEGMEN',           key: 'segment',       sortable: false },
+  { title: 'TIPE',             key: 'tipe',          sortable: false },
+  { title: 'NO DOKUMEN',       key: 'no_dokumen',    sortable: false },
+  { title: 'CLIENT',           key: 'nama_klien',    sortable: false },
+  { title: 'NOMINAL',          key: 'nilai_koreksi', sortable: false },
+  { title: 'ALASAN',           key: 'alasan_koreksi',sortable: false },
+  { title: 'DIAJUKAN OLEH',    key: 'submitted_by',  sortable: false },
+  { title: 'TANGGAL DIAJUKAN', key: 'submitted_at',  sortable: false },
+  { title: 'AKSI',             key: 'actions',       sortable: false, align: 'center' },
+]
+
+const approvalActionDialog = reactive({
+  open      : false,
+  action    : null,
+  koreksi   : null,
+  keterangan: '',
+  error     : '',
+  loading   : false,
+})
+
+function tipeBadgeColor(tipe) {
+  return { CREDIT_NOTE: 'error', DEBIT_NOTE: 'info', KOREKSI_QTY_HARGA: 'warning', KOREKSI_SALDO: 'secondary' }[tipe] ?? 'default'
+}
+
+function tipeLabel(tipe) {
+  return { CREDIT_NOTE: 'CN', DEBIT_NOTE: 'DN', KOREKSI_QTY_HARGA: 'Koreksi Item', KOREKSI_SALDO: 'Koreksi Saldo' }[tipe] ?? (tipe || '—')
+}
+
+async function fetchPending() {
+  pendingLoading.value = true
+  try {
+    const { data } = await api.get('/finance/ending-balance/koreksi/pending')
+    pendingRows.value = data.data ?? []
+  } finally {
+    pendingLoading.value = false
+  }
+}
+
+function openApprovalActionDialog(koreksi, action) {
+  approvalActionDialog.koreksi    = koreksi
+  approvalActionDialog.action     = action
+  approvalActionDialog.keterangan = ''
+  approvalActionDialog.error      = ''
+  approvalActionDialog.loading    = false
+  approvalActionDialog.open       = true
+}
+
+function closeApprovalActionDialog() {
+  approvalActionDialog.open = false
+}
+
+async function confirmApprovalAction() {
+  if (approvalActionDialog.action === 'reject' && !approvalActionDialog.keterangan.trim()) {
+    approvalActionDialog.error = 'Keterangan wajib diisi saat menolak koreksi.'
+    return
+  }
+
+  approvalActionDialog.error   = ''
+  approvalActionDialog.loading = true
+
+  // Approval EB satu tahap: semua koreksi pending diproses via endpoint final (-manager)
+  // oleh Manager/Supervisor/Admin.
+  const k   = approvalActionDialog.koreksi
+  const url = `/finance/ending-balance/koreksi/${k.id}/${approvalActionDialog.action}-manager`
+
+  try {
+    await api.patch(url, { note: approvalActionDialog.keterangan.trim() || null })
+    approvalActionDialog.open = false
+    fetchPending()
+    refreshLists()
+  } catch (e) {
+    approvalActionDialog.error = e?.response?.data?.message ?? 'Terjadi kesalahan.'
+  } finally {
+    approvalActionDialog.loading = false
+  }
+}
+
 onMounted(() => {
-  doFetch()
-  if (canSeeAll) {
+  if (authStore.canApproveEndingBalanceManager) {
+    fetchPending()
+    doFetch()
     b2bLoaded = true
     doFetchB2B()
+  } else {
+    doFetch()
+    if (canSeeAll) {
+      b2bLoaded = true
+      doFetchB2B()
+    }
   }
 })
 </script>
@@ -995,5 +1672,52 @@ onMounted(() => {
 
 :deep(.eb-table__row:hover) {
   background: rgba(var(--v-theme-on-surface), 0.08) !important;
+}
+
+.action-band {
+  height: 88px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.action-band--success {
+  background: linear-gradient(135deg, rgb(var(--v-theme-success)) 0%, rgba(var(--v-theme-success), 0.65) 100%);
+}
+
+.action-band--error {
+  background: linear-gradient(135deg, rgb(var(--v-theme-error)) 0%, rgba(var(--v-theme-error), 0.65) 100%);
+}
+
+.action-band-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  opacity: 0.85;
+  transition: opacity 0.2s;
+}
+
+.action-band-close:hover {
+  opacity: 1;
+}
+
+.action-hero {
+  margin-top: -34px;
+  padding: 0 24px 4px;
+}
+
+.action-avatar {
+  border: 4px solid rgb(var(--v-theme-surface));
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.info-box {
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  background: rgba(var(--v-theme-on-surface), 0.04);
+}
+
+.info-label {
+  font-size: 0.8125rem;
+  color: rgba(var(--v-theme-on-surface), 0.7);
+  white-space: nowrap;
 }
 </style>

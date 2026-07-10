@@ -91,12 +91,6 @@
     icon: { icon: 'ri-scales-2-line' },
     roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'],
   },
-  {
-    title: 'Ending Balance Approval',
-    to: { name: 'finance-ending-balance-approval' },
-    icon: { icon: 'ri-checkbox-circle-line' },
-    roles: ['ADMIN', 'MANAGER', 'SUPERVISOR'],
-  },
   { heading: 'REKONSILIASI' },
   {
     title: 'Rekonsiliasi Bank',

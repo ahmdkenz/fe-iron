@@ -38,7 +38,7 @@ const enrichedNavItems = computed(() => navItems.map(item => {
     }
   }
 
-  if (item.to?.name === 'finance-ending-balance-approval') {
+  if (item.to?.name === 'finance-ending-balance') {
     return {
       ...item,
       badgeContent: financeNotificationStore.pendingEndingBalanceKoreksieBadge,
