@@ -384,7 +384,7 @@
         </div>
         <VDivider class="mb-4" />
         <DetailRow
-          label="Resto"
+          label="Outlet"
           :value="selectedKlien.resto?.nama_resto"
         />
         <DetailRow
@@ -522,7 +522,7 @@ const headersB2C = [
   { title: 'No',                   key: 'no',          sortable: false, width: '60px' },
   { title: 'Kode Client',          key: 'kode_klien',  sortable: false, minWidth: '140px' },
   { title: 'Nama Billing',         key: 'nama_klien',  sortable: false, minWidth: '200px' },
-  { title: 'Resto',                key: 'resto',        sortable: false, minWidth: '160px' },
+  { title: 'Outlet',                key: 'resto',        sortable: false, minWidth: '160px' },
   { title: 'Investor / Pengelola', key: 'investor',    sortable: false, minWidth: '180px' },
   { title: 'PIC AR',               key: 'karyawan_ar', sortable: false, minWidth: '160px' },
   { title: 'Status',               key: 'status',      sortable: false, minWidth: '90px' },
