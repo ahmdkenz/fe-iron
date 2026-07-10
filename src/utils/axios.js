@@ -40,11 +40,13 @@ api.interceptors.response.use(
   async error => {
     const originalRequest = error.config
 
-    // Skip redirect untuk /auth/me (bootstrap check) dan /auth/refresh (hindari loop)
+    // /auth/me tetap boleh mencoba refresh (mis. access token kedaluwarsa setelah deploy),
+    // tapi tidak boleh memicu redirect paksa — itu bagian dari bootstrap check awal.
+    // /auth/refresh dikecualikan total agar tidak memicu refresh atas dirinya sendiri (hindari loop).
     const isAuthMe      = originalRequest?.url?.endsWith('/auth/me')
     const isAuthRefresh = originalRequest?.url?.endsWith('/auth/refresh')
 
-    if (error.response?.status === 401 && !isAuthMe && !isAuthRefresh && !originalRequest._retry) {
+    if (error.response?.status === 401 && !isAuthRefresh && !originalRequest._retry) {
       // Coba refresh token terlebih dahulu
       const refreshToken = localStorage.getItem('refresh_token')
 
@@ -79,15 +81,21 @@ api.interceptors.response.use(
           processQueue(refreshError, null)
           localStorage.removeItem('auth_token')
           localStorage.removeItem('refresh_token')
-          window.location.href = '/login'
+          // Untuk /auth/me, biarkan store yang menangani state "belum login" —
+          // redirect paksa di sini bisa memicu loop saat bootstrap awal.
+          if (!isAuthMe) {
+            window.location.href = '/login'
+          }
           return Promise.reject(refreshError)
         } finally {
           _isRefreshing = false
         }
       }
 
-      // Tidak ada refresh token — langsung ke login
-      window.location.href = '/login'
+      // Tidak ada refresh token
+      if (!isAuthMe) {
+        window.location.href = '/login'
+      }
     }
 
     return Promise.reject(error)

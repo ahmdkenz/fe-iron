@@ -65,7 +65,15 @@ export const useAuthStore = defineStore('auth', {
   actions: {
     initAuth() {
       if (!_initPromise) {
-        _initPromise = this.fetchMe().catch(() => {})
+        _initPromise = this.fetchMe().catch(error => {
+          this.user = null
+
+          // 401 murni berarti memang belum login — state normal, tidak perlu di-log.
+          // Selain itu (network/500/dll) tetap dimunculkan agar tidak tersamar jadi "belum login".
+          if (error?.response?.status !== 401) {
+            console.error('Gagal memuat sesi user:', error)
+          }
+        })
       }
 
       return _initPromise
