@@ -27,8 +27,8 @@
             <li>Urutan import: MASTER DATA → MASTER BARANG → MASTER INVOICE. Invoice dapat langsung menggunakan data master yang baru diimport.</li>
             <li>Sheet <strong>MASTER DATA</strong>: 1 baris = 1 outlet. Field Client AR: <strong>pic_ar</strong> (PIC AR) wajib jika <code>tipe_klien</code> diisi. Kolom <strong>nama_entitas wajib</strong> jika <code>tipe_klien = PT</code>.</li>
             <li>Sheet <strong>MASTER BARANG</strong>: <strong>kode_barang wajib</strong> untuk setiap baris (identitas unik barang, boleh nama sama untuk barang berbeda). Kolom: kode_barang, nama_barang, spesifikasi, keterangan, status.</li>
-            <li>Sheet <strong>MASTER INVOICE</strong>: 1 baris = 1 item. Baris dengan <code>tipe_invoice + no_urut</code> sama digabung jadi 1 invoice. <code>tipe_invoice</code>: <strong>B2C</strong> atau <strong>B2B</strong>. Invoice LUNAS atau periode terkunci → dilewati otomatis.</li>
-            <li>Setelah invoice berhasil disimpan, <strong>PDF otomatis diupload ke Google Drive</strong> (proses antrian). Link share muncul setelah antrian selesai.</li>
+            <li>Sheet <strong>MASTER INVOICE</strong>: 1 baris = 1 item. Baris dengan <code>tipe_invoice + nama_klien + tanggal_invoice</code> sama digabung jadi 1 invoice. <code>tipe_invoice</code>: <strong>B2C</strong> atau <strong>B2B</strong>. Invoice LUNAS atau periode terkunci → dilewati otomatis.</li>
+            <li>Link share PDF invoice (<strong>signed URL</strong>, berlaku 30 hari) langsung tersedia begitu invoice disimpan — <strong>tidak ada lagi proses antrian</strong>, PDF digenerate on-demand saat link dibuka.</li>
             <li>Import hanya dapat dilakukan oleh role <strong>ADMIN, MANAGER, atau SUPERVISOR</strong>.</li>
             <li>Download template Excel terlebih dahulu untuk mendapatkan format yang benar.</li>
           </ul>
@@ -214,8 +214,8 @@
               <li>File harus berformat <strong>.xlsx</strong> dengan <strong>4 sheet</strong>: <strong>MASTER DATA</strong>, <strong>MASTER BARANG</strong>, <strong>MASTER INVOICE</strong>, dan <strong>Petunjuk Pengisian</strong>.</li>
               <li>Sheet <strong>MASTER DATA</strong>: 1 baris = Investor + Resto + Client AR. Kolom <strong>tipe_klien</strong> (PT/RESTO) &amp; <strong>pic_ar</strong> wajib untuk membuat Client AR.</li>
               <li>Sheet <strong>MASTER BARANG</strong>: kode_barang, nama_barang, spesifikasi, keterangan, status. <strong>kode_barang wajib</strong> di setiap baris (identitas unik barang).</li>
-              <li>Sheet <strong>MASTER INVOICE</strong>: 1 baris = 1 item. Baris dengan <code>tipe_invoice + no_urut</code> sama digabung jadi 1 invoice. Kolom no_invoice_resto/kode_resto/nama_resto wajib untuk B2B, opsional untuk B2C (referensi nomor asli).</li>
-              <li>Setelah invoice disimpan, PDF <strong>otomatis diqueue ke Google Drive</strong>. Link share tersedia setelah job antrian selesai.</li>
+              <li>Sheet <strong>MASTER INVOICE</strong>: 1 baris = 1 item. Baris dengan <code>tipe_invoice + nama_klien + tanggal_invoice</code> sama digabung jadi 1 invoice. Kolom no_invoice_resto/kode_resto/nama_resto wajib untuk B2B, opsional untuk B2C (referensi nomor asli).</li>
+              <li>Setelah invoice disimpan, link share PDF (<strong>signed URL</strong>, berlaku 30 hari) langsung tersedia — PDF digenerate on-demand, tanpa proses antrian.</li>
             </ul>
           </VAlert>
 
