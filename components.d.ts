@@ -39,6 +39,7 @@ declare module 'vue' {
     KelebihanDialog: typeof import('./src/modules/Finance/features/RekonsiliasiBank/components/KelebihanDialog.vue')['default']
     KinerjaArSection: typeof import('./src/modules/Finance/features/Laporan/components/KinerjaArSection.vue')['default']
     KoreksiWizardDialog: typeof import('./src/modules/Finance/features/EndingBalance/components/KoreksiWizardDialog.vue')['default']
+    ManagementIndexShell: typeof import('./src/components/shared/ManagementIndexShell.vue')['default']
     ManagerDashboardSection: typeof import('./src/modules/Finance/features/Dashboard/components/ManagerDashboardSection.vue')['default']
     MatchDialog: typeof import('./src/modules/Finance/features/RekonsiliasiBank/components/MatchDialog.vue')['default']
     MoreBtn: typeof import('./src/@core/components/MoreBtn.vue')['default']

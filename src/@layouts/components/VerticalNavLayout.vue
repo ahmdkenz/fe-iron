@@ -25,6 +25,13 @@ const toggleIsOverlayNavActive = useToggle(isOverlayNavActive)
 // We want to show overlay if overlay nav is visible and want to hide overlay if overlay is hidden and vice versa.
 syncRef(isOverlayNavActive, isLayoutOverlayVisible)
 
+// ℹ️ The scrim should only ever render below the overlay-nav breakpoint (mobile/tablet).
+// isLayoutOverlayVisible alone isn't breakpoint-aware, so gate it here to stop the
+// dark layer from covering the desktop layout.
+const shouldShowLayoutOverlay = computed(() =>
+  configStore.isLessThanOverlayNavBreakpoint && isLayoutOverlayVisible.value,
+)
+
 // })
 
 // ℹ️ Hide overlay if user open overlay nav in <md and increase the window width without closing overlay nav
@@ -101,8 +108,8 @@ const verticalNavAttrs = computed(() => {
     </div>
     <div
       class="layout-overlay"
-      :class="[{ visible: isLayoutOverlayVisible }]"
-      @click="() => { isLayoutOverlayVisible = !isLayoutOverlayVisible }"
+      :class="[{ visible: shouldShowLayoutOverlay }]"
+      @click="() => { isOverlayNavActive = false; isLayoutOverlayVisible = false }"
     />
   </div>
 </template>

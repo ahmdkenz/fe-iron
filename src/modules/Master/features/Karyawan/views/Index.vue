@@ -1,35 +1,31 @@
 <template>
   <div>
-    <PageHeader 
-      title="Manajemen Karyawan" 
+    <ManagementIndexShell
+      tone="violet"
+      icon="ri-team-line"
+      title="Manajemen Karyawan"
       subtitle="Kelola data karyawan"
       :breadcrumbs="[
         { title: 'Dashboard', to: { name: 'dashboard' } },
         { title: 'Karyawan', disabled: true }
       ]"
+      :stats="stats"
+      :stats-loading="loading && !items.length"
+      search-placeholder="Cari NIK / nama karyawan..."
+      v-model:search="params.search"
+      v-model:status="statusFilter"
+      @update:search="debouncedFetch"
+      @update:status="onStatusChange"
     >
-      <VBtn
-        color="primary"
-        prepend-icon="ri-add-line"
-        @click="openCreate"
-      >
-        Tambah Karyawan
-      </VBtn>
-    </PageHeader>
-
-    <VCard>
-      <VCardText class="d-flex gap-4 pb-0">
-        <VTextField
-          v-model="params.search"
-          placeholder="Cari NIK / nama karyawan..."
-          clearable
-          hide-details
-          density="compact"
-          class="search-field"
-          prepend-inner-icon="ri-search-line"
-          @update:model-value="debouncedFetch"
-        />
-      </VCardText>
+      <template #actions>
+        <VBtn
+          color="primary"
+          prepend-icon="ri-add-line"
+          @click="openCreate"
+        >
+          Tambah Karyawan
+        </VBtn>
+      </template>
 
       <BaseTable
         :headers="headers"
@@ -41,7 +37,6 @@
         show-select
         mobile-cards
         v-model:selected="selectedItems"
-        class="mt-2"
         @update:options="onTableOptions"
       >
         <template #mobile-card="{ item }">
@@ -148,8 +143,7 @@
           </div>
         </template>
       </BaseTable>
-    </VCard>
-
+    </ManagementIndexShell>
 
 
     <!-- Detail Dialog -->
@@ -248,7 +242,7 @@
 </template>
 
 <script setup>
-import { nextTick, onActivated, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onActivated, onMounted, ref, watch } from 'vue'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useCrud } from '@/composables/useCrud.js'
 import { useMinimizeWidgetStore } from '@/stores/minimize-widget.store'
@@ -268,6 +262,13 @@ const deleteError = ref('')
 const selectedKaryawan = ref(null)
 const selectedForm = ref(null)
 const selectedItems = ref([])
+const statusFilter = ref('all')
+
+const stats = computed(() => ({
+  total: meta.total,
+  aktif: items.value.filter(i => i.status).length,
+  nonaktif: items.value.filter(i => !i.status).length,
+}))
 
 const headers = [
   { title: 'No',           key: 'no',               sortable: false, width: '60px' },
@@ -290,6 +291,14 @@ function debouncedFetch() {
 function onTableOptions({ page, itemsPerPage }) {
   params.page = page
   params.per_page = itemsPerPage
+  fetchList()
+}
+
+function onStatusChange(val) {
+  statusFilter.value = val
+  if (val === 'all') delete params.status
+  else params.status = val
+  params.page = 1
   fetchList()
 }
 
@@ -376,15 +385,3 @@ async function doBulkDelete() {
 
 onMounted(() => fetchList())
 </script>
-
-<style scoped>
-.search-field {
-  max-width: 300px;
-}
-
-@media (max-width: 599.98px) {
-  .search-field {
-    max-width: 100%;
-  }
-}
-</style>

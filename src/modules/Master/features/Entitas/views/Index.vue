@@ -1,35 +1,31 @@
 <template>
   <div>
-    <PageHeader
+    <ManagementIndexShell
+      tone="teal"
+      icon="ri-building-4-line"
       title="Manajemen Entitas"
       subtitle="Kelola data entitas"
       :breadcrumbs="[
         { title: 'Dashboard', to: { name: 'dashboard' } },
         { title: 'Entitas', disabled: true }
       ]"
+      :stats="stats"
+      :stats-loading="loading && !items.length"
+      search-placeholder="Cari kode / nama entitas..."
+      v-model:search="params.search"
+      v-model:status="statusFilter"
+      @update:search="debouncedFetch"
+      @update:status="onStatusChange"
     >
-      <VBtn
-        color="primary"
-        prepend-icon="ri-add-line"
-        @click="openCreate"
-      >
-        Tambah Entitas
-      </VBtn>
-    </PageHeader>
-
-    <VCard>
-      <VCardText class="d-flex gap-4 pb-0">
-        <VTextField
-          v-model="params.search"
-          placeholder="Cari kode / nama entitas..."
-          clearable
-          hide-details
-          density="compact"
-          class="search-field"
-          prepend-inner-icon="ri-search-line"
-          @update:model-value="debouncedFetch"
-        />
-      </VCardText>
+      <template #actions>
+        <VBtn
+          color="primary"
+          prepend-icon="ri-add-line"
+          @click="openCreate"
+        >
+          Tambah Entitas
+        </VBtn>
+      </template>
 
       <BaseTable
         :headers="headers"
@@ -41,7 +37,6 @@
         show-select
         mobile-cards
         v-model:selected="selectedItems"
-        class="mt-2"
         @update:options="onTableOptions"
       >
         <template #mobile-card="{ item }">
@@ -145,8 +140,7 @@
           </div>
         </template>
       </BaseTable>
-    </VCard>
-
+    </ManagementIndexShell>
 
 
     <!-- Detail Dialog -->
@@ -309,7 +303,7 @@
 </template>
 
 <script setup>
-import { nextTick, onActivated, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onActivated, onMounted, ref, watch } from 'vue'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useCrud } from '@/composables/useCrud.js'
 import { useMinimizeWidgetStore } from '@/stores/minimize-widget.store'
@@ -329,6 +323,13 @@ const deleteError = ref('')
 const selectedEntitas = ref(null)
 const selectedForm = ref(null)
 const selectedItems = ref([])
+const statusFilter = ref('all')
+
+const stats = computed(() => ({
+  total: meta.total,
+  aktif: items.value.filter(i => i.status).length,
+  nonaktif: items.value.filter(i => !i.status).length,
+}))
 
 const headers = [
   { title: 'No',         key: 'no',                        sortable: false, width: '60px' },
@@ -351,6 +352,14 @@ function debouncedFetch() {
 function onTableOptions({ page, itemsPerPage }) {
   params.page = page
   params.per_page = itemsPerPage
+  fetchList()
+}
+
+function onStatusChange(val) {
+  statusFilter.value = val
+  if (val === 'all') delete params.status
+  else params.status = val
+  params.page = 1
   fetchList()
 }
 
@@ -428,16 +437,6 @@ onMounted(() => fetchList())
 </script>
 
 <style scoped>
-.search-field {
-  max-width: 300px;
-}
-
-@media (max-width: 599.98px) {
-  .search-field {
-    max-width: 100%;
-  }
-}
-
 .detail-section-header {
   display: flex;
   align-items: center;

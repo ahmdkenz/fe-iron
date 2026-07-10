@@ -143,7 +143,7 @@
 <style scoped lang="scss">
 .accounting-ambient-backdrop {
   position: fixed;
-  z-index: 0;
+  z-index: -1;
   inset: 0;
   overflow: hidden;
   pointer-events: none;
@@ -163,7 +163,7 @@
   --bd-figure-op: 0.5;
 }
 
-:global(.v-theme--dark) .accounting-ambient-backdrop {
+.v-theme--dark .accounting-ambient-backdrop {
   --bd-grid: rgba(var(--v-theme-on-surface), 0.09);
   --bd-grid-strong: rgba(var(--v-theme-on-surface), 0.14);
 
