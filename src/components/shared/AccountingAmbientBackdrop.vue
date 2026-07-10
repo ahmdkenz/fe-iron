@@ -164,16 +164,16 @@
 }
 
 .v-theme--dark .accounting-ambient-backdrop {
-  --bd-grid: rgba(var(--v-theme-on-surface), 0.09);
-  --bd-grid-strong: rgba(var(--v-theme-on-surface), 0.14);
+  --bd-grid: rgba(var(--v-theme-on-surface), 0.07);
+  --bd-grid-strong: rgba(var(--v-theme-on-surface), 0.11);
 
-  --bd-line-op: 0.68;
-  --bd-line-2-op: 0.5;
-  --bd-fill-top-op: 0.3;
-  --bd-body-op: 0.34;
-  --bd-bar-op: 0.5;
-  --bd-donut-op: 0.72;
-  --bd-figure-op: 0.6;
+  --bd-line-op: 0.5;
+  --bd-line-2-op: 0.36;
+  --bd-fill-top-op: 0.2;
+  --bd-body-op: 0.24;
+  --bd-bar-op: 0.36;
+  --bd-donut-op: 0.55;
+  --bd-figure-op: 0.42;
 }
 
 /* ---------------------------------------------------------------- grid */

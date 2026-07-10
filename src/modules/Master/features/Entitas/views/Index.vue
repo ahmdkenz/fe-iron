@@ -303,7 +303,7 @@
 </template>
 
 <script setup>
-import { computed, nextTick, onActivated, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onActivated, onDeactivated, onMounted, ref, watch } from 'vue'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useCrud } from '@/composables/useCrud.js'
 import { useMinimizeWidgetStore } from '@/stores/minimize-widget.store'
@@ -395,6 +395,17 @@ onActivated(() => {
 })
 function openDetail(p)           { selectedEntitas.value = p;     showDetail.value = true }
 function confirmDelete(p)        { selectedEntitas.value = p;     deleteError.value = ''; showDelete.value = true }
+
+// Dialog teleports (VDialog) survive keep-alive deactivation, so force-close
+// anything not intentionally minimized to avoid a stuck scrim on other pages.
+onDeactivated(() => {
+  showDetail.value = false
+  showDelete.value = false
+
+  const widget = minimizeStore.widgets[FORM_WIDGET_ID]
+  if (showForm.value && !widget?.minimized)
+    showForm.value = false
+})
 
 async function doDelete() {
   deleteError.value = ''

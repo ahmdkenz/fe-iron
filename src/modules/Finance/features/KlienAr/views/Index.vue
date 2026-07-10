@@ -466,7 +466,7 @@
 </template>
 
 <script setup>
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onDeactivated, onMounted, ref } from 'vue'
 
 import { useRouter } from 'vue-router'
 import { useSweetAlert } from '@/composables/useSweetAlert'
@@ -600,6 +600,13 @@ function openCreate()      { router.push({ name: 'finance-klien-ar-create' }) }
 function openEdit(k)       { router.push({ name: 'finance-klien-ar-edit', params: { id: k.id } }) }
 function openDetail(k)     { selectedKlien.value = k;    showDetail.value = true }
 function confirmDelete(k)  { selectedKlien.value = k;    deleteError.value = ''; showDelete.value = true }
+
+// Detail drawer / delete modal teleports (VNavigationDrawer, VDialog) survive
+// keep-alive deactivation, so force-close them to avoid a stuck scrim on other pages.
+onDeactivated(() => {
+  showDetail.value = false
+  showDelete.value = false
+})
 
 async function exportExcel() {
   exporting.value = true

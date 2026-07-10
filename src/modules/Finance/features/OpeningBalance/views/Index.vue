@@ -2537,6 +2537,12 @@ onDeactivated(() => {
   clearDirObDebounceTimer()
   clearDirObDebounceTimerB2B()
   abortPendingRequests()
+
+  // Dialog teleports (VDialog) survive keep-alive deactivation, so force-close
+  // them to avoid a stuck scrim on other pages.
+  showShareDialog.value = false
+  showPembayaran.value = false
+  showExportModal.value = false
 })
 
 onBeforeUnmount(() => {

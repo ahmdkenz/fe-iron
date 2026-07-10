@@ -123,6 +123,12 @@ const verticalNavAttrs = computed(() => {
   // TODO(v2): Check why we need height in vertical nav & min-height in horizontal nav
   block-size: 100%;
 
+  // 👉 Own stacking context so the ambient backdrop's negative z-index
+  // (rendered inside .page-content-container) is scoped to this layout instead
+  // of leaking up to whatever background sits above it in the document tree.
+  position: relative;
+  isolation: isolate;
+
   .layout-content-wrapper {
     display: flex;
     flex-direction: column;
