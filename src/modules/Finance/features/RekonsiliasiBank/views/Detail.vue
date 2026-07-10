@@ -144,7 +144,7 @@
             <span class="text-caption text-error font-weight-medium">
               {{ formatCurrency(item.kelebihan_bayar.sisa) }}
             </span>
-            <VBtn size="x-small" color="error" variant="tonal" @click="openKelebihanDialog(item)">
+            <VBtn v-if="item.can_manage_match" size="x-small" color="error" variant="tonal" @click="openKelebihanDialog(item)">
               Alokasikan / PDM
             </VBtn>
           </div>
@@ -170,11 +170,11 @@
               </VBtn>
             </template>
             <template v-else-if="item.status_cocok === 'MATCHED'">
-              <VBtn size="x-small" variant="outlined" color="error" :loading="unmatchLoading === item.id" @click="openUnmatchDialog(item)">
+              <VBtn v-if="item.can_manage_match" size="x-small" variant="outlined" color="error" :loading="unmatchLoading === item.id" @click="openUnmatchDialog(item)">
                 <VIcon start size="14">ri-link-unlink</VIcon>Batalkan
               </VBtn>
               <VBtn
-                v-if="item.status_posting_2 !== 'POSTED'"
+                v-if="item.can_manage_match && item.status_posting_2 !== 'POSTED'"
                 size="x-small"
                 variant="tonal"
                 color="success"
@@ -183,7 +183,7 @@
               >
                 <VIcon start size="14">ri-checkbox-circle-line</VIcon>Posting
               </VBtn>
-              <VChip v-else color="success" size="x-small" variant="tonal" label>
+              <VChip v-else-if="item.status_posting_2 === 'POSTED'" color="success" size="x-small" variant="tonal" label>
                 <VIcon start size="12">ri-check-line</VIcon>Sudah Posting
               </VChip>
             </template>
