@@ -66,7 +66,7 @@
           </VBtn>
         </VCardText>
         <BaseTable
-          :headers="headers"
+          :headers="headersB2B"
           :items="rowsB2B"
           :total="metaB2B.total"
           :loading="loadingB2B"
@@ -142,7 +142,7 @@
 
           <template #expanded-row="{ item }">
             <tr>
-              <td :colspan="headers.length + 1" class="pa-0">
+              <td :colspan="headersB2B.length + 1" class="pa-0">
                 <EbInvoiceBreakdown :eb-id="item.id" />
               </td>
             </tr>
@@ -262,6 +262,10 @@
 
           <template #item.nama_klien="{ item }">
             <div class="font-weight-medium text-no-wrap">{{ item.nama_klien }}</div>
+          </template>
+
+          <template #item.outlet="{ item }">
+            <span class="text-caption">{{ item.outlet ?? '-' }}</span>
           </template>
 
           <template #item.periode="{ item }">
@@ -413,6 +417,9 @@
           <template #item.nama_klien="{ item }">
             <span class="font-weight-medium">{{ item.nama_klien }}</span>
           </template>
+          <template #item.outlet="{ item }">
+            <span class="text-caption">{{ item.outlet ?? '-' }}</span>
+          </template>
           <template #item.nilai_koreksi="{ item }">
             <span class="font-weight-bold" :class="item.nilai_koreksi >= 0 ? 'text-success' : 'text-error'">
               {{ item.nilai_koreksi >= 0 ? '+' : '' }}{{ formatRp(item.nilai_koreksi) }}
@@ -496,7 +503,7 @@
           </VBtn>
         </VCardText>
         <BaseTable
-          :headers="headers"
+          :headers="headersB2B"
           :items="rowsB2B"
           :total="metaB2B.total"
           :loading="loadingB2B"
@@ -572,7 +579,7 @@
 
           <template #expanded-row="{ item }">
             <tr>
-              <td :colspan="headers.length + 1" class="pa-0">
+              <td :colspan="headersB2B.length + 1" class="pa-0">
                 <EbInvoiceBreakdown :eb-id="item.id" />
               </td>
             </tr>
@@ -692,6 +699,10 @@
 
           <template #item.nama_klien="{ item }">
             <div class="font-weight-medium text-no-wrap">{{ item.nama_klien }}</div>
+          </template>
+
+          <template #item.outlet="{ item }">
+            <span class="text-caption">{{ item.outlet ?? '-' }}</span>
           </template>
 
           <template #item.periode="{ item }">
@@ -1318,6 +1329,7 @@ const koreksiSelectedOutstanding = computed(() => {
 const headers = [
   { title: 'No',             key: 'no',                sortable: false, width: '60px' },
   { title: 'Client',         key: 'nama_klien',        sortable: false },
+  { title: 'Outlet',        key: 'outlet',            sortable: false },
   { title: 'Periode',        key: 'periode',           sortable: false, width: '210px' },
   { title: 'Saldo Awal',     key: 'saldo_awal',        sortable: false, align: 'end' },
   { title: 'Invoice Masuk',  key: 'invoice_masuk',     sortable: false, align: 'end' },
@@ -1328,6 +1340,9 @@ const headers = [
   { title: 'Status',         key: 'status',            sortable: false },
   { title: 'Aksi',           key: 'actions',           sortable: false, align: 'end' },
 ]
+
+// B2B tidak punya outlet (klien PT tidak terikat ke satu resto)
+const headersB2B = headers.filter(h => h.key !== 'outlet')
 
 function formatRp(val) {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val ?? 0)
@@ -1523,6 +1538,7 @@ const pendingHeaders = [
   { title: 'TIPE',             key: 'tipe',          sortable: false },
   { title: 'NO DOKUMEN',       key: 'no_dokumen',    sortable: false },
   { title: 'CLIENT',           key: 'nama_klien',    sortable: false },
+  { title: 'OUTLET',           key: 'outlet',        sortable: false },
   { title: 'NOMINAL',          key: 'nilai_koreksi', sortable: false },
   { title: 'ALASAN',           key: 'alasan_koreksi',sortable: false },
   { title: 'DIAJUKAN OLEH',    key: 'submitted_by',  sortable: false },
