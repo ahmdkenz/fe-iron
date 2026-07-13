@@ -161,6 +161,7 @@
                   />
                 </VCol>
                 <VCol
+                  v-if="!isB2B"
                   cols="12"
                   md="6"
                 >
@@ -172,7 +173,7 @@
                     prepend-inner-icon="ri-receipt-line"
                     placeholder="Nomor invoice/dokumen asal"
                     clearable
-                    :hint="isB2B ? 'Wajib, nomor invoice asal yang diterima oleh resto' : 'Opsional, nomor invoice asal untuk pencocokan data'"
+                    hint="Opsional, nomor invoice asal untuk pencocokan data"
                     persistent-hint
                   />
                 </VCol>
@@ -263,39 +264,6 @@
                     :hint="currentInvestor.no_hp_pengelola ? `HP: ${currentInvestor.no_hp_pengelola}` : ''"
                     :persistent-hint="!!currentInvestor.no_hp_pengelola"
                   />
-                </VCol>
-
-                <VCol
-                  v-if="isB2B"
-                  cols="12"
-                  md="6"
-                >
-                  <VAutocomplete
-                    v-model="form.resto_id"
-                    label="Resto yang Ditagihkan"
-                    density="compact"
-                    variant="outlined"
-                    prepend-inner-icon="ri-store-line"
-                    :items="restoList"
-                    item-title="nama_resto"
-                    item-value="id"
-                    :loading="restoLoading"
-                    :rules="[v => !!v || 'Resto yang ditagihkan wajib dipilih']"
-                  >
-                    <template #item="{ props: p, item }">
-                      <VListItem
-                        v-bind="p"
-                        :title="item.raw.nama_resto"
-                        :subtitle="[
-                          item.raw.kode_resto,
-                          item.raw.investor?.pengelola
-                            ? `${item.raw.investor?.nama_investor ?? ''} · Pengelola: ${item.raw.investor.pengelola}`
-                            : item.raw.investor?.nama_investor,
-                        ].filter(Boolean).join(' · ')"
-                        lines="two"
-                      />
-                    </template>
-                  </VAutocomplete>
                 </VCol>
 
               </VRow>
@@ -499,6 +467,9 @@
                 v-for="(itm, idx) in form.items"
                 :key="idx"
                 :item="itm"
+                :show-resto-fields="isB2B"
+                :resto-options="restoList"
+                :resto-loading="restoLoading"
                 @update:item="updateItem(idx, $event)"
                 @remove="removeItem(idx)"
               />
@@ -724,6 +695,8 @@ function addItem() {
     subtotal: 0,
     keterangan: '',
     no_invoice_resto: '',
+    kode_resto: '',
+    nama_resto: '',
   })
   itemsError.value = ''
 }
@@ -747,7 +720,7 @@ async function submitAs(status = null) {
   if (status) payload.status = status
   payload.items = form.items.map(it => ({
     ...it,
-    no_invoice_resto: noInvoiceResto.value ?? '',
+    no_invoice_resto: isB2B.value ? (it.no_invoice_resto ?? '') : (noInvoiceResto.value ?? ''),
   }))
 
   const res = isEditing.value
@@ -802,6 +775,8 @@ onMounted(async () => {
       subtotal:         it.subtotal,
       keterangan:       it.keterangan ?? '',
       no_invoice_resto: it.no_invoice_resto ?? '',
+      kode_resto:       it.kode_resto ?? '',
+      nama_resto:       it.nama_resto ?? '',
     })),
   })
 })

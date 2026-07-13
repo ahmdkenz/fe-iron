@@ -84,6 +84,54 @@
           </VCombobox>
         </VCol>
 
+        <!-- Baris 1b: No Invoice Asal + Resto (khusus klien B2B/PT) -->
+        <VCol
+          v-if="showRestoFields"
+          cols="12"
+          sm="6"
+        >
+          <VTextField
+            :model-value="localItem.no_invoice_resto"
+            label="No Invoice Asal"
+            density="compact"
+            variant="outlined"
+            prepend-inner-icon="ri-receipt-line"
+            placeholder="Nomor invoice/dokumen asal"
+            hide-details="auto"
+            :rules="[v => !!v || 'No Invoice Asal wajib diisi']"
+            @update:model-value="value => updateField('no_invoice_resto', value)"
+          />
+        </VCol>
+
+        <VCol
+          v-if="showRestoFields"
+          cols="12"
+          sm="6"
+        >
+          <VAutocomplete
+            :model-value="localItem.kode_resto"
+            label="Resto"
+            density="compact"
+            variant="outlined"
+            prepend-inner-icon="ri-store-line"
+            :items="restoOptions"
+            item-title="nama_resto"
+            item-value="kode_resto"
+            :loading="restoLoading"
+            hide-details="auto"
+            :rules="[v => !!v || 'Resto wajib dipilih']"
+            @update:model-value="onRestoChange"
+          >
+            <template #item="{ props: p, item }">
+              <VListItem
+                v-bind="p"
+                :title="item.raw.nama_resto"
+                :subtitle="item.raw.kode_resto"
+              />
+            </template>
+          </VAutocomplete>
+        </VCol>
+
         <!-- Baris 2: Qty + Satuan + Harga + Subtotal -->
         <VCol
           cols="6"
@@ -181,6 +229,8 @@ const createDefaultItem = () => ({
   subtotal: 0,
   keterangan: '',
   no_invoice_resto: '',
+  kode_resto: '',
+  nama_resto: '',
 })
 
 const props = defineProps({
@@ -196,7 +246,21 @@ const props = defineProps({
       subtotal: 0,
       keterangan: '',
       no_invoice_resto: '',
+      kode_resto: '',
+      nama_resto: '',
     }),
+  },
+  restoOptions: {
+    type: Array,
+    default: () => [],
+  },
+  restoLoading: {
+    type: Boolean,
+    default: false,
+  },
+  showRestoFields: {
+    type: Boolean,
+    default: false,
   },
 })
 
@@ -236,6 +300,14 @@ function emitItem() {
 
 function updateField(field, value) {
   localItem[field] = value
+  emitItem()
+}
+
+function onRestoChange(kodeResto) {
+  const resto = props.restoOptions.find(r => r.kode_resto === kodeResto)
+
+  localItem.kode_resto = kodeResto ?? ''
+  localItem.nama_resto = resto?.nama_resto ?? ''
   emitItem()
 }
 
