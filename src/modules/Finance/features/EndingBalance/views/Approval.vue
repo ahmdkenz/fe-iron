@@ -319,11 +319,11 @@ function formatDatetime(d) {
 }
 
 function tipeBadgeColor(tipe) {
-  return { CREDIT_NOTE: 'error', DEBIT_NOTE: 'info', KOREKSI_QTY_HARGA: 'warning', KOREKSI_SALDO: 'secondary' }[tipe] ?? 'default'
+  return { CREDIT_NOTE: 'error', DEBIT_NOTE: 'info', KOREKSI_SALDO: 'secondary' }[tipe] ?? 'default'
 }
 
 function tipeLabel(tipe) {
-  return { CREDIT_NOTE: 'CN', DEBIT_NOTE: 'DN', KOREKSI_QTY_HARGA: 'Koreksi Item', KOREKSI_SALDO: 'Koreksi Saldo' }[tipe] ?? (tipe || '—')
+  return { CREDIT_NOTE: 'CN', DEBIT_NOTE: 'DN', KOREKSI_SALDO: 'Koreksi Saldo' }[tipe] ?? (tipe || '—')
 }
 
 async function fetchPending() {

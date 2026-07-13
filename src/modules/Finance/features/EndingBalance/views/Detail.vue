@@ -355,7 +355,7 @@
                   </div>
                 </td>
               </tr>
-              <!-- Expandable: detail item (KOREKSI_QTY_HARGA, CN/DN dengan items) -->
+              <!-- Expandable: detail item (CN/DN dengan items) -->
               <tr v-if="k.items?.length && expandedKoreksiId === k.id">
                 <td colspan="10" class="pa-0">
                   <div class="bg-surface-variant pa-3">
@@ -562,10 +562,10 @@ function metodeColor(m) {
   return { TRANSFER: 'primary', CASH: 'success', GIRO: 'info' }[m] ?? 'default'
 }
 function tipeBadgeColor(tipe) {
-  return { CREDIT_NOTE: 'error', DEBIT_NOTE: 'info', KOREKSI_QTY_HARGA: 'warning', KOREKSI_SALDO: 'secondary' }[tipe] ?? 'default'
+  return { CREDIT_NOTE: 'error', DEBIT_NOTE: 'info', KOREKSI_SALDO: 'secondary' }[tipe] ?? 'default'
 }
 function tipeLabel(tipe) {
-  return { CREDIT_NOTE: 'CN', DEBIT_NOTE: 'DN', KOREKSI_QTY_HARGA: 'Koreksi Item', KOREKSI_SALDO: 'Koreksi Saldo' }[tipe] ?? tipe
+  return { CREDIT_NOTE: 'CN', DEBIT_NOTE: 'DN', KOREKSI_SALDO: 'Koreksi Saldo' }[tipe] ?? tipe
 }
 function sisaPerInvoice(inv) {
   if (inv.subtotal === 0) return inv.sisa_tagihan

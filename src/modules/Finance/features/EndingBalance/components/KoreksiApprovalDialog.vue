@@ -95,35 +95,6 @@
           </div>
         </div>
 
-        <!-- Detail item untuk KOREKSI_QTY_HARGA -->
-        <template v-if="koreksi?.tipe === 'KOREKSI_QTY_HARGA' && koreksi?.items?.length">
-          <div class="text-caption text-medium-emphasis font-weight-bold mb-1 mt-3">Detail Perubahan Item:</div>
-          <VTable density="compact" class="mb-3" style="font-size: 0.78rem">
-            <thead>
-              <tr>
-                <th>Barang</th>
-                <th class="text-end">Qty Lama</th>
-                <th class="text-end">Qty Baru</th>
-                <th class="text-end">Harga Lama</th>
-                <th class="text-end">Harga Baru</th>
-                <th class="text-end">Selisih</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="item in koreksi.items" :key="item.id">
-                <td>{{ item.nama_barang }}</td>
-                <td class="text-end">{{ item.qty_lama }}</td>
-                <td class="text-end">{{ item.qty_baru }}</td>
-                <td class="text-end">{{ formatRp(item.harga_satuan_lama) }}</td>
-                <td class="text-end">{{ formatRp(item.harga_satuan_baru) }}</td>
-                <td class="text-end font-weight-bold" :class="item.selisih >= 0 ? 'text-success' : 'text-error'">
-                  {{ item.selisih >= 0 ? '+' : '' }}{{ formatRp(item.selisih) }}
-                </td>
-              </tr>
-            </tbody>
-          </VTable>
-        </template>
-
         <!-- Keterangan -->
         <VTextarea
           :model-value="keterangan"
@@ -175,11 +146,11 @@ function formatRp(val) {
 }
 
 function tipeBadgeColor(tipe) {
-  return { CREDIT_NOTE: 'error', DEBIT_NOTE: 'info', KOREKSI_QTY_HARGA: 'warning', KOREKSI_SALDO: 'secondary' }[tipe] ?? 'default'
+  return { CREDIT_NOTE: 'error', DEBIT_NOTE: 'info', KOREKSI_SALDO: 'secondary' }[tipe] ?? 'default'
 }
 
 function tipeLabel(tipe) {
-  return { CREDIT_NOTE: 'CN', DEBIT_NOTE: 'DN', KOREKSI_QTY_HARGA: 'Koreksi Item', KOREKSI_SALDO: 'Koreksi Saldo' }[tipe] ?? (tipe || '—')
+  return { CREDIT_NOTE: 'CN', DEBIT_NOTE: 'DN', KOREKSI_SALDO: 'Koreksi Saldo' }[tipe] ?? (tipe || '—')
 }
 </script>
 

@@ -60,28 +60,6 @@
                 </VCardText>
               </VCard>
             </VCol>
-            <VCol cols="12" sm="6">
-              <VCard
-                variant="outlined"
-                :color="koreksiForm.tipe === 'KOREKSI_QTY_HARGA' ? 'warning' : undefined"
-                class="tipe-card cursor-pointer"
-                :class="{ 'tipe-card--selected': koreksiForm.tipe === 'KOREKSI_QTY_HARGA' }"
-                @click="koreksiForm.tipe = 'KOREKSI_QTY_HARGA'"
-              >
-                <VCardText class="pa-4 d-flex align-center gap-3">
-                  <VAvatar size="44" color="warning" variant="tonal" rounded="lg">
-                    <VIcon icon="ri-edit-box-line" size="22" />
-                  </VAvatar>
-                  <div class="flex-grow-1">
-                    <div class="font-weight-bold" style="color: rgb(var(--v-theme-warning))">Koreksi Qty & Harga</div>
-                    <div class="text-caption text-medium-emphasis">Perbaiki item invoice (qty/harga)</div>
-                  </div>
-                  <VAvatar v-if="koreksiForm.tipe === 'KOREKSI_QTY_HARGA'" size="22" color="warning">
-                    <VIcon icon="ri-check-line" size="14" color="white" />
-                  </VAvatar>
-                </VCardText>
-              </VCard>
-            </VCol>
             <VCol v-if="eb?.status === 'LOCKED'" cols="12" sm="6">
               <VCard
                 variant="outlined"
@@ -286,138 +264,6 @@
             </template>
           </template>
 
-          <!-- ── Form Koreksi Qty & Harga ── -->
-          <template v-else-if="koreksiForm.tipe === 'KOREKSI_QTY_HARGA'">
-            <VRow>
-              <VCol cols="12">
-                <div class="text-caption font-weight-medium text-medium-emphasis mb-2">Pilih Invoice</div>
-                <div v-if="invoicesLoading" class="text-center py-4 text-medium-emphasis text-caption">
-                  <VProgressCircular indeterminate size="20" class="mr-2" /> Memuat invoice...
-                </div>
-                <div v-else-if="!invoices.length" class="text-center py-4 text-medium-emphasis text-caption">
-                  Tidak ada invoice tersedia.
-                </div>
-                <div v-else class="koreksi-invoice-list">
-                  <div
-                    v-for="inv in invoices"
-                    :key="inv.id"
-                    class="koreksi-invoice-row"
-                    :class="{ 'koreksi-invoice-row--selected': koreksiForm.invoice_id === inv.id }"
-                    @click="koreksiForm.invoice_id = inv.id; onInvoiceSelectedForKoreksiItem(inv.id)"
-                  >
-                    <div class="flex-grow-1 min-w-0">
-                      <div class="d-flex align-center gap-2 mb-1 flex-wrap">
-                        <span class="text-body-2 font-weight-bold">{{ inv.no_invoice }}</span>
-                        <VChip size="x-small" :color="invoiceStatusColor(inv.status)" variant="tonal" label>{{ inv.status }}</VChip>
-                        <VChip v-if="isOverdue(inv)" size="x-small" color="error" variant="tonal" label>Jatuh Tempo</VChip>
-                      </div>
-                      <div class="text-caption text-medium-emphasis">
-                        {{ formatDate(inv.tanggal_invoice) }} · JT: {{ formatDate(inv.tanggal_jatuh_tempo) || '-' }}
-                      </div>
-                      <div class="text-caption mt-1">
-                        Sisa: <span class="font-weight-bold text-error">{{ formatRp(sisaPerInvoice(inv)) }}</span>
-                        <span class="text-medium-emphasis ms-2">/ {{ formatRp(inv.subtotal) }}</span>
-                      </div>
-                    </div>
-                    <VAvatar v-if="koreksiForm.invoice_id === inv.id" size="24" color="primary" class="flex-shrink-0">
-                      <VIcon icon="ri-check-line" size="14" color="white" />
-                    </VAvatar>
-                  </div>
-                </div>
-              </VCol>
-            </VRow>
-
-            <div v-if="itemsLoading" class="text-center py-4">
-              <VProgressCircular indeterminate size="24" />
-              <span class="text-caption ml-2">Memuat item invoice...</span>
-            </div>
-
-            <template v-else-if="koreksiForm.invoice_id && koreksiItems.length">
-              <div class="text-caption text-medium-emphasis mb-2">Isi qty dan harga baru (kosongkan jika tidak berubah):</div>
-              <VTable density="compact" class="eb-item-edit-table mb-3">
-                <thead>
-                  <tr>
-                    <th>Barang</th>
-                    <th class="text-end">Qty Lama</th>
-                    <th class="text-end">Harga Lama</th>
-                    <th class="text-end">Subtotal Lama</th>
-                    <th class="text-end" style="min-width: 110px">Qty Baru</th>
-                    <th class="text-end" style="min-width: 130px">Harga Baru</th>
-                    <th class="text-end">Subtotal Baru</th>
-                    <th class="text-end">Selisih</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="(item, idx) in koreksiItems" :key="item.id">
-                    <td class="text-caption font-weight-medium">{{ item.nama_barang }}</td>
-                    <td class="text-end text-caption">{{ item.qty }}</td>
-                    <td class="text-end text-caption">{{ formatRp(item.harga_satuan) }}</td>
-                    <td class="text-end text-caption">{{ formatRp(item.subtotalLama) }}</td>
-                    <td class="text-end">
-                      <VTextField
-                        v-model="item.qty_baru"
-                        type="number"
-                        min="0"
-                        density="compact"
-                        variant="outlined"
-                        hide-details
-                        style="min-width: 90px"
-                        @update:model-value="recalcSelisih(idx)"
-                      />
-                    </td>
-                    <td class="text-end">
-                      <VTextField
-                        v-model="item.harga_baru"
-                        type="number"
-                        min="0"
-                        density="compact"
-                        variant="outlined"
-                        hide-details
-                        style="min-width: 110px"
-                        @update:model-value="recalcSelisih(idx)"
-                      />
-                    </td>
-                    <td class="text-end text-caption" :class="item.subtotalBaru != null ? (item.subtotalBaru < item.subtotalLama ? 'text-error' : 'text-success') : 'text-medium-emphasis'">
-                      {{ item.subtotalBaru != null ? formatRp(item.subtotalBaru) : '—' }}
-                    </td>
-                    <td class="text-end font-weight-bold text-caption" :class="(item.selisih ?? 0) >= 0 ? 'text-success' : 'text-error'">
-                      {{ item.selisih != null ? ((item.selisih >= 0 ? '+' : '') + formatRp(item.selisih)) : '—' }}
-                    </td>
-                  </tr>
-                </tbody>
-                <tfoot>
-                  <tr>
-                    <td colspan="7" class="text-end font-weight-bold text-caption">Total Selisih:</td>
-                    <td class="text-end font-weight-bold" :class="totalSelisihItems >= 0 ? 'text-success' : 'text-error'">
-                      {{ (totalSelisihItems >= 0 ? '+' : '') + formatRp(totalSelisihItems) }}
-                    </td>
-                  </tr>
-                </tfoot>
-              </VTable>
-
-              <VRow>
-                <VCol cols="12">
-                  <VTextarea
-                    v-model="koreksiForm.alasan_koreksi"
-                    label="Alasan Koreksi"
-                    rows="3"
-                    auto-grow
-                    counter="1000"
-                    persistent-hint
-                  />
-                </VCol>
-                <VCol cols="12">
-                  <VTextField
-                    v-model="koreksiForm.dokumen_url"
-                    label="URL Dokumen Pendukung (opsional)"
-                    hint="Link Google Drive, SharePoint, atau URL lainnya"
-                    persistent-hint
-                  />
-                </VCol>
-              </VRow>
-            </template>
-          </template>
-
           <!-- ── Form Koreksi Saldo ── -->
           <template v-else-if="koreksiForm.tipe === 'KOREKSI_SALDO'">
             <VRow>
@@ -521,7 +367,7 @@ const koreksiForm = reactive({
 const submittingKoreksi = ref(false)
 const koreksiError      = ref('')
 
-// Items untuk KOREKSI_QTY_HARGA
+// Koreksi per-item opsional untuk CREDIT_NOTE/DEBIT_NOTE
 const koreksiItems  = ref([])   // { id, nama_barang, qty, harga_satuan, qty_baru, harga_baru, selisih }
 const itemsLoading  = ref(false)
 
@@ -540,10 +386,10 @@ function invoiceStatusColor(s) {
   return { DRAFT: 'default', TERKIRIM: 'primary', SEBAGIAN: 'warning', LUNAS: 'success' }[s] ?? 'default'
 }
 function tipeBadgeColor(tipe) {
-  return { CREDIT_NOTE: 'error', DEBIT_NOTE: 'info', KOREKSI_QTY_HARGA: 'warning', KOREKSI_SALDO: 'secondary' }[tipe] ?? 'default'
+  return { CREDIT_NOTE: 'error', DEBIT_NOTE: 'info', KOREKSI_SALDO: 'secondary' }[tipe] ?? 'default'
 }
 function tipeLabel(tipe) {
-  return { CREDIT_NOTE: 'CN', DEBIT_NOTE: 'DN', KOREKSI_QTY_HARGA: 'Koreksi Item', KOREKSI_SALDO: 'Koreksi Saldo' }[tipe] ?? tipe
+  return { CREDIT_NOTE: 'CN', DEBIT_NOTE: 'DN', KOREKSI_SALDO: 'Koreksi Saldo' }[tipe] ?? tipe
 }
 function sisaPerInvoice(inv) {
   if (inv.subtotal === 0) return inv.sisa_tagihan
@@ -645,17 +491,6 @@ async function submitKoreksiDialog() {
       }
       payload.nilai_koreksi = tipe === 'CREDIT_NOTE' ? -Math.abs(Number(koreksiForm.nilai)) : Math.abs(Number(koreksiForm.nilai))
     }
-
-  } else if (tipe === 'KOREKSI_QTY_HARGA') {
-    if (!koreksiForm.invoice_id) { koreksiError.value = 'Invoice wajib dipilih.'; return }
-    const changedItems = koreksiItems.value.filter(i => i.qty_baru !== '' || i.harga_baru !== '')
-    if (!changedItems.length) { koreksiError.value = 'Minimal satu item harus diubah qty atau harganya.'; return }
-    payload.invoice_id = koreksiForm.invoice_id
-    payload.items = changedItems.map(i => ({
-      invoice_item_id:  i.id,
-      qty_baru:         Number(i.qty_baru) || i.qty,
-      harga_satuan_baru:Number(i.harga_baru) || i.harga_satuan,
-    }))
 
   } else if (tipe === 'KOREKSI_SALDO') {
     if (!koreksiForm.nilai || Number(koreksiForm.nilai) <= 0) { koreksiError.value = 'Jumlah koreksi wajib diisi (> 0).'; return }

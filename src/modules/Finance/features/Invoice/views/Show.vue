@@ -1422,10 +1422,10 @@ const sisaTagihan = computed(() => {
 })
 
 function koreksiTipeLabel(tipe) {
-  return { CREDIT_NOTE: 'CN', DEBIT_NOTE: 'DN', KOREKSI_QTY_HARGA: 'Koreksi Item', KOREKSI_SALDO: 'Koreksi Saldo' }[tipe] ?? tipe
+  return { CREDIT_NOTE: 'CN', DEBIT_NOTE: 'DN', KOREKSI_SALDO: 'Koreksi Saldo' }[tipe] ?? tipe
 }
 function koreksiTipeColor(tipe) {
-  return { CREDIT_NOTE: 'error', DEBIT_NOTE: 'info', KOREKSI_QTY_HARGA: 'warning', KOREKSI_SALDO: 'secondary' }[tipe] ?? 'secondary'
+  return { CREDIT_NOTE: 'error', DEBIT_NOTE: 'info', KOREKSI_SALDO: 'secondary' }[tipe] ?? 'secondary'
 }
 function koreksiStatusLabel(s) {
   return { PENDING_SPV: 'Menunggu Approval', PENDING_MANAGER: 'Menunggu Approval', APPROVED: 'Disetujui', REJECTED: 'Ditolak' }[s] ?? s
