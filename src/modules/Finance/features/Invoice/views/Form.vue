@@ -205,22 +205,21 @@
                     density="compact"
                     variant="outlined"
                     :items="klienList"
-                    :item-title="klienDisplayTitle"
+                    item-title="display_label"
                     item-value="id"
+                    :filter-keys="['display_label', 'display_subtitle']"
                     prepend-inner-icon="ri-user-3-line"
                     :rules="[v => !!v || 'Klien wajib dipilih']"
                     :loading="klienLoading"
-                    no-filter
                     clearable
-                    @focus="() => klienList.length === 0 && searchKlienNow()"
-                    @update:search="searchKlien"
+                    @focus="ensureKlienLoaded"
                     @update:model-value="onKlienChange"
                   >
                     <template #item="{ props: p, item }">
                       <VListItem
                         v-bind="p"
-                        :title="item.raw.nama_klien"
-                        :subtitle="klienItemSubtitle(item.raw)"
+                        :title="item.raw.display_label"
+                        :subtitle="item.raw.display_subtitle"
                         lines="three"
                       />
                     </template>
@@ -556,7 +555,7 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useCrud } from '@/composables/useCrud'
-import { useRemoteSearch } from '@/composables/useRemoteSearch'
+import { useLazyFetchAll } from '@/composables/useLazyFetchAll'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useFormatter, toISODate } from '@/composables/useFormatter'
 import { setFlashAlert } from '@/utils/flashAlert'
@@ -572,7 +571,8 @@ const isEditing = computed(() => !!id)
 
 const { create, fetchOne, update, saving } = useCrud('/finance/invoices')
 
-const { items: klienList, loading: klienLoading, search: searchKlien, searchNow: searchKlienNow, ensureItem: ensureKlienItem } = useRemoteSearch('/finance/klien-ar')
+const { items: klienList, loading: klienLoading, fetchAll: fetchKlien, ensureItem: ensureKlienItem } = useCrud('/finance/klien-ar')
+const { ensureLoaded: ensureKlienLoaded } = useLazyFetchAll(fetchKlien)
 const { formatCurrency } = useFormatter()
 
 const formRef          = ref(null)
@@ -645,36 +645,6 @@ function klienRestoLabel(klien) {
   if (!resto) return ''
 
   return resto.kode_resto ? `${resto.nama_resto} (${resto.kode_resto})` : resto.nama_resto
-}
-
-function klienInvestorLabel(klien) {
-  const investor = klien?.resto?.investor
-  if (!investor) return klien?.perusahaan?.nama_perusahaan || ''
-
-  return investor.pengelola ? `${investor.nama_investor} · Pengelola: ${investor.pengelola}` : investor.nama_investor
-}
-
-// Teks item terpilih di dropdown, mis. "ADAM RAISYAH BUANA, SH - Cinangka Baru (Ex. TRUSMI)"
-function klienDisplayTitle(klien) {
-  if (!klien) return ''
-
-  const investorNama = klien.resto?.investor?.nama_investor
-  const restoNama     = klien.resto?.nama_resto
-  if (investorNama && restoNama) return `${investorNama} - ${restoNama}`
-
-  return klien.nama_klien
-}
-
-function klienItemSubtitle(klien) {
-  const parts = [`${klien.kode_klien} · ${klien.tipe_klien}`]
-
-  const restoLabel = klienRestoLabel(klien)
-  if (restoLabel) parts.push(restoLabel)
-
-  const investorLabel = klienInvestorLabel(klien)
-  if (investorLabel) parts.push(investorLabel)
-
-  return parts.filter(Boolean).join(' · ')
 }
 
 const restoTerdaftarLabel = computed(() => klienRestoLabel(currentKlienAr.value))

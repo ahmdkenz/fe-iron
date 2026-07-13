@@ -207,13 +207,12 @@
             clearable
             hide-details
             density="compact"
-            :items="klienList"
-            item-title="nama_klien"
+            :items="klienListB2B"
+            item-title="display_label"
             item-value="id"
-            :loading="klienLoading"
-            no-filter
-            @focus="() => klienList.length === 0 && searchKlienNow()"
-            @update:search="searchKlien"
+            :filter-keys="['display_label', 'display_subtitle']"
+            :loading="klienLoadingB2B"
+            @focus="ensureKlienB2BLoaded"
             @update:model-value="doFetchB2B"
           />
         </div>
@@ -437,13 +436,12 @@
             clearable
             hide-details
             density="compact"
-            :items="klienList"
-            item-title="nama_klien"
+            :items="klienListB2C"
+            item-title="display_label"
             item-value="id"
-            :loading="klienLoading"
-            no-filter
-            @focus="() => klienList.length === 0 && searchKlienNow()"
-            @update:search="searchKlien"
+            :filter-keys="['display_label', 'display_subtitle']"
+            :loading="klienLoadingB2C"
+            @focus="ensureKlienB2CLoaded"
             @update:model-value="doFetchB2C"
           />
         </div>
@@ -688,7 +686,7 @@ function getDefaultMonthRange() {
 }
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useCrud } from '@/composables/useCrud.js'
-import { useRemoteSearch } from '@/composables/useRemoteSearch.js'
+import { useLazyFetchAll } from '@/composables/useLazyFetchAll.js'
 import { useFormatter } from '@/composables/useFormatter.js'
 import { useAuthStore } from '@/stores/auth.store'
 import api from '@/utils/axios.js'
@@ -704,7 +702,10 @@ const { showSuccess, showError, showLoading, closeAlert, confirmDelete: confirmD
 const authStore = useAuthStore()
 const { items: itemsB2C, loading: loadingB2C, meta: metaB2C, params: paramsB2C, fetchList: fetchListB2C, remove } = useCrud('/finance/invoices')
 const { items: itemsB2B, loading: loadingB2B, meta: metaB2B, params: paramsB2B, fetchList: fetchListB2B } = useCrud('/finance/invoices')
-const { items: klienList, loading: klienLoading, search: searchKlien, searchNow: searchKlienNow } = useRemoteSearch('/finance/klien-ar')
+const { items: klienListB2B, loading: klienLoadingB2B, fetchAll: fetchKlienB2B } = useCrud('/finance/klien-ar')
+const { items: klienListB2C, loading: klienLoadingB2C, fetchAll: fetchKlienB2C } = useCrud('/finance/klien-ar')
+const { ensureLoaded: ensureKlienB2BLoaded } = useLazyFetchAll(() => fetchKlienB2B({ params: { segment: 'B2B' } }))
+const { ensureLoaded: ensureKlienB2CLoaded } = useLazyFetchAll(() => fetchKlienB2C({ params: { segment: 'B2C' } }))
 const { formatCurrency, formatDate } = useFormatter()
 
 const canSeeAll = authStore.hasAnyRole(['ADMIN', 'MANAGER', 'SUPERVISOR'])

@@ -6,8 +6,12 @@ const fetchAllCache = new Map()
 const fetchAllRequests = new Map()
 
 function invalidateFetchAllCache(endpoint) {
-  fetchAllCache.delete(endpoint)
-  fetchAllRequests.delete(endpoint)
+  for (const key of fetchAllCache.keys()) {
+    if (key === endpoint || key.startsWith(`${endpoint}?`)) fetchAllCache.delete(key)
+  }
+  for (const key of fetchAllRequests.keys()) {
+    if (key === endpoint || key.startsWith(`${endpoint}?`)) fetchAllRequests.delete(key)
+  }
 }
 
 /**
@@ -47,20 +51,21 @@ export function useCrud(endpoint) {
   }
 
   async function fetchAll(requestConfig = {}) {
-    const { force = false, ...axiosConfig } = requestConfig
+    const { force = false, params: extraParams, ...axiosConfig } = requestConfig
+    const cacheKey = extraParams ? `${endpoint}?${new URLSearchParams(extraParams).toString()}` : endpoint
     const canReuseCache = !force && !axiosConfig.signal
 
-    if (canReuseCache && fetchAllCache.has(endpoint)) {
-      items.value = fetchAllCache.get(endpoint)
+    if (canReuseCache && fetchAllCache.has(cacheKey)) {
+      items.value = fetchAllCache.get(cacheKey)
 
       return items.value
     }
 
-    if (canReuseCache && fetchAllRequests.has(endpoint)) {
+    if (canReuseCache && fetchAllRequests.has(cacheKey)) {
       loading.value = true
 
       try {
-        const cachedItems = await fetchAllRequests.get(endpoint)
+        const cachedItems = await fetchAllRequests.get(cacheKey)
 
         items.value = cachedItems
 
@@ -77,7 +82,7 @@ export function useCrud(endpoint) {
     error.value = null
     const requestPromise = (async () => {
       const { data } = await api.get(endpoint, {
-        params: { all: true },
+        params: { all: true, ...extraParams },
         ...axiosConfig,
       })
 
@@ -85,14 +90,14 @@ export function useCrud(endpoint) {
     })()
 
     if (canReuseCache)
-      fetchAllRequests.set(endpoint, requestPromise)
+      fetchAllRequests.set(cacheKey, requestPromise)
 
     try {
       const result = await requestPromise
 
       items.value = result
       if (canReuseCache)
-        fetchAllCache.set(endpoint, result)
+        fetchAllCache.set(cacheKey, result)
 
       return result
     } catch (err) {
@@ -102,7 +107,7 @@ export function useCrud(endpoint) {
       error.value = err.response?.data?.message ?? 'Gagal memuat data'
     } finally {
       if (canReuseCache)
-        fetchAllRequests.delete(endpoint)
+        fetchAllRequests.delete(cacheKey)
 
       loading.value = false
     }
@@ -204,5 +209,12 @@ export function useCrud(endpoint) {
     }
   }
 
-  return { items, item, loading, saving, error, meta, params, fetchList, fetchAll, fetchOne, create, update, remove }
+  /** Sisipkan objek yang sudah diketahui (mis. klien yang sedang dipilih saat edit) agar tampil di dropdown tanpa perlu ada di hasil fetchAll. */
+  function ensureItem(item, valueKey = 'id') {
+    if (!item || item[valueKey] == null) return
+    if (items.value.some(i => i[valueKey] === item[valueKey])) return
+    items.value = [item, ...items.value]
+  }
+
+  return { items, item, loading, saving, error, meta, params, fetchList, fetchAll, fetchOne, create, update, remove, ensureItem }
 }

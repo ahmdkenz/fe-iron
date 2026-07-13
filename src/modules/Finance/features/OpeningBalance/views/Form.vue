@@ -143,24 +143,23 @@
                       density="compact"
                       variant="outlined"
                       :items="sortedKlienList"
-                      item-title="nama_klien"
+                      item-title="display_label"
                       item-value="id"
+                      :filter-keys="['display_label', 'display_subtitle']"
                       :rules="[v => !!v || 'Klien wajib dipilih']"
                       :error-messages="errors.klien_ar_id"
                       :loading="klienLoading"
                       prepend-inner-icon="ri-user-star-line"
                       clearable
-                      no-filter
                       placeholder="Cari nama klien, kode, atau PIC AR..."
                       hint="Ketik nama PIC AR untuk menyaring semua klien miliknya"
                       persistent-hint
-                      @focus="() => sortedKlienList.length === 0 && searchKlienNow()"
-                      @update:search="searchKlien"
+                      @focus="ensureKlienLoaded"
                     >
                       <template #item="{ props: p, item }">
                         <VListItem
                           v-bind="p"
-                          :title="item.raw.nama_klien"
+                          :title="item.raw.display_label"
                         >
                           <template #subtitle>
                             <div class="d-flex align-center flex-wrap gap-1 mt-1">
@@ -528,7 +527,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useFormatter, toISODate } from '@/composables/useFormatter'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useCrud } from '@/composables/useCrud'
-import { useRemoteSearch } from '@/composables/useRemoteSearch'
+import { useLazyFetchAll } from '@/composables/useLazyFetchAll'
 import { setFlashAlert } from '@/utils/flashAlert'
 import api from '@/utils/axios'
 import OpeningBalanceDetailTable from '../components/OpeningBalanceDetailTable.vue'
@@ -539,7 +538,8 @@ const { formatCurrency, formatDate } = useFormatter()
 const { showError, showLoading, closeAlert } = useSweetAlert()
 const id = computed(() => route.params.id)
 const isEditing = computed(() => !!id.value)
-const { items: klienList, loading: klienLoading, search: searchKlien, searchNow: searchKlienNow, ensureItem: ensureKlienItem } = useRemoteSearch('/finance/klien-ar')
+const { items: klienList, loading: klienLoading, fetchAll: fetchKlien, ensureItem: ensureKlienItem } = useCrud('/finance/klien-ar')
+const { ensureLoaded: ensureKlienLoaded } = useLazyFetchAll(fetchKlien)
 const { fetchOne } = useCrud('/finance/invoices')
 
 const formRef = ref(null)

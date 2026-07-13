@@ -224,13 +224,12 @@
               clearable
               hide-details
               density="compact"
-              :items="klienList"
-              item-title="nama_klien"
+              :items="klienListB2B"
+              item-title="display_label"
               item-value="id"
-              :loading="klienLoading"
-              no-filter
-              @focus="() => klienList.length === 0 && searchKlienNow()"
-              @update:search="searchKlien"
+              :filter-keys="['display_label', 'display_subtitle']"
+              :loading="klienLoadingB2B"
+              @focus="ensureKlienB2BLoaded"
               @update:model-value="doFetchB2B"
             />
           </div>
@@ -479,13 +478,12 @@
               clearable
               hide-details
               density="compact"
-              :items="klienList"
-              item-title="nama_klien"
+              :items="klienListB2C"
+              item-title="display_label"
               item-value="id"
-              :loading="klienLoading"
-              no-filter
-              @focus="() => klienList.length === 0 && searchKlienNow()"
-              @update:search="searchKlien"
+              :filter-keys="['display_label', 'display_subtitle']"
+              :loading="klienLoadingB2C"
+              @focus="ensureKlienB2CLoaded"
               @update:model-value="doFetchB2C"
             />
           </div>
@@ -846,13 +844,12 @@
                 clearable
                 hide-details
                 density="compact"
-                :items="klienList"
-                item-title="nama_klien"
+                :items="klienListAll"
+                item-title="display_label"
                 item-value="id"
-                :loading="klienLoading"
-                no-filter
-                @focus="() => klienList.length === 0 && searchKlienNow()"
-                @update:search="searchKlien"
+                :filter-keys="['display_label', 'display_subtitle']"
+                :loading="klienLoadingAll"
+                @focus="ensureKlienAllLoaded"
                 @update:model-value="doDirFetch"
               />
             </div>
@@ -1215,13 +1212,12 @@
               clearable
               hide-details
               density="compact"
-              :items="klienList"
-              item-title="nama_klien"
+              :items="klienListB2B"
+              item-title="display_label"
               item-value="id"
-              :loading="klienLoading"
-              no-filter
-              @focus="() => klienList.length === 0 && searchKlienNow()"
-              @update:search="searchKlien"
+              :filter-keys="['display_label', 'display_subtitle']"
+              :loading="klienLoadingB2B"
+              @focus="ensureKlienB2BLoaded"
               @update:model-value="doDirObFetchB2B"
             />
           </div>
@@ -1452,13 +1448,12 @@
               clearable
               hide-details
               density="compact"
-              :items="klienList"
-              item-title="nama_klien"
+              :items="klienListB2C"
+              item-title="display_label"
               item-value="id"
-              :loading="klienLoading"
-              no-filter
-              @focus="() => klienList.length === 0 && searchKlienNow()"
-              @update:search="searchKlien"
+              :filter-keys="['display_label', 'display_subtitle']"
+              :loading="klienLoadingB2C"
+              @focus="ensureKlienB2CLoaded"
               @update:model-value="doDirObFetch"
             />
           </div>
@@ -1658,7 +1653,7 @@ function getDefaultMonthRange() {
 }
 import { useAuthStore } from '@/stores/auth.store'
 import { useCrud } from '@/composables/useCrud'
-import { useRemoteSearch } from '@/composables/useRemoteSearch'
+import { useLazyFetchAll } from '@/composables/useLazyFetchAll'
 import { useFormatter } from '@/composables/useFormatter'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useFinanceNotificationStore } from '@/stores/finance-notification.store'
@@ -1676,7 +1671,12 @@ const { showAlert, showSuccess, showError, showLoading, closeAlert, confirmDelet
 const financeNotificationStore = useFinanceNotificationStore()
 
 // ── Shared: klien list ─────────────────────────────────────────────────────
-const { items: klienList, loading: klienLoading, search: searchKlien, searchNow: searchKlienNow } = useRemoteSearch('/finance/klien-ar')
+const { items: klienListAll, loading: klienLoadingAll, fetchAll: fetchKlienAll } = useCrud('/finance/klien-ar')
+const { items: klienListB2B, loading: klienLoadingB2B, fetchAll: fetchKlienB2B } = useCrud('/finance/klien-ar')
+const { items: klienListB2C, loading: klienLoadingB2C, fetchAll: fetchKlienB2C } = useCrud('/finance/klien-ar')
+const { ensureLoaded: ensureKlienAllLoaded } = useLazyFetchAll(fetchKlienAll)
+const { ensureLoaded: ensureKlienB2BLoaded } = useLazyFetchAll(() => fetchKlienB2B({ params: { segment: 'B2B' } }))
+const { ensureLoaded: ensureKlienB2CLoaded } = useLazyFetchAll(() => fetchKlienB2C({ params: { segment: 'B2C' } }))
 
 // ── Non-director: single table ─────────────────────────────────────────────
 const { items, loading, meta, params, fetchList } = useCrud('/finance/opening-balance')

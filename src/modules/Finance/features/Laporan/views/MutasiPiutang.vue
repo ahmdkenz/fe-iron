@@ -73,7 +73,7 @@
               density="compact"
               prepend-inner-icon="ri-search-line"
               :items="klienList"
-              item-title="nama_klien"
+              item-title="display_label"
               item-value="id"
               :loading="klienLoading"
               @focus="ensureKlienLoaded()"

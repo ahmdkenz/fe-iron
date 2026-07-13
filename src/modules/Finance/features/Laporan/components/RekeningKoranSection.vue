@@ -11,7 +11,7 @@
           density="compact"
           style="max-width: 280px"
           :items="klienList"
-          item-title="nama_klien"
+          item-title="display_label"
           item-value="id"
           :loading="klienLoading"
           @focus="ensureKlienLoaded()"

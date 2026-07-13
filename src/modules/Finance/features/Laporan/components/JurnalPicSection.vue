@@ -37,7 +37,7 @@
           density="compact"
           style="max-width: 220px"
           :items="klienArList"
-          item-title="nama_klien"
+          item-title="display_label"
           item-value="id"
           :loading="klienArLoading"
           @focus="ensureKlienArLoaded()"
