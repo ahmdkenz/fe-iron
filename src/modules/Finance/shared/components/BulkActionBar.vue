@@ -44,22 +44,20 @@
             </VTooltip>
           </VBtn>
 
-          <VBtn
-            color="error"
-            variant="tonal"
+          <AppActionButton
+            action="hapus"
             size="small"
-            prepend-icon="ri-delete-bin-line"
             :disabled="!hasDraft"
             @click="emit('delete')"
           >
-            Hapus
+            Hapus Data
             <VTooltip
               v-if="!hasDraft"
               activator="parent"
             >
               Tidak ada invoice DRAFT yang bisa dihapus
             </VTooltip>
-          </VBtn>
+          </AppActionButton>
         </div>
 
         <VSpacer />

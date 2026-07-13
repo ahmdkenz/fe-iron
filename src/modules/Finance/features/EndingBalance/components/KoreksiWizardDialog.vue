@@ -475,21 +475,22 @@
 
       <VDivider />
       <VCardActions class="px-4 py-3">
-        <VBtn variant="text" :disabled="submittingKoreksi" @click="$emit('update:modelValue', false)">Batal</VBtn>
+        <AppActionButton action="batalkan" :disabled="submittingKoreksi" @click="$emit('update:modelValue', false)" />
         <VSpacer />
         <VBtn v-if="koreksiStep === 2" variant="text" @click="koreksiStep = 1">Kembali</VBtn>
-        <VBtn
+        <AppActionButton
           v-if="koreksiStep === 1"
-          color="primary"
+          action="lanjutkan"
           :disabled="!koreksiForm.tipe"
           @click="koreksiStep = 2"
-        >Lanjut</VBtn>
-        <VBtn
+        />
+        <AppActionButton
           v-else
-          color="primary"
+          action="ajukan"
+          label="Ajukan Koreksi"
           :loading="submittingKoreksi"
           @click="submitKoreksiDialog"
-        >Ajukan Koreksi</VBtn>
+        />
       </VCardActions>
     </VCard>
   </VDialog>

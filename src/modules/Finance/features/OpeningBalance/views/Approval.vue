@@ -858,7 +858,7 @@ const { items: klienList, loading: klienLoading, search: searchKlien, searchNow:
 const { items: obItems, loading: obLoading, meta: obMeta, params: obParams, fetchList: fetchObList } = useCrud('/finance/opening-balance')
 const { items: obItemsB2B, loading: obLoadingB2B, meta: obMetaB2B, params: obParamsB2B, fetchList: fetchObListB2B } = useCrud('/finance/opening-balance')
 const { formatCurrency, formatDate } = useFormatter()
-const { showAlert, showSuccess, showError } = useSweetAlert()
+const { showAlert, showSuccess, showError, resolveThemeTokens } = useSweetAlert()
 const authStore = useAuthStore()
 const financeNotificationStore = useFinanceNotificationStore()
 
@@ -1260,6 +1260,7 @@ async function confirmApprove(item) {
     title: 'Approve Opening Balance?',
     text: `Anda akan menyetujui Opening Balance ${item.no_invoice} atas nama ${item.klien_ar?.nama_klien ?? '-'}.`,
     confirmButtonText: 'Ya, Approve',
+    confirmButtonColor: resolveThemeTokens().success,
     cancelButtonText: 'Batal',
     showCancelButton: true,
     focusCancel: true,

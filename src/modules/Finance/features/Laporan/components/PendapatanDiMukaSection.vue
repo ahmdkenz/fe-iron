@@ -198,15 +198,12 @@
         </template>
 
         <template #item.aksi="{ item }">
-          <VBtn
+          <AppActionButton
             v-if="item.status === 'AKTIF'"
+            action="gunakan"
             size="x-small"
-            variant="tonal"
-            color="deep-purple"
             @click="openGunakanDialog(item)"
-          >
-            Gunakan
-          </VBtn>
+          />
           <span
             v-else
             class="text-disabled text-caption"
@@ -418,27 +415,17 @@
         <VDivider />
         <VCardActions class="pa-4 gap-2">
           <VSpacer />
-          <VBtn
-            variant="text"
+          <AppActionButton
+            action="batalkan"
             @click="closeGunakanDialog"
-          >
-            Batal
-          </VBtn>
-          <VBtn
-            color="deep-purple"
-            variant="flat"
+          />
+          <AppActionButton
+            action="gunakan"
+            label="Alokasikan"
             :loading="gunakanSaving"
             :disabled="!someSelected || totalAlokasi <= 0 || sisaRemaining < 0"
             @click="doGunakan"
-          >
-            <VIcon
-              start
-              size="16"
-            >
-              ri-check-line
-            </VIcon>
-            Alokasikan
-          </VBtn>
+          />
         </VCardActions>
       </VCard>
     </VDialog>

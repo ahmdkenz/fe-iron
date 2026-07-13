@@ -214,6 +214,7 @@
       v-model="showDelete"
       title="Hapus Investor"
       :loading="loading"
+      confirm-action="hapus"
       @confirm="doDelete"
     >
       <p>Apakah Anda yakin ingin menghapus investor <strong>{{ selectedInvestor?.nama_investor }}</strong>?</p>

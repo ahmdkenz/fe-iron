@@ -211,6 +211,7 @@
       v-model="showDelete"
       title="Hapus Karyawan"
       :loading="loading"
+      confirm-action="hapus"
       @confirm="doDelete"
     >
       <p>Apakah Anda yakin ingin menghapus karyawan <strong>{{ selectedKaryawan?.nama_karyawan }}</strong>?</p>

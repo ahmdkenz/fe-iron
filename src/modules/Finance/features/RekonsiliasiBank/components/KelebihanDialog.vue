@@ -261,22 +261,20 @@
                 &bull; oleh {{ item.kelebihan_bayar.pdm.created_by }}
               </div>
             </div>
-            <VBtn size="x-small" variant="tonal" color="error" :loading="pdmCanceling" @click="doBatalkanPdm">
-              Batalkan PDM
-            </VBtn>
+            <AppActionButton action="batalkan" label="Batalkan PDM" icon="ri-close-circle-line" size="x-small" :loading="pdmCanceling" @click="doBatalkanPdm" />
           </div>
 
           <div v-else-if="item.kelebihan_bayar.sisa > 0">
-            <VBtn
-              variant="tonal"
+            <AppActionButton
+              action="custom"
               color="deep-purple"
+              icon="ri-book-line"
               size="small"
               :loading="pdmSaving"
               @click="doCatatPdm"
             >
-              <VIcon start size="16">ri-book-line</VIcon>
               Catat {{ formatCurrency(item.kelebihan_bayar.sisa) }} sebagai PDM
-            </VBtn>
+            </AppActionButton>
             <div class="text-caption text-medium-emphasis mt-1">
               Uang diterima namun belum ada invoice yang cocok
             </div>
@@ -295,17 +293,14 @@
       <VDivider />
       <VCardActions class="pa-3 gap-2">
         <VSpacer />
-        <VBtn variant="text" color="secondary" @click="$emit('update:modelValue', false)">Batal</VBtn>
-        <VBtn
-          color="error"
-          variant="flat"
+        <AppActionButton action="batalkan" @click="$emit('update:modelValue', false)" />
+        <AppActionButton
+          action="gunakan"
+          label="Alokasikan"
           :disabled="Object.keys(selectedInvoices).length === 0 || totalAlokasi <= 0 || sisaRemaining < 0 || invoiceB2CLoading || invoiceB2BLoading"
           :loading="kelebihanSaving"
           @click="doAlokasikanKelebihan"
-        >
-          <VIcon start size="16">ri-check-line</VIcon>
-          Alokasikan
-        </VBtn>
+        />
       </VCardActions>
     </VCard>
   </VDialog>

@@ -53,6 +53,8 @@ export function useSweetAlert() {
       isDark,
       primary: colors.primary ?? '#666CFF',
       secondary: colors.secondary ?? '#6D788D',
+      success: colors.success ?? '#72E128',
+      error: colors.error ?? '#FF4C51',
       surface: colors.surface ?? (isDark ? '#30334E' : '#FFFFFF'),
       onSurface: colors['on-surface'] ?? (isDark ? '#EAEAFF' : '#262B43'),
       backdrop: isDark ? 'rgba(16, 17, 33, 0.78)' : 'rgba(38, 43, 67, 0.5)',
@@ -162,11 +164,14 @@ export function useSweetAlert() {
   }
 
   function confirmDelete(options = {}) {
+    const themeTokens = resolveThemeTokens()
+
     return showAlert(normalizeOptions({
       icon: 'warning',
       title: 'Hapus Data?',
       text: 'Data yang dihapus tidak dapat dikembalikan.',
       confirmButtonText: 'Ya, hapus',
+      confirmButtonColor: themeTokens.error ?? '#FF4C51',
       cancelButtonText: 'Batal',
       focusCancel: true,
       reverseButtons: true,
@@ -181,5 +186,6 @@ export function useSweetAlert() {
     showLoading,
     closeAlert,
     confirmDelete,
+    resolveThemeTokens,
   }
 }

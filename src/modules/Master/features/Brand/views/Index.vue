@@ -177,6 +177,7 @@
       v-model="showDelete"
       title="Hapus Brand"
       :loading="loading"
+      confirm-action="hapus"
       @confirm="doDelete"
     >
       <p>Apakah Anda yakin ingin menghapus brand <strong>{{ selectedBrand?.nama_brand }}</strong>?</p>

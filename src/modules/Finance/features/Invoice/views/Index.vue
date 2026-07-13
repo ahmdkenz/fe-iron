@@ -612,6 +612,7 @@
       v-model="showDelete"
       title="Hapus Invoice"
       :loading="loadingB2C"
+      confirm-action="hapus"
       @confirm="doDelete"
     >
       <p>
@@ -633,6 +634,7 @@
       v-if="showExportModal"
       v-model="showExportModal"
       title="Export Invoice"
+      confirm-label="Export"
       @confirm="exportExcel"
     >
       <VTextField

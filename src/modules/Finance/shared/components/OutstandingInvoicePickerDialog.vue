@@ -174,23 +174,20 @@
 
           <!-- Actions -->
           <div class="d-flex gap-2 ms-auto">
-            <VBtn
-              variant="text"
-              color="secondary"
+            <AppActionButton
+              action="batalkan"
               size="small"
               @click="isOpen = false"
-            >
-              Batal
-            </VBtn>
-            <VBtn
-              color="primary"
+            />
+            <AppActionButton
+              action="custom"
               size="small"
+              icon="ri-download-2-line"
               :disabled="!checkedNos.length"
-              prepend-icon="ri-download-2-line"
               @click="doConfirm"
             >
               Muat Terpilih
-            </VBtn>
+            </AppActionButton>
           </div>
         </div>
       </div>

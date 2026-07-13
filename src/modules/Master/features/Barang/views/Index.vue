@@ -190,6 +190,7 @@
       v-model="showDelete"
       title="Hapus Barang"
       :loading="loading"
+      confirm-action="hapus"
       @confirm="doDelete"
     >
       <p>Apakah Anda yakin ingin menghapus barang <strong>{{ selectedBarang?.nama_barang }}</strong>?</p>

@@ -8,6 +8,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AccountingAmbientBackdrop: typeof import('./src/components/shared/AccountingAmbientBackdrop.vue')['default']
+    AppActionButton: typeof import('./src/components/base/AppActionButton.vue')['default']
     AppDrawerHeaderSection: typeof import('./src/@core/components/AppDrawerHeaderSection.vue')['default']
     AppLoadingIndicator: typeof import('./src/components/AppLoadingIndicator.vue')['default']
     ApprovalStatusBadge: typeof import('./src/modules/Finance/shared/components/ApprovalStatusBadge.vue')['default']
@@ -38,6 +39,7 @@ declare module 'vue' {
     KaryawanForm: typeof import('./src/modules/Master/features/Karyawan/components/KaryawanForm.vue')['default']
     KelebihanDialog: typeof import('./src/modules/Finance/features/RekonsiliasiBank/components/KelebihanDialog.vue')['default']
     KinerjaArSection: typeof import('./src/modules/Finance/features/Laporan/components/KinerjaArSection.vue')['default']
+    KoreksiApprovalDialog: typeof import('./src/modules/Finance/features/EndingBalance/components/KoreksiApprovalDialog.vue')['default']
     KoreksiWizardDialog: typeof import('./src/modules/Finance/features/EndingBalance/components/KoreksiWizardDialog.vue')['default']
     ManagementIndexShell: typeof import('./src/components/shared/ManagementIndexShell.vue')['default']
     ManagerDashboardSection: typeof import('./src/modules/Finance/features/Dashboard/components/ManagerDashboardSection.vue')['default']

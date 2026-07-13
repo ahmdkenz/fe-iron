@@ -32,10 +32,8 @@
           <VIcon start size="16">ri-arrow-left-line</VIcon>Kembali
         </VBtn>
         <VSpacer />
-        <VBtn variant="text" @click="emit('update:modelValue', false)">Batal</VBtn>
-        <VBtn color="primary" variant="tonal" :loading="saving" @click="emit('confirm')">
-          <VIcon start size="16">ri-link-m</VIcon>Cocokkan
-        </VBtn>
+        <AppActionButton action="batalkan" @click="emit('update:modelValue', false)" />
+        <AppActionButton action="cocokkan" :loading="saving" @click="emit('confirm')" />
       </VCardActions>
     </VCard>
   </VDialog>

@@ -240,10 +240,8 @@
       <VDivider />
       <VCardActions class="pa-4">
         <VSpacer />
-        <VBtn variant="text" @click="onDialogUpdate(false)">Batal</VBtn>
-        <VBtn color="primary" variant="tonal" :disabled="!selectedInvoiceId || obLoading || regularLoading || !canProceedSettle" @click="proceedToBuktiStep">
-          <VIcon start size="16">ri-arrow-right-line</VIcon>Lanjutkan
-        </VBtn>
+        <AppActionButton action="batalkan" @click="onDialogUpdate(false)" />
+        <AppActionButton action="lanjutkan" :disabled="!selectedInvoiceId || obLoading || regularLoading || !canProceedSettle" @click="proceedToBuktiStep" />
       </VCardActions>
     </VCard>
   </VDialog>

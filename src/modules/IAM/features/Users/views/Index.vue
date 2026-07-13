@@ -217,6 +217,7 @@
       v-model="showDelete"
       title="Hapus User"
       :loading="loading"
+      confirm-action="hapus"
       @confirm="doDelete"
     >
       <p>Apakah Anda yakin ingin menghapus user <strong>{{ selectedUser?.username }}</strong>?</p>

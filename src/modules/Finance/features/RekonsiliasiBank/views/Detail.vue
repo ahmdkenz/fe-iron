@@ -144,9 +144,7 @@
             <span class="text-caption text-error font-weight-medium">
               {{ formatCurrency(item.kelebihan_bayar.sisa) }}
             </span>
-            <VBtn v-if="item.can_manage_match" size="x-small" color="error" variant="tonal" @click="openKelebihanDialog(item)">
-              Alokasikan / PDM
-            </VBtn>
+            <AppActionButton v-if="item.can_manage_match" action="gunakan" label="Alokasikan / PDM" size="x-small" @click="openKelebihanDialog(item)" />
           </div>
           <div v-else-if="item.kelebihan_bayar?.total > 0" class="d-flex flex-column align-start gap-1">
             <VChip v-if="item.kelebihan_bayar?.pdm?.status === 'AKTIF'" size="x-small" color="deep-purple" variant="tonal">
@@ -162,27 +160,24 @@
         <template #item.aksi="{ item }">
           <div class="d-flex gap-1 align-center flex-wrap">
             <template v-if="item.status_cocok === 'UNMATCHED' || item.status_cocok === 'POSSIBLE'">
-              <VBtn size="x-small" variant="tonal" color="primary" @click="openMatchDialog(item)">
-                <VIcon start size="14">ri-link-m</VIcon>Cocokkan
-              </VBtn>
+              <AppActionButton action="cocokkan" size="x-small" @click="openMatchDialog(item)" />
               <VBtn size="x-small" variant="text" color="grey" :loading="abaikanLoading === item.id" @click="doAbaikan(item)">
                 Abaikan
               </VBtn>
             </template>
             <template v-else-if="item.status_cocok === 'MATCHED'">
-              <VBtn v-if="item.can_manage_match" size="x-small" variant="outlined" color="error" :loading="unmatchLoading === item.id" @click="openUnmatchDialog(item)">
-                <VIcon start size="14">ri-link-unlink</VIcon>Batalkan
-              </VBtn>
-              <VBtn
+              <AppActionButton v-if="item.can_manage_match" action="batalkan" icon="ri-link-unlink" size="x-small" :loading="unmatchLoading === item.id" @click="openUnmatchDialog(item)" />
+              <AppActionButton
                 v-if="item.can_manage_match && item.status_posting_2 !== 'POSTED'"
-                size="x-small"
-                variant="tonal"
+                action="custom"
                 color="success"
+                icon="ri-checkbox-circle-line"
+                size="x-small"
                 :loading="postingLoadingId === item.id"
                 @click="openPostingDialog(item)"
               >
-                <VIcon start size="14">ri-checkbox-circle-line</VIcon>Posting
-              </VBtn>
+                Posting
+              </AppActionButton>
               <VChip v-else-if="item.status_posting_2 === 'POSTED'" color="success" size="x-small" variant="tonal" label>
                 <VIcon start size="12">ri-check-line</VIcon>Sudah Posting
               </VChip>
@@ -207,8 +202,8 @@
         <VDivider />
         <VCardActions class="pa-4">
           <VSpacer />
-          <VBtn variant="text" @click="unmatchDialog = false">Batal</VBtn>
-          <VBtn color="error" variant="tonal" :loading="unmatchSaving" @click="doUnmatch">Ya, Batalkan</VBtn>
+          <AppActionButton action="batalkan" @click="unmatchDialog = false" />
+          <AppActionButton action="custom" color="error" :loading="unmatchSaving" @click="doUnmatch">Ya, Batalkan</AppActionButton>
         </VCardActions>
       </VCard>
     </VDialog>
@@ -225,10 +220,8 @@
         <VDivider />
         <VCardActions class="pa-4">
           <VSpacer />
-          <VBtn variant="text" @click="postingDialog = false">Batal</VBtn>
-          <VBtn color="success" variant="tonal" :loading="postingSaving" @click="doPosting">
-            <VIcon start size="16">ri-checkbox-circle-line</VIcon>Ya, Posting
-          </VBtn>
+          <AppActionButton action="batalkan" @click="postingDialog = false" />
+          <AppActionButton action="custom" color="success" icon="ri-checkbox-circle-line" :loading="postingSaving" @click="doPosting">Ya, Posting</AppActionButton>
         </VCardActions>
       </VCard>
     </VDialog>

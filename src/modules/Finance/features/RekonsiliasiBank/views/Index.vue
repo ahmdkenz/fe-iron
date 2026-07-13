@@ -136,15 +136,15 @@
           </VAlert>
         </VCardText>
         <VCardActions class="pa-4 pt-0 justify-end gap-2">
-          <VBtn variant="text" @click="closeDialog">Batal</VBtn>
-          <VBtn
-            color="primary"
+          <AppActionButton action="batalkan" @click="closeDialog" />
+          <AppActionButton
+            action="custom"
             :loading="uploading"
             :disabled="!form.file"
             @click="doUpload"
           >
             Upload & Proses
-          </VBtn>
+          </AppActionButton>
         </VCardActions>
       </VCard>
     </VDialog>
@@ -170,10 +170,10 @@
           </VAlert>
         </VCardText>
         <VCardActions class="justify-end pa-4 gap-2">
-          <VBtn variant="text" @click="conflictDialog = false">Batal</VBtn>
-          <VBtn color="warning" :loading="uploading" @click="doUpload(true)">
+          <AppActionButton action="batalkan" @click="conflictDialog = false" />
+          <AppActionButton action="custom" color="warning" :loading="uploading" @click="doUpload(true)">
             Ganti dengan File Baru
-          </VBtn>
+          </AppActionButton>
         </VCardActions>
       </VCard>
     </VDialog>
@@ -186,8 +186,8 @@
           Semua data transaksi dari file <strong>{{ deleteTarget?.nama_file }}</strong> akan dihapus permanen.
         </VCardText>
         <VCardActions class="justify-end pa-4 gap-2">
-          <VBtn variant="text" @click="deleteDialog = false">Batal</VBtn>
-          <VBtn color="error" :loading="deleting" @click="doDelete">Hapus</VBtn>
+          <AppActionButton action="batalkan" @click="deleteDialog = false" />
+          <AppActionButton action="hapus" :loading="deleting" @click="doDelete" />
         </VCardActions>
       </VCard>
     </VDialog>

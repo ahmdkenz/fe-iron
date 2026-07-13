@@ -188,24 +188,15 @@
       </VAlert>
 
       <div class="d-flex justify-end gap-3">
-        <VBtn
-          variant="tonal"
-          color="secondary"
+        <AppActionButton
+          action="batalkan"
           :to="{ name: 'master-investor' }"
-        >
-          Batal
-        </VBtn>
-        <VBtn
-          color="primary"
+        />
+        <AppActionButton
+          action="simpan"
           :disabled="saving"
           @click="handleSubmit"
-        >
-          <VIcon
-            icon="ri-save-line"
-            class="me-1"
-          />
-          Simpan
-        </VBtn>
+        />
       </div>
     </VForm>
   </div>

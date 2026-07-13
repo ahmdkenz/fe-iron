@@ -44,27 +44,19 @@
       <VDivider />
       <VCardActions class="pa-4 justify-end gap-2 flex-wrap">
         <slot name="actions">
-          <VBtn
-            variant="tonal"
-            color="secondary"
+          <AppActionButton
+            action="batalkan"
             :disabled="loading"
             @click="isOpen = false"
-          >
-            Batal
-          </VBtn>
-          <VBtn
-            color="primary"
+          />
+          <AppActionButton
+            :action="confirmAction"
+            :label="confirmLabel"
+            :icon="confirmIcon"
             :loading="loading"
             :disabled="disabled"
             @click="$emit('confirm')"
-          >
-            <VIcon
-              icon="ri-save-line"
-              size="16"
-              class="me-1"
-            />
-            Simpan
-          </VBtn>
+          />
         </slot>
       </VCardActions>
     </VCard>
@@ -78,6 +70,9 @@ defineProps({
   loading: { type: Boolean, default: false },
   disabled: { type: Boolean, default: false },
   minimizable: { type: Boolean, default: false },
+  confirmAction: { type: String, default: 'simpan' },
+  confirmLabel: { type: String, default: '' },
+  confirmIcon: { type: String, default: '' },
 })
 defineEmits(['confirm', 'minimize'])
 

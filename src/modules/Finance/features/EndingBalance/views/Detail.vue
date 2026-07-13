@@ -79,10 +79,10 @@
             Periode ini masih <strong>DRAFT</strong>. Setelah data diverifikasi, tutup periode untuk mengunci nilai.
           </div>
           <div class="d-flex gap-2">
-            <VBtn v-if="authStore.canOperateEndingBalance" color="info" variant="tonal" prepend-icon="ri-pencil-line" :loading="openingKoreksi" @click="openKoreksiDialog">Ajukan Koreksi</VBtn>
-            <VBtn v-if="authStore.canLockEndingBalance" color="success" prepend-icon="ri-lock-line" :loading="locking" @click="showLockDialog = true">
+            <AppActionButton v-if="authStore.canOperateEndingBalance" action="ajukan" label="Ajukan Koreksi" :loading="openingKoreksi" @click="openKoreksiDialog" />
+            <AppActionButton v-if="authStore.canLockEndingBalance" action="custom" color="success" icon="ri-lock-line" :loading="locking" @click="showLockDialog = true">
               Tutup Periode
-            </VBtn>
+            </AppActionButton>
           </div>
         </VCardText>
       </VCard>
@@ -99,21 +99,21 @@
             Periode ini sudah <strong>TERKUNCI</strong>. Jika ada perbedaan nilai, ajukan koreksi atau buka kunci untuk re-import.
           </div>
           <div class="d-flex gap-2">
-            <VBtn
+            <AppActionButton
               v-if="authStore.canOperateEndingBalance && !eb.has_active_koreksi"
-              color="info"
-              prepend-icon="ri-pencil-line"
+              action="ajukan"
+              label="Ajukan Koreksi"
               :loading="openingKoreksi"
               @click="openKoreksiDialog"
-            >Ajukan Koreksi</VBtn>
-            <VBtn
+            />
+            <AppActionButton
               v-if="authStore.canLockEndingBalance"
+              action="custom"
               color="warning"
-              variant="tonal"
-              prepend-icon="ri-lock-unlock-line"
+              icon="ri-lock-unlock-line"
               :loading="unlocking"
               @click="showUnlockDialog = true"
-            >Buka Periode</VBtn>
+            >Buka Periode</AppActionButton>
           </div>
         </VCardText>
       </VCard>
@@ -452,8 +452,8 @@
       </VCardText>
       <VCardActions class="px-4 pb-4">
         <VSpacer />
-        <VBtn variant="text" @click="showLockDialog = false">Batal</VBtn>
-        <VBtn color="success" :loading="locking" @click="doLock">Kunci</VBtn>
+        <AppActionButton action="batalkan" @click="showLockDialog = false" />
+        <AppActionButton action="custom" color="success" :loading="locking" @click="doLock">Kunci</AppActionButton>
       </VCardActions>
     </VCard>
   </VDialog>
@@ -473,8 +473,8 @@
       </VCardText>
       <VCardActions class="px-4 pb-4">
         <VSpacer />
-        <VBtn variant="text" @click="showUnlockDialog = false">Batal</VBtn>
-        <VBtn color="warning" :loading="unlocking" @click="doUnlock">Buka Kunci</VBtn>
+        <AppActionButton action="batalkan" @click="showUnlockDialog = false" />
+        <AppActionButton action="custom" color="warning" :loading="unlocking" @click="doUnlock">Buka Kunci</AppActionButton>
       </VCardActions>
     </VCard>
   </VDialog>

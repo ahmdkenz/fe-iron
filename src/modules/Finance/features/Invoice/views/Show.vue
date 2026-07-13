@@ -1179,6 +1179,7 @@
       v-model="showDeletePembayaran"
       title="Hapus Pembayaran"
       :loading="deleteLoading"
+      confirm-action="hapus"
       @confirm="doDeletePembayaran"
     >
       <p>Apakah Anda yakin ingin menghapus catatan pembayaran ini?</p>
@@ -1247,20 +1248,18 @@
       />
 
       <template #actions>
-        <VBtn
-          variant="tonal"
-          color="secondary"
+        <AppActionButton
+          action="batalkan"
           @click="showApproveModal = false"
-        >
-          Batal
-        </VBtn>
-        <VBtn
+        />
+        <AppActionButton
+          action="custom"
           color="success"
           :disabled="approvalLoading"
           @click="submitApprove"
         >
           Setujui
-        </VBtn>
+        </AppActionButton>
       </template>
     </BaseModal>
 
@@ -1280,20 +1279,18 @@
       />
 
       <template #actions>
-        <VBtn
-          variant="tonal"
-          color="secondary"
+        <AppActionButton
+          action="batalkan"
           @click="showRejectModal = false"
-        >
-          Batal
-        </VBtn>
-        <VBtn
+        />
+        <AppActionButton
+          action="custom"
           color="error"
           :disabled="approvalLoading"
           @click="submitReject"
         >
           Tolak
-        </VBtn>
+        </AppActionButton>
       </template>
     </BaseModal>
 
@@ -1314,20 +1311,16 @@
       />
 
       <template #actions>
-        <VBtn
-          variant="tonal"
-          color="secondary"
+        <AppActionButton
+          action="batalkan"
           @click="showResubmitModal = false"
-        >
-          Batal
-        </VBtn>
-        <VBtn
-          color="primary"
+        />
+        <AppActionButton
+          action="ajukan"
+          label="Ajukan Ulang"
           :disabled="approvalLoading"
           @click="submitResubmit"
-        >
-          Ajukan Ulang
-        </VBtn>
+        />
       </template>
     </BaseModal>
 

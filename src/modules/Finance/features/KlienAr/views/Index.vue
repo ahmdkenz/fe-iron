@@ -441,6 +441,7 @@
       v-model="showDelete"
       title="Hapus Client"
       :loading="loadingB2C"
+      confirm-action="hapus"
       @confirm="doDelete"
     >
       <p>

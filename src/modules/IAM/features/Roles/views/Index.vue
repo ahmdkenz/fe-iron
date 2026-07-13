@@ -204,6 +204,7 @@
       v-model="showDelete"
       title="Hapus Role"
       :loading="loading"
+      confirm-action="hapus"
       @confirm="doDelete"
     >
       <p>Apakah Anda yakin ingin menghapus role <strong>{{ selectedRole?.nama_role }}</strong>?</p>

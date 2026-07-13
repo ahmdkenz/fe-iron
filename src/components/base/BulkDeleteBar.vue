@@ -22,15 +22,11 @@
               {{ selected.length }} data dipilih
             </span>
             <VDivider vertical style="height: 20px;" class="d-none d-sm-block" />
-            <VBtn
-              color="error"
+            <AppActionButton
+              action="hapus"
               size="small"
-              variant="tonal"
-              prepend-icon="ri-delete-bin-line"
               @click="$emit('delete')"
-            >
-              Hapus
-            </VBtn>
+            />
             <VBtn
               size="small"
               variant="text"

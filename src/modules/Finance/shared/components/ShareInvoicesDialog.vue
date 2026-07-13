@@ -281,23 +281,21 @@
 
           <!-- Actions -->
           <div class="d-flex gap-2 ms-auto">
-            <VBtn
-              variant="text"
-              color="secondary"
+            <AppActionButton
+              action="batalkan"
               size="small"
               @click="isOpen = false"
-            >
-              Batal
-            </VBtn>
-            <VBtn
+            />
+            <AppActionButton
+              action="custom"
               color="success"
               size="small"
+              icon="ri-whatsapp-line"
               :disabled="!checkedIds.length || !clientPhone"
-              prepend-icon="ri-whatsapp-line"
               @click="doSend"
             >
               Kirim WA
-            </VBtn>
+            </AppActionButton>
           </div>
         </div>
       </div>

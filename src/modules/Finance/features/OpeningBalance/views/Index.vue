@@ -1672,7 +1672,7 @@ import BulkActionBar from '@/modules/Finance/shared/components/BulkActionBar.vue
 const PembayaranForm = defineAsyncComponent(() => import('@/modules/Finance/shared/components/PembayaranForm.vue'))
 
 const authStore = useAuthStore()
-const { showAlert, showSuccess, showError, showLoading, closeAlert, confirmDelete } = useSweetAlert()
+const { showAlert, showSuccess, showError, showLoading, closeAlert, confirmDelete, resolveThemeTokens } = useSweetAlert()
 const financeNotificationStore = useFinanceNotificationStore()
 
 // ── Shared: klien list ─────────────────────────────────────────────────────
@@ -2405,6 +2405,7 @@ async function confirmApprove(item) {
     title: 'Approve Opening Balance?',
     text: `Anda akan menyetujui Opening Balance ${item.no_invoice} atas nama ${item.klien_ar?.nama_klien ?? '-'}.`,
     confirmButtonText: 'Ya, Approve',
+    confirmButtonColor: resolveThemeTokens().success,
     cancelButtonText: 'Batal',
     showCancelButton: true,
     focusCancel: true,
@@ -2441,6 +2442,7 @@ async function confirmReject(item) {
     inputAttributes: { rows: 3 },
     inputValidator: value => !value?.trim() ? 'Alasan penolakan wajib diisi.' : null,
     confirmButtonText: 'Ya, Tolak',
+    confirmButtonColor: resolveThemeTokens().error,
     cancelButtonText: 'Batal',
     showCancelButton: true,
     focusCancel: true,
@@ -2477,6 +2479,7 @@ async function confirmApproveAll() {
     title: 'Approve Semua Opening Balance?',
     text: `Anda akan menyetujui ${pending.length} Opening Balance yang sedang ditampilkan.`,
     confirmButtonText: 'Ya, Approve Semua',
+    confirmButtonColor: resolveThemeTokens().success,
     cancelButtonText: 'Batal',
     showCancelButton: true,
     focusCancel: true,
