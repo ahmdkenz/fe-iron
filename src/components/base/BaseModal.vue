@@ -2,10 +2,11 @@
   <VDialog
     v-model="isOpen"
     :max-width="width"
+    :content-class="mobile ? 'base-modal-mobile' : undefined"
     scrollable
     persistent
   >
-    <VCard>
+    <VCard class="base-modal-card">
       <VCardTitle
         class="pa-4 d-flex align-center justify-space-between ga-2"
         style="background: rgba(var(--v-theme-primary), 0.07); border-left: 4px solid rgb(var(--v-theme-primary))"
@@ -64,6 +65,8 @@
 </template>
 
 <script setup>
+import { useDisplay } from 'vuetify'
+
 defineProps({
   title: { type: String, default: '' },
   width: { type: [String, Number], default: 600 },
@@ -77,4 +80,18 @@ defineProps({
 defineEmits(['confirm', 'minimize'])
 
 const isOpen = defineModel({ type: Boolean, default: false })
+// `xs` (<600px) matches the phone breakpoint used elsewhere (BaseTable's
+// mobileCards), not Vuetify's broader `mobile` flag (true up to 1280px).
+const { xs: mobile } = useDisplay()
 </script>
+
+<style scoped>
+:deep(.base-modal-mobile) {
+  margin: 8px;
+  max-inline-size: calc(100% - 16px);
+}
+
+:deep(.base-modal-mobile) .base-modal-card {
+  max-block-size: 90dvh;
+}
+</style>

@@ -3,6 +3,7 @@
     <div
       v-if="selected.length"
       class="bulk-action-bar"
+      :class="{ 'bulk-action-bar-above-nav': configStore.isLessThanOverlayNavBreakpoint }"
     >
       <div class="d-flex align-center gap-3 flex-wrap">
         <div class="d-flex align-center gap-2">
@@ -31,46 +32,53 @@
             color="success"
             variant="tonal"
             size="small"
-            prepend-icon="ri-whatsapp-line"
+            :icon="xs || undefined"
+            :prepend-icon="xs ? undefined : 'ri-whatsapp-line'"
+            :aria-label="xs ? 'Kirim WA' : undefined"
             :disabled="!canShare"
             @click="emit('share')"
           >
-            Kirim WA
+            <VIcon
+              v-if="xs"
+              icon="ri-whatsapp-line"
+              size="18"
+            />
+            <span v-else>Kirim WA</span>
             <VTooltip
-              v-if="!canShare"
+              v-if="xs || !canShare"
               activator="parent"
             >
-              Pilih satu klien yang sama untuk berbagi via WhatsApp
+              {{ !canShare ? 'Pilih satu klien yang sama untuk berbagi via WhatsApp' : 'Kirim WA' }}
             </VTooltip>
           </VBtn>
 
           <AppActionButton
             action="hapus"
             size="small"
+            :compact="xs"
+            hide-tooltip
             :disabled="!hasDraft"
             @click="emit('delete')"
           >
             Hapus Data
-            <VTooltip
-              v-if="!hasDraft"
-              activator="parent"
-            >
-              Tidak ada invoice DRAFT yang bisa dihapus
+            <VTooltip activator="parent">
+              {{ hasDraft ? 'Hapus Data' : 'Tidak ada invoice DRAFT yang bisa dihapus' }}
             </VTooltip>
           </AppActionButton>
         </div>
 
         <VSpacer />
 
-        <VBtn
-          variant="text"
+        <AppActionButton
+          action="custom"
+          icon="ri-close-line"
+          label="Batal Pilih"
           color="secondary"
+          variant="text"
           size="small"
-          prepend-icon="ri-close-line"
+          :compact="xs"
           @click="emit('clear')"
-        >
-          Batal Pilih
-        </VBtn>
+        />
       </div>
     </div>
   </Transition>
@@ -78,12 +86,17 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useDisplay } from 'vuetify'
+import { useConfigStore } from '@core/stores/config'
 
 const props = defineProps({
   selected: { type: Array, default: () => [] },
 })
 
 const emit = defineEmits(['share', 'delete', 'clear'])
+
+const configStore = useConfigStore()
+const { xs } = useDisplay()
 
 const canShare = computed(() => {
   if (!props.selected.length) return false
@@ -108,6 +121,19 @@ const hasDraft = computed(() => props.selected.some(inv => inv.status === 'DRAFT
   padding: 12px 20px;
   min-width: 360px;
   max-width: calc(100vw - 48px);
+}
+
+/* Clear the fixed MobileBottomNav (60px + safe-area) so the bar stays tappable. */
+.bulk-action-bar-above-nav {
+  bottom: calc(60px + env(safe-area-inset-bottom, 0px) + 16px);
+}
+
+@media (max-width: 599.98px) {
+  .bulk-action-bar {
+    min-width: 0;
+    max-width: calc(100vw - 32px);
+    padding: 10px 14px;
+  }
 }
 
 .bulk-divider {

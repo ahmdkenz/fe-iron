@@ -3,14 +3,7 @@
     <div
       v-if="selected.length > 0"
       class="bulk-bar-root"
-      style="
-        position: fixed;
-        bottom: 24px;
-        left: 50%;
-        transform: translateX(-50%);
-        z-index: 2000;
-        max-width: calc(100vw - 32px);
-      "
+      :class="{ 'bulk-bar-above-nav': configStore.isLessThanOverlayNavBreakpoint }"
     >
       <VCard
         elevation="8"
@@ -25,15 +18,19 @@
             <AppActionButton
               action="hapus"
               size="small"
+              :compact="xs"
               @click="$emit('delete')"
             />
-            <VBtn
-              size="small"
+            <AppActionButton
+              action="custom"
+              icon="ri-close-line"
+              label="Batal Pilih"
+              color="secondary"
               variant="text"
+              size="small"
+              :compact="xs"
               @click="$emit('clear')"
-            >
-              Batal Pilih
-            </VBtn>
+            />
           </div>
         </VCardText>
       </VCard>
@@ -42,13 +39,33 @@
 </template>
 
 <script setup>
+import { useConfigStore } from '@core/stores/config'
+import { useDisplay } from 'vuetify'
+
 defineProps({
   selected: { type: Array, default: () => [] },
 })
 defineEmits(['delete', 'clear'])
+
+const configStore = useConfigStore()
+const { xs } = useDisplay()
 </script>
 
 <style scoped>
+.bulk-bar-root {
+  position: fixed;
+  z-index: 2000;
+  inset-inline-start: 50%;
+  inset-block-end: 24px;
+  max-inline-size: calc(100vw - 32px);
+  transform: translateX(-50%);
+}
+
+/* Clear the fixed MobileBottomNav (60px + safe-area) so the bar stays tappable. */
+.bulk-bar-root.bulk-bar-above-nav {
+  inset-block-end: calc(60px + env(safe-area-inset-bottom, 0px) + 16px);
+}
+
 .bulk-bar-enter-active,
 .bulk-bar-leave-active {
   transition: transform 0.25s ease, opacity 0.25s ease;

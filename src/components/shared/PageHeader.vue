@@ -61,18 +61,25 @@
         </p>
       </div>
       <div class="d-flex flex-wrap gap-2 w-100 w-sm-auto">
-        <slot />
+        <slot :mobile="xs" />
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
+import { useDisplay } from 'vuetify'
+
 defineProps({
   title: { type: String, required: true },
   subtitle: { type: String, default: '' },
   breadcrumbs: { type: Array, default: () => [] },
 })
+
+// Exposed to the default slot as `mobile` so pages can render icon-only
+// AppActionButton (`:compact="mobile"`) for routine actions on phone-sized
+// screens, per the mobile design plan's <600px breakpoint.
+const { xs } = useDisplay()
 </script>
 
 <style scoped>
