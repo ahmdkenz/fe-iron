@@ -91,6 +91,37 @@
     icon: { icon: 'ri-scales-2-line' },
     roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'],
   },
+  { heading: 'ACCOUNT PAYABLE' },
+  {
+    title: 'Dashboard AP',
+    to: { name: 'ap-dashboard' },
+    icon: { icon: 'ri-dashboard-line' },
+    roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AP'],
+  },
+  {
+    title: 'Vendor',
+    to: { name: 'ap-vendor-index' },
+    icon: { icon: 'ri-store-2-line' },
+    roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AP'],
+  },
+  {
+    title: 'Tagihan',
+    to: { name: 'ap-tagihan-index' },
+    icon: { icon: 'ri-bill-line' },
+    roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AP'],
+  },
+  {
+    title: 'Approval Tagihan',
+    to: { name: 'ap-tagihan-approval' },
+    icon: { icon: 'ri-checkbox-circle-line' },
+    roles: ['ADMIN', 'MANAGER', 'SUPERVISOR'],
+  },
+  {
+    title: 'Pembayaran',
+    to: { name: 'ap-pembayaran-index' },
+    icon: { icon: 'ri-bank-card-line' },
+    roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AP'],
+  },
   { heading: 'REKONSILIASI' },
   {
     title: 'Rekonsiliasi Bank',

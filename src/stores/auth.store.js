@@ -60,6 +60,22 @@ export const useAuthStore = defineStore('auth', {
     canLockEndingBalance: state => hasAnyRole(state.user, ['ADMIN', 'MANAGER', 'SUPERVISOR']),
     canApproveEndingBalanceSpv: state => hasAnyRole(state.user, ['ADMIN', 'SUPERVISOR']),
     canApproveEndingBalanceManager: state => hasAnyRole(state.user, ['ADMIN', 'MANAGER', 'SUPERVISOR']),
+
+    // ─── Account Payable (AP) ───────────────────────────────────────────────
+    isApOnly: state => (state.user?.role?.name === 'AP')
+      || (
+        normalizeRoles(state.user).includes('AP')
+        && !normalizeRoles(state.user).includes('ADMIN')
+        && !normalizeRoles(state.user).includes('MANAGER')
+        && !normalizeRoles(state.user).includes('SUPERVISOR')
+      ),
+    canViewVendorAp: state => hasAnyRole(state.user, ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AP']),
+    canOperateVendorAp: state => hasAnyRole(state.user, ['ADMIN']),
+    canViewTagihanAp: state => hasAnyRole(state.user, ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AP']),
+    canOperateTagihanAp: state => hasAnyRole(state.user, ['ADMIN', 'AP']),
+    canApproveTagihanAp: state => hasAnyRole(state.user, ['ADMIN', 'MANAGER', 'SUPERVISOR']),
+    canViewPembayaranAp: state => hasAnyRole(state.user, ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AP']),
+    canOperatePembayaranAp: state => hasAnyRole(state.user, ['ADMIN', 'AP']),
   },
 
   actions: {

@@ -65,6 +65,9 @@ declare module 'vue' {
     ShareInvoicesDialog: typeof import('./src/modules/Finance/shared/components/ShareInvoicesDialog.vue')['default']
     StatusChip: typeof import('./src/components/shared/StatusChip.vue')['default']
     SupervisorDashboardSection: typeof import('./src/modules/Finance/features/Dashboard/components/SupervisorDashboardSection.vue')['default']
+    TagihanApItemRow: typeof import('./src/modules/AP/features/TagihanAp/components/TagihanApItemRow.vue')['default']
+    TagihanApPembayaranForm: typeof import('./src/modules/AP/features/TagihanAp/components/TagihanApPembayaranForm.vue')['default']
+    TagihanApStatusBadge: typeof import('./src/modules/AP/features/TagihanAp/components/TagihanApStatusBadge.vue')['default']
     ThemeSwitcher: typeof import('./src/@core/components/ThemeSwitcher.vue')['default']
     UserForm: typeof import('./src/modules/IAM/features/Users/components/UserForm.vue')['default']
   }
