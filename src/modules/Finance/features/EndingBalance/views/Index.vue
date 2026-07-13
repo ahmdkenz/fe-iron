@@ -161,17 +161,6 @@
                 <VTooltip activator="parent">Detail</VTooltip>
               </VBtn>
               <VBtn
-                v-if="authStore.canOperateEndingBalance && !item.has_active_koreksi"
-                icon
-                size="x-small"
-                variant="tonal"
-                color="info"
-                @click="openKoreksiDialog(item)"
-              >
-                <VIcon icon="ri-pencil-line" />
-                <VTooltip activator="parent">{{ item.status === 'LOCKED' ? 'Ajukan Koreksi' : 'Penyesuaian Invoice' }}</VTooltip>
-              </VBtn>
-              <VBtn
                 v-if="item.status === 'DRAFT' && authStore.canLockEndingBalance"
                 icon
                 size="x-small"
@@ -341,17 +330,6 @@
               >
                 <VIcon icon="ri-eye-line" />
                 <VTooltip activator="parent">Detail</VTooltip>
-              </VBtn>
-              <VBtn
-                v-if="authStore.canOperateEndingBalance && !item.has_active_koreksi"
-                icon
-                size="x-small"
-                variant="tonal"
-                color="info"
-                @click="openKoreksiDialog(item)"
-              >
-                <VIcon icon="ri-pencil-line" />
-                <VTooltip activator="parent">{{ item.status === 'LOCKED' ? 'Ajukan Koreksi' : 'Penyesuaian Invoice' }}</VTooltip>
               </VBtn>
               <VBtn
                 v-if="item.status === 'DRAFT' && authStore.canLockEndingBalance"
@@ -598,17 +576,6 @@
                 <VTooltip activator="parent">Detail</VTooltip>
               </VBtn>
               <VBtn
-                v-if="authStore.canOperateEndingBalance && !item.has_active_koreksi"
-                icon
-                size="x-small"
-                variant="tonal"
-                color="info"
-                @click="openKoreksiDialog(item)"
-              >
-                <VIcon icon="ri-pencil-line" />
-                <VTooltip activator="parent">{{ item.status === 'LOCKED' ? 'Ajukan Koreksi' : 'Penyesuaian Invoice' }}</VTooltip>
-              </VBtn>
-              <VBtn
                 v-if="item.status === 'DRAFT' && authStore.canLockEndingBalance"
                 icon
                 size="x-small"
@@ -780,17 +747,6 @@
                 <VTooltip activator="parent">Detail</VTooltip>
               </VBtn>
               <VBtn
-                v-if="authStore.canOperateEndingBalance && !item.has_active_koreksi"
-                icon
-                size="x-small"
-                variant="tonal"
-                color="info"
-                @click="openKoreksiDialog(item)"
-              >
-                <VIcon icon="ri-pencil-line" />
-                <VTooltip activator="parent">{{ item.status === 'LOCKED' ? 'Ajukan Koreksi' : 'Penyesuaian Invoice' }}</VTooltip>
-              </VBtn>
-              <VBtn
                 v-if="item.status === 'DRAFT' && authStore.canLockEndingBalance"
                 icon
                 size="x-small"
@@ -859,136 +815,6 @@
       </VCard>
     </VDialog>
 
-    <!-- Dialog Ajukan Koreksi -->
-    <VDialog v-model="showKoreksiDialog" max-width="680" persistent>
-      <VCard>
-        <VCardTitle class="pt-4 px-4 text-body-1 font-weight-bold">
-          {{ isKoreksiDraft ? 'Penyesuaian Invoice' : 'Ajukan Koreksi Manual' }}
-        </VCardTitle>
-        <VCardSubtitle class="px-4 pb-2 text-caption">
-          {{ koreksiTarget?.nama_klien }} · {{ formatDate(koreksiTarget?.periode_awal) }} – {{ formatDate(koreksiTarget?.periode_akhir) }}
-        </VCardSubtitle>
-        <VDivider />
-
-        <!-- Context panel: ringkasan saldo -->
-        <VCard variant="tonal" class="mx-4 mt-4 mb-1" rounded="lg">
-          <VCardText class="py-3 px-4">
-            <VRow dense>
-              <VCol cols="12" sm="4">
-                <div class="text-caption text-medium-emphasis mb-1">Saldo Akhir Sistem</div>
-                <div class="text-body-1 font-weight-medium">{{ formatRp(koreksiTarget?.saldo_akhir_sistem) }}</div>
-              </VCol>
-              <VCol cols="12" sm="4">
-                <div class="text-caption text-medium-emphasis mb-1">Saldo Akhir Final (Sekarang)</div>
-                <div class="text-body-1 font-weight-bold">{{ formatRp(koreksiTarget?.saldo_akhir_final) }}</div>
-              </VCol>
-              <VCol cols="12" sm="4">
-                <div class="text-caption text-medium-emphasis mb-1">Saldo Setelah Koreksi</div>
-                <div class="text-body-1 font-weight-bold text-primary">
-                  {{ formatRp(Number(koreksiTarget?.saldo_akhir_final ?? 0) + nilaiKoreksiComputed) }}
-                </div>
-              </VCol>
-            </VRow>
-          </VCardText>
-        </VCard>
-
-        <VCardText class="pt-3">
-          <VRow>
-            <VCol cols="12">
-              <VSelect
-                v-model="koreksiForm.invoice_id"
-                :items="koreksiInvoiceItems"
-                :loading="koreksiInvoicesLoading"
-                :label="isKoreksiDraft ? 'Tautkan ke Invoice' : 'Tautkan ke Invoice (opsional)'"
-                :clearable="!isKoreksiDraft"
-                :hint="koreksiForm.invoice_id
-                  ? 'Outstanding invoice ini akan berkurang sebesar jumlah penyesuaian.'
-                  : (isKoreksiDraft ? 'Wajib pilih invoice untuk EB draft.' : 'Kosongkan untuk koreksi nominal pada total saldo.')"
-                persistent-hint
-                no-data-text="Tidak ada invoice dengan sisa tagihan."
-                @update:model-value="(v) => { if (v) koreksiForm.tipe_koreksi = 'kurangi' }"
-              />
-            </VCol>
-            <VCol cols="12">
-              <div class="text-caption text-medium-emphasis mb-2">Jenis Koreksi</div>
-              <VBtnToggle
-                v-model="koreksiForm.tipe_koreksi"
-                mandatory
-                density="compact"
-                variant="outlined"
-                color="primary"
-                class="mb-4"
-                style="width: 100%"
-              >
-                <VBtn value="tambah" style="flex: 1" prepend-icon="ri-add-line" :disabled="!!koreksiForm.invoice_id">Tambah Saldo</VBtn>
-                <VBtn value="kurangi" style="flex: 1" prepend-icon="ri-subtract-line">Kurangi Saldo</VBtn>
-              </VBtnToggle>
-              <VTextField
-                v-model="koreksiForm.jumlah_koreksi"
-                label="Jumlah Koreksi"
-                type="number"
-                min="0"
-                :hint="koreksiForm.invoice_id && koreksiSelectedOutstanding !== null
-                  ? `Maks ${formatRp(koreksiSelectedOutstanding)} (sisa tagihan invoice)`
-                  : `Saldo akan ${koreksiForm.tipe_koreksi === 'tambah' ? 'bertambah' : 'berkurang'} sebesar jumlah ini`"
-                persistent-hint
-              />
-            </VCol>
-            <VCol cols="12">
-              <VTextarea
-                v-model="koreksiForm.alasan_koreksi"
-                label="Alasan Koreksi"
-                rows="3"
-                auto-grow
-                counter="1000"
-                hint="Wajib diisi. Maks 1000 karakter."
-                persistent-hint
-              />
-            </VCol>
-            <VCol cols="12">
-              <VTextField
-                v-model="koreksiForm.dokumen_url"
-                label="URL Dokumen Pendukung (opsional)"
-                hint="Lampirkan link Google Drive, SharePoint, atau URL lainnya"
-                persistent-hint
-              />
-            </VCol>
-          </VRow>
-          <VAlert
-            v-if="isKoreksiDraft"
-            type="warning"
-            density="compact"
-            variant="tonal"
-            icon="ri-flashlight-line"
-            class="mt-4"
-          >
-            EB ini masih <strong>draft</strong>, penyesuaian <strong>langsung berlaku</strong> tanpa persetujuan. Outstanding invoice & saldo akhir akan berkurang seketika.
-          </VAlert>
-          <VAlert
-            v-else
-            type="info"
-            density="compact"
-            variant="tonal"
-            icon="ri-shield-check-line"
-            class="mt-4"
-          >
-            Koreksi ini memerlukan persetujuan dua tahap: <strong>SPV</strong> terlebih dahulu, kemudian <strong>Manager</strong>. Saldo tidak akan berubah sampai keduanya menyetujui.
-          </VAlert>
-          <VAlert v-if="koreksiError" type="error" class="mt-2" density="compact">{{ koreksiError }}</VAlert>
-        </VCardText>
-        <VCardActions class="px-4 pb-4">
-          <VSpacer />
-          <AppActionButton action="batalkan" :disabled="submittingKoreksi" @click="showKoreksiDialog = false" />
-          <AppActionButton
-            :action="isKoreksiDraft ? 'custom' : 'ajukan'"
-            :label="isKoreksiDraft ? 'Terapkan Penyesuaian' : 'Ajukan Koreksi'"
-            :loading="submittingKoreksi"
-            @click="submitKoreksiDialog"
-          />
-        </VCardActions>
-      </VCard>
-    </VDialog>
-
     <!-- Dialog Aksi Approval (Setujui/Tolak koreksi) -->
     <KoreksiApprovalDialog
       v-model="approvalActionDialog.open"
@@ -1005,7 +831,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, defineComponent, h } from 'vue'
+import { ref, reactive, onMounted, defineComponent, h } from 'vue'
 import { useAuthStore } from '@/stores/auth.store'
 import api from '@/utils/axios'
 import EndingBalanceStatusBadge from '@/modules/Finance/shared/components/EndingBalanceStatusBadge.vue'
@@ -1153,47 +979,8 @@ const lockTarget      = ref(null)
 const unlockingId     = ref(null)
 const showUnlockDialog = ref(false)
 const unlockTarget    = ref(null)
-const showKoreksiDialog = ref(false)
-const koreksiTarget     = ref(null)
-const koreksiForm       = reactive({ tipe_koreksi: 'tambah', jumlah_koreksi: '', alasan_koreksi: '', dokumen_url: '', invoice_id: null })
-const submittingKoreksi = ref(false)
-const koreksiError      = ref('')
-const koreksiInvoices   = ref([])
-const koreksiInvoicesLoading = ref(false)
 const activeSegmentTab  = ref(canSeeAll ? 'b2b' : 'b2c')
 let b2bLoaded = false
-
-const nilaiKoreksiComputed = computed(() => {
-  const jumlah = Number(koreksiForm.jumlah_koreksi || 0)
-  return koreksiForm.tipe_koreksi === 'tambah' ? jumlah : -jumlah
-})
-
-// Sisa tagihan (outstanding) per invoice — sama dengan formula backend
-function invoiceOutstanding(inv) {
-  if (!inv) return 0
-  if (Number(inv.subtotal) === 0) return Math.max(0, Number(inv.sisa_tagihan ?? 0))
-  return Math.max(0, Number(inv.subtotal ?? 0) - Number(inv.total_pembayaran ?? 0) - Number(inv.total_penyesuaian ?? 0))
-}
-
-// EB DRAFT → penyesuaian per-invoice langsung berlaku & wajib pilih invoice
-const isKoreksiDraft = computed(() => koreksiTarget.value?.status === 'DRAFT')
-
-// Item dropdown invoice (hanya yang masih punya outstanding)
-const koreksiInvoiceItems = computed(() =>
-  koreksiInvoices.value
-    .map(inv => ({ ...inv, outstanding: invoiceOutstanding(inv) }))
-    .filter(inv => inv.outstanding > 0)
-    .map(inv => ({
-      title: `${inv.no_invoice} — sisa ${formatRp(inv.outstanding)}`,
-      value: inv.id,
-      outstanding: inv.outstanding,
-    }))
-)
-
-const koreksiSelectedOutstanding = computed(() => {
-  const item = koreksiInvoiceItems.value.find(i => i.value === koreksiForm.invoice_id)
-  return item ? item.outstanding : null
-})
 
 const headers = [
   { title: 'No',             key: 'no',                sortable: false, width: '60px' },
@@ -1323,78 +1110,6 @@ async function doUnlock() {
   } finally {
     unlockingId.value  = null
     unlockTarget.value = null
-  }
-}
-
-async function openKoreksiDialog(item) {
-  koreksiTarget.value           = item
-  // EB DRAFT hanya untuk penyesuaian per-invoice (kurangi); LOCKED default tambah.
-  koreksiForm.tipe_koreksi      = item.status === 'DRAFT' ? 'kurangi' : 'tambah'
-  koreksiForm.jumlah_koreksi    = ''
-  koreksiForm.alasan_koreksi    = ''
-  koreksiForm.dokumen_url       = ''
-  koreksiForm.invoice_id        = null
-  koreksiError.value            = ''
-  koreksiInvoices.value         = []
-  showKoreksiDialog.value       = true
-
-  koreksiInvoicesLoading.value = true
-  try {
-    const { data } = await api.get(`/finance/ending-balance/${item.id}/invoices`)
-    koreksiInvoices.value = data.data ?? []
-  } catch (e) {
-    koreksiError.value = e?.response?.data?.message ?? 'Gagal memuat daftar invoice.'
-  } finally {
-    koreksiInvoicesLoading.value = false
-  }
-}
-
-async function submitKoreksiDialog() {
-  koreksiError.value = ''
-  if (!koreksiForm.jumlah_koreksi || !koreksiForm.alasan_koreksi) {
-    koreksiError.value = 'Jumlah koreksi dan alasan wajib diisi.'
-    return
-  }
-  if (isKoreksiDraft.value && !koreksiForm.invoice_id) {
-    koreksiError.value = 'Untuk EB draft, pilih invoice yang akan disesuaikan.'
-    return
-  }
-  if (koreksiForm.invoice_id) {
-    if (koreksiForm.tipe_koreksi !== 'kurangi') {
-      koreksiError.value = 'Penyesuaian per-invoice hanya untuk mengurangi saldo.'
-      return
-    }
-    const jumlah = Number(koreksiForm.jumlah_koreksi || 0)
-    if (koreksiSelectedOutstanding.value !== null && jumlah > koreksiSelectedOutstanding.value) {
-      koreksiError.value = `Jumlah melebihi sisa tagihan invoice (${formatRp(koreksiSelectedOutstanding.value)}).`
-      return
-    }
-  }
-  submittingKoreksi.value = true
-  try {
-    const payload = {
-      nilai_koreksi:  nilaiKoreksiComputed.value,
-      alasan_koreksi: koreksiForm.alasan_koreksi,
-      dokumen_url:    koreksiForm.dokumen_url,
-      invoice_id:     koreksiForm.invoice_id,
-    }
-    await api.post(`/finance/ending-balance/${koreksiTarget.value.id}/koreksi`, payload)
-    const wasDraft = isKoreksiDraft.value
-    showKoreksiDialog.value = false
-    if (wasDraft) {
-      // DRAFT: penyesuaian langsung berlaku → muat ulang agar saldo & outstanding terupdate
-      refreshLists()
-    } else {
-      // LOCKED: koreksi menunggu approval → tandai ada koreksi aktif
-      const idx = rows.value.findIndex(r => r.id === koreksiTarget.value.id)
-      if (idx !== -1) rows.value[idx] = { ...rows.value[idx], has_active_koreksi: true }
-      const idxB2B = rowsB2B.value.findIndex(r => r.id === koreksiTarget.value.id)
-      if (idxB2B !== -1) rowsB2B.value[idxB2B] = { ...rowsB2B.value[idxB2B], has_active_koreksi: true }
-    }
-  } catch (e) {
-    koreksiError.value = e?.response?.data?.message ?? 'Gagal mengajukan koreksi.'
-  } finally {
-    submittingKoreksi.value = false
   }
 }
 
