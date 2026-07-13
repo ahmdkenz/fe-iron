@@ -348,12 +348,13 @@
               <VTooltip activator="parent">Edit</VTooltip>
             </VBtn>
             <VBtn
+              v-if="item.can_print"
               icon
               size="small"
               variant="text"
               color="secondary"
               :loading="printingId === item.id"
-              @click="printInvoice(item.id)"
+              @click="printInvoice(item)"
             >
               <VIcon icon="ri-printer-line" size="18" />
               <VTooltip activator="parent">Cetak Invoice</VTooltip>
@@ -580,12 +581,13 @@
               <VTooltip activator="parent">Edit</VTooltip>
             </VBtn>
             <VBtn
+              v-if="item.can_print"
               icon
               size="small"
               variant="text"
               color="secondary"
               :loading="printingId === item.id"
-              @click="printInvoice(item.id)"
+              @click="printInvoice(item)"
             >
               <VIcon icon="ri-printer-line" size="18" />
               <VTooltip activator="parent">Cetak Invoice</VTooltip>
@@ -691,6 +693,7 @@ import { useFormatter } from '@/composables/useFormatter.js'
 import { useAuthStore } from '@/stores/auth.store'
 import api from '@/utils/axios.js'
 import { readBlobError } from '@/utils/readBlobError.js'
+import { openLoadingPrintTab, openPrintTab } from '@/utils/printWindow.js'
 import InvoiceStatusBadge from '@/modules/Finance/shared/components/InvoiceStatusBadge.vue'
 import ShareInvoicesDialog from '@/modules/Finance/shared/components/ShareInvoicesDialog.vue'
 import BulkActionBar from '@/modules/Finance/shared/components/BulkActionBar.vue'
@@ -950,11 +953,18 @@ function onPembayaranSaved() {
   refreshLists()
 }
 
-async function printInvoice(id) {
-  printingId.value = id
-  const printWindow = window.open('', '_blank')
+async function printInvoice(item) {
+  if (item.share_url) {
+    if (!openPrintTab(item.share_url))
+      await showError('Popup diblokir browser. Izinkan popup untuk membuka dokumen cetak.')
+
+    return
+  }
+
+  printingId.value = item.id
+  const printWindow = openLoadingPrintTab()
   try {
-    const res = await api.get(`/finance/invoices/${id}/print`, { responseType: 'blob', timeout: 300000 })
+    const res = await api.get(`/finance/invoices/${item.id}/print`, { responseType: 'blob', timeout: 300000 })
     const blobUrl = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }))
 
     if (!printWindow) {

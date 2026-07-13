@@ -368,6 +368,8 @@
     "readBlobError": true,
     "useRemoteSearch": true,
     "useSettleWaterfall": true,
-    "ensureCsrfCookie": true
+    "ensureCsrfCookie": true,
+    "openLoadingPrintTab": true,
+    "openPrintTab": true
   }
 }

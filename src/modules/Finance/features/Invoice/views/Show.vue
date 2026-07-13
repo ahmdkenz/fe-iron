@@ -1343,6 +1343,7 @@ import { useAuthStore } from '@/stores/auth.store'
 import { useFinanceNotificationStore } from '@/stores/finance-notification.store'
 import api from '@/utils/axios'
 import { readBlobError } from '@/utils/readBlobError'
+import { openLoadingPrintTab, openPrintTab } from '@/utils/printWindow.js'
 import ApprovalStatusBadge from '@/modules/Finance/shared/components/ApprovalStatusBadge.vue'
 import InvoiceStatusBadge from '@/modules/Finance/shared/components/InvoiceStatusBadge.vue'
 import OpeningBalanceDetailTable from '@/modules/Finance/features/OpeningBalance/components/OpeningBalanceDetailTable.vue'
@@ -1863,7 +1864,14 @@ async function submitResubmit() {
 }
 
 async function printInvoice() {
-  const printWindow = window.open('', '_blank')
+  if (invoice.value?.share_url) {
+    if (!openPrintTab(invoice.value.share_url))
+      await showError('Popup diblokir browser. Izinkan popup untuk membuka dokumen cetak.')
+
+    return
+  }
+
+  const printWindow = openLoadingPrintTab()
   try {
     const res = await api.get(`/finance/invoices/${id.value}/print`, { responseType: 'blob', timeout: 300000 })
     const blobUrl = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }))
