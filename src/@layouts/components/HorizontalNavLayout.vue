@@ -59,12 +59,6 @@ const configStore = useLayoutConfigStore()
 @use "@layouts/styles/mixins";
 
 .layout-wrapper {
-  // 👉 Own stacking context so the ambient backdrop's negative z-index
-  // is scoped to this layout instead of leaking up to whatever background
-  // sits above it in the document tree.
-  position: relative;
-  isolation: isolate;
-
   &.layout-nav-type-horizontal {
     display: flex;
     flex-direction: column;

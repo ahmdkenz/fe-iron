@@ -13,7 +13,6 @@ import NavSidebarProfile from '@/layouts/components/NavSidebarProfile.vue'
 import UserProfile from '@/layouts/components/UserProfile.vue'
 import NavBarI18n from '@core/components/I18n.vue'
 import GlobalMinimizeWidgets from '@/components/base/GlobalMinimizeWidgets.vue'
-import AccountingAmbientBackdrop from '@/components/shared/AccountingAmbientBackdrop.vue'
 
 // @layouts plugin
 import { VerticalNavLayout } from '@layouts'
@@ -173,9 +172,6 @@ watch([
 
       <MobileBottomNav :nav-items="filteredNavItems" />
     </template>
-
-    <!-- 👉 Ambient decorative backdrop (behind page content) -->
-    <AccountingAmbientBackdrop />
 
     <!-- 👉 Pages -->
     <slot />
