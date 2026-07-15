@@ -209,7 +209,7 @@
       confirm-action="custom"
       confirm-label="Petakan"
       confirm-icon="ri-link-m"
-      :disabled="mapVendorMode === 'existing' ? !mapVendorForm.vendor_ap_id : !canSubmitNewVendor"
+      :disabled="!canSubmitNewVendor"
       @confirm="doMapVendor"
     >
       <VCard variant="tonal" color="primary" rounded="lg" class="mb-4">
@@ -225,119 +225,36 @@
         </VCardText>
       </VCard>
 
-      <div class="text-body-2 font-weight-medium mb-2">Pilih cara memetakan:</div>
-      <VRow dense class="mb-2">
-        <VCol cols="12" sm="6">
-          <VCard
-            variant="outlined"
-            :color="mapVendorMode === 'existing' ? 'primary' : undefined"
-            class="mode-card cursor-pointer"
-            :class="{ 'mode-card--selected': mapVendorMode === 'existing' }"
-            @click="mapVendorMode = 'existing'"
-          >
-            <VCardText class="pa-3 d-flex align-center gap-3">
-              <VAvatar size="38" color="primary" variant="tonal" rounded="lg">
-                <VIcon icon="ri-links-line" size="18" />
-              </VAvatar>
-              <div class="flex-grow-1">
-                <div class="font-weight-bold text-body-2">Vendor Ada</div>
-                <div class="text-caption text-medium-emphasis">Sudah terdaftar di sistem</div>
-              </div>
-              <VAvatar v-if="mapVendorMode === 'existing'" size="20" color="primary">
-                <VIcon icon="ri-check-line" size="13" color="white" />
-              </VAvatar>
-            </VCardText>
-          </VCard>
-        </VCol>
-        <VCol cols="12" sm="6">
-          <VCard
-            variant="outlined"
-            :color="mapVendorMode === 'create' ? 'success' : undefined"
-            class="mode-card cursor-pointer"
-            :class="{ 'mode-card--selected': mapVendorMode === 'create' }"
-            @click="mapVendorMode = 'create'"
-          >
-            <VCardText class="pa-3 d-flex align-center gap-3">
-              <VAvatar size="38" color="success" variant="tonal" rounded="lg">
-                <VIcon icon="ri-user-add-line" size="18" />
-              </VAvatar>
-              <div class="flex-grow-1">
-                <div class="font-weight-bold text-body-2">Vendor Baru</div>
-                <div class="text-caption text-medium-emphasis">Buat otomatis dari data SHZ360</div>
-              </div>
-              <VAvatar v-if="mapVendorMode === 'create'" size="20" color="success">
-                <VIcon icon="ri-check-line" size="13" color="white" />
-              </VAvatar>
-            </VCardText>
-          </VCard>
-        </VCol>
-      </VRow>
+      <VAlert type="info" variant="tonal" density="compact" class="mb-3" icon="ri-information-line">
+        Nama, NPWP, dan info bank otomatis terisi dari data SHZ360.
+      </VAlert>
 
-      <VExpandTransition>
-        <div v-if="mapVendorMode === 'existing'" key="existing">
-          <VAutocomplete
-            v-model="mapVendorForm.vendor_ap_id"
-            label="Vendor AP"
-            variant="outlined"
-            density="compact"
-            prepend-inner-icon="ri-store-2-line"
-            :items="vendorList"
-            item-title="display_label"
-            item-value="id"
-            :loading="vendorLoading"
-            clearable
-            class="mt-2"
-            @focus="ensureVendorLoaded"
-          >
-            <template #item="{ props: p, item }">
-              <VListItem v-bind="p" :title="item.raw.nama_vendor" :subtitle="item.raw.no_npwp ? `NPWP: ${item.raw.no_npwp}` : item.raw.kode_vendor" />
-            </template>
-          </VAutocomplete>
+      <VCard variant="outlined" rounded="lg" class="mb-4">
+        <DetailRow label="Nama Vendor" :value="selectedItem?.source_supplier?.nama_supplier" label-width="120px" />
+        <DetailRow label="NPWP" :value="selectedItem?.source_supplier?.npwp" label-width="120px" />
+        <DetailRow label="Bank" :value="selectedItem?.source_supplier?.bank_nama" label-width="120px" />
+        <DetailRow label="No. Rekening" :value="selectedItem?.source_supplier?.bank_no_rekening" label-width="120px" />
+        <DetailRow label="Atas Nama" :value="selectedItem?.source_supplier?.bank_atas_nama" label-width="120px" />
+      </VCard>
 
-          <VExpandTransition>
-            <VCard v-if="selectedVendorDetail" variant="outlined" rounded="lg" class="mt-3">
-              <DetailRow label="NPWP" :value="selectedVendorDetail.no_npwp" label-width="110px" />
-              <DetailRow label="Bank" :value="selectedVendorDetail.bank_nama" label-width="110px" />
-              <DetailRow label="No. Rekening" :value="selectedVendorDetail.bank_no_rekening" label-width="110px" />
-              <DetailRow label="Atas Nama" :value="selectedVendorDetail.bank_atas_nama" label-width="110px" />
-              <DetailRow label="PIC AP" :value="selectedVendorDetail.karyawan_ap?.nama_karyawan" label-width="110px" />
-            </VCard>
-          </VExpandTransition>
-        </div>
-
-        <div v-else key="create">
-          <VAlert type="info" variant="tonal" density="compact" class="mb-3" icon="ri-information-line">
-            Nama, NPWP, dan info bank otomatis terisi dari data SHZ360.
-          </VAlert>
-
-          <VCard variant="outlined" rounded="lg" class="mb-4">
-            <DetailRow label="Nama Vendor" :value="selectedItem?.source_supplier?.nama_supplier" label-width="120px" />
-            <DetailRow label="NPWP" :value="selectedItem?.source_supplier?.npwp" label-width="120px" />
-            <DetailRow label="Bank" :value="selectedItem?.source_supplier?.bank_nama" label-width="120px" />
-            <DetailRow label="No. Rekening" :value="selectedItem?.source_supplier?.bank_no_rekening" label-width="120px" />
-            <DetailRow label="Atas Nama" :value="selectedItem?.source_supplier?.bank_atas_nama" label-width="120px" />
-          </VCard>
-
-          <VAutocomplete
-            v-model="newVendorForm.karyawan_ap_id"
-            label="PIC AP"
-            variant="outlined"
-            density="compact"
-            prepend-inner-icon="ri-user-line"
-            :items="karyawanList"
-            item-title="nama_karyawan"
-            item-value="id"
-            hint="Wajib dipilih — SHZ360 tidak menyediakan data ini"
-            persistent-hint
-            :loading="karyawanLoading"
-            @focus="ensureKaryawanLoaded"
-          >
-            <template #item="{ props: p, item }">
-              <VListItem v-bind="p" :title="item.raw.nama_karyawan" :subtitle="item.raw.nik" />
-            </template>
-          </VAutocomplete>
-        </div>
-      </VExpandTransition>
+      <VAutocomplete
+        v-model="newVendorForm.karyawan_ap_id"
+        label="PIC AP"
+        variant="outlined"
+        density="compact"
+        prepend-inner-icon="ri-user-line"
+        :items="karyawanList"
+        item-title="nama_karyawan"
+        item-value="id"
+        hint="Wajib dipilih — SHZ360 tidak menyediakan data ini"
+        persistent-hint
+        :loading="karyawanLoading"
+        @focus="ensureKaryawanLoaded"
+      >
+        <template #item="{ props: p, item }">
+          <VListItem v-bind="p" :title="item.raw.nama_karyawan" :subtitle="item.raw.nik" />
+        </template>
+      </VAutocomplete>
     </BaseModal>
 
     <!-- Convert to Tagihan -->
@@ -393,9 +310,7 @@ const { showSuccess, showError, confirmDelete: swalConfirm } = useSweetAlert()
 const { formatCurrency } = useFormatter()
 
 const { items, loading, meta, params, fetchList, fetchOne, item: detailItem } = useCrud('/ap/shz360/imports')
-const { items: vendorList, loading: vendorLoading, fetchAll: fetchVendor } = useCrud('/ap/vendors')
 const { items: karyawanList, loading: karyawanLoading, fetchAll: fetchKaryawan } = useCrud('/master/karyawan')
-const { ensureLoaded: ensureVendorLoaded } = useLazyFetchAll(fetchVendor)
 const { ensureLoaded: ensureKaryawanLoaded } = useLazyFetchAll(fetchKaryawan)
 
 params.import_status = ''
@@ -488,39 +403,22 @@ async function openDetail(item) {
 const showMapVendor = ref(false)
 const mappingVendor = ref(false)
 const selectedItem = ref(null)
-const mapVendorMode = ref('existing')
-const mapVendorForm = reactive({ vendor_ap_id: null })
 const newVendorForm = reactive({ karyawan_ap_id: null })
 
 const canSubmitNewVendor = computed(() => !!newVendorForm.karyawan_ap_id)
 
-const selectedVendorDetail = computed(() => {
-  if (!mapVendorForm.vendor_ap_id) return null
-  return vendorList.value.find(v => v.id === mapVendorForm.vendor_ap_id) ?? null
-})
-
 function openMapVendor(item) {
   selectedItem.value = item
-  mapVendorMode.value = 'existing'
-  mapVendorForm.vendor_ap_id = null
   newVendorForm.karyawan_ap_id = null
   showMapVendor.value = true
 }
 
 async function doMapVendor() {
+  if (!canSubmitNewVendor.value) return
   mappingVendor.value = true
   try {
-    if (mapVendorMode.value === 'existing') {
-      if (!mapVendorForm.vendor_ap_id) return
-      await api.post(`/ap/shz360/imports/${selectedItem.value.id}/map-vendor`, {
-        vendor_ap_id: mapVendorForm.vendor_ap_id,
-      })
-      await showSuccess('Vendor berhasil dipetakan.')
-    } else {
-      if (!canSubmitNewVendor.value) return
-      await api.post(`/ap/shz360/imports/${selectedItem.value.id}/create-vendor`, { ...newVendorForm })
-      await showSuccess('Vendor baru berhasil dibuat dan dipetakan.')
-    }
+    await api.post(`/ap/shz360/imports/${selectedItem.value.id}/create-vendor`, { ...newVendorForm })
+    await showSuccess('Vendor baru berhasil dibuat dan dipetakan.')
     showMapVendor.value = false
     fetchList()
   } catch (err) {
@@ -590,18 +488,3 @@ async function confirmIgnore(item) {
 doFetch()
 loadLastRun()
 </script>
-
-<style scoped>
-.mode-card {
-  transition: box-shadow 0.15s, background 0.15s;
-}
-.mode-card:hover {
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
-}
-.mode-card--selected {
-  background: rgba(var(--v-theme-on-surface), 0.04) !important;
-}
-.cursor-pointer {
-  cursor: pointer;
-}
-</style>
