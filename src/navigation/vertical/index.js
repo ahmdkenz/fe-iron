@@ -99,6 +99,12 @@
     roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AP'],
   },
   {
+    title: 'Import SHZ360',
+    to: { name: 'ap-shz360-import-index' },
+    icon: { icon: 'ri-refresh-line' },
+    roles: ['ADMIN', 'MANAGER', 'SUPERVISOR'],
+  },
+  {
     title: 'Vendor',
     to: { name: 'ap-vendor-index' },
     icon: { icon: 'ri-store-2-line' },
@@ -121,12 +127,6 @@
     to: { name: 'ap-pembayaran-index' },
     icon: { icon: 'ri-bank-card-line' },
     roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AP'],
-  },
-  {
-    title: 'Import SHZ360',
-    to: { name: 'ap-shz360-import-index' },
-    icon: { icon: 'ri-refresh-line' },
-    roles: ['ADMIN', 'MANAGER', 'SUPERVISOR'],
   },
   { heading: 'REKONSILIASI' },
   {
