@@ -75,6 +75,9 @@
             <VCardTitle class="pa-4 pb-2 d-flex align-center justify-space-between">
               <span class="text-subtitle-1 font-weight-semibold">Informasi Tagihan</span>
               <div class="d-flex gap-2">
+                <VChip v-if="tagihan.source_system === 'SHZ360'" color="info" size="small" variant="tonal" prepend-icon="ri-refresh-line">
+                  Import SHZ360
+                </VChip>
                 <InvoiceLikeStatusBadge :status="tagihan.status" />
                 <ApprovalStatusBadge :status="tagihan.approval_status" />
               </div>

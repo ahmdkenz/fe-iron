@@ -61,4 +61,10 @@ export default [
     component: () => import('@/modules/AP/features/PembayaranAp/views/Index.vue'),
     meta: { requiresAuth: true, roles: AP_ROLES },
   },
+  {
+    path: '/ap/shz360-import',
+    name: 'ap-shz360-import-index',
+    component: () => import('@/modules/AP/features/Shz360Import/views/Index.vue'),
+    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR'] },
+  },
 ]

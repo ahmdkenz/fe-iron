@@ -58,7 +58,7 @@
                     @update:model-value="onVendorChange"
                   >
                     <template #item="{ props: p, item }">
-                      <VListItem v-bind="p" :title="item.raw.display_label" :subtitle="item.raw.kategori" />
+                      <VListItem v-bind="p" :title="item.raw.display_label" />
                     </template>
                   </VAutocomplete>
                 </VCol>

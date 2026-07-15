@@ -65,9 +65,6 @@
             {{ item.kode_vendor }}
           </VChip>
         </template>
-        <template #item.kategori="{ item }">
-          {{ item.kategori ?? '-' }}
-        </template>
         <template #item.karyawan_ap="{ item }">
           {{ item.karyawan_ap?.nama_karyawan ?? '-' }}
         </template>
@@ -137,12 +134,9 @@
         <DetailRow label="PKP">
           {{ selectedVendor.status_pkp ? 'PKP' : 'Non-PKP' }}
         </DetailRow>
-        <DetailRow label="Kategori" :value="selectedVendor.kategori" />
-        <DetailRow label="Termin (hari)" :value="selectedVendor.termin_hari" />
         <DetailRow label="Bank" :value="selectedVendor.bank_nama" />
         <DetailRow label="No. Rekening" :value="selectedVendor.bank_no_rekening" />
         <DetailRow label="Atas Nama" :value="selectedVendor.bank_atas_nama" />
-        <DetailRow label="Entitas" :value="selectedVendor.perusahaan?.nama_perusahaan" />
         <DetailRow label="PIC AP" :value="selectedVendor.karyawan_ap?.nama_karyawan" />
         <DetailRow label="Status">
           <StatusChip :active="selectedVendor.status" />
@@ -198,7 +192,6 @@ const headers = [
   { title: 'No', key: 'no', sortable: false, width: '60px' },
   { title: 'Kode Vendor', key: 'kode_vendor', sortable: false, minWidth: '140px' },
   { title: 'Nama Vendor', key: 'nama_vendor', sortable: false, minWidth: '220px' },
-  { title: 'Kategori', key: 'kategori', sortable: false, minWidth: '140px' },
   { title: 'PIC AP', key: 'karyawan_ap', sortable: false, minWidth: '160px' },
   { title: 'Status', key: 'status', sortable: false, minWidth: '90px' },
   { title: 'Aksi', key: 'actions', sortable: false, align: 'center', width: '120px' },

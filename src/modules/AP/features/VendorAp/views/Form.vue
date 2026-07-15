@@ -77,27 +77,6 @@
                 item-value="value"
               />
             </VCol>
-
-            <VCol cols="12" md="6">
-              <VTextField
-                v-model="form.kategori"
-                label="Kategori"
-                density="compact"
-                variant="outlined"
-                placeholder="Bahan Baku, Jasa, ATK, dll."
-                :error-messages="errors.kategori"
-              />
-            </VCol>
-            <VCol cols="12" md="6">
-              <VTextField
-                v-model.number="form.termin_hari"
-                label="Termin (hari)"
-                type="number"
-                density="compact"
-                variant="outlined"
-                :error-messages="errors.termin_hari"
-              />
-            </VCol>
           </VRow>
         </VCardText>
       </VCard>
@@ -147,30 +126,6 @@
         <VDivider />
         <VCardText class="pt-4">
           <VRow>
-            <VCol cols="12" md="6">
-              <VAutocomplete
-                v-model="form.perusahaan_id"
-                label="Entitas Perusahaan"
-                density="compact"
-                variant="outlined"
-                prepend-inner-icon="ri-building-2-line"
-                :items="perusahaanList"
-                item-title="nama_perusahaan"
-                item-value="id"
-                :loading="perusahaanLoading"
-                :rules="[v => !!v || 'Entitas Perusahaan wajib dipilih']"
-                :error-messages="errors.perusahaan_id"
-                @focus="ensurePerusahaanLoaded()"
-              >
-                <template #item="{ props: p, item }">
-                  <VListItem
-                    v-bind="p"
-                    :title="item.raw.nama_perusahaan"
-                    :subtitle="item.raw.nama_singkatan_perusahaan ?? item.raw.kode_perusahaan"
-                  />
-                </template>
-              </VAutocomplete>
-            </VCol>
             <VCol cols="12" md="6">
               <VAutocomplete
                 v-model="form.karyawan_ap_id"
@@ -228,9 +183,7 @@ const isEditing = computed(() => !!id)
 
 const { create, update, saving, fetchOne } = useCrud('/ap/vendors')
 const { items: karyawanList, loading: karyawanLoading, fetchAll: fetchKaryawan } = useCrud('/master/karyawan')
-const { items: perusahaanList, loading: perusahaanLoading, fetchAll: fetchPerusahaan } = useCrud('/master/perusahaan')
 const { ensureLoaded: ensureKaryawanLoaded } = useLazyFetchAll(fetchKaryawan)
-const { ensureLoaded: ensurePerusahaanLoaded } = useLazyFetchAll(fetchPerusahaan)
 
 const formRef = ref(null)
 const pageLoading = ref(!!id)
@@ -239,8 +192,7 @@ const errorMessage = ref('')
 const statusOptions = BOOLEAN_STATUS_OPTIONS
 
 const errors = reactive({
-  nama_vendor: [], no_npwp: [], kategori: [], termin_hari: [],
-  perusahaan_id: [], karyawan_ap_id: [],
+  nama_vendor: [], no_npwp: [], karyawan_ap_id: [],
 })
 
 const defaultForm = () => ({
@@ -248,12 +200,9 @@ const defaultForm = () => ({
   nama_vendor: '',
   no_npwp: '',
   status_pkp: false,
-  kategori: '',
-  termin_hari: null,
   bank_nama: '',
   bank_no_rekening: '',
   bank_atas_nama: '',
-  perusahaan_id: null,
   karyawan_ap_id: null,
   status: 1,
 })
@@ -296,7 +245,7 @@ onMounted(async () => {
   resetErrors()
   errorMessage.value = ''
 
-  await Promise.all([ensureKaryawanLoaded(), ensurePerusahaanLoaded()])
+  await ensureKaryawanLoaded()
 
   if (!isEditing.value) {
     pageLoading.value = false
@@ -310,12 +259,9 @@ onMounted(async () => {
       nama_vendor: data.nama_vendor ?? '',
       no_npwp: data.no_npwp ?? '',
       status_pkp: !!data.status_pkp,
-      kategori: data.kategori ?? '',
-      termin_hari: data.termin_hari ?? null,
       bank_nama: data.bank_nama ?? '',
       bank_no_rekening: data.bank_no_rekening ?? '',
       bank_atas_nama: data.bank_atas_nama ?? '',
-      perusahaan_id: data.perusahaan_id ?? null,
       karyawan_ap_id: data.karyawan_ap_id ?? null,
       status: normalizeBooleanStatus(data.status),
     })

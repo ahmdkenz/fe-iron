@@ -122,6 +122,12 @@
     icon: { icon: 'ri-bank-card-line' },
     roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AP'],
   },
+  {
+    title: 'Import SHZ360',
+    to: { name: 'ap-shz360-import-index' },
+    icon: { icon: 'ri-refresh-line' },
+    roles: ['ADMIN', 'MANAGER', 'SUPERVISOR'],
+  },
   { heading: 'REKONSILIASI' },
   {
     title: 'Rekonsiliasi Bank',

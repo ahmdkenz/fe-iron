@@ -76,6 +76,8 @@ export const useAuthStore = defineStore('auth', {
     canApproveTagihanAp: state => hasAnyRole(state.user, ['ADMIN', 'MANAGER', 'SUPERVISOR']),
     canViewPembayaranAp: state => hasAnyRole(state.user, ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AP']),
     canOperatePembayaranAp: state => hasAnyRole(state.user, ['ADMIN', 'AP']),
+    // Staging import SHZ360 — sama seperti Import Master Data AP, staff AP tidak boleh mengelola.
+    canOperateApShz360Import: state => hasAnyRole(state.user, ['ADMIN', 'MANAGER', 'SUPERVISOR']),
   },
 
   actions: {
