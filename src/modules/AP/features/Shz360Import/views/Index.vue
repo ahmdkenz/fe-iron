@@ -209,7 +209,7 @@
       confirm-action="custom"
       confirm-label="Petakan"
       confirm-icon="ri-link-m"
-      :disabled="!canSubmitNewVendor"
+      :disabled="!canSubmitMapVendor"
       @confirm="doMapVendor"
     >
       <VCard variant="tonal" color="primary" rounded="lg" class="mb-4">
@@ -225,36 +225,76 @@
         </VCardText>
       </VCard>
 
-      <VAlert type="info" variant="tonal" density="compact" class="mb-3" icon="ri-information-line">
-        Nama, NPWP, dan info bank otomatis terisi dari data SHZ360.
+      <VAlert
+        v-if="suggestedVendor"
+        type="success"
+        variant="tonal"
+        density="compact"
+        class="mb-3"
+        icon="ri-checkbox-circle-line"
+      >
+        Vendor dengan nama sama sudah terdaftar: <strong>{{ suggestedVendor.nama_vendor }}</strong>
+        ({{ suggestedVendor.kode_vendor }}, PIC AP: {{ suggestedVendor.karyawan_ap_nama ?? '-' }}).
+        Gunakan vendor ini, atau pilih "Buat Vendor Baru" kalau ini sebenarnya vendor lain.
       </VAlert>
 
-      <VCard variant="outlined" rounded="lg" class="mb-4">
-        <DetailRow label="Nama Vendor" :value="selectedItem?.source_supplier?.nama_supplier" label-width="120px" />
-        <DetailRow label="NPWP" :value="selectedItem?.source_supplier?.npwp" label-width="120px" />
-        <DetailRow label="Bank" :value="selectedItem?.source_supplier?.bank_nama" label-width="120px" />
-        <DetailRow label="No. Rekening" :value="selectedItem?.source_supplier?.bank_no_rekening" label-width="120px" />
-        <DetailRow label="Atas Nama" :value="selectedItem?.source_supplier?.bank_atas_nama" label-width="120px" />
-      </VCard>
+      <VBtnToggle v-model="mapVendorMode" mandatory color="primary" density="compact" divided class="mb-4">
+        <VBtn value="existing" size="small">Gunakan Vendor Terdaftar</VBtn>
+        <VBtn value="new" size="small">Buat Vendor Baru</VBtn>
+      </VBtnToggle>
 
-      <VAutocomplete
-        v-model="newVendorForm.karyawan_ap_id"
-        label="PIC AP"
-        variant="outlined"
-        density="compact"
-        prepend-inner-icon="ri-user-line"
-        :items="karyawanList"
-        item-title="nama_karyawan"
-        item-value="id"
-        hint="Wajib dipilih — SHZ360 tidak menyediakan data ini"
-        persistent-hint
-        :loading="karyawanLoading"
-        @focus="ensureKaryawanLoaded"
-      >
-        <template #item="{ props: p, item }">
-          <VListItem v-bind="p" :title="item.raw.nama_karyawan" :subtitle="item.raw.nik" />
-        </template>
-      </VAutocomplete>
+      <template v-if="mapVendorMode === 'existing'">
+        <VAutocomplete
+          v-model="existingVendorForm.vendor_ap_id"
+          label="Vendor"
+          variant="outlined"
+          density="compact"
+          prepend-inner-icon="ri-store-2-line"
+          :items="vendorList"
+          item-title="display_label"
+          item-value="id"
+          :loading="vendorLoading"
+          clearable
+          @focus="ensureVendorLoaded"
+        >
+          <template #item="{ props: p, item }">
+            <VListItem v-bind="p" :title="item.raw.display_label" />
+          </template>
+        </VAutocomplete>
+      </template>
+
+      <template v-else>
+        <VAlert type="info" variant="tonal" density="compact" class="mb-3" icon="ri-information-line">
+          Nama, NPWP, dan info bank otomatis terisi dari data SHZ360.
+        </VAlert>
+
+        <VCard variant="outlined" rounded="lg" class="mb-4">
+          <DetailRow label="Nama Vendor" :value="selectedItem?.source_supplier?.nama_supplier" label-width="120px" />
+          <DetailRow label="NPWP" :value="selectedItem?.source_supplier?.npwp" label-width="120px" />
+          <DetailRow label="Bank" :value="selectedItem?.source_supplier?.bank_nama" label-width="120px" />
+          <DetailRow label="No. Rekening" :value="selectedItem?.source_supplier?.bank_no_rekening" label-width="120px" />
+          <DetailRow label="Atas Nama" :value="selectedItem?.source_supplier?.bank_atas_nama" label-width="120px" />
+        </VCard>
+
+        <VAutocomplete
+          v-model="newVendorForm.karyawan_ap_id"
+          label="PIC AP"
+          variant="outlined"
+          density="compact"
+          prepend-inner-icon="ri-user-line"
+          :items="karyawanList"
+          item-title="nama_karyawan"
+          item-value="id"
+          hint="Wajib dipilih — SHZ360 tidak menyediakan data ini"
+          persistent-hint
+          :loading="karyawanLoading"
+          @focus="ensureKaryawanLoaded"
+        >
+          <template #item="{ props: p, item }">
+            <VListItem v-bind="p" :title="item.raw.nama_karyawan" :subtitle="item.raw.nik" />
+          </template>
+        </VAutocomplete>
+      </template>
     </BaseModal>
 
     <!-- Convert to Tagihan -->
@@ -312,6 +352,8 @@ const { formatCurrency } = useFormatter()
 const { items, loading, meta, params, fetchList, fetchOne, item: detailItem } = useCrud('/ap/shz360/imports')
 const { items: karyawanList, loading: karyawanLoading, fetchAll: fetchKaryawan } = useCrud('/master/karyawan')
 const { ensureLoaded: ensureKaryawanLoaded } = useLazyFetchAll(fetchKaryawan)
+const { items: vendorList, loading: vendorLoading, fetchAll: fetchVendor } = useCrud('/ap/vendors')
+const { ensureLoaded: ensureVendorLoaded } = useLazyFetchAll(fetchVendor)
 
 params.import_status = ''
 params.kode_po = ''
@@ -403,22 +445,37 @@ async function openDetail(item) {
 const showMapVendor = ref(false)
 const mappingVendor = ref(false)
 const selectedItem = ref(null)
+const mapVendorMode = ref('new')
 const newVendorForm = reactive({ karyawan_ap_id: null })
+const existingVendorForm = reactive({ vendor_ap_id: null })
 
-const canSubmitNewVendor = computed(() => !!newVendorForm.karyawan_ap_id)
+const suggestedVendor = computed(() => selectedItem.value?.suggested_vendor_ap ?? null)
+
+const canSubmitMapVendor = computed(() => {
+  return mapVendorMode.value === 'existing'
+    ? !!existingVendorForm.vendor_ap_id
+    : !!newVendorForm.karyawan_ap_id
+})
 
 function openMapVendor(item) {
   selectedItem.value = item
   newVendorForm.karyawan_ap_id = null
+  existingVendorForm.vendor_ap_id = item.suggested_vendor_ap?.id ?? null
+  mapVendorMode.value = item.suggested_vendor_ap ? 'existing' : 'new'
   showMapVendor.value = true
 }
 
 async function doMapVendor() {
-  if (!canSubmitNewVendor.value) return
+  if (!canSubmitMapVendor.value) return
   mappingVendor.value = true
   try {
-    await api.post(`/ap/shz360/imports/${selectedItem.value.id}/create-vendor`, { ...newVendorForm })
-    await showSuccess('Vendor baru berhasil dibuat dan dipetakan.')
+    if (mapVendorMode.value === 'existing') {
+      await api.post(`/ap/shz360/imports/${selectedItem.value.id}/map-vendor`, { ...existingVendorForm })
+      await showSuccess('Vendor berhasil dipetakan.')
+    } else {
+      await api.post(`/ap/shz360/imports/${selectedItem.value.id}/create-vendor`, { ...newVendorForm })
+      await showSuccess('Vendor baru berhasil dibuat dan dipetakan.')
+    }
     showMapVendor.value = false
     fetchList()
   } catch (err) {
