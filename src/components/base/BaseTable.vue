@@ -15,6 +15,7 @@
       :items-per-page="perPage"
       :items-per-page-options="itemsPerPageOptions"
       :page="page"
+      :item-value="itemValue"
       @update:options="handleOptionsUpdate"
     >
       <template
