@@ -88,7 +88,6 @@
                 <VCol cols="12" md="6"><DetailRow label="Vendor" :value="tagihan.vendor_ap?.nama_vendor" /></VCol>
                 <VCol cols="12" md="6"><DetailRow label="Kode Vendor" :value="tagihan.vendor_ap?.kode_vendor" /></VCol>
                 <VCol cols="12" md="6"><DetailRow label="No. Invoice Vendor" :value="tagihan.no_invoice_vendor" /></VCol>
-                <VCol cols="12" md="6"><DetailRow label="Entitas" :value="tagihan.perusahaan?.nama_perusahaan" /></VCol>
                 <VCol cols="12" md="6"><DetailRow label="Tanggal Tagihan" :value="formatDate(tagihan.tanggal_tagihan)" /></VCol>
                 <VCol cols="12" md="6"><DetailRow label="Jatuh Tempo" :value="formatDate(tagihan.tanggal_jatuh_tempo)" /></VCol>
                 <VCol cols="12" md="6"><DetailRow label="No. PO" :value="tagihan.no_po" /></VCol>
