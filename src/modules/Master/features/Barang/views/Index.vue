@@ -1,131 +1,259 @@
 <template>
   <div>
-    <PageHeader 
-      title="Manajemen Barang" 
-      subtitle="Kelola data barang"
-      :breadcrumbs="[
-        { title: 'Dashboard', to: { name: 'dashboard' } },
-        { title: 'Barang', disabled: true }
-      ]"
-    >
-      <VBtn
-        v-if="!authStore.isArOnly"
-        color="primary"
-        prepend-icon="ri-add-line"
-        @click="openCreate"
+    <!-- ═══ MOBILE (<600px) — tampilan lama, tidak diubah ═══ -->
+    <template v-if="xs">
+      <PageHeader
+        title="Manajemen Barang"
+        subtitle="Kelola data barang"
+        :breadcrumbs="[
+          { title: 'Dashboard', to: { name: 'dashboard' } },
+          { title: 'Barang', disabled: true }
+        ]"
       >
-        Tambah Barang
-      </VBtn>
-    </PageHeader>
+        <VBtn
+          v-if="!authStore.isArOnly"
+          color="primary"
+          prepend-icon="ri-add-line"
+          @click="openCreate"
+        >
+          Tambah Barang
+        </VBtn>
+      </PageHeader>
 
-    <VCard>
-      <VCardText class="d-flex gap-4 pb-0">
-        <VTextField
-          v-model="params.search"
-          placeholder="Cari kode / nama barang..."
-          clearable
-          hide-details
-          density="compact"
-          style="max-width: 300px"
-          prepend-inner-icon="ri-search-line"
-          @update:model-value="debouncedFetch"
-        />
-      </VCardText>
+      <VCard>
+        <VCardText class="d-flex gap-4 pb-0">
+          <VTextField
+            v-model="params.search"
+            placeholder="Cari kode / nama barang..."
+            clearable
+            hide-details
+            density="compact"
+            style="max-width: 300px"
+            prepend-inner-icon="ri-search-line"
+            @update:model-value="debouncedFetch"
+          />
+        </VCardText>
 
-      <BaseTable
-        :headers="headers"
-        :items="items"
-        :total="meta.total"
-        :loading="loading"
-        :per-page="meta.per_page"
-        :page="meta.current_page"
-        wrap-text
-        show-select
-        v-model:selected="selectedItems"
-        class="mt-2"
-        @update:options="onTableOptions"
-      >
-        <template #item.no="{ index }">
-          {{ (meta.current_page - 1) * meta.per_page + index + 1 }}
-        </template>
-        <template #item.kode_barang="{ item }">
-          <VChip
-            color="primary"
-            size="small"
-            variant="tonal"
-            label
-          >
-            {{ item.kode_barang }}
-          </VChip>
-        </template>
-        <template #item.spesifikasi="{ item }">
-          {{ item.spesifikasi ?? '-' }}
-        </template>
-        <template #item.keterangan="{ item }">
-          {{ item.keterangan ?? '-' }}
-        </template>
-        <template #item.status="{ item }">
-          <StatusChip :active="item.status" />
-        </template>
-        <template #item.created_by_name="{ item }">
-          {{ item.created_by_name ?? '-' }}
-        </template>
-        <template #item.updated_by_name="{ item }">
-          {{ item.updated_by_name ?? '-' }}
-        </template>
-        <template #item.actions="{ item }">
-          <div class="d-flex gap-1">
-            <VBtn
-              icon
-              size="small"
-              variant="text"
-              color="info"
-              @click="openDetail(item)"
-            >
-              <VIcon
-                icon="ri-eye-line"
-                size="18"
-              />
-              <VTooltip activator="parent">
-                Detail
-              </VTooltip>
-            </VBtn>
-            <VBtn
-              v-if="!authStore.isArOnly"
-              icon
-              size="small"
-              variant="text"
+        <BaseTable
+          :headers="headers"
+          :items="items"
+          :total="meta.total"
+          :loading="loading"
+          :per-page="meta.per_page"
+          :page="meta.current_page"
+          wrap-text
+          show-select
+          v-model:selected="selectedItems"
+          class="mt-2"
+          @update:options="onTableOptions"
+        >
+          <template #item.no="{ index }">
+            {{ (meta.current_page - 1) * meta.per_page + index + 1 }}
+          </template>
+          <template #item.kode_barang="{ item }">
+            <VChip
               color="primary"
-              @click="openEdit(item)"
-            >
-              <VIcon
-                icon="ri-pencil-line"
-                size="18"
-              />
-              <VTooltip activator="parent">
-                Edit
-              </VTooltip>
-            </VBtn>
-            <VBtn
-              v-if="!authStore.isArOnly"
-              icon
               size="small"
-              variant="text"
-              color="error"
-              @click="confirmDelete(item)"
+              variant="tonal"
+              label
             >
-              <VIcon
-                icon="ri-delete-bin-line"
-                size="18"
-              />
-              <VTooltip activator="parent">
-                Hapus
-              </VTooltip>
-            </VBtn>
-          </div>
+              {{ item.kode_barang }}
+            </VChip>
+          </template>
+          <template #item.spesifikasi="{ item }">
+            {{ item.spesifikasi ?? '-' }}
+          </template>
+          <template #item.keterangan="{ item }">
+            {{ item.keterangan ?? '-' }}
+          </template>
+          <template #item.status="{ item }">
+            <StatusChip :active="item.status" />
+          </template>
+          <template #item.created_by_name="{ item }">
+            {{ item.created_by_name ?? '-' }}
+          </template>
+          <template #item.updated_by_name="{ item }">
+            {{ item.updated_by_name ?? '-' }}
+          </template>
+          <template #item.actions="{ item }">
+            <div class="d-flex gap-1">
+              <VBtn
+                icon
+                size="small"
+                variant="text"
+                color="info"
+                @click="openDetail(item)"
+              >
+                <VIcon
+                  icon="ri-eye-line"
+                  size="18"
+                />
+                <VTooltip activator="parent">
+                  Detail
+                </VTooltip>
+              </VBtn>
+              <VBtn
+                v-if="!authStore.isArOnly"
+                icon
+                size="small"
+                variant="text"
+                color="primary"
+                @click="openEdit(item)"
+              >
+                <VIcon
+                  icon="ri-pencil-line"
+                  size="18"
+                />
+                <VTooltip activator="parent">
+                  Edit
+                </VTooltip>
+              </VBtn>
+              <VBtn
+                v-if="!authStore.isArOnly"
+                icon
+                size="small"
+                variant="text"
+                color="error"
+                @click="confirmDelete(item)"
+              >
+                <VIcon
+                  icon="ri-delete-bin-line"
+                  size="18"
+                />
+                <VTooltip activator="parent">
+                  Hapus
+                </VTooltip>
+              </VBtn>
+            </div>
+          </template>
+        </BaseTable>
+      </VCard>
+    </template>
+
+    <!-- ═══ DESKTOP (≥600px) — redesign modern & berwarna ═══ -->
+    <template v-else>
+      <ManagementIndexShell
+        tone="emerald"
+        icon="ri-archive-2-line"
+        title="Manajemen Barang"
+        subtitle="Kelola data barang"
+        :breadcrumbs="[
+          { title: 'Dashboard', to: { name: 'dashboard' } },
+          { title: 'Barang', disabled: true }
+        ]"
+        :stats="stats"
+        :stats-loading="loading && !items.length"
+        search-placeholder="Cari kode / nama barang..."
+        v-model:search="params.search"
+        v-model:status="statusFilter"
+        @update:search="debouncedFetch"
+        @update:status="onStatusChange"
+      >
+        <template #actions>
+          <VBtn
+            v-if="!authStore.isArOnly"
+            color="primary"
+            prepend-icon="ri-add-line"
+            @click="openCreate"
+          >
+            Tambah Barang
+          </VBtn>
         </template>
-      </BaseTable>
-    </VCard>
+
+        <BaseTable
+          :headers="headers"
+          :items="items"
+          :total="meta.total"
+          :loading="loading"
+          :per-page="meta.per_page"
+          :page="meta.current_page"
+          wrap-text
+          show-select
+          v-model:selected="selectedItems"
+          @update:options="onTableOptions"
+        >
+          <template #item.no="{ index }">
+            {{ (meta.current_page - 1) * meta.per_page + index + 1 }}
+          </template>
+          <template #item.kode_barang="{ item }">
+            <VChip
+              color="primary"
+              size="small"
+              variant="tonal"
+              label
+            >
+              {{ item.kode_barang }}
+            </VChip>
+          </template>
+          <template #item.spesifikasi="{ item }">
+            {{ item.spesifikasi ?? '-' }}
+          </template>
+          <template #item.keterangan="{ item }">
+            {{ item.keterangan ?? '-' }}
+          </template>
+          <template #item.status="{ item }">
+            <StatusChip :active="item.status" />
+          </template>
+          <template #item.created_by_name="{ item }">
+            {{ item.created_by_name ?? '-' }}
+          </template>
+          <template #item.updated_by_name="{ item }">
+            {{ item.updated_by_name ?? '-' }}
+          </template>
+          <template #item.actions="{ item }">
+            <div class="d-flex gap-1">
+              <VBtn
+                icon
+                size="small"
+                variant="text"
+                color="info"
+                @click="openDetail(item)"
+              >
+                <VIcon
+                  icon="ri-eye-line"
+                  size="18"
+                />
+                <VTooltip activator="parent">
+                  Detail
+                </VTooltip>
+              </VBtn>
+              <VBtn
+                v-if="!authStore.isArOnly"
+                icon
+                size="small"
+                variant="text"
+                color="primary"
+                @click="openEdit(item)"
+              >
+                <VIcon
+                  icon="ri-pencil-line"
+                  size="18"
+                />
+                <VTooltip activator="parent">
+                  Edit
+                </VTooltip>
+              </VBtn>
+              <VBtn
+                v-if="!authStore.isArOnly"
+                icon
+                size="small"
+                variant="text"
+                color="error"
+                @click="confirmDelete(item)"
+              >
+                <VIcon
+                  icon="ri-delete-bin-line"
+                  size="18"
+                />
+                <VTooltip activator="parent">
+                  Hapus
+                </VTooltip>
+              </VBtn>
+            </div>
+          </template>
+        </BaseTable>
+      </ManagementIndexShell>
+    </template>
 
 
 
@@ -221,13 +349,15 @@
 </template>
 
 <script setup>
-import { nextTick, onMounted, ref } from 'vue'
+import { computed, nextTick, onMounted, ref } from 'vue'
+import { useDisplay } from 'vuetify'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useAuthStore } from '@/stores/auth.store'
 import { useCrud } from '@/composables/useCrud'
 import api from '@/utils/axios'
 import BulkDeleteBar from '@/components/base/BulkDeleteBar.vue'
 
+const { xs } = useDisplay()
 const authStore = useAuthStore()
 const { showSuccess, showError, showLoading, closeAlert, confirmDelete: swalConfirmDelete } = useSweetAlert()
 const { items, loading, meta, params, fetchList, remove } = useCrud('/master/barang')
@@ -239,6 +369,13 @@ const deleteError = ref('')
 const selectedBarang = ref(null)
 const selectedForm   = ref(null)
 const selectedItems  = ref([])
+const statusFilter   = ref('all')
+
+const stats = computed(() => ({
+  total: meta.total,
+  aktif: items.value.filter(i => i.status).length,
+  nonaktif: items.value.filter(i => !i.status).length,
+}))
 
 const headers = [
   { title: 'No',           key: 'no',              sortable: false, width: '60px' },
@@ -261,6 +398,14 @@ function debouncedFetch() {
 function onTableOptions({ page, itemsPerPage }) {
   params.page = page
   params['per_page'] = itemsPerPage
+  fetchList()
+}
+
+function onStatusChange(val) {
+  statusFilter.value = val
+  if (val === 'all') delete params.status
+  else params.status = val
+  params.page = 1
   fetchList()
 }
 

@@ -150,35 +150,30 @@
           @update:model-value="val => emit('update:search', val)"
         />
 
-        <VBtnToggle
+        <VRadioGroup
           :model-value="status"
-          class="mis__status-toggle"
-          density="comfortable"
-          color="primary"
-          variant="outlined"
-          mandatory
-          divided
+          class="mis__status-radio"
+          inline
+          hide-details
+          density="compact"
           @update:model-value="val => emit('update:status', val)"
         >
-          <VBtn
-            :value="'all'"
-            size="small"
-          >
-            Semua
-          </VBtn>
-          <VBtn
+          <VRadio
+            label="Semua"
+            value="all"
+            color="rgb(var(--mis-c1))"
+          />
+          <VRadio
+            label="Aktif"
             :value="1"
-            size="small"
-          >
-            Aktif
-          </VBtn>
-          <VBtn
+            color="rgb(var(--mis-c1))"
+          />
+          <VRadio
+            label="Nonaktif"
             :value="0"
-            size="small"
-          >
-            Nonaktif
-          </VBtn>
-        </VBtnToggle>
+            color="rgb(var(--mis-c1))"
+          />
+        </VRadioGroup>
       </div>
 
       <div class="mis__table">
@@ -234,6 +229,26 @@ function formatStat(value) {
 .mis--teal {
   --mis-c1: 20, 184, 166;
   --mis-c2: 52, 211, 153;
+}
+
+.mis--rose {
+  --mis-c1: 236, 72, 153;
+  --mis-c2: 244, 114, 182;
+}
+
+.mis--orange {
+  --mis-c1: 249, 115, 22;
+  --mis-c2: 250, 204, 21;
+}
+
+.mis--indigo {
+  --mis-c1: 99, 102, 241;
+  --mis-c2: 129, 140, 248;
+}
+
+.mis--emerald {
+  --mis-c1: 34, 197, 94;
+  --mis-c2: 132, 204, 22;
 }
 
 /* ─── Breadcrumb (mirrors PageHeader.vue) ────────────────────────────── */
@@ -459,8 +474,34 @@ function formatStat(value) {
   flex: 1 1 240px;
 }
 
-.mis__status-toggle :deep(.v-btn--active) {
-  color: rgb(var(--mis-c1)) !important;
+.mis__status-radio {
+  flex-shrink: 0;
+}
+
+.mis__status-radio :deep(.v-input__control) {
+  min-height: 0;
+}
+
+.mis__status-radio :deep(.v-selection-control-group) {
+  flex-wrap: nowrap;
+  gap: 18px;
+}
+
+.mis__status-radio :deep(.v-selection-control) {
+  flex: 0 0 auto;
+  min-height: 0;
+}
+
+.mis__status-radio :deep(.v-selection-control__wrapper) {
+  inline-size: 26px;
+  block-size: 26px;
+}
+
+.mis__status-radio :deep(.v-label) {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  white-space: nowrap;
+  opacity: 0.85;
 }
 
 .mis__table {
