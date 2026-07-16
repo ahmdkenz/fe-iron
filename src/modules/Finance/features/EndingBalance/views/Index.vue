@@ -16,14 +16,14 @@
     <!-- Tampilan non-approver (AR): hanya list Ending Balance biasa          -->
     <!-- ═══════════════════════════════════════════════════════════════════ -->
     <template v-if="!authStore.canApproveEndingBalanceManager">
-      <!-- Tab Selector B2B/B2C -->
-      <VTabs :model-value="activeSegmentTab" class="mb-4" @update:model-value="onSegmentTabChange">
+      <!-- Tab Selector B2B/B2C (hanya untuk ADMIN/MANAGER/SUPERVISOR; AR langsung lihat B2C) -->
+      <VTabs v-if="canSeeAll" :model-value="activeSegmentTab" class="mb-4" @update:model-value="onSegmentTabChange">
         <VTab value="b2b">Ending Balance B2B</VTab>
         <VTab value="b2c">Ending Balance B2C</VTab>
       </VTabs>
 
       <!-- Tabel B2B -->
-      <VCard v-if="activeSegmentTab === 'b2b'" class="mb-4">
+      <VCard v-if="canSeeAll && activeSegmentTab === 'b2b'" class="mb-4">
         <VCardTitle class="px-4 pt-4 pb-0 text-body-1 font-weight-bold d-flex align-center gap-2">
           <VIcon icon="ri-building-line" size="20" color="primary" />
           Ending Balance B2B
