@@ -88,6 +88,18 @@ const filteredNavItems = computed(() => {
     prunedItems.push(item)
   })
 
+  // AP murni: Dashboard AP ditampilkan sebagai item mandiri tanpa heading
+  // "ACCOUNT PAYABLE" di atasnya, meniru tampilan Dashboard utama untuk role lain.
+  if (authStore.isApOnly) {
+    const dashboardIndex = prunedItems.findIndex(item => item.to?.name === 'ap-dashboard')
+
+    if (dashboardIndex > -1) {
+      const [dashboardItem] = prunedItems.splice(dashboardIndex, 1)
+
+      prunedItems.unshift(dashboardItem)
+    }
+  }
+
   return prunedItems
 })
 

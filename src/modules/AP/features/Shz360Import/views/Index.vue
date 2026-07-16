@@ -230,17 +230,24 @@
         type="success"
         variant="tonal"
         density="compact"
-        class="mb-3"
+        class="mb-4"
         icon="ri-checkbox-circle-line"
       >
-        Vendor dengan nama sama sudah terdaftar: <strong>{{ suggestedVendor.nama_vendor }}</strong>
-        ({{ suggestedVendor.kode_vendor }}, PIC AP: {{ suggestedVendor.karyawan_ap_nama ?? '-' }}).
-        Gunakan vendor ini, atau pilih "Buat Vendor Baru" kalau ini sebenarnya vendor lain.
+        <div class="text-body-2">
+          Vendor sudah terdaftar sebagai <strong>{{ suggestedVendor.nama_vendor }}</strong> ({{ suggestedVendor.kode_vendor }}).
+        </div>
+        <div class="text-caption text-medium-emphasis">
+          PIC AP: {{ suggestedVendor.karyawan_ap_nama ?? '-' }} — sudah dipilih otomatis di bawah, atau pilih "Vendor Baru" kalau ini sebenarnya vendor lain.
+        </div>
       </VAlert>
 
-      <VBtnToggle v-model="mapVendorMode" mandatory color="primary" density="compact" divided class="mb-4">
-        <VBtn value="existing" size="small">Gunakan Vendor Terdaftar</VBtn>
-        <VBtn value="new" size="small">Buat Vendor Baru</VBtn>
+      <VBtnToggle v-model="mapVendorMode" mandatory color="primary" variant="outlined" density="compact" divided class="mb-4">
+        <VBtn value="existing" size="small" style="min-width: 180px">
+          <VIcon start size="16">ri-store-2-line</VIcon>Vendor Terdaftar
+        </VBtn>
+        <VBtn value="new" size="small" style="min-width: 150px">
+          <VIcon start size="16">ri-add-circle-line</VIcon>Vendor Baru
+        </VBtn>
       </VBtnToggle>
 
       <template v-if="mapVendorMode === 'existing'">
@@ -255,7 +262,6 @@
           item-value="id"
           :loading="vendorLoading"
           clearable
-          @focus="ensureVendorLoaded"
         >
           <template #item="{ props: p, item }">
             <VListItem v-bind="p" :title="item.raw.display_label" />
@@ -264,7 +270,7 @@
       </template>
 
       <template v-else>
-        <VAlert type="info" variant="tonal" density="compact" class="mb-3" icon="ri-information-line">
+        <VAlert type="info" variant="tonal" density="compact" class="mb-4" icon="ri-information-line">
           Nama, NPWP, dan info bank otomatis terisi dari data SHZ360.
         </VAlert>
 
@@ -463,6 +469,7 @@ function openMapVendor(item) {
   existingVendorForm.vendor_ap_id = item.suggested_vendor_ap?.id ?? null
   mapVendorMode.value = item.suggested_vendor_ap ? 'existing' : 'new'
   showMapVendor.value = true
+  ensureVendorLoaded()
 }
 
 async function doMapVendor() {
