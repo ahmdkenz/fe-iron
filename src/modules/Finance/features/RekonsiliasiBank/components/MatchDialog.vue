@@ -27,6 +27,61 @@
           </div>
         </VCard>
 
+        <VBtnToggle v-model="mode" mandatory density="compact" variant="outlined" divided class="mb-4">
+          <VBtn value="invoice" size="small" style="min-width: 120px">
+            <VIcon start size="16">ri-file-list-3-line</VIcon>Invoice
+          </VBtn>
+          <VBtn value="pdm" size="small" style="min-width: 120px">
+            <VIcon start size="16">ri-book-line</VIcon>Catat PDM
+          </VBtn>
+        </VBtnToggle>
+
+        <template v-if="mode === 'pdm'">
+          <div class="d-flex align-center gap-2 mb-2">
+            <VIcon size="18" color="deep-purple">ri-book-line</VIcon>
+            <span class="text-body-2 font-weight-medium">Catat sebagai Pendapatan di Muka</span>
+          </div>
+          <div class="text-caption text-medium-emphasis mb-3">
+            Gunakan mode ini bila dana masuk belum bisa dicocokkan ke invoice manapun. Seluruh nominal transaksi bank
+            akan dicatat sebagai Pendapatan di Muka (PDM) milik Client/Resto yang dipilih, dan bisa dialokasikan ke
+            invoice nanti melalui Laporan Pendapatan di Muka.
+          </div>
+
+          <VAutocomplete
+            v-model="pdmKlienId"
+            :items="klienList"
+            item-title="display_label"
+            item-value="id"
+            label="Client / Resto AR"
+            placeholder="Cari nama klien atau resto..."
+            density="compact"
+            variant="outlined"
+            clearable
+            :loading="klienLoading"
+            class="mb-3"
+            @focus="ensureKlienLoaded"
+          />
+
+          <VTextField
+            :model-value="formatCurrency(item?.kredit ?? 0)"
+            label="Nominal PDM"
+            density="compact"
+            variant="outlined"
+            readonly
+            hint="Nominal PDM mengikuti seluruh nilai kredit transaksi bank ini"
+            persistent-hint
+            class="mb-3"
+          />
+
+          <VTextField
+            v-model="pdmKeterangan"
+            label="Keterangan (opsional)"
+            density="compact"
+            variant="outlined"
+          />
+        </template>
+
+        <template v-else>
         <!-- ── Section: Invoice Opening Balance ── -->
         <div class="d-flex align-center gap-2 mb-2">
           <VIcon size="18" color="deep-purple">ri-bookmark-line</VIcon>
@@ -234,6 +289,7 @@
             Muat lagi
           </VBtn>
         </div>
+        </template>
 
         <VAlert v-if="matchError" type="error" variant="tonal" class="mt-3" density="compact">{{ matchError }}</VAlert>
       </VCardText>
@@ -241,7 +297,11 @@
       <VCardActions class="pa-4">
         <VSpacer />
         <AppActionButton action="batalkan" @click="onDialogUpdate(false)" />
-        <AppActionButton action="lanjutkan" :disabled="!selectedInvoiceId || obLoading || regularLoading || !canProceedSettle" @click="proceedToBuktiStep" />
+        <AppActionButton
+          action="lanjutkan"
+          :disabled="mode === 'invoice' ? (!selectedInvoiceId || obLoading || regularLoading || !canProceedSettle) : !pdmKlienId"
+          @click="proceedToBuktiStep"
+        />
       </VCardActions>
     </VCard>
   </VDialog>
@@ -260,7 +320,9 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
+import { useCrud } from '@/composables/useCrud'
 import { useFormatter } from '@/composables/useFormatter'
+import { useLazyFetchAll } from '@/composables/useLazyFetchAll'
 import { useSettleWaterfall } from '@/composables/useSettleWaterfall'
 import api from '@/utils/axios'
 import BuktiBayarDialog from './BuktiBayarDialog.vue'
@@ -275,6 +337,14 @@ const emit = defineEmits(['update:modelValue', 'matched', 'connection-error'])
 const { formatCurrency, formatDate } = useFormatter()
 
 const statusInvoiceColor = s => ({ LUNAS: 'success', SEBAGIAN: 'warning', TERKIRIM: 'info', DRAFT: 'grey' }[s] ?? 'grey')
+
+// Mode "Invoice" (default) vs "Catat PDM" (tanpa invoice, seluruh kredit bank jadi PDM)
+const mode           = ref('invoice')
+const pdmKlienId     = ref(null)
+const pdmKeterangan  = ref('')
+
+const { items: klienList, loading: klienLoading, fetchAll: fetchKlien } = useCrud('/finance/klien-ar')
+const { ensureLoaded: ensureKlienLoaded } = useLazyFetchAll(fetchKlien)
 
 const selectedInvoiceId  = ref(null)
 const matchSaving        = ref(false)
@@ -458,6 +528,10 @@ function onRegularSearchInput() {
 }
 
 function resetState() {
+  mode.value               = 'invoice'
+  pdmKlienId.value         = null
+  pdmKeterangan.value      = ''
+
   selectedInvoiceId.value  = null
   obCandidates.value       = []
   obSearch.value           = ''
@@ -497,12 +571,39 @@ function onDialogUpdate(value) {
 }
 
 function proceedToBuktiStep() {
-  if (!selectedInvoiceId.value || !props.item || !canProceedSettle.value) return
+  if (!props.item) return
+  if (mode.value === 'invoice') {
+    if (!selectedInvoiceId.value || !canProceedSettle.value) return
+  } else if (!pdmKlienId.value) {
+    return
+  }
   matchError.value = null
   showBuktiStep.value = true
 }
 
+// Koneksi terputus/timeout: server mungkin sudah menyimpan. Minta parent memuat
+// ulang data otoritatif agar tidak salah lapor "gagal". Selain itu, tampilkan
+// error field bukti_pembayaran (jika ada) dan pesan error umum.
+function handleMatchError(err) {
+  if (!err?.response || err?.code === 'ECONNABORTED') {
+    emit('update:modelValue', false)
+    emit('connection-error', 'Koneksi terputus saat menyimpan. Data telah dimuat ulang — silakan periksa status transaksi.')
+    return
+  }
+  const fieldErrors = err?.response?.data?.errors
+  if (fieldErrors?.bukti_pembayaran) {
+    buktiBayarError.value = fieldErrors.bukti_pembayaran[0]
+  }
+  matchError.value = fieldErrors
+    ? Object.values(fieldErrors).flat()[0]
+    : (err?.response?.data?.message ?? 'Terjadi kesalahan, coba lagi.')
+}
+
 async function doManualMatch() {
+  return mode.value === 'invoice' ? doManualMatchInvoice() : doManualMatchPdm()
+}
+
+async function doManualMatchInvoice() {
   if (!selectedInvoiceId.value || !props.item || !canProceedSettle.value) return
   matchSaving.value    = true
   matchError.value     = null
@@ -524,20 +625,33 @@ async function doManualMatch() {
     emit('matched', { itemId: props.item.id, updated: data.data })
     emit('update:modelValue', false)
   } catch (err) {
-    if (!err?.response || err?.code === 'ECONNABORTED') {
-      // Koneksi terputus/timeout: server mungkin sudah menyimpan. Minta parent
-      // memuat ulang data otoritatif agar tidak salah lapor "gagal".
-      emit('update:modelValue', false)
-      emit('connection-error', 'Koneksi terputus saat menyimpan. Data telah dimuat ulang — silakan periksa status transaksi.')
-    } else {
-      const fieldErrors = err?.response?.data?.errors
-      if (fieldErrors?.bukti_pembayaran) {
-        buktiBayarError.value = fieldErrors.bukti_pembayaran[0]
-      }
-      matchError.value = fieldErrors
-        ? Object.values(fieldErrors).flat()[0]
-        : (err?.response?.data?.message ?? 'Terjadi kesalahan, coba lagi.')
-    }
+    handleMatchError(err)
+  } finally {
+    matchSaving.value = false
+  }
+}
+
+async function doManualMatchPdm() {
+  if (!pdmKlienId.value || !props.item) return
+  matchSaving.value    = true
+  matchError.value     = null
+  buktiBayarError.value = null
+  try {
+    const payload = new FormData()
+    payload.append('klien_ar_id', pdmKlienId.value)
+    if (pdmKeterangan.value) payload.append('keterangan', pdmKeterangan.value)
+    const file = Array.isArray(buktiBayar.value) ? buktiBayar.value[0] : buktiBayar.value
+    if (file instanceof File) payload.append('bukti_pembayaran', file)
+
+    const { data } = await api.post(
+      `/finance/rekonsiliasi-bank/detail/${props.item.id}/catat-pdm`,
+      payload,
+      { headers: { 'Content-Type': 'multipart/form-data' } },
+    )
+    emit('matched', { itemId: props.item.id, updated: data.data })
+    emit('update:modelValue', false)
+  } catch (err) {
+    handleMatchError(err)
   } finally {
     matchSaving.value = false
   }
