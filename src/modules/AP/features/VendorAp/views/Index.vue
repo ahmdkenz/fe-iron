@@ -162,31 +162,45 @@
       </VAlert>
     </BaseModal>
 
+    <!-- Form Tambah / Edit Vendor -->
+    <VendorForm
+      v-model="showForm"
+      :vendor-data="selectedForm"
+      :minimizable="true"
+      @minimize="minimizeForm"
+      @saved="onFormSaved"
+    />
+
     <BulkDeleteBar :selected="selected" @delete="doBulkDelete" @clear="selected = []" />
   </div>
 </template>
 
 <script setup>
-import { nextTick, onDeactivated, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { nextTick, onActivated, onDeactivated, ref, watch } from 'vue'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useAuthStore } from '@/stores/auth.store'
 import { useCrud } from '@/composables/useCrud'
+import { useMinimizeWidgetStore } from '@/stores/minimize-widget.store'
 import api from '@/utils/axios'
 import BulkDeleteBar from '@/components/base/BulkDeleteBar.vue'
 import DetailRow from '@/components/shared/DetailRow.vue'
+import VendorForm from '../components/VendorForm.vue'
 
-const router = useRouter()
 const authStore = useAuthStore()
 const { showSuccess, showError, showLoading, closeAlert, confirmDelete: swalConfirmDelete } = useSweetAlert()
 
 const { items, loading, meta, params, fetchList, remove } = useCrud('/ap/vendors')
+const minimizeStore = useMinimizeWidgetStore()
+
+const FORM_WIDGET_ID = 'vendor-form'
 
 const selected = ref([])
 const showDetail = ref(false)
 const showDelete = ref(false)
+const showForm = ref(false)
 const deleteError = ref('')
 const selectedVendor = ref(null)
+const selectedForm = ref(null)
 
 const headers = [
   { title: 'No', key: 'no', sortable: false, width: '60px' },
@@ -219,14 +233,58 @@ function onTableOptions({ page, itemsPerPage }) {
   fetchList()
 }
 
-function openCreate() { router.push({ name: 'ap-vendor-create' }) }
-function openEdit(v) { router.push({ name: 'ap-vendor-edit', params: { id: v.id } }) }
+function openCreate() {
+  minimizeStore.register(FORM_WIDGET_ID, { title: 'Form Tambah Vendor', routeName: 'ap-vendor-index', type: 'form', minimized: false, mode: 'create', recordId: null, endpoint: null })
+  selectedForm.value = null
+  showForm.value = true
+}
+function openEdit(v) {
+  minimizeStore.register(FORM_WIDGET_ID, { title: 'Form Edit Vendor', routeName: 'ap-vendor-index', type: 'form', minimized: false, mode: 'edit', recordId: v.id, endpoint: '/ap/vendors' })
+  selectedForm.value = v
+  showForm.value = true
+}
+function minimizeForm() {
+  minimizeStore.setMinimized(FORM_WIDGET_ID, true)
+  showForm.value = false
+}
+function onFormSaved() { minimizeStore.remove(FORM_WIDGET_ID); showForm.value = false; fetchList() }
+
+watch(showForm, (val) => {
+  if (!val) {
+    const w = minimizeStore.widgets[FORM_WIDGET_ID]
+    if (w && !w.minimized) minimizeStore.remove(FORM_WIDGET_ID)
+  }
+})
+
+onActivated(async () => {
+  if (minimizeStore.widgets[FORM_WIDGET_ID]?.pendingRestore) {
+    const widget = minimizeStore.widgets[FORM_WIDGET_ID]
+    minimizeStore.clearPendingRestore(FORM_WIDGET_ID)
+    minimizeStore.setMinimizedFalse(FORM_WIDGET_ID)
+    if (widget.mode === 'edit' && widget.recordId && widget.endpoint) {
+      try {
+        const res = await api.get(`${widget.endpoint}/${widget.recordId}`)
+        selectedForm.value = res.data?.data ?? null
+      } catch {
+        selectedForm.value = null
+      }
+    } else {
+      selectedForm.value = null
+    }
+    showForm.value = true
+  }
+})
+
 function openDetail(v) { selectedVendor.value = v; showDetail.value = true }
 function confirmDeleteItem(v) { selectedVendor.value = v; deleteError.value = ''; showDelete.value = true }
 
 onDeactivated(() => {
   showDetail.value = false
   showDelete.value = false
+
+  const widget = minimizeStore.widgets[FORM_WIDGET_ID]
+  if (showForm.value && !widget?.minimized)
+    showForm.value = false
 })
 
 async function doDelete() {

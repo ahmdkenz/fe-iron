@@ -14,18 +14,6 @@ export default [
     meta: { requiresAuth: true, roles: AP_ROLES },
   },
   {
-    path: '/ap/vendors/create',
-    name: 'ap-vendor-create',
-    component: () => import('@/modules/AP/features/VendorAp/views/Form.vue'),
-    meta: { requiresAuth: true, roles: ['ADMIN'] },
-  },
-  {
-    path: '/ap/vendors/:id/edit',
-    name: 'ap-vendor-edit',
-    component: () => import('@/modules/AP/features/VendorAp/views/Form.vue'),
-    meta: { requiresAuth: true, roles: ['ADMIN'] },
-  },
-  {
     path: '/ap/tagihan',
     name: 'ap-tagihan-index',
     component: () => import('@/modules/AP/features/TagihanAp/views/Index.vue'),

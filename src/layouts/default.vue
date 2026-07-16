@@ -13,6 +13,7 @@ const keepAliveRouteNames = new Set([
   'iam-users', 'iam-roles',
   'master-karyawan', 'master-perusahaan', 'master-investor', 'master-resto', 'master-brand',
   'finance-klien-ar',
+  'ap-vendor-index',
 ])
 
 // Halaman finance berat (tabel, dialog, form besar sekaligus) — tidak sepadan

@@ -6,7 +6,7 @@
     <VDataTableServer
       v-if="!isMobileCardView"
       class="base-table"
-      :class="{ 'base-table--wrap-text': wrapText }"
+      :class="{ 'base-table--wrap-text': wrapText, 'base-table--layout-locked': layoutLocked }"
       v-bind="$attrs"
       :headers="resizedHeaders"
       :items="items"
@@ -91,7 +91,7 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref, useAttrs, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, useAttrs, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useDisplay } from 'vuetify'
 
@@ -169,6 +169,8 @@ const route = useRoute()
 const rootEl = ref(null)
 const dragState = ref(null)
 const storedWidths = ref({})
+const measuredWidths = ref({})
+const layoutLocked = ref(false)
 
 const resizeStorageKey = computed(() => {
   if (props.columnResizeKey) return props.columnResizeKey
@@ -181,7 +183,46 @@ const resizeStorageKey = computed(() => {
 
 watch(resizeStorageKey, key => {
   storedWidths.value = readStoredWidths(key)
+  measuredWidths.value = {}
+  layoutLocked.value = false
+  nextTick(measureNaturalWidths)
 }, { immediate: true })
+
+// Kolom yang belum pernah di-resize manual & belum punya width dari halaman
+// perlu diukur dulu dari lebar render alami (auto layout), lalu dikunci lewat
+// table-layout: fixed - supaya lebar itu tidak dihitung ulang dari konten tiap render.
+watch(
+  () => [props.loading, props.items.length],
+  ([loadingNow, length], prev) => {
+    if (loadingNow || length === 0) return
+    if (prev && prev[0] === loadingNow && prev[1] === length) return
+
+    nextTick(measureNaturalWidths)
+  },
+  { immediate: true },
+)
+
+function measureNaturalWidths() {
+  const root = rootEl.value
+  if (!root) return
+
+  const next = { ...measuredWidths.value }
+  let changed = false
+
+  root.querySelectorAll('th[data-column-key]').forEach(th => {
+    const key = th.dataset.columnKey
+    if (key in storedWidths.value || key in next) return
+
+    const width = th.getBoundingClientRect().width
+    if (width > 0) {
+      next[key] = Math.round(width)
+      changed = true
+    }
+  })
+
+  if (changed) measuredWidths.value = next
+  layoutLocked.value = true
+}
 
 function readStoredWidths(key) {
   try {
@@ -219,20 +260,22 @@ function isColumnLocked(header) {
 }
 
 const resizedHeaders = computed(() => {
-  if (!props.resizableColumns) return props.headers
-
   return props.headers.map(header => {
-    if (!header.key || isColumnLocked(header)) return header
+    if (!header.key) return header
 
+    const resizable = props.resizableColumns && !isColumnLocked(header)
     const stored = storedWidths.value[header.key]
+    const measured = measuredWidths.value[header.key]
+    const width = stored != null ? `${stored}px` : measured != null ? `${measured}px` : header.width
 
     return {
       ...header,
-      ...(stored != null ? { width: `${stored}px` } : {}),
+      ...(width != null ? { width } : {}),
       headerProps: {
         ...(header.headerProps || {}),
-        class: [header.headerProps?.class, 'base-table__th--resizable'].filter(Boolean),
-        'data-column-resize-key': header.key,
+        class: [header.headerProps?.class, resizable && 'base-table__th--resizable'].filter(Boolean),
+        'data-column-key': header.key,
+        ...(resizable ? { 'data-column-resize-key': header.key } : {}),
       },
     }
   })
@@ -386,6 +429,19 @@ onBeforeUnmount(() => {
   text-align: start;
   white-space: normal;
   word-break: normal;
+}
+
+.base-table--layout-locked :deep(.v-table__wrapper > table) {
+  table-layout: fixed;
+  width: max-content;
+  min-width: 100%;
+}
+
+.base-table:not(.base-table--wrap-text) :deep(.v-table__wrapper > table > thead > tr > th),
+.base-table:not(.base-table--wrap-text) :deep(.v-table__wrapper > table > tbody > tr > td) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .base-table :deep(th.base-table__th--resizable) {
