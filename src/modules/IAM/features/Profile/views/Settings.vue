@@ -89,7 +89,6 @@
                     density="comfortable"
                     variant="outlined"
                     prepend-inner-icon="ri-mail-line"
-                    :rules="[v => !!v || 'Email wajib diisi']"
                     :error-messages="errors.email"
                     @input="errors.email = []"
                   />

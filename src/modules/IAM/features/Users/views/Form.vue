@@ -122,7 +122,6 @@
                 density="compact"
                 variant="outlined"
                 type="email"
-                :rules="[v => !!v || 'Email wajib diisi']"
                 :error-messages="errors.email"
               />
             </VCol>

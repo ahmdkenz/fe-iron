@@ -91,7 +91,6 @@
             label="Email"
             type="email"
             prepend-inner-icon="ri-mail-line"
-            :rules="[v => !!v || 'Email wajib diisi']"
             :error-messages="errors.email"
           />
         </VCol>
