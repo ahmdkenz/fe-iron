@@ -118,12 +118,6 @@
     roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AP'],
   },
   {
-    title: 'Approval Tagihan',
-    to: { name: 'ap-tagihan-approval' },
-    icon: { icon: 'ri-checkbox-circle-line' },
-    roles: ['ADMIN', 'MANAGER', 'SUPERVISOR'],
-  },
-  {
     title: 'Pembayaran',
     to: { name: 'ap-pembayaran-index' },
     icon: { icon: 'ri-bank-card-line' },

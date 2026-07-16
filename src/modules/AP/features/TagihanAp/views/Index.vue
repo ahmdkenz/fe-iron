@@ -2,10 +2,10 @@
   <div>
     <PageHeader
       title="Tagihan AP"
-      subtitle="Kelola tagihan dari vendor"
+      subtitle="Pengelolaan dan approval tagihan vendor"
       :breadcrumbs="[
         { title: 'Dashboard', to: { name: 'dashboard' } },
-        { title: 'Tagihan', disabled: true }
+        { title: 'Tagihan AP', disabled: true }
       ]"
     >
       <VBtn
@@ -17,6 +17,98 @@
         Input Tagihan
       </VBtn>
     </PageHeader>
+
+    <!-- ── Section: Tagihan Approval (hanya untuk approver) ────────────────── -->
+    <div v-if="authStore.canApproveTagihanAp" id="approval-tagihan" class="mb-8">
+      <div class="d-flex align-center gap-2 mb-4">
+        <VIcon icon="ri-checkbox-circle-line" color="success" />
+        <span class="text-h6 font-weight-semibold">Tagihan Approval</span>
+      </div>
+
+      <VCard>
+        <VCardText class="d-flex flex-wrap gap-3 pb-0">
+          <VTextField
+            v-model="approvalParams.search"
+            placeholder="Cari no. tagihan / vendor..."
+            clearable
+            hide-details
+            density="compact"
+            style="max-width: 260px"
+            prepend-inner-icon="ri-search-line"
+            @update:model-value="debouncedApprovalFetch"
+          />
+        </VCardText>
+
+        <BaseTable
+          :headers="approvalHeaders"
+          :items="approvalItems"
+          :total="approvalMeta.total"
+          :loading="approvalLoading"
+          :per-page="approvalMeta.per_page"
+          :page="approvalMeta.current_page"
+          column-resize-key="ap-tagihan-approval"
+          class="mt-2"
+          @update:options="onApprovalTableOptions"
+        >
+          <template #item.no="{ index }">
+            {{ (approvalMeta.current_page - 1) * approvalMeta.per_page + index + 1 }}
+          </template>
+          <template #item.no_tagihan="{ item }">
+            <VChip color="primary" size="small" variant="tonal" label>{{ item.no_tagihan }}</VChip>
+          </template>
+          <template #item.vendor_ap="{ item }">
+            {{ item.vendor_ap?.nama_vendor ?? '-' }}
+          </template>
+          <template #item.tanggal_tagihan="{ item }">
+            {{ formatDate(item.tanggal_tagihan) }}
+          </template>
+          <template #item.total_tagihan="{ item }">
+            {{ formatCurrency(item.total_tagihan) }}
+          </template>
+          <template #item.submitted_by_name="{ item }">
+            {{ item.submitted_by_name ?? item.created_by_name ?? '-' }}
+          </template>
+          <template #item.submitted_at="{ item }">
+            {{ formatDateTime(item.submitted_at) }}
+          </template>
+          <template #item.actions="{ item }">
+            <div class="d-flex gap-1 justify-center">
+              <VBtn
+                icon
+                size="small"
+                variant="text"
+                color="success"
+                :loading="actingId === item.id"
+                @click="openApprove(item)"
+              >
+                <VIcon icon="ri-checkbox-circle-line" size="18" />
+                <VTooltip activator="parent">Approve</VTooltip>
+              </VBtn>
+              <VBtn
+                icon
+                size="small"
+                variant="text"
+                color="error"
+                @click="openReject(item)"
+              >
+                <VIcon icon="ri-close-circle-line" size="18" />
+                <VTooltip activator="parent">Reject</VTooltip>
+              </VBtn>
+              <VBtn icon size="small" variant="text" color="info" :to="{ name: 'ap-tagihan-show', params: { id: item.id } }">
+                <VIcon icon="ri-eye-line" size="18" />
+                <VTooltip activator="parent">Review</VTooltip>
+              </VBtn>
+            </div>
+          </template>
+        </BaseTable>
+      </VCard>
+    </div>
+
+    <!-- ── Section: List Tagihan AP ─────────────────────────────────────────── -->
+    <div class="d-flex align-center gap-2 mb-4">
+      <VIcon icon="ri-list-check-2" color="primary" />
+      <span class="text-h6 font-weight-semibold">List Tagihan AP</span>
+    </div>
 
     <VRow class="mb-4">
       <VCol cols="12" sm="6" md="3">
@@ -196,24 +288,73 @@
     </BaseModal>
 
     <BulkDeleteBar :selected="selected" @delete="doBulkDelete" @clear="selected = []" />
+
+    <!-- ── Modals: Approve / Reject Tagihan ─────────────────────────────────── -->
+    <BaseModal
+      v-if="showApproveModal"
+      v-model="showApproveModal"
+      title="Approve Tagihan"
+      :loading="actingId === selectedItem?.id"
+      @confirm="doApprove"
+    >
+      <p>Anda akan menyetujui tagihan <strong>{{ selectedItem?.no_tagihan }}</strong> dari vendor <strong>{{ selectedItem?.vendor_ap?.nama_vendor }}</strong>.</p>
+      <VTextField v-model="note" label="Catatan (opsional)" density="compact" variant="outlined" class="mt-3" />
+      <template #actions>
+        <VBtn variant="tonal" color="secondary" @click="showApproveModal = false">Batal</VBtn>
+        <VBtn color="success" :loading="actingId === selectedItem?.id" @click="doApprove">
+          <VIcon icon="ri-checkbox-circle-line" class="me-1" />
+          Ya, Approve
+        </VBtn>
+      </template>
+    </BaseModal>
+
+    <BaseModal
+      v-if="showRejectModal"
+      v-model="showRejectModal"
+      title="Reject Tagihan"
+      :loading="actingId === selectedItem?.id"
+      @confirm="doReject"
+    >
+      <p>Anda akan menolak tagihan <strong>{{ selectedItem?.no_tagihan }}</strong>.</p>
+      <VTextField
+        v-model="note"
+        label="Alasan Penolakan (wajib)"
+        density="compact"
+        variant="outlined"
+        class="mt-3"
+        :rules="[v => !!v || 'Alasan wajib diisi']"
+      />
+      <template #actions>
+        <VBtn variant="tonal" color="secondary" @click="showRejectModal = false">Batal</VBtn>
+        <VBtn color="error" :disabled="!note" :loading="actingId === selectedItem?.id" @click="doReject">
+          <VIcon icon="ri-close-circle-line" class="me-1" />
+          Ya, Reject
+        </VBtn>
+      </template>
+    </BaseModal>
   </div>
 </template>
 
 <script setup>
-import { nextTick, onDeactivated, reactive, ref } from 'vue'
+import { nextTick, onDeactivated, onMounted, reactive, ref } from 'vue'
+import { useRoute } from 'vue-router'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useAuthStore } from '@/stores/auth.store'
 import { useCrud } from '@/composables/useCrud'
 import { useFormatter } from '@/composables/useFormatter'
+import { useFinanceNotificationStore } from '@/stores/finance-notification.store'
 import api from '@/utils/axios'
 import BulkDeleteBar from '@/components/base/BulkDeleteBar.vue'
 import ApprovalStatusBadge from '@/modules/Finance/shared/components/ApprovalStatusBadge.vue'
 import TagihanApStatusBadge from '../components/TagihanApStatusBadge.vue'
 
+const route = useRoute()
 const authStore = useAuthStore()
+const financeNotificationStore = useFinanceNotificationStore()
 const { showSuccess, showError, showLoading, closeAlert, confirmDelete: swalConfirmDelete } = useSweetAlert()
-const { formatCurrency, formatDate } = useFormatter()
+const { formatCurrency, formatDate, formatDateTime } = useFormatter()
 
+// ── List Tagihan AP ──────────────────────────────────────────────────────────
 const { items, loading, meta, params, fetchList, remove } = useCrud('/ap/tagihan')
 
 const selected = ref([])
@@ -322,5 +463,94 @@ async function doBulkDelete() {
   }
 }
 
+// ── Tagihan Approval (hanya untuk approver) ──────────────────────────────────
+const {
+  items: approvalItems,
+  loading: approvalLoading,
+  meta: approvalMeta,
+  params: approvalParams,
+  fetchList: fetchApprovalList,
+} = useCrud('/ap/tagihan/approval')
+
+const showApproveModal = ref(false)
+const showRejectModal = ref(false)
+const selectedItem = ref(null)
+const actingId = ref(null)
+const note = ref('')
+
+const approvalHeaders = [
+  { title: 'No', key: 'no', sortable: false, width: '60px' },
+  { title: 'No. Tagihan', key: 'no_tagihan', sortable: false },
+  { title: 'Vendor', key: 'vendor_ap', sortable: false },
+  { title: 'Tanggal', key: 'tanggal_tagihan', sortable: false },
+  { title: 'Nominal', key: 'total_tagihan', sortable: false },
+  { title: 'Pengaju', key: 'submitted_by_name', sortable: false },
+  { title: 'Diajukan Pada', key: 'submitted_at', sortable: false },
+  { title: 'Aksi', key: 'actions', sortable: false, align: 'center', width: '140px' },
+]
+
+let approvalDebounceTimer = null
+function debouncedApprovalFetch() {
+  clearTimeout(approvalDebounceTimer)
+  approvalDebounceTimer = setTimeout(doApprovalFetch, 400)
+}
+
+function doApprovalFetch() {
+  approvalParams.page = 1
+  fetchApprovalList()
+}
+
+function onApprovalTableOptions({ page, itemsPerPage }) {
+  approvalParams.page = page
+  approvalParams.per_page = itemsPerPage
+  fetchApprovalList()
+}
+
+function openApprove(item) { selectedItem.value = item; note.value = ''; showApproveModal.value = true }
+function openReject(item) { selectedItem.value = item; note.value = ''; showRejectModal.value = true }
+
+async function doApprove() {
+  if (!selectedItem.value) return
+  actingId.value = selectedItem.value.id
+  try {
+    await api.patch(`/ap/tagihan/${selectedItem.value.id}/approve`, { note: note.value || null })
+    showApproveModal.value = false
+    await showSuccess(`Tagihan ${selectedItem.value.no_tagihan} berhasil disetujui.`)
+    doApprovalFetch()
+    doFetch()
+    financeNotificationStore.fetchPendingTagihanApCount()
+  } catch (err) {
+    await showError(err.response?.data?.message ?? 'Gagal menyetujui tagihan.')
+  } finally {
+    actingId.value = null
+  }
+}
+
+async function doReject() {
+  if (!selectedItem.value || !note.value) return
+  actingId.value = selectedItem.value.id
+  try {
+    await api.patch(`/ap/tagihan/${selectedItem.value.id}/reject`, { note: note.value })
+    showRejectModal.value = false
+    await showSuccess(`Tagihan ${selectedItem.value.no_tagihan} berhasil ditolak.`)
+    doApprovalFetch()
+    doFetch()
+    financeNotificationStore.fetchPendingTagihanApCount()
+  } catch (err) {
+    await showError(err.response?.data?.message ?? 'Gagal menolak tagihan.')
+  } finally {
+    actingId.value = null
+  }
+}
+
+onMounted(() => {
+  if (route.hash === '#approval-tagihan') {
+    nextTick(() => {
+      document.getElementById('approval-tagihan')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    })
+  }
+})
+
 doFetch()
+if (authStore.canApproveTagihanAp) doApprovalFetch()
 </script>

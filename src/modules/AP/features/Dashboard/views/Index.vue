@@ -235,7 +235,7 @@
             </VTable>
           </VCardText>
           <VCardActions v-if="authStore.canApproveTagihanAp" class="px-4">
-            <VBtn variant="text" size="small" color="primary" :to="{ name: 'ap-tagihan-approval' }">
+            <VBtn variant="text" size="small" color="primary" :to="{ name: 'ap-tagihan-index', hash: '#approval-tagihan' }">
               Lihat semua
             </VBtn>
           </VCardActions>
@@ -454,7 +454,7 @@ function dueChipLabel(hariLagi) {
 // ─── Quick Actions ──────────────────────────────────────────────────────────
 const quickActions = [
   { title: 'Tambah Tagihan', icon: 'ri-file-add-line', color: 'primary', to: { name: 'ap-tagihan-create' }, roles: ['ADMIN', 'AP'] },
-  { title: 'Approval Tagihan', icon: 'ri-checkbox-circle-line', color: 'success', to: { name: 'ap-tagihan-approval' }, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR'] },
+  { title: 'Approval Tagihan', icon: 'ri-checkbox-circle-line', color: 'success', to: { name: 'ap-tagihan-index', hash: '#approval-tagihan' }, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR'] },
   { title: 'Lihat Vendor', icon: 'ri-store-2-line', color: 'info', to: { name: 'ap-vendor-index' } },
   { title: 'Riwayat Pembayaran', icon: 'ri-bank-card-line', color: 'warning', to: { name: 'ap-pembayaran-index' } },
 ]
