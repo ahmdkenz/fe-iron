@@ -3,6 +3,7 @@
     title: 'Dashboard',
     to: { name: 'dashboard' },
     icon: { icon: 'ri-home-smile-2-line' },
+    roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'],
   },
   {
     title: 'Export Data',
@@ -102,7 +103,7 @@
     title: 'Import SHZ360',
     to: { name: 'ap-shz360-import-index' },
     icon: { icon: 'ri-refresh-line' },
-    roles: ['ADMIN', 'MANAGER', 'SUPERVISOR'],
+    roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AP'],
   },
   {
     title: 'Vendor',

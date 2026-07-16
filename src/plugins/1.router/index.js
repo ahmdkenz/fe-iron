@@ -41,14 +41,20 @@ router.beforeEach(async (to, _from, next) => {
   const requiresGuest = to.matched.some(r => r.meta.requiresGuest)
   const routeRoles = to.matched.flatMap(r => r.meta.roles ?? [])
 
+  // AP murni tidak punya akses ke dashboard global, jadi "home"-nya adalah ap-dashboard.
+  const homeRouteName = authStore.isApOnly ? 'ap-dashboard' : 'dashboard'
+
   if (requiresAuth && !isLoggedIn)
     return next({ name: 'login' })
 
   if (requiresGuest && isLoggedIn)
-    return next({ name: 'dashboard' })
+    return next({ name: homeRouteName })
+
+  if (requiresAuth && isLoggedIn && to.name === 'dashboard' && authStore.isApOnly)
+    return next({ name: homeRouteName })
 
   if (requiresAuth && routeRoles.length > 0 && !routeRoles.some(role => roles.includes(role)))
-    return next({ name: 'dashboard' })
+    return next({ name: homeRouteName })
 
   next()
 })

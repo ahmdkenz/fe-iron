@@ -868,7 +868,7 @@ async function handleLogin() {
     }, 1600)
 
     setTimeout(() => {
-      router.push({ name: 'dashboard' })
+      router.push({ name: authStore.isApOnly ? 'ap-dashboard' : 'dashboard' })
     }, 2800)
   } catch (err) {
     isSubmitting.value = false

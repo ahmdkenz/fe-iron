@@ -29,6 +29,13 @@ const canApproveEbKoreksi = computed(() =>
 )
 
 const enrichedNavItems = computed(() => navItems.map(item => {
+  if (item.to?.name === 'ap-dashboard') {
+    return {
+      ...item,
+      title: authStore.isApOnly ? 'Dashboard' : 'Dashboard AP',
+    }
+  }
+
   if (item.to?.name === 'finance-opening-balance') {
     return {
       ...item,

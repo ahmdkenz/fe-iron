@@ -1,5 +1,6 @@
 <script setup>
 import { useConfigStore } from '@core/stores/config'
+import { useAuthStore } from '@/stores/auth.store'
 
 const props = defineProps({
   navItems: {
@@ -9,18 +10,25 @@ const props = defineProps({
 })
 
 const configStore = useConfigStore()
+const authStore = useAuthStore()
 const route = useRoute()
 
-const pinnedItems = [
-  { title: 'Dashboard', to: { name: 'dashboard' }, icon: 'ri-home-smile-2-line' },
+// AP murni tidak punya akses ke dashboard global, jadi shortcut pinned-nya
+// mengarah ke ap-dashboard alih-alih route dashboard biasa.
+const pinnedItems = computed(() => [
+  {
+    title: 'Dashboard',
+    to: { name: authStore.isApOnly ? 'ap-dashboard' : 'dashboard' },
+    icon: 'ri-home-smile-2-line',
+  },
   { title: 'Client', to: { name: 'finance-klien-ar' }, icon: 'ri-building-4-line' },
   { title: 'Invoice', to: { name: 'finance-invoice-index' }, icon: 'ri-file-list-3-line' },
   { title: 'Saldo Akhir', to: { name: 'finance-ending-balance' }, icon: 'ri-scales-2-line' },
-]
+])
 
 // Only show a pinned shortcut if the current user actually has access to it
 // (mirrors whatever role filtering already produced `props.navItems`).
-const visiblePinnedItems = computed(() => pinnedItems.filter(
+const visiblePinnedItems = computed(() => pinnedItems.value.filter(
   item => props.navItems.some(navItem => navItem.to?.name === item.to.name),
 ))
 
@@ -44,9 +52,9 @@ const groupedNavItems = computed(() => {
       return
     }
 
-    // Dashboard already has its own shortcut in the pinned bottom bar, so
-    // skip it here to avoid showing it twice.
-    if (item.to?.name === 'dashboard')
+    // Dashboard (or ap-dashboard for AP-only users) already has its own
+    // shortcut in the pinned bottom bar, so skip it here to avoid showing it twice.
+    if (item.to?.name === pinnedItems.value[0].to.name)
       return
 
     current.items.push(item)
