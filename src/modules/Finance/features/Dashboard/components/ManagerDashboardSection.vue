@@ -542,7 +542,7 @@ const donutChartOptions = computed(() => {
     chart: { type: 'donut', fontFamily: 'inherit' },
     labels: statusBreakdown.value.map(i => i.label),
     colors: [c.info, c.warning, c.primary, c.success],
-    plotOptions: { pie: { donut: { size: '70%', labels: { show: true, total: { show: true, showAlways: true, label: 'Total', color: c['on-surface'], formatter: w => w.globals.seriesTotals.reduce((a, b) => a + b, 0) } } } } },
+    plotOptions: { pie: { donut: { size: '70%', labels: { show: true, value: { color: c['on-surface'] }, total: { show: true, showAlways: true, label: 'Total', color: c['on-surface'], formatter: w => w.globals.seriesTotals.reduce((a, b) => a + b, 0) } } } } },
     dataLabels: { enabled: false },
     stroke: { show: false },
     legend: { position: 'bottom', labels: { colors: c['on-surface'] } },
