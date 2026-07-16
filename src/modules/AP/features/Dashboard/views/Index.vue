@@ -423,9 +423,10 @@ const statusChartOptions = computed(() => {
           size: '70%',
           labels: {
             show: true,
+            value: { color: c['on-surface'], fontSize: '15px', fontWeight: 600, offsetY: 6 },
             total: {
-              show: true, showAlways: true, label: 'Total', color: c['on-surface'],
-              formatter: w => formatCurrency(w.globals.seriesTotals.reduce((a, b) => a + b, 0)),
+              show: true, showAlways: true, label: 'Total', color: c['on-surface'], fontSize: '12px',
+              formatter: w => `Rp ${compactFormatter.format(w.globals.seriesTotals.reduce((a, b) => a + b, 0))}`,
             },
           },
         },
