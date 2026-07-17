@@ -407,6 +407,11 @@ async function fetchRelated() {
   }
 }
 
+function formatInvoiceItem(inv) {
+  const t = new Intl.NumberFormat('id-ID').format(inv.subtotal)
+  return `- ${inv.no_invoice} | Rp ${t}\n  ${inv.share_url}`
+}
+
 function buildMessage(selected) {
   const klien = clientName.value
   const obList = selected.filter(inv => inv.is_opening_balance)
@@ -416,42 +421,32 @@ function buildMessage(selected) {
   if (selected.length === 1) {
     const inv = selected[0]
     const t = new Intl.NumberFormat('id-ID').format(inv.subtotal)
-    if (inv.is_opening_balance) {
-      return (
-        `Halo, berikut kami kirimkan Opening Balance *${inv.no_invoice}*.\n\n` +
-        `Klien: ${klien}\n` +
-        `Total Tagihan: Rp ${t}\n\n` +
-        `Silakan akses dan unduh invoice di:\n${inv.share_url}`
-      )
-    }
+    const label = inv.is_opening_balance ? 'Opening Balance' : 'Invoice'
     return (
-      `Halo, berikut kami kirimkan Invoice *${inv.no_invoice}*.\n\n` +
-      `Klien: ${klien}\n` +
+      `Yth. Bapak/Ibu *${klien}*,\n\n` +
+      `Bersama ini kami sampaikan ${label} *${inv.no_invoice}* dengan rincian sebagai berikut:\n\n` +
       `Total Tagihan: Rp ${t}\n\n` +
-      `Silakan akses dan unduh invoice di:\n${inv.share_url}`
+      `Silakan akses dan unduh dokumen melalui tautan berikut:\n${inv.share_url}\n\n` +
+      `Mohon kesediaannya untuk melakukan pembayaran sesuai dengan total tagihan di atas. Atas perhatian dan kerja samanya, kami ucapkan terima kasih.`
     )
   }
 
-  let msg = `Halo *${klien}*,\n\nBerikut kami sampaikan tagihan yang perlu diselesaikan:\n`
+  let msg = `Yth. Bapak/Ibu *${klien}*,\n\nBersama ini kami sampaikan rincian tagihan yang perlu diselesaikan:\n`
 
   if (obList.length) {
-    msg += '\n*Opening Balance:*\n'
-    for (const inv of obList) {
-      const t = new Intl.NumberFormat('id-ID').format(inv.subtotal)
-      msg += `- ${inv.no_invoice} | Rp ${t}\n  ${inv.share_url}\n`
-    }
+    msg += '\n*Opening Balance:*\n\n'
+    msg += obList.map(formatInvoiceItem).join('\n\n')
+    msg += '\n'
   }
 
   if (regList.length) {
-    msg += '\n*Invoice Reguler:*\n'
-    for (const inv of regList) {
-      const t = new Intl.NumberFormat('id-ID').format(inv.subtotal)
-      msg += `- ${inv.no_invoice} | Rp ${t}\n  ${inv.share_url}\n`
-    }
+    msg += '\n*Invoice Reguler:*\n\n'
+    msg += regList.map(formatInvoiceItem).join('\n\n')
+    msg += '\n'
   }
 
   const grandStr = new Intl.NumberFormat('id-ID').format(total)
-  msg += `\n*Total Keseluruhan: Rp ${grandStr}*\n\nMohon segera melakukan pembayaran. Terima kasih.`
+  msg += `\n*Total Keseluruhan: Rp ${grandStr}*\n\nMohon kesediaannya untuk melakukan pembayaran sesuai dengan total tagihan di atas. Atas perhatian dan kerja samanya, kami ucapkan terima kasih.`
 
   return msg
 }
