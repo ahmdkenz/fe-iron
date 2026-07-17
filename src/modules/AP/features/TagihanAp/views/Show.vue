@@ -31,6 +31,16 @@
           <VIcon icon="ri-money-cny-circle-line" class="me-1" />
           Catat Bayar
         </VBtn>
+        <VBtn
+          v-if="tagihan?.can_print"
+          color="info"
+          variant="elevated"
+          class="font-weight-bold text-white elevation-2"
+          @click="printTagihan"
+        >
+          <VIcon icon="ri-printer-line" class="me-1" />
+          Cetak
+        </VBtn>
       </div>
     </PageHeader>
 
@@ -238,8 +248,11 @@ import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useCrud } from '@/composables/useCrud'
 import { useFormatter } from '@/composables/useFormatter'
+import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useAuthStore } from '@/stores/auth.store'
 import api from '@/utils/axios'
+import { openLoadingPrintTab, openPrintTab } from '@/utils/printWindow.js'
+import { readBlobError } from '@/utils/readBlobError'
 import { AP_ITEM_RECEIPT_STATUS_MAP } from '@/utils/status'
 import InvoiceLikeStatusBadge from '../components/TagihanApStatusBadge.vue'
 import TagihanApPembayaranForm from '../components/TagihanApPembayaranForm.vue'
@@ -250,6 +263,7 @@ const id = route.params.id
 
 const { item: tagihan, loading, fetchOne } = useCrud('/ap/tagihan')
 const { formatCurrency, formatDate, formatDateTime } = useFormatter()
+const { showError } = useSweetAlert()
 const itemStatusMap = AP_ITEM_RECEIPT_STATUS_MAP
 
 const pembayaranList = ref([])
@@ -278,6 +292,34 @@ function approvalLogColor(action) {
     APPROVED: 'success',
     REJECTED: 'error',
   }[action] ?? 'secondary'
+}
+
+async function printTagihan() {
+  if (tagihan.value?.share_url) {
+    if (!openPrintTab(tagihan.value.share_url))
+      await showError('Popup diblokir browser. Izinkan popup untuk membuka dokumen cetak.')
+
+    return
+  }
+
+  const printWindow = openLoadingPrintTab()
+  try {
+    const res = await api.get(`/ap/tagihan/${id}/print`, { responseType: 'blob', timeout: 300000 })
+    const blobUrl = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }))
+
+    if (!printWindow) {
+      URL.revokeObjectURL(blobUrl)
+      await showError('Popup diblokir browser. Izinkan popup untuk membuka dokumen cetak.')
+
+      return
+    }
+
+    printWindow.location.href = blobUrl
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 30_000)
+  } catch (err) {
+    printWindow?.close()
+    await showError(await readBlobError(err, 'Gagal membuka dokumen cetak'))
+  }
 }
 
 async function loadPembayaran() {
