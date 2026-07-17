@@ -3,6 +3,12 @@ export const BOOLEAN_STATUS_OPTIONS = [
   { label: 'Nonaktif', value: 0 },
 ]
 
+export const AP_ITEM_RECEIPT_STATUS_MAP = {
+  pending: { color: 'secondary', label: 'Pending' },
+  partial: { color: 'warning', label: 'Partial' },
+  complete: { color: 'success', label: 'Lengkap' },
+}
+
 export function normalizeBooleanStatus(value, fallback = 1) {
   if (value === null || value === undefined || value === '')
     return fallback

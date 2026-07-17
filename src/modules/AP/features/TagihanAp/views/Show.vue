@@ -42,7 +42,7 @@
 
       <VRow>
         <VCol cols="12" lg="8">
-          <VCard class="mb-4">
+          <VCard>
             <VCardTitle class="pa-4 pb-2 d-flex align-center justify-space-between">
               <span class="text-subtitle-1 font-weight-semibold">Informasi Tagihan</span>
               <div class="d-flex gap-2">
@@ -67,90 +67,10 @@
               </VRow>
             </VCardText>
           </VCard>
-
-          <VCard class="mb-4">
-            <VCardTitle class="pa-4 pb-2">
-              <span class="text-subtitle-1 font-weight-semibold">Item Tagihan</span>
-            </VCardTitle>
-            <VDivider />
-            <VTable density="compact">
-              <thead>
-                <tr>
-                  <th>Barang / Jasa</th>
-                  <th class="text-right">Qty</th>
-                  <th>Satuan</th>
-                  <th class="text-right">Harga Satuan</th>
-                  <th class="text-right">Subtotal</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="it in tagihan.items" :key="it.id">
-                  <td>{{ it.nama_barang }}</td>
-                  <td class="text-right">{{ it.qty }}</td>
-                  <td>{{ it.satuan }}</td>
-                  <td class="text-right">{{ formatCurrency(it.harga_satuan) }}</td>
-                  <td class="text-right">{{ formatCurrency(it.subtotal) }}</td>
-                </tr>
-              </tbody>
-            </VTable>
-          </VCard>
-
-          <VCard class="mb-4">
-            <VCardTitle class="pa-4 pb-2">
-              <span class="text-subtitle-1 font-weight-semibold">Riwayat Pembayaran</span>
-            </VCardTitle>
-            <VDivider />
-            <VTable density="compact">
-              <thead>
-                <tr>
-                  <th>Tanggal</th>
-                  <th class="text-right">Jumlah</th>
-                  <th>Metode</th>
-                  <th>No. Referensi</th>
-                  <th>Dicatat Oleh</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-if="!pembayaranList.length">
-                  <td colspan="5" class="text-center text-medium-emphasis py-4">Belum ada pembayaran.</td>
-                </tr>
-                <tr v-for="p in pembayaranList" :key="p.id">
-                  <td>{{ p.tanggal_pembayaran }}</td>
-                  <td class="text-right">{{ formatCurrency(p.jumlah_pembayaran) }}</td>
-                  <td>{{ p.metode_pembayaran }}</td>
-                  <td>{{ p.no_referensi ?? '-' }}</td>
-                  <td>{{ p.created_by_name ?? '-' }}</td>
-                </tr>
-              </tbody>
-            </VTable>
-          </VCard>
-
-          <VCard>
-            <VExpansionPanels variant="accordion">
-              <VExpansionPanel title="Riwayat Approval">
-                <template #text>
-                  <VTimeline density="compact" side="end">
-                    <VTimelineItem
-                      v-for="log in approvalLogs"
-                      :key="log.id"
-                      :dot-color="approvalLogColor(log.action)"
-                      size="small"
-                    >
-                      <div class="text-body-2 font-weight-medium">{{ approvalLogLabel(log.action) }}</div>
-                      <div class="text-caption text-medium-emphasis">
-                        {{ log.actor_name ?? '-' }} · {{ formatDateTime(log.created_at) }}
-                      </div>
-                      <div v-if="log.note" class="text-caption mt-1">{{ log.note }}</div>
-                    </VTimelineItem>
-                  </VTimeline>
-                </template>
-              </VExpansionPanel>
-            </VExpansionPanels>
-          </VCard>
         </VCol>
 
         <VCol cols="12" lg="4">
-          <VCard class="mb-4">
+          <VCard>
             <VCardTitle class="pa-4 pb-2">
               <span class="text-subtitle-1 font-weight-semibold">Ringkasan</span>
             </VCardTitle>
@@ -189,6 +109,118 @@
           </VCard>
         </VCol>
       </VRow>
+
+      <VCard class="mt-4">
+        <VCardTitle class="pa-4 pb-2">
+          <span class="text-subtitle-1 font-weight-semibold">Item Tagihan</span>
+        </VCardTitle>
+        <VDivider />
+        <div class="overflow-x-auto">
+          <VTable density="compact">
+            <thead>
+              <tr>
+                <th>Barang / Jasa</th>
+                <th class="text-right">Qty PO</th>
+                <th class="text-right">Qty</th>
+                <th>Satuan</th>
+                <th>Status</th>
+                <th class="text-right">Harga Satuan</th>
+                <th class="text-right">PPN</th>
+                <th class="text-right">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              <template v-for="it in tagihan.items" :key="it.id">
+                <tr>
+                  <td>
+                    {{ it.nama_barang }}
+                    <div v-if="it.kode_barang" class="text-caption text-medium-emphasis">{{ it.kode_barang }}</div>
+                  </td>
+                  <td class="text-right">{{ it.qty_po ?? '-' }}</td>
+                  <td class="text-right">{{ it.qty }}</td>
+                  <td>{{ it.satuan }}</td>
+                  <td>
+                    <VChip
+                      v-if="itemStatusMap[it.status_detail_terima_po]"
+                      size="x-small"
+                      variant="tonal"
+                      :color="itemStatusMap[it.status_detail_terima_po].color"
+                      label
+                    >
+                      {{ itemStatusMap[it.status_detail_terima_po].label }}
+                    </VChip>
+                    <span v-else>-</span>
+                  </td>
+                  <td class="text-right">{{ formatCurrency(it.harga_satuan) }}</td>
+                  <td class="text-right">{{ it.ppn !== null ? `${it.ppn}%` : '-' }}</td>
+                  <td class="text-right">{{ formatCurrency(it.subtotal) }}</td>
+                </tr>
+                <tr v-if="it.qty_tolak > 0">
+                  <td colspan="8" class="text-caption text-warning py-1">
+                    <span class="d-inline-flex align-center gap-1">
+                      <VIcon icon="ri-error-warning-line" size="14" />
+                      <span>Ditolak {{ it.qty_tolak }} {{ it.satuan }}<span v-if="it.keterangan_tolak"> — {{ it.keterangan_tolak }}</span></span>
+                    </span>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </VTable>
+        </div>
+      </VCard>
+
+      <VCard class="mt-4">
+        <VCardTitle class="pa-4 pb-2">
+          <span class="text-subtitle-1 font-weight-semibold">Riwayat Pembayaran</span>
+        </VCardTitle>
+        <VDivider />
+        <VTable density="compact">
+          <thead>
+            <tr>
+              <th>Tanggal</th>
+              <th class="text-right">Jumlah</th>
+              <th>Metode</th>
+              <th>No. Referensi</th>
+              <th>Dicatat Oleh</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-if="!pembayaranList.length">
+              <td colspan="5" class="text-center text-medium-emphasis py-4">Belum ada pembayaran.</td>
+            </tr>
+            <tr v-for="p in pembayaranList" :key="p.id">
+              <td>{{ p.tanggal_pembayaran }}</td>
+              <td class="text-right">{{ formatCurrency(p.jumlah_pembayaran) }}</td>
+              <td>{{ p.metode_pembayaran }}</td>
+              <td>{{ p.no_referensi ?? '-' }}</td>
+              <td>{{ p.created_by_name ?? '-' }}</td>
+            </tr>
+          </tbody>
+        </VTable>
+      </VCard>
+
+      <VCard class="mt-4">
+        <VExpansionPanels variant="accordion">
+          <VExpansionPanel title="Riwayat Approval">
+            <template #text>
+              <VTimeline density="compact" side="end">
+                <VTimelineItem
+                  v-for="log in approvalLogs"
+                  :key="log.id"
+                  :dot-color="approvalLogColor(log.action)"
+                  size="small"
+                >
+                  <div class="text-body-2 font-weight-medium">{{ approvalLogLabel(log.action) }}</div>
+                  <div class="text-caption text-medium-emphasis">
+                    {{ log.actor_name ?? '-' }} · {{ formatDateTime(log.created_at) }}
+                  </div>
+                  <div v-if="log.note" class="text-caption mt-1">{{ log.note }}</div>
+                </VTimelineItem>
+              </VTimeline>
+            </template>
+          </VExpansionPanel>
+        </VExpansionPanels>
+      </VCard>
     </template>
 
     <TagihanApPembayaranForm
@@ -208,6 +240,7 @@ import { useCrud } from '@/composables/useCrud'
 import { useFormatter } from '@/composables/useFormatter'
 import { useAuthStore } from '@/stores/auth.store'
 import api from '@/utils/axios'
+import { AP_ITEM_RECEIPT_STATUS_MAP } from '@/utils/status'
 import InvoiceLikeStatusBadge from '../components/TagihanApStatusBadge.vue'
 import TagihanApPembayaranForm from '../components/TagihanApPembayaranForm.vue'
 
@@ -217,6 +250,7 @@ const id = route.params.id
 
 const { item: tagihan, loading, fetchOne } = useCrud('/ap/tagihan')
 const { formatCurrency, formatDate, formatDateTime } = useFormatter()
+const itemStatusMap = AP_ITEM_RECEIPT_STATUS_MAP
 
 const pembayaranList = ref([])
 const approvalLogs = ref([])

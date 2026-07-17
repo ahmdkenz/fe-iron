@@ -204,20 +204,58 @@
           </VCol>
         </VRow>
         <p class="text-subtitle-2 mb-2 mt-2">Item Diterima</p>
-        <VTable density="compact" class="mb-4">
-          <thead>
-            <tr><th>Barang</th><th>Satuan</th><th class="text-right">Qty Diterima</th><th class="text-right">Harga</th><th class="text-right">Subtotal</th></tr>
-          </thead>
-          <tbody>
-            <tr v-for="(it, idx) in detailItem.items" :key="idx">
-              <td>{{ it.nama_barang }}</td>
-              <td>{{ it.satuan }}</td>
-              <td class="text-right">{{ it.qty_diterima }}</td>
-              <td class="text-right">{{ formatCurrency(it.harga) }}</td>
-              <td class="text-right">{{ formatCurrency(it.subtotal) }}</td>
-            </tr>
-          </tbody>
-        </VTable>
+        <div class="overflow-x-auto mb-4">
+          <VTable density="compact">
+            <thead>
+              <tr>
+                <th>Barang</th>
+                <th class="text-right">Qty PO</th>
+                <th class="text-right">Qty Diterima</th>
+                <th>Satuan</th>
+                <th>Status</th>
+                <th class="text-right">Harga</th>
+                <th class="text-right">PPN</th>
+                <th class="text-right">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              <template v-for="(it, idx) in detailItem.items" :key="idx">
+                <tr>
+                  <td>
+                    {{ it.nama_barang }}
+                    <div v-if="it.kode_barang" class="text-caption text-medium-emphasis">{{ it.kode_barang }}</div>
+                  </td>
+                  <td class="text-right">{{ it.qty_po ?? '-' }}</td>
+                  <td class="text-right">{{ it.qty_diterima }}</td>
+                  <td>{{ it.satuan }}</td>
+                  <td>
+                    <VChip
+                      v-if="itemStatusMap[it.status_detail_terima_po]"
+                      size="x-small"
+                      variant="tonal"
+                      :color="itemStatusMap[it.status_detail_terima_po].color"
+                      label
+                    >
+                      {{ itemStatusMap[it.status_detail_terima_po].label }}
+                    </VChip>
+                    <span v-else>-</span>
+                  </td>
+                  <td class="text-right">{{ formatCurrency(it.harga) }}</td>
+                  <td class="text-right">{{ it.ppn !== null ? `${it.ppn}%` : '-' }}</td>
+                  <td class="text-right">{{ formatCurrency(it.subtotal) }}</td>
+                </tr>
+                <tr v-if="it.qty_tolak > 0">
+                  <td colspan="8" class="text-caption text-warning py-1">
+                    <span class="d-inline-flex align-center gap-1">
+                      <VIcon icon="ri-error-warning-line" size="14" />
+                      <span>Ditolak {{ it.qty_tolak }} {{ it.satuan }}<span v-if="it.keterangan_tolak"> — {{ it.keterangan_tolak }}</span></span>
+                    </span>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </VTable>
+        </div>
       </div>
       <template #actions>
         <AppActionButton action="batalkan" label="Tutup" @click="showDetail = false" />
@@ -396,12 +434,15 @@ import { useCrud } from '@/composables/useCrud'
 import { useLazyFetchAll } from '@/composables/useLazyFetchAll'
 import { useFormatter } from '@/composables/useFormatter'
 import api from '@/utils/axios'
+import { AP_ITEM_RECEIPT_STATUS_MAP } from '@/utils/status'
 import Shz360ImportStatusBadge from '../components/Shz360ImportStatusBadge.vue'
 import DetailRow from '@/components/shared/DetailRow.vue'
 
 const authStore = useAuthStore()
 const { showSuccess, showError, confirmDelete: swalConfirm } = useSweetAlert()
 const { formatCurrency, formatDate } = useFormatter()
+
+const itemStatusMap = AP_ITEM_RECEIPT_STATUS_MAP
 
 const displayKaryawanAp = computed(() => authStore.user?.karyawan?.nama_karyawan ?? '')
 

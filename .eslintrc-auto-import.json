@@ -370,6 +370,7 @@
     "useSettleWaterfall": true,
     "ensureCsrfCookie": true,
     "openLoadingPrintTab": true,
-    "openPrintTab": true
+    "openPrintTab": true,
+    "AP_ITEM_RECEIPT_STATUS_MAP": true
   }
 }
