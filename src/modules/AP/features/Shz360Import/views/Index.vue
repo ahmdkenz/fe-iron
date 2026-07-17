@@ -342,7 +342,7 @@
           hint="Wajib dipilih — SHZ360 tidak menyediakan data ini"
           persistent-hint
           :loading="karyawanLoading"
-          @focus="ensureKaryawanLoaded"
+          @focus="ensureKaryawanLoaded({ params: { role: 'AP' } })"
         >
           <template #item="{ props: p, item }">
             <VListItem v-bind="p" :title="item.raw.nama_karyawan" :subtitle="item.raw.nik" />

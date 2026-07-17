@@ -101,7 +101,7 @@
             :rules="[v => !!v || 'PIC AP wajib dipilih']"
             :error-messages="errors.karyawan_ap_id"
             :loading="karyawanLoading"
-            @focus="ensureKaryawanLoaded()"
+            @focus="ensureKaryawanLoaded({ params: { role: 'AP' } })"
           >
             <template #item="{ props: p, item }">
               <VListItem v-bind="p" :title="item.raw.nama_karyawan" :subtitle="item.raw.nik" />
@@ -160,7 +160,7 @@ watch([() => props.modelValue, () => props.vendorData], ([open]) => {
 
   Object.assign(errors, { kode_vendor: [], nama_vendor: [], no_npwp: [], karyawan_ap_id: [] })
   errorMessage.value = ''
-  ensureKaryawanLoaded()
+  ensureKaryawanLoaded({ params: { role: 'AP' } })
 
   if (props.vendorData) {
     Object.assign(form, {
