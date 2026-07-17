@@ -13,7 +13,7 @@
 
     <!-- Stat Cards -->
     <VRow class="mb-4">
-      <VCol v-for="card in statCards" :key="card.title" cols="12" sm="6" lg="3">
+      <VCol v-for="card in statCards" :key="card.title" cols="12" sm="6" lg="4">
         <VCard elevation="2" class="rounded-xl stat-card">
           <VCardText class="d-flex align-center justify-space-between fill-height bg-surface gap-2">
             <div class="min-width-0">
@@ -117,7 +117,7 @@
 
     <VRow class="mb-4">
       <!-- Top 5 Vendor -->
-      <VCol cols="12" md="4">
+      <VCol cols="12" md="6">
         <VCard elevation="2" class="rounded-xl h-100">
           <VCardItem>
             <VCardTitle class="d-flex align-center text-h6 font-weight-bold">
@@ -158,7 +158,7 @@
       </VCol>
 
       <!-- Jatuh Tempo Terdekat -->
-      <VCol cols="12" md="4">
+      <VCol cols="12" md="6">
         <VCard elevation="2" class="rounded-xl h-100">
           <VCardItem>
             <VCardTitle class="d-flex align-center text-h6 font-weight-bold">
@@ -196,49 +196,6 @@
               </tbody>
             </VTable>
           </VCardText>
-        </VCard>
-      </VCol>
-
-      <!-- Approval Queue -->
-      <VCol cols="12" md="4">
-        <VCard elevation="2" class="rounded-xl h-100">
-          <VCardItem>
-            <VCardTitle class="d-flex align-center text-h6 font-weight-bold">
-              <VIcon icon="ri-checkbox-circle-line" class="me-2 text-success" />
-              Approval Queue
-            </VCardTitle>
-          </VCardItem>
-          <VCardText class="px-0">
-            <VTable density="compact">
-              <thead>
-                <tr>
-                  <th>Tagihan</th>
-                  <th>Diajukan</th>
-                  <th class="text-right">Jumlah</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-if="!summary.approval_queue?.length">
-                  <td colspan="3" class="text-center text-medium-emphasis py-6">Tidak ada antrian approval.</td>
-                </tr>
-                <tr v-for="t in summary.approval_queue" :key="t.id">
-                  <td>
-                    <RouterLink :to="{ name: 'ap-tagihan-show', params: { id: t.id } }" class="text-primary font-weight-medium">
-                      {{ t.no_tagihan }}
-                    </RouterLink>
-                    <div class="text-caption text-medium-emphasis text-truncate" style="max-width: 140px">{{ t.nama_vendor }}</div>
-                  </td>
-                  <td class="text-body-2">{{ formatDate(t.submitted_at) }}</td>
-                  <td class="text-right">{{ formatCurrency(t.total_tagihan) }}</td>
-                </tr>
-              </tbody>
-            </VTable>
-          </VCardText>
-          <VCardActions v-if="authStore.canApproveTagihanAp" class="px-4">
-            <VBtn variant="text" size="small" color="primary" :to="{ name: 'ap-tagihan-index', hash: '#approval-tagihan' }">
-              Lihat semua
-            </VBtn>
-          </VCardActions>
         </VCard>
       </VCol>
     </VRow>
@@ -283,7 +240,7 @@ import api from '@/utils/axios'
 
 const theme = useTheme()
 const authStore = useAuthStore()
-const { formatCurrency, formatDate } = useFormatter()
+const { formatCurrency } = useFormatter()
 
 const loading = ref(true)
 const error = ref('')
@@ -300,8 +257,6 @@ function emptySummary() {
     total_outstanding_trend_pct: 0,
     jatuh_tempo_7_hari: 0,
     jatuh_tempo_7_hari_count: 0,
-    menunggu_approval_total: 0,
-    menunggu_approval_count: 0,
     pembayaran_bulan_ini: 0,
     pembayaran_bulan_lalu: 0,
     pembayaran_trend_pct: 0,
@@ -309,7 +264,6 @@ function emptySummary() {
     overdue_buckets_pct: { current: 0, '1-30': 0, '31-60': 0, '61-90': 0, '90+': 0 },
     top_vendors: [],
     due_soon: [],
-    approval_queue: [],
     trend: { labels: [], payment_totals: [], invoice_counts: [] },
     status_breakdown: { lunas: 0, sebagian: 0, belum_lunas: 0 },
   }
@@ -336,12 +290,6 @@ const statCards = computed(() => [
     value: formatCurrency(summary.jatuh_tempo_7_hari),
     caption: `${summary.jatuh_tempo_7_hari_count} tagihan`,
     icon: 'ri-timer-line', color: 'warning',
-  },
-  {
-    title: 'Menunggu Approval',
-    value: formatCurrency(summary.menunggu_approval_total),
-    caption: `${summary.menunggu_approval_count} tagihan`,
-    icon: 'ri-shield-check-line', color: 'info',
   },
   {
     title: 'Pembayaran Bulan Ini',
@@ -455,7 +403,6 @@ function dueChipLabel(hariLagi) {
 // ─── Quick Actions ──────────────────────────────────────────────────────────
 const quickActions = [
   { title: 'Tambah Tagihan', icon: 'ri-file-add-line', color: 'primary', to: { name: 'ap-tagihan-create' }, roles: ['ADMIN', 'AP'] },
-  { title: 'Approval Tagihan', icon: 'ri-checkbox-circle-line', color: 'success', to: { name: 'ap-tagihan-index', hash: '#approval-tagihan' }, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR'] },
   { title: 'Lihat Vendor', icon: 'ri-store-2-line', color: 'info', to: { name: 'ap-vendor-index' } },
   { title: 'Riwayat Pembayaran', icon: 'ri-bank-card-line', color: 'warning', to: { name: 'ap-pembayaran-index' } },
 ]

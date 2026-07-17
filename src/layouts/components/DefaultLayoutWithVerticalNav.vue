@@ -23,7 +23,6 @@ const financeNotificationStore = useFinanceNotificationStore()
 const route = useRoute()
 let financeNotificationIntervalId = null
 let ebKoreksiNotificationIntervalId = null
-let tagihanApNotificationIntervalId = null
 
 const canApproveEbKoreksi = computed(() =>
   authStore.canApproveEndingBalanceSpv || authStore.canApproveEndingBalanceManager
@@ -50,14 +49,6 @@ const enrichedNavItems = computed(() => navItems.map(item => {
       ...item,
       badgeContent: financeNotificationStore.pendingEndingBalanceKoreksieBadge,
       badgeClass: financeNotificationStore.pendingEndingBalanceKoreksieBadge ? 'bg-error text-white' : undefined,
-    }
-  }
-
-  if (item.to?.name === 'ap-tagihan-index') {
-    return {
-      ...item,
-      badgeContent: financeNotificationStore.pendingTagihanApBadge,
-      badgeClass: financeNotificationStore.pendingTagihanApBadge ? 'bg-error text-white' : undefined,
     }
   }
 
@@ -111,15 +102,10 @@ async function refreshEbKoreksiNotifications() {
   await financeNotificationStore.fetchPendingEndingBalanceKoreksiCount()
 }
 
-async function refreshTagihanApNotifications() {
-  await financeNotificationStore.fetchPendingTagihanApCount()
-}
-
 async function refreshAllNotifications() {
   await Promise.all([
     authStore.canApproveOpeningBalance ? refreshFinanceNotifications() : Promise.resolve(),
     canApproveEbKoreksi.value ? refreshEbKoreksiNotifications() : Promise.resolve(),
-    authStore.canApproveTagihanAp ? refreshTagihanApNotifications() : Promise.resolve(),
   ])
 }
 
@@ -151,27 +137,11 @@ watch(canApproveEbKoreksi, async canApprove => {
   ebKoreksiNotificationIntervalId = window.setInterval(refreshEbKoreksiNotifications, 60000)
 }, { immediate: true })
 
-watch(() => authStore.canApproveTagihanAp, async canApprove => {
-  clearInterval(tagihanApNotificationIntervalId)
-  tagihanApNotificationIntervalId = null
-
-  if (!canApprove) {
-    financeNotificationStore.pendingTagihanApCount = 0
-
-    return
-  }
-
-  await refreshTagihanApNotifications()
-  tagihanApNotificationIntervalId = window.setInterval(refreshTagihanApNotifications, 60000)
-}, { immediate: true })
-
 watch(() => route.fullPath, () => {
   if (authStore.canApproveOpeningBalance)
     refreshFinanceNotifications()
   if (canApproveEbKoreksi.value)
     refreshEbKoreksiNotifications()
-  if (authStore.canApproveTagihanAp)
-    refreshTagihanApNotifications()
 })
 
 onMounted(() => {
@@ -182,7 +152,6 @@ onBeforeUnmount(() => {
   window.removeEventListener('focus', refreshAllNotifications)
   clearInterval(financeNotificationIntervalId)
   clearInterval(ebKoreksiNotificationIntervalId)
-  clearInterval(tagihanApNotificationIntervalId)
 })
 
 // ℹ️ Provide animation name for vertical nav collapse icon.

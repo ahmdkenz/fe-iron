@@ -23,33 +23,6 @@
           Edit
         </VBtn>
         <VBtn
-          v-if="tagihan?.can_resubmit && authStore.canOperateTagihanAp"
-          color="primary"
-          variant="tonal"
-          :loading="resubmitting"
-          @click="doResubmit"
-        >
-          <VIcon icon="ri-send-plane-line" class="me-1" />
-          Ajukan Ulang
-        </VBtn>
-        <VBtn
-          v-if="tagihan?.can_approve && authStore.canApproveTagihanAp"
-          color="success"
-          @click="showApproveModal = true"
-        >
-          <VIcon icon="ri-checkbox-circle-line" class="me-1" />
-          Approve
-        </VBtn>
-        <VBtn
-          v-if="tagihan?.can_approve && authStore.canApproveTagihanAp"
-          color="error"
-          variant="tonal"
-          @click="showRejectModal = true"
-        >
-          <VIcon icon="ri-close-circle-line" class="me-1" />
-          Reject
-        </VBtn>
-        <VBtn
           v-if="canRecordPayment"
           color="success"
           variant="tonal"
@@ -66,8 +39,6 @@
     </div>
 
     <template v-else-if="tagihan">
-      <VAlert v-if="actionMessage" type="success" variant="tonal" class="mb-4">{{ actionMessage }}</VAlert>
-      <VAlert v-if="actionErrorMessage" type="error" variant="tonal" class="mb-4">{{ actionErrorMessage }}</VAlert>
 
       <VRow>
         <VCol cols="12" lg="8">
@@ -79,7 +50,6 @@
                   Import SHZ360
                 </VChip>
                 <InvoiceLikeStatusBadge :status="tagihan.status" />
-                <ApprovalStatusBadge :status="tagihan.approval_status" />
               </div>
             </VCardTitle>
             <VDivider />
@@ -221,51 +191,6 @@
       </VRow>
     </template>
 
-    <!-- Approve Modal -->
-    <BaseModal
-      v-if="showApproveModal"
-      v-model="showApproveModal"
-      title="Approve Tagihan"
-      :loading="approving"
-      @confirm="doApprove"
-    >
-      <p>Anda akan menyetujui tagihan <strong>{{ tagihan?.no_tagihan }}</strong> dari vendor <strong>{{ tagihan?.vendor_ap?.nama_vendor }}</strong>.</p>
-      <VTextField v-model="approveNote" label="Catatan (opsional)" density="compact" variant="outlined" class="mt-3" />
-      <template #actions>
-        <VBtn variant="tonal" color="secondary" :disabled="approving" @click="showApproveModal = false">Batal</VBtn>
-        <VBtn color="success" :loading="approving" @click="doApprove">
-          <VIcon icon="ri-checkbox-circle-line" class="me-1" />
-          Ya, Approve
-        </VBtn>
-      </template>
-    </BaseModal>
-
-    <!-- Reject Modal -->
-    <BaseModal
-      v-if="showRejectModal"
-      v-model="showRejectModal"
-      title="Reject Tagihan"
-      :loading="rejecting"
-      @confirm="doReject"
-    >
-      <p>Anda akan menolak tagihan <strong>{{ tagihan?.no_tagihan }}</strong>.</p>
-      <VTextField
-        v-model="rejectNote"
-        label="Alasan Penolakan (wajib)"
-        density="compact"
-        variant="outlined"
-        class="mt-3"
-        :rules="[v => !!v || 'Alasan wajib diisi']"
-      />
-      <template #actions>
-        <VBtn variant="tonal" color="secondary" :disabled="rejecting" @click="showRejectModal = false">Batal</VBtn>
-        <VBtn color="error" :loading="rejecting" :disabled="!rejectNote" @click="doReject">
-          <VIcon icon="ri-close-circle-line" class="me-1" />
-          Ya, Reject
-        </VBtn>
-      </template>
-    </BaseModal>
-
     <TagihanApPembayaranForm
       v-if="tagihan"
       v-model="showPembayaran"
@@ -283,7 +208,6 @@ import { useCrud } from '@/composables/useCrud'
 import { useFormatter } from '@/composables/useFormatter'
 import { useAuthStore } from '@/stores/auth.store'
 import api from '@/utils/axios'
-import ApprovalStatusBadge from '@/modules/Finance/shared/components/ApprovalStatusBadge.vue'
 import InvoiceLikeStatusBadge from '../components/TagihanApStatusBadge.vue'
 import TagihanApPembayaranForm from '../components/TagihanApPembayaranForm.vue'
 
@@ -297,20 +221,10 @@ const { formatCurrency, formatDate, formatDateTime } = useFormatter()
 const pembayaranList = ref([])
 const approvalLogs = ref([])
 
-const showApproveModal = ref(false)
-const showRejectModal = ref(false)
 const showPembayaran = ref(false)
-const approveNote = ref('')
-const rejectNote = ref('')
-const approving = ref(false)
-const rejecting = ref(false)
-const resubmitting = ref(false)
-const actionMessage = ref('')
-const actionErrorMessage = ref('')
 
 const canRecordPayment = computed(() =>
   authStore.canOperatePembayaranAp
-  && tagihan.value?.approval_status === 'APPROVED'
   && tagihan.value?.status !== 'LUNAS',
 )
 
@@ -345,53 +259,6 @@ async function loadApprovalLogs() {
 async function refreshAll() {
   await fetchOne(id)
   await Promise.all([loadPembayaran(), loadApprovalLogs()])
-}
-
-async function doApprove() {
-  approving.value = true
-  actionErrorMessage.value = ''
-  try {
-    await api.patch(`/ap/tagihan/${id}/approve`, { note: approveNote.value || null })
-    showApproveModal.value = false
-    approveNote.value = ''
-    actionMessage.value = 'Tagihan berhasil disetujui.'
-    await refreshAll()
-  } catch (err) {
-    actionErrorMessage.value = err.response?.data?.message ?? 'Gagal menyetujui tagihan.'
-  } finally {
-    approving.value = false
-  }
-}
-
-async function doReject() {
-  if (!rejectNote.value) return
-  rejecting.value = true
-  actionErrorMessage.value = ''
-  try {
-    await api.patch(`/ap/tagihan/${id}/reject`, { note: rejectNote.value })
-    showRejectModal.value = false
-    rejectNote.value = ''
-    actionMessage.value = 'Tagihan berhasil ditolak.'
-    await refreshAll()
-  } catch (err) {
-    actionErrorMessage.value = err.response?.data?.message ?? 'Gagal menolak tagihan.'
-  } finally {
-    rejecting.value = false
-  }
-}
-
-async function doResubmit() {
-  resubmitting.value = true
-  actionErrorMessage.value = ''
-  try {
-    await api.patch(`/ap/tagihan/${id}/resubmit`, {})
-    actionMessage.value = 'Tagihan berhasil diajukan ulang.'
-    await refreshAll()
-  } catch (err) {
-    actionErrorMessage.value = err.response?.data?.message ?? 'Gagal mengajukan ulang tagihan.'
-  } finally {
-    resubmitting.value = false
-  }
 }
 
 function onPembayaranSaved() {

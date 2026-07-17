@@ -25,7 +25,6 @@ export default [
     component: () => import('@/modules/AP/features/TagihanAp/views/Form.vue'),
     meta: { requiresAuth: true, roles: ['ADMIN', 'AP'] },
   },
-  { path: '/ap/tagihan/approval', redirect: { name: 'ap-tagihan-index', hash: '#approval-tagihan' } },
   {
     path: '/ap/tagihan/:id',
     name: 'ap-tagihan-show',
