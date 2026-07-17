@@ -165,20 +165,45 @@
     </VCard>
 
     <!-- Detail -->
-    <BaseModal v-model="showDetail" title="Detail Staging SHZ360" width="800">
+    <BaseModal v-model="showDetail" title="Detail Staging SHZ360" width="1120">
       <div v-if="detailLoading" class="text-center pa-6">
         <VProgressCircular indeterminate color="primary" />
       </div>
       <div v-else-if="detailItem">
-        <VRow class="mb-3">
-          <VCol cols="6"><strong>Kode Terima PO:</strong> {{ detailItem.kode_receipt }}</VCol>
-          <VCol cols="6"><strong>Kode PO:</strong> {{ detailItem.kode_po ?? '-' }}</VCol>
-          <VCol cols="6"><strong>Vendor:</strong> {{ detailItem.vendor_nama ?? '-' }}</VCol>
-          <VCol cols="6"><strong>No. Invoice:</strong> {{ detailItem.no_invoice ?? '-' }}</VCol>
-          <VCol cols="6"><strong>No. Surat Jalan:</strong> {{ detailItem.no_surat_jalan ?? '-' }}</VCol>
-          <VCol cols="6"><strong>No. Faktur Pajak:</strong> {{ detailItem.no_faktur_pajak ?? '-' }}</VCol>
+        <VRow class="mb-2">
+          <VCol cols="12" md="6">
+            <VCard variant="outlined" rounded="lg">
+              <VCardTitle class="text-body-1 font-weight-bold py-3">Informasi Terima PO</VCardTitle>
+              <VDivider />
+              <DetailRow label="Kode Terima PO" :value="detailItem.kode_receipt" label-width="150px" />
+              <DetailRow label="Tanggal Terima" :value="formatDate(detailItem.tanggal_receipt)" label-width="150px" />
+              <DetailRow label="No. Invoice" :value="detailItem.no_invoice" label-width="150px" />
+              <DetailRow label="No. Surat Jalan" :value="detailItem.no_surat_jalan" label-width="150px" />
+              <DetailRow label="No. Faktur Pajak" :value="detailItem.no_faktur_pajak" label-width="150px" />
+              <div class="px-4 px-sm-5 py-3">
+                <Shz360ImportStatusBadge :status="detailItem.import_status" />
+              </div>
+            </VCard>
+          </VCol>
+          <VCol cols="12" md="6">
+            <VCard variant="outlined" rounded="lg">
+              <VCardTitle class="text-body-1 font-weight-bold py-3">Informasi PO</VCardTitle>
+              <VDivider />
+              <DetailRow label="Kode PO" :value="detailItem.kode_po" label-width="150px" />
+              <DetailRow label="Tanggal PO" :value="formatDate(detailItem.tanggal_po)" label-width="150px" />
+              <DetailRow label="Supplier SHZ360" label-width="150px">
+                {{ supplierLabel(detailItem.source_supplier) }}
+              </DetailRow>
+              <DetailRow label="Vendor AP" label-width="150px">
+                <span v-if="detailItem.vendor_nama">{{ detailItem.vendor_nama }}</span>
+                <VChip v-else color="warning" size="small" variant="tonal">Belum dipetakan</VChip>
+              </DetailRow>
+              <DetailRow label="Status PO" :value="detailItem.status_po" label-width="150px" />
+              <DetailRow label="Total PO" :value="formatCurrency(detailItem.po_grand_total)" label-width="150px" />
+            </VCard>
+          </VCol>
         </VRow>
-        <p class="text-subtitle-2 mb-2">Item Diterima</p>
+        <p class="text-subtitle-2 mb-2 mt-2">Item Diterima</p>
         <VTable density="compact" class="mb-4">
           <thead>
             <tr><th>Barang</th><th>Satuan</th><th class="text-right">Qty Diterima</th><th class="text-right">Harga</th><th class="text-right">Subtotal</th></tr>
@@ -376,7 +401,7 @@ import DetailRow from '@/components/shared/DetailRow.vue'
 
 const authStore = useAuthStore()
 const { showSuccess, showError, confirmDelete: swalConfirm } = useSweetAlert()
-const { formatCurrency } = useFormatter()
+const { formatCurrency, formatDate } = useFormatter()
 
 const displayKaryawanAp = computed(() => authStore.user?.karyawan?.nama_karyawan ?? '')
 
@@ -428,6 +453,11 @@ function onTableOptions({ page, itemsPerPage }) {
 function formatDateTime(value) {
   if (!value) return '-'
   return new Date(value).toLocaleString('id-ID')
+}
+
+function supplierLabel(supplier) {
+  if (!supplier?.nama_supplier) return '-'
+  return supplier.kode_supplier ? `${supplier.kode_supplier} - ${supplier.nama_supplier}` : supplier.nama_supplier
 }
 
 // ─── Retry sync ───────────────────────────────────────────────────
