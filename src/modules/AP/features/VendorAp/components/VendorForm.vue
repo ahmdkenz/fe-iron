@@ -17,12 +17,11 @@
       </div>
       <VRow dense>
         <VCol cols="12" md="4">
-          <VTextField
-            :model-value="form.kode_vendor || 'Digenerate otomatis'"
-            label="Kode Vendor"
-            density="compact"
-            variant="outlined"
-            readonly
+          <BaseInput
+            v-model="form.kode_vendor"
+            label="Kode Supplier"
+            :rules="[v => !!v || 'Kode Supplier wajib diisi']"
+            :error-messages="errors.kode_vendor"
           />
         </VCol>
         <VCol cols="12" md="8">
@@ -137,7 +136,7 @@ const { ensureLoaded: ensureKaryawanLoaded } = useLazyFetchAll(fetchKaryawan)
 
 const formRef = ref(null)
 const errorMessage = ref('')
-const errors = reactive({ nama_vendor: [], no_npwp: [], karyawan_ap_id: [] })
+const errors = reactive({ kode_vendor: [], nama_vendor: [], no_npwp: [], karyawan_ap_id: [] })
 
 const isEditing = computed(() => !!props.vendorData)
 const statusOptions = BOOLEAN_STATUS_OPTIONS
@@ -159,7 +158,7 @@ const form = reactive(defaultForm())
 watch([() => props.modelValue, () => props.vendorData], ([open]) => {
   if (!open) return
 
-  Object.assign(errors, { nama_vendor: [], no_npwp: [], karyawan_ap_id: [] })
+  Object.assign(errors, { kode_vendor: [], nama_vendor: [], no_npwp: [], karyawan_ap_id: [] })
   errorMessage.value = ''
   ensureKaryawanLoaded()
 

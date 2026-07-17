@@ -282,6 +282,17 @@
           <DetailRow label="Atas Nama" :value="selectedItem?.source_supplier?.bank_atas_nama" label-width="120px" />
         </VCard>
 
+        <VTextField
+          v-model="newVendorForm.kode_vendor"
+          label="Kode Supplier"
+          variant="outlined"
+          density="compact"
+          prepend-inner-icon="ri-hashtag"
+          hint="Ter-prefill dari SHZ360, bisa diedit bila perlu"
+          persistent-hint
+          class="mb-2"
+        />
+
         <VAutocomplete
           v-model="newVendorForm.karyawan_ap_id"
           label="PIC AP"
@@ -452,7 +463,7 @@ const showMapVendor = ref(false)
 const mappingVendor = ref(false)
 const selectedItem = ref(null)
 const mapVendorMode = ref('new')
-const newVendorForm = reactive({ karyawan_ap_id: null })
+const newVendorForm = reactive({ karyawan_ap_id: null, kode_vendor: null })
 const existingVendorForm = reactive({ vendor_ap_id: null })
 
 const suggestedVendor = computed(() => selectedItem.value?.suggested_vendor_ap ?? null)
@@ -460,12 +471,13 @@ const suggestedVendor = computed(() => selectedItem.value?.suggested_vendor_ap ?
 const canSubmitMapVendor = computed(() => {
   return mapVendorMode.value === 'existing'
     ? !!existingVendorForm.vendor_ap_id
-    : !!newVendorForm.karyawan_ap_id
+    : !!newVendorForm.karyawan_ap_id && !!newVendorForm.kode_vendor
 })
 
 function openMapVendor(item) {
   selectedItem.value = item
   newVendorForm.karyawan_ap_id = null
+  newVendorForm.kode_vendor = item.source_supplier?.kode_supplier ?? null
   existingVendorForm.vendor_ap_id = item.suggested_vendor_ap?.id ?? null
   mapVendorMode.value = item.suggested_vendor_ap ? 'existing' : 'new'
   showMapVendor.value = true
