@@ -179,6 +179,29 @@ export function useSweetAlert() {
     }, options))
   }
 
+  // Untuk aksi hapus permanen (force delete) — mewajibkan admin mengetik ulang
+  // frasa konfirmasi sebelum tombol aktif, karena aksi ini benar-benar irreversible.
+  function confirmPermanentDelete(options = {}) {
+    const themeTokens = resolveThemeTokens()
+    const phrase = options.confirmPhrase ?? 'HAPUS PERMANEN'
+    const { confirmPhrase, ...restOptions } = options
+
+    return showAlert(normalizeOptions({
+      icon: 'error',
+      title: 'Hapus Permanen?',
+      text: `Tindakan ini TIDAK DAPAT DIURUNGKAN. Data akan dihapus permanen dari database.`,
+      input: 'text',
+      inputPlaceholder: `Ketik "${phrase}" untuk konfirmasi`,
+      inputValidator: value => (value === phrase ? undefined : `Ketik "${phrase}" untuk melanjutkan`),
+      confirmButtonText: 'Ya, hapus permanen',
+      confirmButtonColor: themeTokens.error ?? '#FF4C51',
+      cancelButtonText: 'Batal',
+      focusCancel: true,
+      reverseButtons: true,
+      showCancelButton: true,
+    }, restOptions))
+  }
+
   return {
     showAlert,
     showSuccess,
@@ -186,6 +209,7 @@ export function useSweetAlert() {
     showLoading,
     closeAlert,
     confirmDelete,
+    confirmPermanentDelete,
     resolveThemeTokens,
   }
 }

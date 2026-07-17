@@ -293,7 +293,19 @@
           class="mb-2"
         />
 
+        <VTextField
+          v-if="authStore.isApOnly"
+          :model-value="displayKaryawanAp"
+          label="PIC AP"
+          variant="outlined"
+          density="compact"
+          prepend-inner-icon="ri-user-line"
+          hint="Otomatis terisi sesuai akun Anda"
+          persistent-hint
+          readonly
+        />
         <VAutocomplete
+          v-else
           v-model="newVendorForm.karyawan_ap_id"
           label="PIC AP"
           variant="outlined"
@@ -365,6 +377,8 @@ import DetailRow from '@/components/shared/DetailRow.vue'
 const authStore = useAuthStore()
 const { showSuccess, showError, confirmDelete: swalConfirm } = useSweetAlert()
 const { formatCurrency } = useFormatter()
+
+const displayKaryawanAp = computed(() => authStore.user?.karyawan?.nama_karyawan ?? '')
 
 const { items, loading, meta, params, fetchList, fetchOne, item: detailItem } = useCrud('/ap/shz360/imports')
 const { items: karyawanList, loading: karyawanLoading, fetchAll: fetchKaryawan } = useCrud('/master/karyawan')
@@ -476,7 +490,7 @@ const canSubmitMapVendor = computed(() => {
 
 function openMapVendor(item) {
   selectedItem.value = item
-  newVendorForm.karyawan_ap_id = null
+  newVendorForm.karyawan_ap_id = authStore.isApOnly ? (authStore.user?.karyawan?.id ?? null) : null
   newVendorForm.kode_vendor = item.source_supplier?.kode_supplier ?? null
   existingVendorForm.vendor_ap_id = item.suggested_vendor_ap?.id ?? null
   mapVendorMode.value = item.suggested_vendor_ap ? 'existing' : 'new'

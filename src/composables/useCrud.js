@@ -17,8 +17,13 @@ function invalidateFetchAllCache(endpoint) {
 /**
  * Generic CRUD composable
  * @param {string} endpoint - API endpoint e.g. '/iam/users'
+ * @param {object} [options]
+ * @param {string} [options.listEndpoint] - endpoint used by fetchList/fetchAll, defaults to `endpoint`.
+ *   Useful for a trash view: create/update/remove/restore/forceDelete stay on the resource
+ *   endpoint while the list itself reads from a separate `.../trash` endpoint.
  */
-export function useCrud(endpoint) {
+export function useCrud(endpoint, options = {}) {
+  const listEndpoint = options.listEndpoint ?? endpoint
   const { showLoading, closeAlert } = useSweetAlert()
   const items = ref([])
   const item = ref(null)
@@ -33,7 +38,7 @@ export function useCrud(endpoint) {
     loading.value = true
     error.value = null
     try {
-      const { data } = await api.get(endpoint, {
+      const { data } = await api.get(listEndpoint, {
         params: { ...params, ...overrideParams },
         ...requestConfig,
       })
@@ -52,7 +57,7 @@ export function useCrud(endpoint) {
 
   async function fetchAll(requestConfig = {}) {
     const { force = false, params: extraParams, ...axiosConfig } = requestConfig
-    const cacheKey = extraParams ? `${endpoint}?${new URLSearchParams(extraParams).toString()}` : endpoint
+    const cacheKey = extraParams ? `${listEndpoint}?${new URLSearchParams(extraParams).toString()}` : listEndpoint
     const canReuseCache = !force && !axiosConfig.signal
 
     if (canReuseCache && fetchAllCache.has(cacheKey)) {
@@ -81,7 +86,7 @@ export function useCrud(endpoint) {
     loading.value = true
     error.value = null
     const requestPromise = (async () => {
-      const { data } = await api.get(endpoint, {
+      const { data } = await api.get(listEndpoint, {
         params: { all: true, ...extraParams },
         ...axiosConfig,
       })
@@ -209,6 +214,56 @@ export function useCrud(endpoint) {
     }
   }
 
+  async function restore(id) {
+    loading.value = true
+    error.value = null
+    showLoading({
+      title: 'Memulihkan Data',
+      text: 'Data sedang dipulihkan...',
+    })
+    try {
+      await api.post(`${endpoint}/${id}/restore`)
+
+      invalidateFetchAllCache(listEndpoint)
+
+      return { success: true }
+    } catch (err) {
+      const message = err.response?.data?.message ?? 'Gagal memulihkan data'
+
+      error.value = message
+
+      return { success: false, message }
+    } finally {
+      closeAlert({ onlyLoading: true })
+      loading.value = false
+    }
+  }
+
+  async function forceDelete(id) {
+    loading.value = true
+    error.value = null
+    showLoading({
+      title: 'Menghapus Permanen',
+      text: 'Data sedang dihapus permanen...',
+    })
+    try {
+      await api.delete(`${endpoint}/${id}/force`)
+
+      invalidateFetchAllCache(listEndpoint)
+
+      return { success: true }
+    } catch (err) {
+      const message = err.response?.data?.message ?? 'Gagal menghapus data secara permanen'
+
+      error.value = message
+
+      return { success: false, message }
+    } finally {
+      closeAlert({ onlyLoading: true })
+      loading.value = false
+    }
+  }
+
   /** Sisipkan objek yang sudah diketahui (mis. klien yang sedang dipilih saat edit) agar tampil di dropdown tanpa perlu ada di hasil fetchAll. */
   function ensureItem(item, valueKey = 'id') {
     if (!item || item[valueKey] == null) return
@@ -216,5 +271,5 @@ export function useCrud(endpoint) {
     items.value = [item, ...items.value]
   }
 
-  return { items, item, loading, saving, error, meta, params, fetchList, fetchAll, fetchOne, create, update, remove, ensureItem }
+  return { items, item, loading, saving, error, meta, params, fetchList, fetchAll, fetchOne, create, update, remove, restore, forceDelete, ensureItem }
 }

@@ -183,6 +183,9 @@
       @confirm="doDelete"
     >
       <p>Apakah Anda yakin ingin menghapus tagihan <strong>{{ selectedTagihan?.no_tagihan }}</strong>?</p>
+      <VAlert type="warning" variant="tonal" density="compact" class="mt-3">
+        Tindakan ini tidak dapat diurungkan — data akan dihapus permanen dari database.
+      </VAlert>
       <VAlert v-if="deleteError" type="error" variant="tonal" class="mt-3">{{ deleteError }}</VAlert>
     </BaseModal>
 

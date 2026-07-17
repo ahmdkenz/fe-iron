@@ -36,6 +36,7 @@ const ACTION_MAP = {
   gunakan: { color: 'primary', variant: 'flat', icon: 'ri-exchange-dollar-line', label: 'Gunakan' },
   batalkan: { color: 'error', variant: 'tonal', icon: 'ri-close-line', label: 'Batalkan' },
   hapus: { color: 'error', variant: 'flat', icon: 'ri-delete-bin-line', label: 'Hapus Data' },
+  pulihkan: { color: 'success', variant: 'flat', icon: 'ri-arrow-go-back-line', label: 'Pulihkan' },
   custom: { color: 'primary', variant: 'flat', icon: '', label: '' },
 }
 

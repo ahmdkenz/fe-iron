@@ -69,6 +69,7 @@ declare module 'vue' {
     TagihanApPembayaranForm: typeof import('./src/modules/AP/features/TagihanAp/components/TagihanApPembayaranForm.vue')['default']
     TagihanApStatusBadge: typeof import('./src/modules/AP/features/TagihanAp/components/TagihanApStatusBadge.vue')['default']
     ThemeSwitcher: typeof import('./src/@core/components/ThemeSwitcher.vue')['default']
+    TrashBulkActionBar: typeof import('./src/components/base/TrashBulkActionBar.vue')['default']
     UserForm: typeof import('./src/modules/IAM/features/Users/components/UserForm.vue')['default']
     VendorForm: typeof import('./src/modules/AP/features/VendorAp/components/VendorForm.vue')['default']
   }

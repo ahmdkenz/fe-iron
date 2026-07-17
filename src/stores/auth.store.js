@@ -70,7 +70,7 @@ export const useAuthStore = defineStore('auth', {
         && !normalizeRoles(state.user).includes('SUPERVISOR')
       ),
     canViewVendorAp: state => hasAnyRole(state.user, ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AP']),
-    canOperateVendorAp: state => hasAnyRole(state.user, ['ADMIN']),
+    canOperateVendorAp: state => hasAnyRole(state.user, ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AP']),
     canViewTagihanAp: state => hasAnyRole(state.user, ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AP']),
     canOperateTagihanAp: state => hasAnyRole(state.user, ['ADMIN', 'AP']),
     canViewPembayaranAp: state => hasAnyRole(state.user, ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AP']),
