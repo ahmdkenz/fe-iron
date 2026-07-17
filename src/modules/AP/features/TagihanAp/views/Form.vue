@@ -2,7 +2,7 @@
   <div>
     <PageHeader
       :title="isEditing ? 'Edit Tagihan AP' : 'Input Tagihan AP'"
-      :subtitle="isEditing ? 'Ubah data tagihan (hanya sebelum/setelah ditolak)' : 'Input tagihan baru dari vendor'"
+      :subtitle="isEditing ? 'Ubah data tagihan (selama belum ada pembayaran)' : 'Input tagihan baru dari vendor'"
       :breadcrumbs="[
         { title: 'Dashboard', to: { name: 'dashboard' } },
         { title: 'Tagihan', to: { name: 'ap-tagihan-index' } },
@@ -198,13 +198,8 @@
                   :loading="saving"
                   @click="handleSubmit"
                 >
-                  {{ isEditing ? 'Simpan Perubahan' : 'Ajukan untuk Persetujuan' }}
+                  {{ isEditing ? 'Simpan Perubahan' : 'Simpan Tagihan' }}
                 </VBtn>
-                <div class="text-caption text-medium-emphasis mt-2">
-                  {{ isEditing
-                    ? 'Setelah disimpan, klik "Ajukan Ulang" di halaman detail bila status sebelumnya ditolak.'
-                    : 'Tagihan akan masuk antrian approval SUPERVISOR/MANAGER.' }}
-                </div>
               </VCardText>
             </VCard>
           </div>
@@ -388,7 +383,7 @@ onMounted(async () => {
 
   const data = await fetchOne(id)
   loadingData.value = false
-  if (!data || !(data.status === 'DRAFT' && ['PENDING', 'REJECTED'].includes(data.approval_status))) return
+  if (!data || !data.can_edit) return
 
   tagihan.value = data
   ensureVendorItem(data.vendor_ap)
