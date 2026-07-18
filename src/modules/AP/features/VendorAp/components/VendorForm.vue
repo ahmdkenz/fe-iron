@@ -39,16 +39,7 @@
             :error-messages="errors.no_npwp"
           />
         </VCol>
-        <VCol cols="12" md="3" class="d-flex align-center">
-          <VSwitch
-            v-model="form.status_pkp"
-            label="Status PKP"
-            density="compact"
-            color="primary"
-            hide-details
-          />
-        </VCol>
-        <VCol cols="12" md="3">
+        <VCol cols="12" md="6">
           <BaseSelect
             v-model="form.status"
             label="Status"
@@ -145,7 +136,6 @@ const defaultForm = () => ({
   kode_vendor: '',
   nama_vendor: '',
   no_npwp: '',
-  status_pkp: false,
   bank_nama: '',
   bank_no_rekening: '',
   bank_atas_nama: '',
@@ -167,7 +157,6 @@ watch([() => props.modelValue, () => props.vendorData], ([open]) => {
       kode_vendor: props.vendorData.kode_vendor ?? '',
       nama_vendor: props.vendorData.nama_vendor ?? '',
       no_npwp: props.vendorData.no_npwp ?? '',
-      status_pkp: !!props.vendorData.status_pkp,
       bank_nama: props.vendorData.bank_nama ?? '',
       bank_no_rekening: props.vendorData.bank_no_rekening ?? '',
       bank_atas_nama: props.vendorData.bank_atas_nama ?? '',

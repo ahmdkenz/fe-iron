@@ -131,9 +131,6 @@
         </div>
         <VDivider class="mb-4" />
         <DetailRow label="NPWP" :value="selectedVendor.no_npwp" />
-        <DetailRow label="PKP">
-          {{ selectedVendor.status_pkp ? 'PKP' : 'Non-PKP' }}
-        </DetailRow>
         <DetailRow label="Bank" :value="selectedVendor.bank_nama" />
         <DetailRow label="No. Rekening" :value="selectedVendor.bank_no_rekening" />
         <DetailRow label="Atas Nama" :value="selectedVendor.bank_atas_nama" />
