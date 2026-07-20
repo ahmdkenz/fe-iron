@@ -9,6 +9,16 @@
       ]"
     >
       <VBtn
+        color="secondary"
+        variant="tonal"
+        prepend-icon="ri-download-2-line"
+        class="me-2"
+        :loading="exportingExcel"
+        @click="exportExcel"
+      >
+        Export Excel
+      </VBtn>
+      <VBtn
         v-if="authStore.canOperatePembayaranAp"
         color="primary"
         prepend-icon="ri-add-line"
@@ -300,6 +310,7 @@ const showDelete = ref(false)
 const deleteError = ref('')
 const deleting = ref(false)
 const selectedPembayaran = ref(null)
+const exportingExcel = ref(false)
 
 const headers = [
   { title: 'No', key: 'no', sortable: false, width: '60px' },
@@ -354,6 +365,51 @@ async function printVoucher(item) {
     printWindow?.close()
     await showError(await readBlobError(err, 'Gagal membuka dokumen cetak'))
   }
+}
+
+async function exportExcel() {
+  exportingExcel.value = true
+  try {
+    const res = await api.get('/ap/pembayaran/export-excel', {
+      params: {
+        metode_pembayaran: params.metode_pembayaran,
+        kategori_voucher: params.kategori_voucher,
+        tanggal_dari: params.tanggal_dari,
+        tanggal_sampai: params.tanggal_sampai,
+      },
+      responseType: 'blob',
+      timeout: 300000,
+    })
+
+    const blobUrl = URL.createObjectURL(new Blob([res.data], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    }))
+
+    const link = document.createElement('a')
+
+    link.href = blobUrl
+    link.download = `payment-voucher-ap-${buildTimestamp()}.xlsx`
+    link.click()
+    URL.revokeObjectURL(blobUrl)
+  } catch (err) {
+    await showError(await readBlobError(err, 'Gagal mengekspor data'))
+  } finally {
+    exportingExcel.value = false
+  }
+}
+
+function buildTimestamp() {
+  const n = new Date()
+
+  return (
+    String(n.getFullYear()) +
+    String(n.getMonth() + 1).padStart(2, '0') +
+    String(n.getDate()).padStart(2, '0') +
+    '-' +
+    String(n.getHours()).padStart(2, '0') +
+    String(n.getMinutes()).padStart(2, '0') +
+    String(n.getSeconds()).padStart(2, '0')
+  )
 }
 
 function confirmDeleteItem(item) { selectedPembayaran.value = item; deleteError.value = ''; showDelete.value = true }
