@@ -304,7 +304,7 @@ const selectedPembayaran = ref(null)
 const headers = [
   { title: 'No', key: 'no', sortable: false, width: '60px' },
   { title: 'Tanggal', key: 'tanggal_pembayaran', sortable: false },
-  { title: 'No. Referensi', key: 'no_referensi', sortable: false },
+  { title: 'Kode Voucher', key: 'no_referensi', sortable: false },
   { title: 'Metode', key: 'metode_pembayaran', sortable: false },
   { title: 'Kategori', key: 'kategori_voucher_label', sortable: false },
   { title: 'Jumlah Total', key: 'jumlah_pembayaran', sortable: false },

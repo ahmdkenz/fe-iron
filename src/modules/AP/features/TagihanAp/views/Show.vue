@@ -190,7 +190,7 @@
               <th>Tanggal</th>
               <th class="text-right">Jumlah</th>
               <th>Metode</th>
-              <th>No. Referensi</th>
+              <th>Kode Voucher</th>
               <th>Dicatat Oleh</th>
             </tr>
           </thead>

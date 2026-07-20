@@ -105,20 +105,6 @@
                   cols="12"
                   md="6"
                 >
-                  <VTextField
-                    v-model="form.no_referensi"
-                    label="No. Referensi"
-                    density="compact"
-                    variant="outlined"
-                    :error-messages="errors.no_referensi"
-                    :loading="checkingRef"
-                    @blur="cekDuplikatReferensi"
-                  />
-                </VCol>
-                <VCol
-                  cols="12"
-                  md="6"
-                >
                   <VFileInput
                     v-model="form.bukti_pembayaran"
                     label="Bukti Pembayaran (Opsional)"
@@ -131,24 +117,6 @@
                     hint="PDF, JPG, atau PNG — maks 10 MB"
                     persistent-hint
                   />
-                </VCol>
-                <VCol
-                  v-if="duplikatInfo"
-                  cols="12"
-                >
-                  <VAlert
-                    type="warning"
-                    variant="tonal"
-                    density="compact"
-                  >
-                    <strong>Peringatan:</strong> Nomor referensi ini sudah dipakai Payment Voucher lain
-                    ({{ duplikatInfo.tagihan_count }} tagihan
-                    <template v-if="duplikatInfo.vendor_names?.length">
-                      &bull; {{ duplikatInfo.vendor_names.join(', ') }}
-                    </template>)
-                    pada <strong>{{ duplikatInfo.tanggal_pembayaran }}</strong>
-                    sebesar <strong>{{ formatCurrency(duplikatInfo.jumlah_pembayaran) }}</strong>.
-                  </VAlert>
                 </VCol>
                 <VCol cols="12">
                   <VTextField
@@ -380,8 +348,6 @@ const { create, saving } = useCrud('/ap/pembayaran/voucher')
 const formRef = ref(null)
 const errorMessage = ref('')
 const allocationsError = ref('')
-const checkingRef = ref(false)
-const duplikatInfo = ref(null)
 
 const showPicker = ref(false)
 const pickerList = ref([])
@@ -399,14 +365,13 @@ const kategoriOptions = [
 ]
 
 const errors = reactive({
-  tanggal_pembayaran: [], metode_pembayaran: [], kategori_voucher: [], no_referensi: [], keterangan: [], bukti_pembayaran: [],
+  tanggal_pembayaran: [], metode_pembayaran: [], kategori_voucher: [], keterangan: [], bukti_pembayaran: [],
 })
 
 const form = reactive({
   tanggal_pembayaran: new Date().toISOString().slice(0, 10),
   metode_pembayaran: 'TRANSFER',
   kategori_voucher: null,
-  no_referensi: '',
   keterangan: '',
   bukti_pembayaran: [],
 })
@@ -459,24 +424,6 @@ async function fetchOutstanding(search = '') {
   }
 }
 
-async function cekDuplikatReferensi() {
-  const noRef = form.no_referensi?.trim()
-
-  duplikatInfo.value = null
-  if (!noRef) return
-
-  checkingRef.value = true
-  try {
-    const res = await api.get('/ap/pembayaran/cek-referensi', { params: { no_referensi: noRef } })
-
-    duplikatInfo.value = res.data?.data ?? null
-  } catch {
-    // abaikan error cek referensi — validasi tetap dilakukan saat submit
-  } finally {
-    checkingRef.value = false
-  }
-}
-
 async function handleSubmit() {
   const { valid } = await formRef.value.validate()
   if (!valid) return
@@ -501,7 +448,6 @@ async function handleSubmit() {
   payload.append('tanggal_pembayaran', form.tanggal_pembayaran)
   payload.append('metode_pembayaran', form.metode_pembayaran)
   payload.append('kategori_voucher', form.kategori_voucher)
-  if (form.no_referensi) payload.append('no_referensi', form.no_referensi)
   if (form.keterangan) payload.append('keterangan', form.keterangan)
   const buktiFile = Array.isArray(form.bukti_pembayaran) ? form.bukti_pembayaran[0] : form.bukti_pembayaran
   if (buktiFile instanceof File) payload.append('bukti_pembayaran', buktiFile)

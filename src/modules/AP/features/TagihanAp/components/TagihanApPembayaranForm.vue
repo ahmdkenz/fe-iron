@@ -72,28 +72,6 @@
           />
         </VCol>
 
-        <VCol cols="12" md="6">
-          <VTextField
-            v-model="form.no_referensi"
-            label="No. Referensi"
-            density="compact"
-            variant="outlined"
-            :error-messages="errors.no_referensi"
-            :loading="checkingRef"
-            @blur="cekDuplikatReferensi"
-          />
-        </VCol>
-
-        <VCol v-if="duplikatInfo" cols="12">
-          <VAlert type="warning" variant="tonal" density="compact">
-            <strong>Peringatan:</strong> Nomor referensi ini sudah digunakan oleh
-            <strong>{{ duplikatInfo.pic ?? 'PIC tidak diketahui' }}</strong>
-            pada <strong>{{ duplikatInfo.tanggal_pembayaran }}</strong>
-            untuk tagihan <strong>{{ duplikatInfo.no_tagihan }}</strong>
-            sebesar <strong>{{ formatCurrency(duplikatInfo.jumlah_pembayaran) }}</strong>.
-          </VAlert>
-        </VCol>
-
         <VCol cols="12">
           <VTextField
             v-model="form.keterangan"
@@ -136,9 +114,6 @@ import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useFormatter } from '@/composables/useFormatter.js'
 import api from '@/utils/axios.js'
 
-const checkingRef = ref(false)
-const duplikatInfo = ref(null)
-
 const props = defineProps({
   modelValue: Boolean,
   tagihanId: { type: [Number, String], default: null },
@@ -167,7 +142,7 @@ const kategoriOptions = [
 
 const errors = reactive({
   tanggal_pembayaran: [], jumlah_pembayaran: [], metode_pembayaran: [], kategori_voucher: [],
-  no_referensi: [], keterangan: [], bukti_pembayaran: [],
+  keterangan: [], bukti_pembayaran: [],
 })
 
 const defaultForm = () => ({
@@ -175,7 +150,6 @@ const defaultForm = () => ({
   jumlah_pembayaran: null,
   metode_pembayaran: 'TRANSFER',
   kategori_voucher: null,
-  no_referensi: '',
   keterangan: '',
   bukti_pembayaran: [],
 })
@@ -186,7 +160,6 @@ watch(() => props.modelValue, val => {
   if (val) {
     Object.keys(errors).forEach(k => (errors[k] = []))
     errorMessage.value = ''
-    duplikatInfo.value = null
     Object.assign(form, defaultForm())
   }
 })
@@ -194,22 +167,6 @@ watch(() => props.modelValue, val => {
 function handleJumlahInput(val) {
   if (val > props.sisaTagihan) {
     form.jumlah_pembayaran = props.sisaTagihan
-  }
-}
-
-async function cekDuplikatReferensi() {
-  const noRef = form.no_referensi?.trim()
-  duplikatInfo.value = null
-  if (!noRef) return
-
-  checkingRef.value = true
-  try {
-    const res = await api.get('/ap/pembayaran/cek-referensi', { params: { no_referensi: noRef } })
-    duplikatInfo.value = res.data?.data ?? null
-  } catch {
-    // abaikan error cek referensi — validasi tetap dilakukan saat submit
-  } finally {
-    checkingRef.value = false
   }
 }
 
@@ -228,7 +185,6 @@ async function handleSubmit() {
     payload.append('jumlah_pembayaran', form.jumlah_pembayaran)
     payload.append('metode_pembayaran', form.metode_pembayaran)
     payload.append('kategori_voucher', form.kategori_voucher)
-    if (form.no_referensi) payload.append('no_referensi', form.no_referensi)
     if (form.keterangan) payload.append('keterangan', form.keterangan)
     const buktiFile = Array.isArray(form.bukti_pembayaran) ? form.bukti_pembayaran[0] : form.bukti_pembayaran
     if (buktiFile instanceof File) payload.append('bukti_pembayaran', buktiFile)
@@ -238,7 +194,6 @@ async function handleSubmit() {
     })
     Object.keys(errors).forEach(k => (errors[k] = []))
     errorMessage.value = ''
-    duplikatInfo.value = null
     Object.assign(form, defaultForm())
     emit('update:modelValue', false)
     emit('saved')
