@@ -79,7 +79,7 @@ export const useAuthStore = defineStore('auth', {
     // Staging import SHZ360 — role AP diberi akses penuh setara Admin/Manager/Supervisor.
     canOperateApShz360Import: state => hasAnyRole(state.user, ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AP']),
     canViewOpeningBalanceAp: state => hasAnyRole(state.user, ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AP']),
-    canOperateOpeningBalanceAp: state => hasAnyRole(state.user, ['ADMIN', 'AP']),
+    canOperateOpeningBalanceAp: state => hasAnyRole(state.user, ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AP']),
     canApproveOpeningBalanceAp: state => hasAnyRole(state.user, ['MANAGER', 'SUPERVISOR']),
   },
 

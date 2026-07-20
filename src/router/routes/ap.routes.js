@@ -53,13 +53,13 @@ export default [
     path: '/ap/opening-balance/create',
     name: 'ap-opening-balance-create',
     component: () => import('@/modules/AP/features/OpeningBalanceAp/views/Form.vue'),
-    meta: { requiresAuth: true, roles: ['ADMIN', 'AP'] },
+    meta: { requiresAuth: true, roles: AP_ROLES },
   },
   {
     path: '/ap/opening-balance/:id/edit',
     name: 'ap-opening-balance-edit',
     component: () => import('@/modules/AP/features/OpeningBalanceAp/views/Form.vue'),
-    meta: { requiresAuth: true, roles: ['ADMIN', 'AP'] },
+    meta: { requiresAuth: true, roles: AP_ROLES },
   },
   {
     path: '/ap/shz360-import',

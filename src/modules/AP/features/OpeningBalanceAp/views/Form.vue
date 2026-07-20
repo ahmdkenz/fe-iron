@@ -387,6 +387,11 @@ watch(() => form.tanggal, () => {
   if (form.vendor_ap_id) fetchOutstandingTagihan(form.vendor_ap_id)
 })
 
+watch(() => form.details, newDetails => {
+  if (newDetails.length > 0)
+    form.saldo_awal = newDetails.reduce((sum, d) => sum + (Number(d.sisa_tagihan_asal) || 0), 0)
+})
+
 async function loadPreviewNo() {
   if (!form.tanggal) return
   try {
