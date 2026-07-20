@@ -75,8 +75,12 @@ export const useAuthStore = defineStore('auth', {
     canOperateTagihanAp: state => hasAnyRole(state.user, ['ADMIN', 'AP']),
     canViewPembayaranAp: state => hasAnyRole(state.user, ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AP']),
     canOperatePembayaranAp: state => hasAnyRole(state.user, ['ADMIN', 'AP']),
+
     // Staging import SHZ360 — role AP diberi akses penuh setara Admin/Manager/Supervisor.
     canOperateApShz360Import: state => hasAnyRole(state.user, ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AP']),
+    canViewOpeningBalanceAp: state => hasAnyRole(state.user, ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AP']),
+    canOperateOpeningBalanceAp: state => hasAnyRole(state.user, ['ADMIN', 'AP']),
+    canApproveOpeningBalanceAp: state => hasAnyRole(state.user, ['MANAGER', 'SUPERVISOR']),
   },
 
   actions: {
@@ -98,11 +102,13 @@ export const useAuthStore = defineStore('auth', {
 
     async login(username, password) {
       const { data } = await api.post('/auth/login', { username, password })
+
       this.user = data.data.user
     },
 
     async fetchMe() {
       const { data } = await api.get('/auth/me')
+
       this.user = data.data
     },
 

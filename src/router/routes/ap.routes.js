@@ -44,6 +44,24 @@ export default [
     meta: { requiresAuth: true, roles: AP_ROLES },
   },
   {
+    path: '/ap/opening-balance',
+    name: 'ap-opening-balance-index',
+    component: () => import('@/modules/AP/features/OpeningBalanceAp/views/Index.vue'),
+    meta: { requiresAuth: true, roles: AP_ROLES },
+  },
+  {
+    path: '/ap/opening-balance/create',
+    name: 'ap-opening-balance-create',
+    component: () => import('@/modules/AP/features/OpeningBalanceAp/views/Form.vue'),
+    meta: { requiresAuth: true, roles: ['ADMIN', 'AP'] },
+  },
+  {
+    path: '/ap/opening-balance/:id/edit',
+    name: 'ap-opening-balance-edit',
+    component: () => import('@/modules/AP/features/OpeningBalanceAp/views/Form.vue'),
+    meta: { requiresAuth: true, roles: ['ADMIN', 'AP'] },
+  },
+  {
     path: '/ap/shz360-import',
     name: 'ap-shz360-import-index',
     component: () => import('@/modules/AP/features/Shz360Import/views/Index.vue'),

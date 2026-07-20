@@ -118,6 +118,12 @@
     roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AP'],
   },
   {
+    title: 'Opening Balance',
+    to: { name: 'ap-opening-balance-index' },
+    icon: { icon: 'ri-history-line' },
+    roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AP'],
+  },
+  {
     title: 'Pembayaran',
     to: { name: 'ap-pembayaran-index' },
     icon: { icon: 'ri-bank-card-line' },
