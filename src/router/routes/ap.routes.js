@@ -44,6 +44,12 @@ export default [
     meta: { requiresAuth: true, roles: AP_ROLES },
   },
   {
+    path: '/ap/pembayaran/create',
+    name: 'ap-pembayaran-create',
+    component: () => import('@/modules/AP/features/PembayaranAp/views/Form.vue'),
+    meta: { requiresAuth: true, roles: ['ADMIN', 'AP'] },
+  },
+  {
     path: '/ap/opening-balance',
     name: 'ap-opening-balance-index',
     component: () => import('@/modules/AP/features/OpeningBalanceAp/views/Index.vue'),

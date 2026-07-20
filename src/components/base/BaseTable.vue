@@ -16,7 +16,10 @@
       :items-per-page-options="itemsPerPageOptions"
       :page="page"
       :item-value="itemValue"
+      return-object
+      :model-value="selected"
       @update:options="handleOptionsUpdate"
+      @update:model-value="v => emit('update:selected', v)"
     >
       <template
         v-for="(_, name) in $slots"
@@ -108,9 +111,10 @@ const props = defineProps({
   columnResizeMinWidth: { type: Number, default: 72 },
   mobileCards: { type: Boolean, default: false },
   itemValue: { type: String, default: 'id' },
+  selected: { type: Array, default: () => [] },
 })
 
-const emit = defineEmits(['update:options'])
+const emit = defineEmits(['update:options', 'update:selected'])
 
 defineOptions({ inheritAttrs: false })
 
@@ -132,21 +136,16 @@ const itemsPerPageOptions = computed(() =>
 
 const showSelect = computed(() => Boolean(attrs.showSelect ?? attrs['show-select']))
 
-const selectedItems = computed(() => attrs.selected ?? [])
-
 function isItemSelected(item) {
-  return selectedItems.value.some(sel => sel[props.itemValue] === item[props.itemValue])
+  return props.selected.some(sel => sel[props.itemValue] === item[props.itemValue])
 }
 
 function toggleItemSelected(item) {
-  const handler = attrs['onUpdate:selected']
-  if (typeof handler !== 'function') return
-
-  const current = selectedItems.value
+  const current = props.selected
   const idx = current.findIndex(sel => sel[props.itemValue] === item[props.itemValue])
   const next = idx === -1 ? [...current, item] : current.filter((_, i) => i !== idx)
 
-  handler(next)
+  emit('update:selected', next)
 }
 
 function handleOptionsUpdate(options) {

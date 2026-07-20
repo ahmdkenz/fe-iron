@@ -20,58 +20,117 @@
 
     <!-- ── Section: List Tagihan AP ─────────────────────────────────────────── -->
     <div class="d-flex align-center gap-2 mb-4">
-      <VIcon icon="ri-list-check-2" color="primary" />
+      <VIcon
+        icon="ri-list-check-2"
+        color="primary"
+      />
       <span class="text-h6 font-weight-semibold">List Tagihan AP</span>
     </div>
 
     <VRow class="mb-4">
-      <VCol cols="12" sm="6" md="3">
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
         <VCard>
           <VCardText>
             <div class="d-flex align-center gap-3">
-              <VAvatar color="primary" variant="tonal" size="44"><VIcon icon="ri-bill-line" /></VAvatar>
+              <VAvatar
+                color="primary"
+                variant="tonal"
+                size="44"
+              >
+                <VIcon icon="ri-bill-line" />
+              </VAvatar>
               <div>
-                <div class="text-caption text-medium-emphasis">Total Tagihan</div>
-                <div class="text-h6 font-weight-bold">{{ summary.total_tagihan ?? '-' }}</div>
+                <div class="text-caption text-medium-emphasis">
+                  Total Tagihan
+                </div>
+                <div class="text-h6 font-weight-bold">
+                  {{ summary.total_tagihan ?? '-' }}
+                </div>
               </div>
             </div>
           </VCardText>
         </VCard>
       </VCol>
-      <VCol cols="12" sm="6" md="3">
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
         <VCard>
           <VCardText>
             <div class="d-flex align-center gap-3">
-              <VAvatar color="info" variant="tonal" size="44"><VIcon icon="ri-wallet-3-line" /></VAvatar>
+              <VAvatar
+                color="info"
+                variant="tonal"
+                size="44"
+              >
+                <VIcon icon="ri-wallet-3-line" />
+              </VAvatar>
               <div>
-                <div class="text-caption text-medium-emphasis">Total Nominal</div>
-                <div class="text-h6 font-weight-bold">{{ formatCurrency(summary.total_nominal) }}</div>
+                <div class="text-caption text-medium-emphasis">
+                  Total Nominal
+                </div>
+                <div class="text-h6 font-weight-bold">
+                  {{ formatCurrency(summary.total_nominal) }}
+                </div>
               </div>
             </div>
           </VCardText>
         </VCard>
       </VCol>
-      <VCol cols="12" sm="6" md="3">
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
         <VCard>
           <VCardText>
             <div class="d-flex align-center gap-3">
-              <VAvatar color="success" variant="tonal" size="44"><VIcon icon="ri-money-cny-circle-line" /></VAvatar>
+              <VAvatar
+                color="success"
+                variant="tonal"
+                size="44"
+              >
+                <VIcon icon="ri-money-cny-circle-line" />
+              </VAvatar>
               <div>
-                <div class="text-caption text-medium-emphasis">Total Terbayar</div>
-                <div class="text-h6 font-weight-bold">{{ formatCurrency(summary.total_pembayaran) }}</div>
+                <div class="text-caption text-medium-emphasis">
+                  Total Terbayar
+                </div>
+                <div class="text-h6 font-weight-bold">
+                  {{ formatCurrency(summary.total_pembayaran) }}
+                </div>
               </div>
             </div>
           </VCardText>
         </VCard>
       </VCol>
-      <VCol cols="12" sm="6" md="3">
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
         <VCard>
           <VCardText>
             <div class="d-flex align-center gap-3">
-              <VAvatar color="error" variant="tonal" size="44"><VIcon icon="ri-error-warning-line" /></VAvatar>
+              <VAvatar
+                color="error"
+                variant="tonal"
+                size="44"
+              >
+                <VIcon icon="ri-error-warning-line" />
+              </VAvatar>
               <div>
-                <div class="text-caption text-medium-emphasis">Sisa Hutang</div>
-                <div class="text-h6 font-weight-bold">{{ formatCurrency(summary.total_sisa) }}</div>
+                <div class="text-caption text-medium-emphasis">
+                  Sisa Hutang
+                </div>
+                <div class="text-h6 font-weight-bold">
+                  {{ formatCurrency(summary.total_sisa) }}
+                </div>
               </div>
             </div>
           </VCardText>
@@ -106,6 +165,7 @@
       </VCardText>
 
       <BaseTable
+        v-model:selected="selected"
         :headers="headers"
         :items="items"
         :total="meta.total"
@@ -113,7 +173,6 @@
         :per-page="meta.per_page"
         :page="meta.current_page"
         show-select
-        v-model:selected="selected"
         column-resize-key="ap-tagihan-index"
         class="mt-2"
         @update:options="onTableOptions"
@@ -122,7 +181,14 @@
           {{ (meta.current_page - 1) * meta.per_page + index + 1 }}
         </template>
         <template #item.no_tagihan="{ item }">
-          <VChip color="primary" size="small" variant="tonal" label>{{ item.no_tagihan }}</VChip>
+          <VChip
+            color="primary"
+            size="small"
+            variant="tonal"
+            label
+          >
+            {{ item.no_tagihan }}
+          </VChip>
         </template>
         <template #item.vendor_ap="{ item }">
           {{ item.vendor_ap?.nama_vendor ?? '-' }}
@@ -143,9 +209,20 @@
         </template>
         <template #item.actions="{ item }">
           <div class="d-flex gap-1">
-            <VBtn icon size="small" variant="text" color="info" :to="{ name: 'ap-tagihan-show', params: { id: item.id } }">
-              <VIcon icon="ri-eye-line" size="18" />
-              <VTooltip activator="parent">Detail</VTooltip>
+            <VBtn
+              icon
+              size="small"
+              variant="text"
+              color="info"
+              :to="{ name: 'ap-tagihan-show', params: { id: item.id } }"
+            >
+              <VIcon
+                icon="ri-eye-line"
+                size="18"
+              />
+              <VTooltip activator="parent">
+                Detail
+              </VTooltip>
             </VBtn>
             <VBtn
               v-if="item.can_edit && authStore.canOperateTagihanAp"
@@ -155,8 +232,13 @@
               color="primary"
               :to="{ name: 'ap-tagihan-edit', params: { id: item.id } }"
             >
-              <VIcon icon="ri-pencil-line" size="18" />
-              <VTooltip activator="parent">Edit</VTooltip>
+              <VIcon
+                icon="ri-pencil-line"
+                size="18"
+              />
+              <VTooltip activator="parent">
+                Edit
+              </VTooltip>
             </VBtn>
             <VBtn
               v-if="item.can_edit && authStore.canOperateTagihanAp"
@@ -166,8 +248,13 @@
               color="error"
               @click="confirmDeleteItem(item)"
             >
-              <VIcon icon="ri-delete-bin-line" size="18" />
-              <VTooltip activator="parent">Hapus</VTooltip>
+              <VIcon
+                icon="ri-delete-bin-line"
+                size="18"
+              />
+              <VTooltip activator="parent">
+                Hapus
+              </VTooltip>
             </VBtn>
           </div>
         </template>
@@ -183,18 +270,56 @@
       @confirm="doDelete"
     >
       <p>Apakah Anda yakin ingin menghapus tagihan <strong>{{ selectedTagihan?.no_tagihan }}</strong>?</p>
-      <VAlert type="warning" variant="tonal" density="compact" class="mt-3">
+      <VAlert
+        type="warning"
+        variant="tonal"
+        density="compact"
+        class="mt-3"
+      >
         Tindakan ini tidak dapat diurungkan — data akan dihapus permanen dari database.
       </VAlert>
-      <VAlert v-if="deleteError" type="error" variant="tonal" class="mt-3">{{ deleteError }}</VAlert>
+      <VAlert
+        v-if="deleteError"
+        type="error"
+        variant="tonal"
+        class="mt-3"
+      >
+        {{ deleteError }}
+      </VAlert>
     </BaseModal>
 
-    <BulkDeleteBar :selected="selected" @delete="doBulkDelete" @clear="selected = []" />
+    <div
+      v-if="eligibleForVoucher.length"
+      class="bulk-voucher-bar"
+    >
+      <div class="d-flex align-center gap-3">
+        <VIcon
+          icon="ri-checkbox-multiple-line"
+          color="primary"
+        />
+        <span class="text-body-2">{{ eligibleForVoucher.length }} tagihan siap dibuatkan voucher pembayaran</span>
+      </div>
+      <VBtn
+        color="primary"
+        size="small"
+        prepend-icon="ri-bill-line"
+        @click="goToVoucher"
+      >
+        Buat Voucher Pembayaran
+      </VBtn>
+    </div>
+
+    <BulkDeleteBar
+      :selected="selected"
+      @delete="doBulkDelete"
+      @clear="selected = []"
+    />
   </div>
 </template>
 
 <script setup>
-import { nextTick, onDeactivated, reactive, ref } from 'vue'
+import { computed, nextTick, onDeactivated, reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useAuthStore } from '@/stores/auth.store'
 import { useCrud } from '@/composables/useCrud'
@@ -203,6 +328,7 @@ import api from '@/utils/axios'
 import BulkDeleteBar from '@/components/base/BulkDeleteBar.vue'
 import TagihanApStatusBadge from '../components/TagihanApStatusBadge.vue'
 
+const router = useRouter()
 const authStore = useAuthStore()
 const { showSuccess, showError, showLoading, closeAlert, confirmDelete: swalConfirmDelete } = useSweetAlert()
 const { formatCurrency, formatDate, formatDateTime } = useFormatter()
@@ -217,6 +343,19 @@ const deleting = ref(false)
 const selectedTagihan = ref(null)
 
 const summary = reactive({ total_tagihan: null, total_nominal: null, total_pembayaran: null, total_sisa: null })
+
+const eligibleForVoucher = computed(() =>
+  selected.value.filter(t =>
+    ['DITERIMA', 'SEBAGIAN'].includes(t.status) && t.approval_status === 'APPROVED',
+  ),
+)
+
+function goToVoucher() {
+  router.push({
+    name: 'ap-pembayaran-create',
+    query: { tagihan_ids: eligibleForVoucher.value.map(t => t.id).join(',') },
+  })
+}
 
 const headers = [
   { title: 'No', key: 'no', sortable: false, width: '60px' },
@@ -259,6 +398,7 @@ async function loadSummary() {
     const { data } = await api.get('/ap/tagihan/summary', {
       params: { search: params.search, status: params.status },
     })
+
     Object.assign(summary, data.data)
   } catch {
     // biarkan summary kosong jika gagal
@@ -271,6 +411,7 @@ onDeactivated(() => { showDelete.value = false })
 
 async function doDelete() {
   deleteError.value = ''
+
   const deleteId = selectedTagihan.value?.id
   if (!deleteId) return
 
@@ -279,6 +420,7 @@ async function doDelete() {
   deleting.value = true
 
   const res = await remove(deleteId)
+
   deleting.value = false
   if (res.success) {
     fetchList()
@@ -298,6 +440,7 @@ async function doBulkDelete() {
   try {
     const res = await api.delete('/ap/tagihan/bulk', { data: { ids: selected.value.map(i => i.id) } })
     const deleted = res.data?.data?.deleted ?? selected.value.length
+
     selected.value = []
     fetchList()
     loadSummary()
@@ -311,3 +454,20 @@ async function doBulkDelete() {
 
 doFetch()
 </script>
+
+<style scoped>
+.bulk-voucher-bar {
+  position: sticky;
+  bottom: 16px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(var(--v-theme-primary), 0.25);
+  background: rgba(var(--v-theme-primary), 0.06);
+}
+</style>
