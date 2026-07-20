@@ -241,6 +241,23 @@
               </VTooltip>
             </VBtn>
             <VBtn
+              v-if="item.can_print"
+              icon
+              size="small"
+              variant="text"
+              color="secondary"
+              :loading="printingId === item.id"
+              @click="printTagihan(item)"
+            >
+              <VIcon
+                icon="ri-printer-line"
+                size="18"
+              />
+              <VTooltip activator="parent">
+                Cetak
+              </VTooltip>
+            </VBtn>
+            <VBtn
               v-if="item.can_edit && authStore.canOperateTagihanAp"
               icon
               size="small"
@@ -325,6 +342,8 @@ import { useAuthStore } from '@/stores/auth.store'
 import { useCrud } from '@/composables/useCrud'
 import { useFormatter } from '@/composables/useFormatter'
 import api from '@/utils/axios'
+import { openLoadingPrintTab, openPrintTab } from '@/utils/printWindow.js'
+import { readBlobError } from '@/utils/readBlobError'
 import BulkDeleteBar from '@/components/base/BulkDeleteBar.vue'
 import TagihanApStatusBadge from '../components/TagihanApStatusBadge.vue'
 
@@ -341,6 +360,7 @@ const showDelete = ref(false)
 const deleteError = ref('')
 const deleting = ref(false)
 const selectedTagihan = ref(null)
+const printingId = ref(null)
 
 const summary = reactive({ total_tagihan: null, total_nominal: null, total_pembayaran: null, total_sisa: null })
 
@@ -365,7 +385,7 @@ const headers = [
   { title: 'Total Tagihan', key: 'total_tagihan', sortable: false, minWidth: '150px' },
   { title: 'Sisa', key: 'sisa_tagihan', sortable: false, minWidth: '150px' },
   { title: 'Status', key: 'status', sortable: false, minWidth: '120px' },
-  { title: 'Aksi', key: 'actions', sortable: false, align: 'center', width: '120px' },
+  { title: 'Aksi', key: 'actions', sortable: false, align: 'center', width: '160px' },
 ]
 
 const statusOptions = [
@@ -402,6 +422,37 @@ async function loadSummary() {
     Object.assign(summary, data.data)
   } catch {
     // biarkan summary kosong jika gagal
+  }
+}
+
+async function printTagihan(item) {
+  if (item.share_url) {
+    if (!openPrintTab(item.share_url))
+      await showError('Popup diblokir browser. Izinkan popup untuk membuka dokumen cetak.')
+
+    return
+  }
+
+  printingId.value = item.id
+  const printWindow = openLoadingPrintTab()
+  try {
+    const res = await api.get(`/ap/tagihan/${item.id}/print`, { responseType: 'blob', timeout: 300000 })
+    const blobUrl = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }))
+
+    if (!printWindow) {
+      URL.revokeObjectURL(blobUrl)
+      await showError('Popup diblokir browser. Izinkan popup untuk membuka dokumen cetak.')
+
+      return
+    }
+
+    printWindow.location.href = blobUrl
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 30_000)
+  } catch (err) {
+    printWindow?.close()
+    await showError(await readBlobError(err, 'Gagal membuka dokumen cetak'))
+  } finally {
+    printingId.value = null
   }
 }
 
