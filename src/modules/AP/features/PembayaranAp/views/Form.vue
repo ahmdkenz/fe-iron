@@ -1,12 +1,12 @@
 <template>
   <div>
     <PageHeader
-      title="Buat Voucher Pembayaran"
-      subtitle="Satu voucher bisa mencakup banyak tagihan dari banyak vendor"
+      title="Buat Payment Voucher"
+      subtitle="Satu Payment Voucher bisa mencakup banyak tagihan dari banyak vendor"
       :breadcrumbs="[
         { title: 'Dashboard', to: { name: 'dashboard' } },
-        { title: 'Pembayaran', to: { name: 'ap-pembayaran-index' } },
-        { title: 'Buat Voucher', disabled: true }
+        { title: 'Payment Voucher', to: { name: 'ap-pembayaran-index' } },
+        { title: 'Buat Payment Voucher', disabled: true }
       ]"
     >
       <VBtn
@@ -50,7 +50,7 @@
                   color="white"
                 />
               </div>
-              <span class="text-subtitle-1 font-weight-semibold">Informasi Voucher</span>
+              <span class="text-subtitle-1 font-weight-semibold">Informasi Payment Voucher</span>
             </div>
             <VDivider />
             <VCardText class="pt-4">
@@ -125,7 +125,7 @@
                     variant="tonal"
                     density="compact"
                   >
-                    <strong>Peringatan:</strong> Nomor referensi ini sudah dipakai voucher lain
+                    <strong>Peringatan:</strong> Nomor referensi ini sudah dipakai Payment Voucher lain
                     ({{ duplikatInfo.tagihan_count }} tagihan
                     <template v-if="duplikatInfo.vendor_names?.length">
                       &bull; {{ duplikatInfo.vendor_names.join(', ') }}
@@ -297,7 +297,7 @@
                     color="white"
                   />
                 </div>
-                <span class="text-subtitle-1 font-weight-semibold">Ringkasan Voucher</span>
+                <span class="text-subtitle-1 font-weight-semibold">Ringkasan Payment Voucher</span>
               </div>
               <VDivider />
               <VCardText class="pt-4">
@@ -307,7 +307,7 @@
                 </div>
                 <VDivider class="my-3" />
                 <div class="d-flex justify-space-between align-center mb-2">
-                  <span class="text-subtitle-1 font-weight-bold">Total Voucher</span>
+                  <span class="text-subtitle-1 font-weight-bold">Total Payment Voucher</span>
                   <span class="text-h6 font-weight-bold text-primary">{{ formatCurrency(totalVoucher) }}</span>
                 </div>
               </VCardText>
@@ -324,7 +324,7 @@
                   :loading="saving"
                   @click="handleSubmit"
                 >
-                  Simpan Voucher
+                  Simpan Payment Voucher
                 </VBtn>
               </VCardText>
             </VCard>
@@ -460,7 +460,7 @@ async function handleSubmit() {
   if (!valid) return
 
   if (allocations.value.length === 0) {
-    allocationsError.value = 'Voucher harus mencakup minimal 1 tagihan.'
+    allocationsError.value = 'Payment Voucher harus mencakup minimal 1 tagihan.'
     
     return
   }
@@ -494,7 +494,7 @@ async function handleSubmit() {
     setFlashAlert({
       icon: 'success',
       title: 'Berhasil',
-      text: 'Voucher pembayaran berhasil dicatat.',
+      text: 'Payment Voucher berhasil dicatat.',
     })
     router.push({ name: 'ap-pembayaran-index' })
   } else {

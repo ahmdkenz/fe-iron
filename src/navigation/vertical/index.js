@@ -124,7 +124,7 @@
     roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AP'],
   },
   {
-    title: 'Pembayaran',
+    title: 'Payment Voucher',
     to: { name: 'ap-pembayaran-index' },
     icon: { icon: 'ri-bank-card-line' },
     roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AP'],

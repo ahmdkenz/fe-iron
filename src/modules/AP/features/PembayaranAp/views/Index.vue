@@ -1,11 +1,11 @@
 <template>
   <div>
     <PageHeader
-      title="Pembayaran AP"
-      subtitle="Riwayat voucher pembayaran ke vendor"
+      title="Payment Voucher"
+      subtitle="Riwayat Payment Voucher ke vendor"
       :breadcrumbs="[
         { title: 'Dashboard', to: { name: 'dashboard' } },
-        { title: 'Pembayaran', disabled: true }
+        { title: 'Payment Voucher', disabled: true }
       ]"
     >
       <VBtn
@@ -14,7 +14,7 @@
         prepend-icon="ri-add-line"
         :to="{ name: 'ap-pembayaran-create' }"
       >
-        Buat Voucher Pembayaran
+        Buat Payment Voucher
       </VBtn>
     </PageHeader>
 
@@ -129,7 +129,7 @@
                 size="18"
               />
               <VTooltip activator="parent">
-                Cetak Voucher
+                Cetak Payment Voucher
               </VTooltip>
             </VBtn>
             <VBtn
@@ -229,12 +229,12 @@
     <BaseModal
       v-if="showDelete"
       v-model="showDelete"
-      title="Hapus Voucher Pembayaran"
+      title="Hapus Payment Voucher"
       :loading="deleting"
       confirm-action="hapus"
       @confirm="doDelete"
     >
-      <p>Apakah Anda yakin ingin menghapus voucher ini?</p>
+      <p>Apakah Anda yakin ingin menghapus Payment Voucher ini?</p>
       <VAlert
         type="warning"
         variant="tonal"
@@ -347,7 +347,7 @@ async function doDelete() {
   deleting.value = false
   if (res.success) {
     fetchList()
-    await showSuccess('Voucher pembayaran berhasil dihapus.')
+    await showSuccess('Payment Voucher berhasil dihapus.')
   } else {
     deleteError.value = res.message || 'Gagal menghapus data'
     await showError(deleteError.value)

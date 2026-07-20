@@ -297,7 +297,7 @@
           icon="ri-checkbox-multiple-line"
           color="primary"
         />
-        <span class="text-body-2">{{ eligibleForVoucher.length }} tagihan siap dibuatkan voucher pembayaran</span>
+        <span class="text-body-2">{{ eligibleForVoucher.length }} tagihan siap dibuatkan Payment Voucher</span>
       </div>
       <VBtn
         color="primary"
@@ -305,7 +305,7 @@
         prepend-icon="ri-bill-line"
         @click="goToVoucher"
       >
-        Buat Voucher Pembayaran
+        Buat Payment Voucher
       </VBtn>
     </div>
 
