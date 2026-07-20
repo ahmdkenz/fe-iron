@@ -32,6 +32,18 @@
           item-value="value"
           @update:model-value="doFetch"
         />
+        <VSelect
+          v-model="params.kategori_voucher"
+          placeholder="Semua Kategori"
+          clearable
+          hide-details
+          density="compact"
+          style="max-width: 180px"
+          :items="kategoriOptions"
+          item-title="label"
+          item-value="value"
+          @update:model-value="doFetch"
+        />
         <VTextField
           v-model="params.tanggal_dari"
           type="date"
@@ -77,6 +89,16 @@
         </template>
         <template #item.no_referensi="{ item }">
           {{ item.no_referensi ?? '-' }}
+        </template>
+        <template #item.kategori_voucher_label="{ item }">
+          <VChip
+            size="small"
+            variant="tonal"
+            :color="item.kategori_voucher === 'BB' ? 'success' : item.kategori_voucher === 'NBB' ? 'info' : 'secondary'"
+            label
+          >
+            {{ item.kategori_voucher_label }}
+          </VChip>
         </template>
         <template #item.jumlah_pembayaran="{ item }">
           {{ formatCurrency(item.jumlah_pembayaran) }}
@@ -284,6 +306,7 @@ const headers = [
   { title: 'Tanggal', key: 'tanggal_pembayaran', sortable: false },
   { title: 'No. Referensi', key: 'no_referensi', sortable: false },
   { title: 'Metode', key: 'metode_pembayaran', sortable: false },
+  { title: 'Kategori', key: 'kategori_voucher_label', sortable: false },
   { title: 'Jumlah Total', key: 'jumlah_pembayaran', sortable: false },
   { title: 'Cakupan', key: 'jumlah_tagihan', sortable: false, align: 'center' },
   { title: 'Bukti', key: 'bukti_url', sortable: false, align: 'center' },
@@ -294,6 +317,11 @@ const metodeOptions = [
   { label: 'Transfer', value: 'TRANSFER' },
   { label: 'Cash', value: 'CASH' },
   { label: 'Giro', value: 'GIRO' },
+]
+
+const kategoriOptions = [
+  { label: 'Bahan Baku', value: 'BB' },
+  { label: 'Non Bahan Baku', value: 'NBB' },
 ]
 
 function doFetch() {

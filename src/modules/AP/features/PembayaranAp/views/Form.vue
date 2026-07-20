@@ -89,6 +89,22 @@
                   cols="12"
                   md="6"
                 >
+                  <VSelect
+                    v-model="form.kategori_voucher"
+                    label="Kategori Voucher"
+                    density="compact"
+                    variant="outlined"
+                    :items="kategoriOptions"
+                    item-title="label"
+                    item-value="value"
+                    :rules="[v => !!v || 'Kategori voucher wajib dipilih']"
+                    :error-messages="errors.kategori_voucher"
+                  />
+                </VCol>
+                <VCol
+                  cols="12"
+                  md="6"
+                >
                   <VTextField
                     v-model="form.no_referensi"
                     label="No. Referensi"
@@ -377,13 +393,19 @@ const metodeOptions = [
   { label: 'Giro', value: 'GIRO' },
 ]
 
+const kategoriOptions = [
+  { label: 'Bahan Baku', value: 'BB' },
+  { label: 'Non Bahan Baku', value: 'NBB' },
+]
+
 const errors = reactive({
-  tanggal_pembayaran: [], metode_pembayaran: [], no_referensi: [], keterangan: [], bukti_pembayaran: [],
+  tanggal_pembayaran: [], metode_pembayaran: [], kategori_voucher: [], no_referensi: [], keterangan: [], bukti_pembayaran: [],
 })
 
 const form = reactive({
   tanggal_pembayaran: new Date().toISOString().slice(0, 10),
   metode_pembayaran: 'TRANSFER',
+  kategori_voucher: null,
   no_referensi: '',
   keterangan: '',
   bukti_pembayaran: [],
@@ -478,6 +500,7 @@ async function handleSubmit() {
 
   payload.append('tanggal_pembayaran', form.tanggal_pembayaran)
   payload.append('metode_pembayaran', form.metode_pembayaran)
+  payload.append('kategori_voucher', form.kategori_voucher)
   if (form.no_referensi) payload.append('no_referensi', form.no_referensi)
   if (form.keterangan) payload.append('keterangan', form.keterangan)
   const buktiFile = Array.isArray(form.bukti_pembayaran) ? form.bukti_pembayaran[0] : form.bukti_pembayaran
