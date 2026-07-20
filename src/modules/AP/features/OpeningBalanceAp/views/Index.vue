@@ -218,7 +218,7 @@
               size="small"
               variant="text"
               color="info"
-              @click="openDetail(item)"
+              :to="{ name: 'ap-opening-balance-show', params: { id: item.id } }"
             >
               <VIcon
                 icon="ri-eye-line"
@@ -226,6 +226,23 @@
               />
               <VTooltip activator="parent">
                 Detail
+              </VTooltip>
+            </VBtn>
+            <VBtn
+              v-if="item.can_print"
+              icon
+              size="small"
+              variant="text"
+              color="secondary"
+              :loading="printingId === item.id"
+              @click="printOpeningBalance(item.id)"
+            >
+              <VIcon
+                icon="ri-printer-line"
+                size="18"
+              />
+              <VTooltip activator="parent">
+                Cetak
               </VTooltip>
             </VBtn>
             <VBtn
@@ -299,87 +316,6 @@
         </template>
       </BaseTable>
     </VCard>
-
-    <VDialog
-      v-model="detailOpen"
-      max-width="900"
-    >
-      <VCard>
-        <VCardTitle class="d-flex align-center justify-space-between pa-4">
-          <span class="text-subtitle-1 font-weight-bold">Detail Opening Balance — {{ selectedItem?.no_tagihan }}</span>
-          <VBtn
-            icon
-            size="small"
-            variant="text"
-            @click="detailOpen = false"
-          >
-            <VIcon icon="ri-close-line" />
-          </VBtn>
-        </VCardTitle>
-        <VDivider />
-        <VCardText>
-          <div
-            v-if="detailLoading"
-            class="text-center py-8"
-          >
-            <VProgressCircular
-              indeterminate
-              color="primary"
-            />
-          </div>
-          <template v-else>
-            <VRow class="mb-3">
-              <VCol
-                cols="6"
-                sm="3"
-              >
-                <div class="text-caption text-medium-emphasis">
-                  Vendor
-                </div>
-                <div class="text-body-2 font-weight-medium">
-                  {{ selectedItem?.vendor_ap?.nama_vendor ?? '-' }}
-                </div>
-              </VCol>
-              <VCol
-                cols="6"
-                sm="3"
-              >
-                <div class="text-caption text-medium-emphasis">
-                  Status
-                </div>
-                <TagihanApStatusBadge :status="selectedItem?.status" />
-              </VCol>
-              <VCol
-                cols="6"
-                sm="3"
-              >
-                <div class="text-caption text-medium-emphasis">
-                  Approval
-                </div>
-                <ApprovalStatusBadge :status="selectedItem?.approval_status" />
-              </VCol>
-              <VCol
-                cols="6"
-                sm="3"
-              >
-                <div class="text-caption text-medium-emphasis">
-                  Sisa Tagihan
-                </div>
-                <div class="text-body-2 font-weight-bold text-primary">
-                  {{ formatCurrency(selectedItem?.sisa_tagihan) }}
-                </div>
-              </VCol>
-            </VRow>
-
-            <OpeningBalanceApDetailTable
-              :details="detailRows"
-              readonly
-              :saldo-awal="Number(selectedItem?.subtotal) || 0"
-            />
-          </template>
-        </VCardText>
-      </VCard>
-    </VDialog>
   </div>
 </template>
 
@@ -390,9 +326,9 @@ import { useAuthStore } from '@/stores/auth.store'
 import { useCrud } from '@/composables/useCrud'
 import { useFormatter } from '@/composables/useFormatter'
 import api from '@/utils/axios'
+import { readBlobError } from '@/utils/readBlobError'
 import TagihanApStatusBadge from '../../TagihanAp/components/TagihanApStatusBadge.vue'
 import ApprovalStatusBadge from '@/modules/Finance/shared/components/ApprovalStatusBadge.vue'
-import OpeningBalanceApDetailTable from '../components/OpeningBalanceApDetailTable.vue'
 
 const authStore = useAuthStore()
 const { showAlert, showSuccess, showError, resolveThemeTokens } = useSweetAlert()
@@ -457,24 +393,20 @@ async function loadSummary() {
   }
 }
 
-// ── Detail dialog ────────────────────────────────────────────────────────────
-const detailOpen = ref(false)
-const detailLoading = ref(false)
-const selectedItem = ref(null)
-const detailRows = ref([])
+// ── Print ─────────────────────────────────────────────────────────────────
+const printingId = ref(null)
 
-async function openDetail(item) {
-  selectedItem.value = item
-  detailOpen.value = true
-  detailLoading.value = true
+async function printOpeningBalance(id) {
+  printingId.value = id
   try {
-    const { data } = await api.get(`/ap/opening-balance/${item.id}/details`)
-
-    detailRows.value = data.data ?? []
-  } catch {
-    detailRows.value = []
+    const res = await api.get(`/ap/tagihan/${id}/print`, { responseType: 'blob', timeout: 300000 })
+    const blobUrl = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }))
+    window.open(blobUrl, '_blank')
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 30_000)
+  } catch (err) {
+    showError({ text: await readBlobError(err, 'Gagal membuka dokumen cetak') })
   } finally {
-    detailLoading.value = false
+    printingId.value = null
   }
 }
 

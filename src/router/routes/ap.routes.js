@@ -56,6 +56,12 @@ export default [
     meta: { requiresAuth: true, roles: AP_ROLES },
   },
   {
+    path: '/ap/opening-balance/:id',
+    name: 'ap-opening-balance-show',
+    component: () => import('@/modules/AP/features/OpeningBalanceAp/views/Show.vue'),
+    meta: { requiresAuth: true, roles: AP_ROLES },
+  },
+  {
     path: '/ap/opening-balance/:id/edit',
     name: 'ap-opening-balance-edit',
     component: () => import('@/modules/AP/features/OpeningBalanceAp/views/Form.vue'),
