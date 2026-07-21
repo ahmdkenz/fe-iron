@@ -7,29 +7,107 @@
         { title: 'Dashboard', to: { name: 'dashboard' } },
         { title: 'Import SHZ360', disabled: true }
       ]"
-    >
-      <VBtn
-        v-if="authStore.canOperateApShz360Import"
-        color="primary"
-        prepend-icon="ri-refresh-line"
-        :loading="retrying"
-        @click="doRetrySync"
-      >
-        Sync Sekarang
-      </VBtn>
-    </PageHeader>
+    />
 
-    <VAlert
-      v-if="lastRun"
-      class="mb-4"
-      :type="lastRun.status === 'success' ? 'success' : (lastRun.status === 'failed' ? 'error' : 'info')"
-      variant="tonal"
-      density="compact"
-    >
-      Sync terakhir ({{ formatDateTime(lastRun.started_at) }}): <strong>{{ lastRun.status }}</strong> —
-      PO {{ lastRun.po_upserted }}/{{ lastRun.po_fetched }}, Terima PO {{ lastRun.receipt_upserted }}/{{ lastRun.receipt_fetched }}
-      <span v-if="lastRun.message"> — {{ lastRun.message }}</span>
-    </VAlert>
+    <!-- Sync Health -->
+    <VCard class="mb-4" variant="outlined" rounded="lg">
+      <VCardText class="d-flex flex-wrap align-center gap-4 py-3">
+        <div class="d-flex align-center gap-2">
+          <VIcon :icon="syncStatusMeta.icon" :color="syncStatusMeta.color" size="20" />
+          <div>
+            <div class="text-caption text-medium-emphasis">Sync Terakhir</div>
+            <div class="font-weight-medium" :class="`text-${syncStatusMeta.color}`">{{ syncStatusMeta.label }}</div>
+          </div>
+        </div>
+        <template v-if="lastRun">
+          <VDivider vertical inset length="32" />
+          <div>
+            <div class="text-caption text-medium-emphasis">Waktu</div>
+            <div class="text-body-2">{{ formatDateTime(lastRun.started_at) }} → {{ formatDateTime(lastRun.finished_at) }}</div>
+          </div>
+          <VDivider vertical inset length="32" />
+          <div>
+            <div class="text-caption text-medium-emphasis">PO</div>
+            <div class="text-body-2">{{ lastRun.po_upserted }}/{{ lastRun.po_fetched }} upserted</div>
+          </div>
+          <VDivider vertical inset length="32" />
+          <div>
+            <div class="text-caption text-medium-emphasis">Terima PO</div>
+            <div class="text-body-2">{{ lastRun.receipt_upserted }}/{{ lastRun.receipt_fetched }} upserted</div>
+          </div>
+          <VDivider vertical inset length="32" />
+          <VBtn
+            v-if="lastRun.error_count > 0"
+            size="small"
+            variant="tonal"
+            color="error"
+            prepend-icon="ri-error-warning-line"
+            @click="openSyncErrors"
+          >
+            {{ lastRun.error_count }} Error
+          </VBtn>
+          <VChip v-else size="small" variant="tonal" color="success">Tidak ada error</VChip>
+        </template>
+        <VSpacer />
+        <VBtn
+          v-if="authStore.canOperateApShz360Import"
+          color="primary"
+          size="small"
+          prepend-icon="ri-refresh-line"
+          :loading="retrying"
+          @click="doRetrySync"
+        >
+          Sync Sekarang
+        </VBtn>
+      </VCardText>
+      <VAlert v-if="!lastRun" type="info" variant="tonal" density="compact" class="ma-0" tile>
+        Belum pernah ada sync yang berjalan. Klik "Sync Sekarang" untuk memulai.
+      </VAlert>
+      <VAlert v-else-if="lastRun.message" type="warning" variant="tonal" density="compact" class="ma-0" tile>
+        {{ lastRun.message }}
+      </VAlert>
+    </VCard>
+
+    <!-- KPI Cards -->
+    <VRow class="mb-2" dense>
+      <VCol v-for="card in kpiCards" :key="card.title" cols="6" sm="4" lg="2">
+        <VCard
+          :variant="card.filterKey !== undefined && activeFilterKey === card.filterKey ? 'tonal' : 'outlined'"
+          :color="card.filterKey !== undefined && activeFilterKey === card.filterKey ? card.color : undefined"
+          rounded="lg"
+          :class="card.filterKey !== undefined ? 'cursor-pointer' : ''"
+          @click="card.filterKey !== undefined && setStatusFilter(card.filterKey)"
+        >
+          <VCardText class="py-3 px-3">
+            <div class="d-flex align-center justify-space-between mb-1">
+              <span class="text-caption text-medium-emphasis text-truncate">{{ card.title }}</span>
+              <VIcon :icon="card.icon" size="16" :color="card.color" />
+            </div>
+            <div class="text-h6 font-weight-bold text-truncate" :class="`text-${card.color}`">{{ card.value }}</div>
+            <div class="text-caption text-medium-emphasis text-truncate">{{ card.caption }}</div>
+          </VCardText>
+        </VCard>
+      </VCol>
+    </VRow>
+
+    <!-- Prioritas AP -->
+    <div class="d-flex flex-wrap align-center gap-2 mb-4">
+      <span class="text-caption text-medium-emphasis font-weight-medium me-1">Prioritas AP:</span>
+      <VBtn
+        v-for="s in shortcuts"
+        :key="s.key"
+        size="small"
+        :variant="activeFilterKey === s.key ? 'flat' : 'tonal'"
+        :color="s.color"
+        :prepend-icon="s.icon"
+        @click="setStatusFilter(s.key)"
+      >
+        {{ s.label }}
+        <VChip size="x-small" class="ms-2" :color="activeFilterKey === s.key ? 'white' : s.color" variant="flat">
+          {{ s.count }}
+        </VChip>
+      </VBtn>
+    </div>
 
     <VCard>
       <VCardText class="d-flex flex-wrap gap-3 pb-0">
@@ -93,18 +171,30 @@
         <template #item.kode_receipt="{ item }">
           <VChip color="primary" size="small" variant="tonal" label>{{ item.kode_receipt }}</VChip>
         </template>
+        <template #item.tanggal_receipt="{ item }">
+          {{ formatDate(item.tanggal_receipt) }}
+        </template>
         <template #item.kode_po="{ item }">
           {{ item.kode_po ?? '-' }}
         </template>
+        <template #item.source_supplier_name="{ item }">
+          {{ item.source_supplier_name ?? '-' }}
+        </template>
         <template #item.vendor_nama="{ item }">
           <span v-if="item.vendor_nama">{{ item.vendor_nama }}</span>
-          <VChip v-else-if="item.need_mapping" color="warning" size="small" variant="tonal">
-            Perlu dipetakan — {{ item.source_supplier_name ?? 'Supplier tidak diketahui' }}
-          </VChip>
+          <VChip v-else-if="item.need_mapping" color="warning" size="small" variant="tonal">Perlu dipetakan</VChip>
           <span v-else>-</span>
         </template>
         <template #item.total_diterima="{ item }">
           {{ formatCurrency(item.total_diterima) }}
+        </template>
+        <template #item.has_reject_items="{ item }">
+          <VTooltip v-if="item.has_reject_items" text="Ada barang ditolak">
+            <template #activator="{ props: p }">
+              <VIcon v-bind="p" icon="ri-error-warning-line" color="error" size="20" />
+            </template>
+          </VTooltip>
+          <span v-else class="text-medium-emphasis">-</span>
         </template>
         <template #item.import_status="{ item }">
           <Shz360ImportStatusBadge :status="item.import_status" />
@@ -423,6 +513,37 @@
       </VRow>
       <VAlert v-if="convertError" type="error" variant="tonal" class="mt-2">{{ convertError }}</VAlert>
     </BaseModal>
+
+    <!-- Sync Errors -->
+    <BaseModal v-model="showSyncErrors" title="Error Sync Terbaru" width="720">
+      <div v-if="syncErrorsLoading" class="text-center pa-6">
+        <VProgressCircular indeterminate color="primary" />
+      </div>
+      <div v-else-if="syncErrorList.length === 0" class="text-center text-medium-emphasis py-6">
+        Tidak ada error sync.
+      </div>
+      <VTable v-else density="compact">
+        <thead>
+          <tr>
+            <th>Waktu Run</th>
+            <th>Sumber</th>
+            <th>ID</th>
+            <th>Pesan</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="err in syncErrorList" :key="err.id">
+            <td class="text-caption">{{ formatDateTime(err.run_started_at) }}</td>
+            <td><VChip size="x-small" variant="tonal" label>{{ err.source_type }}</VChip></td>
+            <td class="text-caption">{{ err.source_id ?? '-' }}</td>
+            <td class="text-caption text-error">{{ err.message }}</td>
+          </tr>
+        </tbody>
+      </VTable>
+      <template #actions>
+        <AppActionButton action="batalkan" label="Tutup" @click="showSyncErrors = false" />
+      </template>
+    </BaseModal>
   </div>
 </template>
 
@@ -458,12 +579,15 @@ params.kode_receipt = ''
 params.need_mapping = ''
 
 const headers = [
-  { title: 'No', key: 'no', sortable: false, width: '60px' },
-  { title: 'Kode Terima PO', key: 'kode_receipt', sortable: false, minWidth: '160px' },
-  { title: 'Kode PO', key: 'kode_po', sortable: false, minWidth: '140px' },
-  { title: 'Vendor', key: 'vendor_nama', sortable: false, minWidth: '220px' },
-  { title: 'Total Diterima', key: 'total_diterima', sortable: false, minWidth: '150px' },
-  { title: 'Status', key: 'import_status', sortable: false, minWidth: '160px' },
+  { title: 'No', key: 'no', sortable: false, width: '56px' },
+  { title: 'Kode Terima PO', key: 'kode_receipt', sortable: false, minWidth: '150px' },
+  { title: 'Tgl Terima', key: 'tanggal_receipt', sortable: false, minWidth: '110px' },
+  { title: 'Kode PO', key: 'kode_po', sortable: false, minWidth: '130px' },
+  { title: 'Supplier SHZ360', key: 'source_supplier_name', sortable: false, minWidth: '180px' },
+  { title: 'Vendor AP', key: 'vendor_nama', sortable: false, minWidth: '180px' },
+  { title: 'Total Diterima', key: 'total_diterima', sortable: false, minWidth: '140px' },
+  { title: 'Reject', key: 'has_reject_items', sortable: false, width: '80px', align: 'center' },
+  { title: 'Status', key: 'import_status', sortable: false, minWidth: '150px' },
   { title: 'Aksi', key: 'actions', sortable: false, align: 'center', width: '160px' },
 ]
 
@@ -505,6 +629,16 @@ function supplierLabel(supplier) {
 const retrying = ref(false)
 const lastRun = ref(null)
 
+const syncStatusMetaMap = {
+  success: { color: 'success', icon: 'ri-checkbox-circle-line', label: 'Berhasil' },
+  failed: { color: 'error', icon: 'ri-close-circle-line', label: 'Gagal' },
+  running: { color: 'info', icon: 'ri-loader-4-line', label: 'Berjalan' },
+}
+const syncStatusMeta = computed(() => {
+  if (!lastRun.value) return { color: 'secondary', icon: 'ri-question-line', label: 'Belum pernah sync' }
+  return syncStatusMetaMap[lastRun.value.status] ?? { color: 'secondary', icon: 'ri-question-line', label: lastRun.value.status }
+})
+
 async function loadLastRun() {
   try {
     const { data } = await api.get('/ap/shz360/sync/last-run')
@@ -525,11 +659,114 @@ async function doRetrySync() {
       await showError(data.data.message || 'Sync gagal')
     }
     fetchList()
+    loadSummary()
   } catch (err) {
     await showError(err.response?.data?.message ?? 'Gagal menjalankan sync')
   } finally {
     retrying.value = false
   }
+}
+
+// ─── Sync errors ────────────────────────────────────────────────────
+const showSyncErrors = ref(false)
+const syncErrorsLoading = ref(false)
+const syncErrorList = ref([])
+
+async function openSyncErrors() {
+  showSyncErrors.value = true
+  syncErrorsLoading.value = true
+  try {
+    const { data } = await api.get('/ap/shz360/sync/errors', { params: { limit: 10 } })
+    syncErrorList.value = data.data ?? []
+  } catch (err) {
+    await showError(err.response?.data?.message ?? 'Gagal memuat error sync')
+  } finally {
+    syncErrorsLoading.value = false
+  }
+}
+
+// ─── Summary / KPI / Prioritas AP ───────────────────────────────────
+const summary = ref(null)
+
+async function loadSummary() {
+  try {
+    const { data } = await api.get('/ap/shz360/imports/summary')
+    summary.value = data.data
+  } catch {
+    // non-critical, KPI tetap tampil dengan nilai default
+  }
+}
+
+const kpiCards = computed(() => {
+  const s = summary.value ?? {}
+  return [
+    {
+      title: 'Total Staging', value: s.total_receipts ?? 0,
+      caption: 'Seluruh penerimaan ter-staging',
+      icon: 'ri-stack-line', color: 'primary', filterKey: 'all',
+    },
+    {
+      title: 'Perlu Mapping', value: s.need_mapping_count ?? 0,
+      caption: formatCurrency(s.need_mapping_amount ?? 0),
+      icon: 'ri-link-m', color: 'warning', filterKey: 'need_mapping',
+    },
+    {
+      title: 'Siap Dikonversi', value: s.ready_count ?? 0,
+      caption: formatCurrency(s.ready_amount ?? 0),
+      icon: 'ri-checkbox-circle-line', color: 'info', filterKey: 'READY_FOR_AP',
+    },
+    {
+      title: 'Sudah Jadi Tagihan', value: s.converted_count ?? 0,
+      caption: formatCurrency(s.converted_amount ?? 0),
+      icon: 'ri-file-check-line', color: 'success', filterKey: 'CONVERTED',
+    },
+    {
+      title: 'Diabaikan', value: s.ignored_count ?? 0,
+      caption: 'Tidak dikonversi jadi tagihan',
+      icon: 'ri-close-circle-line', color: 'secondary', filterKey: 'IGNORED',
+    },
+    {
+      title: 'Total Nominal Diterima', value: formatCurrency(s.total_amount ?? 0),
+      caption: `${s.rejected_receipt_count ?? 0} penerimaan ada barang ditolak`,
+      icon: 'ri-money-dollar-circle-line', color: 'primary',
+    },
+  ]
+})
+
+const shortcuts = computed(() => {
+  const s = summary.value ?? {}
+  return [
+    { key: 'need_mapping', label: 'Perlu Mapping', icon: 'ri-link-m', color: 'warning', count: s.need_mapping_count ?? 0 },
+    { key: 'READY_FOR_AP', label: 'Siap Convert', icon: 'ri-checkbox-circle-line', color: 'info', count: s.ready_count ?? 0 },
+    { key: 'NEW', label: 'Baru', icon: 'ri-inbox-line', color: 'secondary', count: s.new_count ?? 0 },
+    { key: 'error_sync', label: 'Error Sync', icon: 'ri-error-warning-line', color: 'error', count: lastRun.value?.error_count ?? 0 },
+  ]
+})
+
+const activeFilterKey = computed(() => {
+  if (params.need_mapping) return 'need_mapping'
+  if (params.import_status) return params.import_status
+  return 'all'
+})
+
+function setStatusFilter(key) {
+  if (key === 'error_sync') {
+    openSyncErrors()
+    return
+  }
+  if (key === 'need_mapping') {
+    const isActive = activeFilterKey.value === 'need_mapping'
+    params.need_mapping = isActive ? '' : 1
+    params.import_status = ''
+  } else if (key === 'all') {
+    params.need_mapping = ''
+    params.import_status = ''
+  } else {
+    const isActive = activeFilterKey.value === key
+    params.import_status = isActive ? '' : key
+    params.need_mapping = ''
+  }
+  doFetch()
 }
 
 // ─── Detail ───────────────────────────────────────────────────────
@@ -582,6 +819,7 @@ async function doMapVendor() {
     }
     showMapVendor.value = false
     fetchList()
+    loadSummary()
   } catch (err) {
     await showError(err.response?.data?.message ?? 'Gagal memetakan vendor')
   } finally {
@@ -619,6 +857,7 @@ async function doConvert() {
     const { data } = await api.post(`/ap/shz360/imports/${selectedItem.value.id}/convert-to-tagihan`, convertForm)
     showConvert.value = false
     fetchList()
+    loadSummary()
     await showSuccess(`Tagihan ${data.data.no_tagihan} berhasil dibuat.`)
   } catch (err) {
     convertError.value = err.response?.data?.message ?? 'Gagal membuat tagihan'
@@ -640,6 +879,7 @@ async function confirmIgnore(item) {
   try {
     await api.post(`/ap/shz360/imports/${item.id}/ignore`)
     fetchList()
+    loadSummary()
     await showSuccess('Data staging diabaikan.')
   } catch (err) {
     await showError(err.response?.data?.message ?? 'Gagal mengabaikan data')
@@ -648,4 +888,11 @@ async function confirmIgnore(item) {
 
 doFetch()
 loadLastRun()
+loadSummary()
 </script>
+
+<style scoped>
+.cursor-pointer {
+  cursor: pointer;
+}
+</style>
