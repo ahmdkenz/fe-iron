@@ -162,7 +162,7 @@
 
         <template #item.aksi="{ item }">
           <div class="d-flex gap-1 align-center flex-wrap">
-            <template v-if="item.status_cocok === 'UNMATCHED' || item.status_cocok === 'POSSIBLE'">
+            <template v-if="(item.status_cocok === 'UNMATCHED' || item.status_cocok === 'POSSIBLE') && canProcessRow(item)">
               <AppActionButton action="cocokkan" size="x-small" @click="openMatchDialog(item)" />
               <VBtn size="x-small" variant="text" color="grey" :loading="abaikanLoading === item.id" @click="doAbaikan(item)">
                 Abaikan
@@ -185,6 +185,7 @@
                 <VIcon start size="12">ri-check-line</VIcon>Sudah Posting
               </VChip>
             </template>
+            <span v-else class="text-disabled">-</span>
           </div>
         </template>
       </BaseTable>
@@ -258,11 +259,14 @@
 import { defineAsyncComponent, reactive, ref, watch } from 'vue'
 import { useFormatter } from '@/composables/useFormatter'
 import { useSweetAlert } from '@/composables/useSweetAlert'
+import { useAuthStore } from '@/stores/auth.store'
 import api from '@/utils/axios'
 
 const MatchDialog     = defineAsyncComponent(() => import('../components/MatchDialog.vue'))
 const ApMatchDialog   = defineAsyncComponent(() => import('../components/ApMatchDialog.vue'))
 const KelebihanDialog = defineAsyncComponent(() => import('../components/KelebihanDialog.vue'))
+
+const authStore = useAuthStore()
 
 const props = defineProps({
   reportId: { type: [Number, String], required: true },
@@ -374,6 +378,18 @@ function loadReport() {
 }
 
 watch(() => props.reportId, loadReport, { immediate: true })
+
+// PIC AR murni cuma boleh proses baris kredit (invoice/PDM AR), PIC AP murni
+// cuma boleh proses baris debit (Payment Voucher AP). Admin/Manager/Supervisor
+// bebas keduanya. Backend menegakkan aturan yang sama (authorizeArFlow /
+// authorizeApFlow / authorizeRowScope di BankStatementController) — ini cuma
+// lapisan UI supaya tombol yang tidak relevan tidak ditampilkan.
+function canProcessRow(item) {
+  if (authStore.isArOnly) return Number(item.kredit) > 0
+  if (authStore.isApOnly) return Number(item.debit) > 0
+
+  return true
+}
 
 async function doAbaikan(item) {
   abaikanLoading.value = item.id

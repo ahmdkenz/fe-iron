@@ -300,7 +300,7 @@ watch(isOpen, open => {
   if (!open) return
   resetState()
   fetchCandidates()
-})
+}, { immediate: true })
 
 async function fetchCandidates(search = '') {
   candidateAbort?.abort()
