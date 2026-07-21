@@ -28,126 +28,24 @@
       </VBtn>
     </PageHeader>
 
-    <VRow class="mb-4">
-      <VCol
-        cols="12"
-        sm="6"
-        md="3"
-      >
-        <VCard>
-          <VCardText>
-            <div class="d-flex align-center gap-3">
-              <VAvatar
-                color="primary"
-                variant="tonal"
-                size="44"
-              >
-                <VIcon icon="ri-history-line" />
-              </VAvatar>
-              <div>
-                <div class="text-caption text-medium-emphasis">
-                  Total Opening Balance
-                </div>
-                <div class="text-h6 font-weight-bold">
-                  {{ summary.total_tagihan ?? '-' }}
-                </div>
-              </div>
-            </div>
-          </VCardText>
-        </VCard>
-      </VCol>
-      <VCol
-        cols="12"
-        sm="6"
-        md="3"
-      >
-        <VCard>
-          <VCardText>
-            <div class="d-flex align-center gap-3">
-              <VAvatar
-                color="info"
-                variant="tonal"
-                size="44"
-              >
-                <VIcon icon="ri-wallet-3-line" />
-              </VAvatar>
-              <div>
-                <div class="text-caption text-medium-emphasis">
-                  Total Nominal
-                </div>
-                <div class="text-h6 font-weight-bold">
-                  {{ formatCurrency(summary.total_nominal) }}
-                </div>
-              </div>
-            </div>
-          </VCardText>
-        </VCard>
-      </VCol>
-      <VCol
-        cols="12"
-        sm="6"
-        md="3"
-      >
-        <VCard>
-          <VCardText>
-            <div class="d-flex align-center gap-3">
-              <VAvatar
-                color="success"
-                variant="tonal"
-                size="44"
-              >
-                <VIcon icon="ri-money-cny-circle-line" />
-              </VAvatar>
-              <div>
-                <div class="text-caption text-medium-emphasis">
-                  Total Terbayar
-                </div>
-                <div class="text-h6 font-weight-bold">
-                  {{ formatCurrency(summary.total_pembayaran) }}
-                </div>
-              </div>
-            </div>
-          </VCardText>
-        </VCard>
-      </VCol>
-      <VCol
-        cols="12"
-        sm="6"
-        md="3"
-      >
-        <VCard>
-          <VCardText>
-            <div class="d-flex align-center gap-3">
-              <VAvatar
-                color="error"
-                variant="tonal"
-                size="44"
-              >
-                <VIcon icon="ri-error-warning-line" />
-              </VAvatar>
-              <div>
-                <div class="text-caption text-medium-emphasis">
-                  Sisa Hutang
-                </div>
-                <div class="text-h6 font-weight-bold">
-                  {{ formatCurrency(summary.total_sisa) }}
-                </div>
-              </div>
-            </div>
-          </VCardText>
-        </VCard>
-      </VCol>
-    </VRow>
+    <ApSummaryInsights
+      :cards="summaryCards"
+      :summary="summary"
+      show-approval-breakdown
+      detail-route-name="ap-opening-balance-show"
+      noun="OB"
+      due-soon-title="OB Jatuh Tempo Terdekat"
+    />
 
     <VCard>
-      <VCardText class="d-flex flex-wrap gap-3 pb-0">
+      <VCardText class="d-flex flex-wrap align-center gap-3 pb-0">
         <VTextField
           v-model="params.search"
           placeholder="Cari no. OB / vendor..."
           clearable
           hide-details
           density="compact"
-          style="max-width: 260px"
+          style="max-width: 220px"
           prepend-inner-icon="ri-search-line"
           @update:model-value="debouncedFetch"
         />
@@ -157,7 +55,7 @@
           clearable
           hide-details
           density="compact"
-          style="max-width: 170px"
+          style="max-width: 150px"
           :items="statusOptions"
           item-title="label"
           item-value="value"
@@ -169,12 +67,45 @@
           clearable
           hide-details
           density="compact"
-          style="max-width: 190px"
+          style="max-width: 180px"
           :items="approvalOptions"
           item-title="label"
           item-value="value"
           @update:model-value="doFetch"
         />
+        <VTextField
+          v-model="params.tanggal_dari"
+          label="Dari Tanggal"
+          type="date"
+          clearable
+          hide-details
+          density="compact"
+          style="max-width: 160px"
+        />
+        <VTextField
+          v-model="params.tanggal_sampai"
+          label="Sampai Tanggal"
+          type="date"
+          clearable
+          hide-details
+          density="compact"
+          style="max-width: 160px"
+        />
+        <VBtn
+          color="primary"
+          variant="tonal"
+          prepend-icon="ri-filter-3-line"
+          @click="doFetch"
+        >
+          Filter
+        </VBtn>
+        <VBtn
+          variant="text"
+          prepend-icon="ri-refresh-line"
+          @click="resetFilters"
+        >
+          Reset
+        </VBtn>
       </VCardText>
 
       <BaseTable
@@ -211,10 +142,23 @@
           </VIcon>
         </template>
         <template #item.vendor_ap="{ item }">
-          {{ item.vendor_ap?.nama_vendor ?? '-' }}
+          <div>
+            <div>{{ item.vendor_ap?.nama_vendor ?? '-' }}</div>
+            <div
+              v-if="item.vendor_ap?.kode_vendor"
+              class="text-caption text-medium-emphasis"
+            >
+              {{ item.vendor_ap.kode_vendor }}
+            </div>
+          </div>
         </template>
         <template #item.tanggal_tagihan="{ item }">
-          {{ formatDate(item.tanggal_tagihan) }}
+          <div>
+            <div>{{ formatDate(item.tanggal_tagihan) }}</div>
+            <div class="text-caption text-medium-emphasis">
+              Jatuh tempo: {{ item.tanggal_jatuh_tempo ? formatDate(item.tanggal_jatuh_tempo) : '-' }}
+            </div>
+          </div>
         </template>
         <template #item.total_tagihan="{ item }">
           {{ formatCurrency(item.total_tagihan) }}
@@ -339,7 +283,7 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useAuthStore } from '@/stores/auth.store'
 import { useCrud } from '@/composables/useCrud'
@@ -348,6 +292,7 @@ import api from '@/utils/axios'
 import { readBlobError } from '@/utils/readBlobError'
 import TagihanApStatusBadge from '../../TagihanAp/components/TagihanApStatusBadge.vue'
 import ApprovalStatusBadge from '@/modules/Finance/shared/components/ApprovalStatusBadge.vue'
+import ApSummaryInsights from '@/modules/AP/shared/components/ApSummaryInsights.vue'
 
 const authStore = useAuthStore()
 const { showAlert, showSuccess, showError, resolveThemeTokens } = useSweetAlert()
@@ -355,7 +300,60 @@ const { formatCurrency, formatDate } = useFormatter()
 
 const { items, loading, meta, params, fetchList } = useCrud('/ap/opening-balance')
 
-const summary = reactive({ total_tagihan: null, total_nominal: null, total_pembayaran: null, total_sisa: null })
+const summary = reactive({
+  total_tagihan: null,
+  total_nominal: null,
+  total_pembayaran: null,
+  total_sisa: null,
+  payment_rate_pct: null,
+  outstanding_count: null,
+  overdue_count: 0,
+  overdue_amount: 0,
+  due_soon_count: 0,
+  due_soon_amount: 0,
+  status_breakdown: [],
+  approval_breakdown: [],
+  top_vendors: [],
+  due_soon: [],
+})
+
+function approvalCount(status) {
+  return summary.approval_breakdown.find(row => row.approval_status === status)?.jumlah ?? 0
+}
+
+const summaryCards = computed(() => [
+  {
+    key: 'saldo_awal',
+    label: 'Saldo Awal',
+    value: formatCurrency(summary.total_nominal),
+    icon: 'ri-history-line',
+    color: 'primary',
+  },
+  {
+    key: 'outstanding',
+    label: 'Outstanding',
+    value: summary.outstanding_count ?? '-',
+    sub: summary.total_sisa != null ? formatCurrency(summary.total_sisa) : null,
+    icon: 'ri-error-warning-line',
+    color: 'error',
+  },
+  {
+    key: 'pending',
+    label: 'Menunggu Persetujuan',
+    value: approvalCount('PENDING'),
+    icon: 'ri-time-line',
+    color: 'warning',
+  },
+  {
+    key: 'rejected',
+    label: 'Ditolak',
+    value: approvalCount('REJECTED'),
+    sub: approvalCount('REJECTED') ? 'Perlu diajukan ulang' : null,
+    subColor: 'error',
+    icon: 'ri-close-circle-line',
+    color: 'secondary',
+  },
+])
 
 const exportingExcel = ref(false)
 
@@ -396,17 +394,34 @@ function doFetch() {
   loadSummary()
 }
 
+function resetFilters() {
+  params.search = ''
+  params.status = null
+  params.approval_status = null
+  params.tanggal_dari = null
+  params.tanggal_sampai = null
+  doFetch()
+}
+
 function onTableOptions({ page, itemsPerPage }) {
   params.page = page
   params.per_page = itemsPerPage
   fetchList()
 }
 
+function activeFilterParams() {
+  return {
+    search: params.search,
+    status: params.status,
+    approval_status: params.approval_status,
+    tanggal_dari: params.tanggal_dari,
+    tanggal_sampai: params.tanggal_sampai,
+  }
+}
+
 async function loadSummary() {
   try {
-    const { data } = await api.get('/ap/opening-balance/summary', {
-      params: { search: params.search, status: params.status, approval_status: params.approval_status },
-    })
+    const { data } = await api.get('/ap/opening-balance/summary', { params: activeFilterParams() })
 
     Object.assign(summary, data.data)
   } catch {
@@ -418,11 +433,7 @@ async function exportExcel() {
   exportingExcel.value = true
   try {
     const res = await api.get('/ap/opening-balance/export-excel', {
-      params: {
-        search: params.search,
-        status: params.status,
-        approval_status: params.approval_status,
-      },
+      params: activeFilterParams(),
       responseType: 'blob',
       timeout: 300000,
     })

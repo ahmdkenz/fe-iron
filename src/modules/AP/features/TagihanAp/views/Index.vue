@@ -37,126 +37,22 @@
       <span class="text-h6 font-weight-semibold">List Tagihan AP</span>
     </div>
 
-    <VRow class="mb-4">
-      <VCol
-        cols="12"
-        sm="6"
-        md="3"
-      >
-        <VCard>
-          <VCardText>
-            <div class="d-flex align-center gap-3">
-              <VAvatar
-                color="primary"
-                variant="tonal"
-                size="44"
-              >
-                <VIcon icon="ri-bill-line" />
-              </VAvatar>
-              <div>
-                <div class="text-caption text-medium-emphasis">
-                  Total Tagihan
-                </div>
-                <div class="text-h6 font-weight-bold">
-                  {{ summary.total_tagihan ?? '-' }}
-                </div>
-              </div>
-            </div>
-          </VCardText>
-        </VCard>
-      </VCol>
-      <VCol
-        cols="12"
-        sm="6"
-        md="3"
-      >
-        <VCard>
-          <VCardText>
-            <div class="d-flex align-center gap-3">
-              <VAvatar
-                color="info"
-                variant="tonal"
-                size="44"
-              >
-                <VIcon icon="ri-wallet-3-line" />
-              </VAvatar>
-              <div>
-                <div class="text-caption text-medium-emphasis">
-                  Total Nominal
-                </div>
-                <div class="text-h6 font-weight-bold">
-                  {{ formatCurrency(summary.total_nominal) }}
-                </div>
-              </div>
-            </div>
-          </VCardText>
-        </VCard>
-      </VCol>
-      <VCol
-        cols="12"
-        sm="6"
-        md="3"
-      >
-        <VCard>
-          <VCardText>
-            <div class="d-flex align-center gap-3">
-              <VAvatar
-                color="success"
-                variant="tonal"
-                size="44"
-              >
-                <VIcon icon="ri-money-cny-circle-line" />
-              </VAvatar>
-              <div>
-                <div class="text-caption text-medium-emphasis">
-                  Total Terbayar
-                </div>
-                <div class="text-h6 font-weight-bold">
-                  {{ formatCurrency(summary.total_pembayaran) }}
-                </div>
-              </div>
-            </div>
-          </VCardText>
-        </VCard>
-      </VCol>
-      <VCol
-        cols="12"
-        sm="6"
-        md="3"
-      >
-        <VCard>
-          <VCardText>
-            <div class="d-flex align-center gap-3">
-              <VAvatar
-                color="error"
-                variant="tonal"
-                size="44"
-              >
-                <VIcon icon="ri-error-warning-line" />
-              </VAvatar>
-              <div>
-                <div class="text-caption text-medium-emphasis">
-                  Sisa Hutang
-                </div>
-                <div class="text-h6 font-weight-bold">
-                  {{ formatCurrency(summary.total_sisa) }}
-                </div>
-              </div>
-            </div>
-          </VCardText>
-        </VCard>
-      </VCol>
-    </VRow>
+    <ApSummaryInsights
+      :cards="summaryCards"
+      :summary="summary"
+      detail-route-name="ap-tagihan-show"
+      noun="tagihan"
+    />
 
     <VCard>
-      <VCardText class="d-flex flex-wrap gap-3 pb-0">
+      <VCardText class="d-flex flex-wrap align-center gap-3 pb-0">
         <VTextField
           v-model="params.search"
           placeholder="Cari no. tagihan / vendor..."
           clearable
           hide-details
           density="compact"
-          style="max-width: 260px"
+          style="max-width: 240px"
           prepend-inner-icon="ri-search-line"
           @update:model-value="debouncedFetch"
         />
@@ -166,12 +62,45 @@
           clearable
           hide-details
           density="compact"
-          style="max-width: 180px"
+          style="max-width: 160px"
           :items="statusOptions"
           item-title="label"
           item-value="value"
           @update:model-value="doFetch"
         />
+        <VTextField
+          v-model="params.tanggal_dari"
+          label="Dari Tanggal"
+          type="date"
+          clearable
+          hide-details
+          density="compact"
+          style="max-width: 160px"
+        />
+        <VTextField
+          v-model="params.tanggal_sampai"
+          label="Sampai Tanggal"
+          type="date"
+          clearable
+          hide-details
+          density="compact"
+          style="max-width: 160px"
+        />
+        <VBtn
+          color="primary"
+          variant="tonal"
+          prepend-icon="ri-filter-3-line"
+          @click="doFetch"
+        >
+          Filter
+        </VBtn>
+        <VBtn
+          variant="text"
+          prepend-icon="ri-refresh-line"
+          @click="resetFilters"
+        >
+          Reset
+        </VBtn>
       </VCardText>
 
       <BaseTable
@@ -210,10 +139,23 @@
           </VIcon>
         </template>
         <template #item.vendor_ap="{ item }">
-          {{ item.vendor_ap?.nama_vendor ?? '-' }}
+          <div>
+            <div>{{ item.vendor_ap?.nama_vendor ?? '-' }}</div>
+            <div
+              v-if="item.vendor_ap?.kode_vendor"
+              class="text-caption text-medium-emphasis"
+            >
+              {{ item.vendor_ap.kode_vendor }}
+            </div>
+          </div>
         </template>
         <template #item.tanggal_tagihan="{ item }">
-          {{ formatDate(item.tanggal_tagihan) }}
+          <div>
+            <div>{{ formatDate(item.tanggal_tagihan) }}</div>
+            <div class="text-caption text-medium-emphasis">
+              Jatuh tempo: {{ item.tanggal_jatuh_tempo ? formatDate(item.tanggal_jatuh_tempo) : '-' }}
+            </div>
+          </div>
         </template>
         <template #item.total_tagihan="{ item }">
           {{ formatCurrency(item.total_tagihan) }}
@@ -364,6 +306,7 @@ import api from '@/utils/axios'
 import { openLoadingPrintTab, openPrintTab } from '@/utils/printWindow.js'
 import { readBlobError } from '@/utils/readBlobError'
 import BulkDeleteBar from '@/components/base/BulkDeleteBar.vue'
+import ApSummaryInsights from '@/modules/AP/shared/components/ApSummaryInsights.vue'
 import TagihanApStatusBadge from '../components/TagihanApStatusBadge.vue'
 
 const router = useRouter()
@@ -382,7 +325,55 @@ const selectedTagihan = ref(null)
 const printingId = ref(null)
 const exportingExcel = ref(false)
 
-const summary = reactive({ total_tagihan: null, total_nominal: null, total_pembayaran: null, total_sisa: null })
+const summary = reactive({
+  total_tagihan: null,
+  total_nominal: null,
+  total_pembayaran: null,
+  total_sisa: null,
+  payment_rate_pct: null,
+  outstanding_count: null,
+  overdue_count: 0,
+  overdue_amount: 0,
+  due_soon_count: 0,
+  due_soon_amount: 0,
+  status_breakdown: [],
+  approval_breakdown: [],
+  top_vendors: [],
+  due_soon: [],
+})
+
+const summaryCards = computed(() => [
+  {
+    key: 'total',
+    label: 'Total Tagihan',
+    value: summary.total_tagihan ?? '-',
+    icon: 'ri-bill-line',
+    color: 'primary',
+  },
+  {
+    key: 'nominal',
+    label: 'Total Nominal',
+    value: formatCurrency(summary.total_nominal),
+    icon: 'ri-wallet-3-line',
+    color: 'info',
+  },
+  {
+    key: 'terbayar',
+    label: 'Total Terbayar',
+    value: formatCurrency(summary.total_pembayaran),
+    sub: summary.payment_rate_pct != null ? `${summary.payment_rate_pct}% dari total` : null,
+    icon: 'ri-money-cny-circle-line',
+    color: 'success',
+  },
+  {
+    key: 'sisa',
+    label: 'Sisa Hutang',
+    value: formatCurrency(summary.total_sisa),
+    sub: summary.outstanding_count != null ? `${summary.outstanding_count} tagihan outstanding` : null,
+    icon: 'ri-error-warning-line',
+    color: 'error',
+  },
+])
 
 const eligibleForVoucher = computed(() =>
   selected.value.filter(t =>
@@ -427,17 +418,32 @@ function doFetch() {
   loadSummary()
 }
 
+function resetFilters() {
+  params.search = ''
+  params.status = null
+  params.tanggal_dari = null
+  params.tanggal_sampai = null
+  doFetch()
+}
+
 function onTableOptions({ page, itemsPerPage }) {
   params.page = page
   params.per_page = itemsPerPage
   fetchList()
 }
 
+function activeFilterParams() {
+  return {
+    search: params.search,
+    status: params.status,
+    tanggal_dari: params.tanggal_dari,
+    tanggal_sampai: params.tanggal_sampai,
+  }
+}
+
 async function loadSummary() {
   try {
-    const { data } = await api.get('/ap/tagihan/summary', {
-      params: { search: params.search, status: params.status },
-    })
+    const { data } = await api.get('/ap/tagihan/summary', { params: activeFilterParams() })
 
     Object.assign(summary, data.data)
   } catch {
@@ -480,6 +486,7 @@ async function exportExcel() {
   exportingExcel.value = true
   try {
     const res = await api.get('/ap/tagihan/export-excel', {
+      params: activeFilterParams(),
       responseType: 'blob',
       timeout: 300000,
     })
