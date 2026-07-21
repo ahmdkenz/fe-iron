@@ -59,6 +59,14 @@
                 <VChip v-if="tagihan.source_system === 'SHZ360'" color="info" size="small" variant="tonal" prepend-icon="ri-refresh-line">
                   Import SHZ360
                 </VChip>
+                <VIcon
+                  v-if="tagihan.is_eb_ap_locked"
+                  icon="ri-lock-line"
+                  size="18"
+                  color="warning"
+                >
+                  <VTooltip activator="parent">Periode tagihan ini sudah dikunci di Ending Balance AP — tidak dapat diedit/dihapus</VTooltip>
+                </VIcon>
                 <InvoiceLikeStatusBadge :status="tagihan.status" />
               </div>
             </VCardTitle>

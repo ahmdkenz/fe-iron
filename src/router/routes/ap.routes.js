@@ -79,4 +79,16 @@ export default [
     component: () => import('@/modules/AP/features/Shz360Import/views/Index.vue'),
     meta: { requiresAuth: true, roles: AP_ROLES },
   },
+  {
+    path: '/ap/ending-balance',
+    name: 'ap-ending-balance-index',
+    component: () => import('@/modules/AP/features/EndingBalanceAp/views/Index.vue'),
+    meta: { requiresAuth: true, roles: AP_ROLES },
+  },
+  {
+    path: '/ap/ending-balance/:id',
+    name: 'ap-ending-balance-show',
+    component: () => import('@/modules/AP/features/EndingBalanceAp/views/Detail.vue'),
+    meta: { requiresAuth: true, roles: AP_ROLES },
+  },
 ]

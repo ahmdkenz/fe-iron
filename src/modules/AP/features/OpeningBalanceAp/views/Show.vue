@@ -46,6 +46,14 @@
             <VCardTitle class="pa-4 pb-2 d-flex align-center justify-space-between">
               <span class="text-subtitle-1 font-weight-semibold">Informasi Opening Balance</span>
               <div class="d-flex gap-2">
+                <VIcon
+                  v-if="tagihan.is_eb_ap_locked"
+                  icon="ri-lock-line"
+                  size="18"
+                  color="warning"
+                >
+                  <VTooltip activator="parent">Periode opening balance ini sudah dikunci di Ending Balance AP — tidak dapat diedit</VTooltip>
+                </VIcon>
                 <TagihanApStatusBadge :status="tagihan.status" />
                 <ApprovalStatusBadge :status="tagihan.approval_status" />
               </div>

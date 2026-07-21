@@ -280,7 +280,7 @@
               size="14"
               color="warning"
             >
-              <VTooltip activator="parent">Periode invoice ini sudah dikunci di Ending Balance â€” tidak dapat diubah via import</VTooltip>
+              <VTooltip activator="parent">Periode invoice ini sudah dikunci di Ending Balance â€” tidak dapat diedit/dihapus</VTooltip>
             </VIcon>
           </div>
         </template>
@@ -336,7 +336,7 @@
               <VTooltip activator="parent">Detail</VTooltip>
             </VBtn>
             <VBtn
-              v-if="item.status === 'DRAFT'"
+              v-if="item.status === 'DRAFT' && !item.is_eb_locked"
               icon
               size="small"
               variant="text"
@@ -359,7 +359,7 @@
               <VTooltip activator="parent">Cetak Invoice</VTooltip>
             </VBtn>
             <VBtn
-              v-if="item.status === 'DRAFT'"
+              v-if="item.status === 'DRAFT' && !item.is_eb_locked"
               icon
               size="small"
               variant="text"
@@ -509,7 +509,7 @@
               size="14"
               color="warning"
             >
-              <VTooltip activator="parent">Periode invoice ini sudah dikunci di Ending Balance â€” tidak dapat diubah via import</VTooltip>
+              <VTooltip activator="parent">Periode invoice ini sudah dikunci di Ending Balance â€” tidak dapat diedit/dihapus</VTooltip>
             </VIcon>
           </div>
         </template>
@@ -568,7 +568,7 @@
               <VTooltip activator="parent">Detail</VTooltip>
             </VBtn>
             <VBtn
-              v-if="item.status === 'DRAFT'"
+              v-if="item.status === 'DRAFT' && !item.is_eb_locked"
               icon
               size="small"
               variant="text"
@@ -591,7 +591,7 @@
               <VTooltip activator="parent">Cetak Invoice</VTooltip>
             </VBtn>
             <VBtn
-              v-if="item.status === 'DRAFT'"
+              v-if="item.status === 'DRAFT' && !item.is_eb_locked"
               icon
               size="small"
               variant="text"

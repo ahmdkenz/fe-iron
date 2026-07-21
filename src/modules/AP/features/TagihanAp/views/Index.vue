@@ -199,6 +199,15 @@
           >
             {{ item.no_tagihan }}
           </VChip>
+          <VIcon
+            v-if="item.is_eb_ap_locked"
+            icon="ri-lock-line"
+            size="14"
+            color="warning"
+            class="ms-1"
+          >
+            <VTooltip activator="parent">Periode tagihan ini sudah dikunci di Ending Balance AP — tidak dapat diedit/dihapus</VTooltip>
+          </VIcon>
         </template>
         <template #item.vendor_ap="{ item }">
           {{ item.vendor_ap?.nama_vendor ?? '-' }}

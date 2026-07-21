@@ -129,6 +129,12 @@
     icon: { icon: 'ri-bank-card-line' },
     roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AP'],
   },
+  {
+    title: 'Ending Balance',
+    to: { name: 'ap-ending-balance-index' },
+    icon: { icon: 'ri-scales-2-line' },
+    roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AP'],
+  },
   { heading: 'REKONSILIASI' },
   {
     title: 'Rekonsiliasi Bank',

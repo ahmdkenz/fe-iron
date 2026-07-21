@@ -194,6 +194,15 @@
                   />
                   B2B
                 </VChip>
+                <VIcon
+                  v-if="invoice.is_eb_locked"
+                  icon="ri-lock-line"
+                  size="16"
+                  color="warning"
+                  class="ms-2"
+                >
+                  <VTooltip activator="parent">Periode invoice ini sudah dikunci di Ending Balance — tidak dapat diedit/dihapus</VTooltip>
+                </VIcon>
               </VCardTitle>
               <VDivider />
               <VCardText>
@@ -1504,7 +1513,7 @@ const showEditButton = computed(() => {
 
   return isOpeningBalance.value
     ? invoice.value.can_edit
-    : invoice.value.status === 'DRAFT'
+    : invoice.value.status === 'DRAFT' && !invoice.value.is_eb_locked
 })
 
 const editRoute = computed(() =>
