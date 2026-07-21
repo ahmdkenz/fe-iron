@@ -224,16 +224,24 @@
             <VDivider />
 
             <VCardText>
-              <div v-if="form.items.length === 0" class="text-center text-medium-emphasis py-10">
-                <VIcon icon="ri-inbox-line" size="44" class="mb-3 d-block opacity-40" />
-                <div class="text-body-2">Belum ada item.</div>
-                <div class="text-caption mt-1">Klik "Tambah Baris" untuk mulai menambahkan item tagihan.</div>
+              <div v-if="form.items.length === 0" class="items-empty-state">
+                <div class="items-empty-icon bg-warning">
+                  <VIcon icon="ri-shopping-cart-2-line" size="26" color="white" />
+                </div>
+                <div class="text-body-2 font-weight-medium mt-3">Belum ada item tagihan</div>
+                <div class="text-caption text-medium-emphasis mt-1">
+                  Tambahkan barang/jasa yang ditagihkan vendor pada tagihan ini.
+                </div>
+                <VBtn color="primary" size="small" variant="tonal" prepend-icon="ri-add-line" class="mt-4" @click="addItem">
+                  Tambah Baris Pertama
+                </VBtn>
               </div>
 
               <TagihanApItemRow
                 v-for="(itm, idx) in form.items"
                 :key="idx"
                 :item="itm"
+                :index="idx"
                 @update:item="updateItem(idx, $event)"
                 @remove="removeItem(idx)"
               />
@@ -447,5 +455,22 @@ onMounted(async () => {
 
 .summary-table td {
   padding: 3px 0;
+}
+
+.items-empty-state {
+  text-align: center;
+  padding: 40px 16px;
+  border: 1px dashed rgba(var(--v-border-color), var(--v-border-opacity));
+  border-radius: 10px;
+}
+
+.items-empty-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
 }
 </style>

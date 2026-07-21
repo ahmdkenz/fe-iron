@@ -4,7 +4,7 @@
       <div class="d-flex align-center gap-2">
         <VIcon icon="ri-list-unordered" size="15" class="text-medium-emphasis" />
         <span class="text-caption text-medium-emphasis font-weight-semibold text-uppercase">
-          Item Tagihan
+          Item Tagihan {{ index !== null ? `#${index + 1}` : '' }}
         </span>
       </div>
       <VBtn icon size="x-small" variant="text" color="error" @click="$emit('remove')">
@@ -152,6 +152,7 @@ const props = defineProps({
       keterangan: '',
     }),
   },
+  index: { type: Number, default: null },
 })
 
 const emit = defineEmits(['update:item', 'remove'])

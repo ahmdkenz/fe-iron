@@ -6,8 +6,24 @@
     persistent
   >
     <VCard rounded="lg">
-      <VCardTitle class="pa-4 pb-2 d-flex align-center justify-space-between">
-        <span class="text-h6">Cocokkan Payment Voucher AP</span>
+      <VCardTitle class="pa-4 pb-3 d-flex align-center justify-space-between">
+        <div class="d-flex align-center gap-3">
+          <div class="header-icon">
+            <VIcon
+              icon="ri-bank-card-2-line"
+              size="20"
+              color="white"
+            />
+          </div>
+          <div>
+            <div class="text-h6 font-weight-bold">
+              Cocokkan Payment Voucher AP
+            </div>
+            <div class="text-caption text-medium-emphasis">
+              Alokasikan mutasi debit ke satu atau beberapa tagihan vendor
+            </div>
+          </div>
+        </div>
         <VBtn
           icon
           variant="text"
@@ -23,21 +39,33 @@
         class="pa-4"
         style="max-height: 70vh; overflow-y: auto;"
       >
-        <div class="bank-summary mb-4">
-          <div class="text-caption text-medium-emphasis">
-            Nominal Debit Bank
+        <div class="bank-summary mb-4 d-flex align-start gap-3">
+          <div class="bank-summary-icon">
+            <VIcon
+              icon="ri-arrow-right-up-line"
+              size="18"
+              color="white"
+            />
           </div>
-          <div class="text-h6 font-weight-bold text-primary">
-            {{ formatCurrency(item?.debit ?? 0) }}
-          </div>
-          <div class="text-caption text-medium-emphasis">
-            {{ formatDate(item?.tanggal) }} &middot; {{ item?.keterangan }}
+          <div class="min-width-0">
+            <div class="text-caption text-medium-emphasis">
+              Nominal Debit Bank
+            </div>
+            <div class="text-h6 font-weight-bold text-primary">
+              {{ formatCurrency(item?.debit ?? 0) }}
+            </div>
+            <div class="text-caption text-medium-emphasis">
+              {{ formatDate(item?.tanggal) }} &middot; {{ item?.keterangan }}
+            </div>
           </div>
         </div>
 
+        <div class="section-label mb-2">
+          Detail Voucher
+        </div>
         <VRow
           dense
-          class="mb-2"
+          class="mb-4"
         >
           <VCol
             cols="12"
@@ -67,8 +95,8 @@
           </VCol>
         </VRow>
 
-        <div class="d-flex align-center justify-space-between mb-2">
-          <span class="text-body-2 font-weight-medium">Alokasi Tagihan AP</span>
+        <div class="d-flex align-center justify-space-between mb-3">
+          <span class="section-label mb-0">Alokasi Tagihan AP</span>
           <VBtn
             color="primary"
             size="small"
@@ -82,21 +110,24 @@
 
         <div
           v-if="allocations.length === 0"
-          class="text-center text-medium-emphasis py-8"
+          class="empty-state mb-4"
         >
           <VIcon
-            icon="ri-inbox-line"
-            size="40"
-            class="mb-2 d-block opacity-40"
+            icon="ri-file-list-3-line"
+            size="36"
+            class="mb-2 d-block"
           />
-          <div class="text-body-2">
-            Belum ada tagihan dipilih.
+          <div class="text-body-2 font-weight-medium">
+            Belum ada tagihan dipilih
+          </div>
+          <div class="text-caption">
+            Klik "Tambah Tagihan" untuk memilih tagihan outstanding vendor
           </div>
         </div>
 
         <table
           v-else
-          class="allocation-table w-100"
+          class="allocation-table w-100 mb-4"
         >
           <thead>
             <tr>
@@ -168,22 +199,38 @@
 
         <VAlert
           :type="isBalanced ? 'success' : 'error'"
+          :icon="isBalanced ? 'ri-checkbox-circle-line' : 'ri-error-warning-line'"
           variant="tonal"
-          density="compact"
-          class="mt-3"
+          density="comfortable"
+          class="mb-4"
         >
-          <div class="d-flex justify-space-between align-center flex-wrap gap-2">
-            <span>Total Alokasi: <strong>{{ formatCurrency(totalAlokasi) }}</strong></span>
-            <span>Selisih: <strong>{{ formatCurrency(selisih) }}</strong></span>
+          <div class="d-flex justify-space-between align-center flex-wrap gap-4">
+            <div>
+              <div class="text-caption" style="opacity: .75;">
+                Total Alokasi
+              </div>
+              <div class="text-body-1 font-weight-bold">
+                {{ formatCurrency(totalAlokasi) }}
+              </div>
+            </div>
+            <div class="text-end">
+              <div class="text-caption" style="opacity: .75;">
+                Selisih
+              </div>
+              <div class="text-body-1 font-weight-bold">
+                {{ formatCurrency(selisih) }}
+              </div>
+            </div>
           </div>
         </VAlert>
+
+        <VDivider class="mb-4" />
 
         <VFileInput
           v-model="buktiFile"
           label="Bukti Pembayaran (opsional)"
           density="compact"
           variant="outlined"
-          class="mt-4"
           accept="application/pdf,image/jpeg,image/jpg,image/png"
           prepend-icon=""
           prepend-inner-icon="ri-attachment-line"
@@ -197,7 +244,7 @@
           type="error"
           variant="tonal"
           density="compact"
-          class="mt-3"
+          class="mt-4"
         >
           {{ matchError }}
         </VAlert>
@@ -414,11 +461,57 @@ async function doSubmit() {
 </script>
 
 <style scoped>
+.header-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgb(var(--v-theme-primary));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
 .bank-summary {
   background: rgba(var(--v-theme-primary), 0.06);
   border: 1px solid rgba(var(--v-theme-primary), 0.15);
   border-radius: 10px;
   padding: 12px 16px;
+}
+
+.bank-summary-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgb(var(--v-theme-primary));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.section-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: rgba(var(--v-theme-on-surface), 0.6);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 32px 16px;
+  border: 1px dashed rgba(var(--v-border-color), var(--v-border-opacity));
+  border-radius: 10px;
+  color: rgba(var(--v-theme-on-surface), 0.5);
+}
+
+.allocation-table {
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  border-radius: 10px;
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
 }
 
 .allocation-table th,
@@ -431,5 +524,14 @@ async function doSubmit() {
   font-size: 0.75rem;
   text-transform: uppercase;
   color: rgba(var(--v-theme-on-surface), 0.6);
+  background: rgba(var(--v-theme-on-surface), 0.03);
+}
+
+.allocation-table tbody tr:hover {
+  background: rgba(var(--v-theme-primary), 0.03);
+}
+
+.allocation-table tbody tr:last-child td {
+  border-bottom: none;
 }
 </style>
