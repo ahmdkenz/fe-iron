@@ -9,6 +9,16 @@
       ]"
     >
       <VBtn
+        color="secondary"
+        variant="tonal"
+        prepend-icon="ri-download-2-line"
+        class="me-2"
+        :loading="exportingExcel"
+        @click="exportExcel"
+      >
+        Export Excel
+      </VBtn>
+      <VBtn
         v-if="authStore.canOperateTagihanAp"
         color="primary"
         prepend-icon="ri-add-line"
@@ -361,6 +371,7 @@ const deleteError = ref('')
 const deleting = ref(false)
 const selectedTagihan = ref(null)
 const printingId = ref(null)
+const exportingExcel = ref(false)
 
 const summary = reactive({ total_tagihan: null, total_nominal: null, total_pembayaran: null, total_sisa: null })
 
@@ -454,6 +465,45 @@ async function printTagihan(item) {
   } finally {
     printingId.value = null
   }
+}
+
+async function exportExcel() {
+  exportingExcel.value = true
+  try {
+    const res = await api.get('/ap/tagihan/export-excel', {
+      responseType: 'blob',
+      timeout: 300000,
+    })
+
+    const blobUrl = URL.createObjectURL(new Blob([res.data], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    }))
+
+    const link = document.createElement('a')
+
+    link.href = blobUrl
+    link.download = `tagihan-ap-${buildTimestamp()}.xlsx`
+    link.click()
+    URL.revokeObjectURL(blobUrl)
+  } catch (err) {
+    await showError(await readBlobError(err, 'Gagal mengekspor data'))
+  } finally {
+    exportingExcel.value = false
+  }
+}
+
+function buildTimestamp() {
+  const n = new Date()
+
+  return (
+    String(n.getFullYear()) +
+    String(n.getMonth() + 1).padStart(2, '0') +
+    String(n.getDate()).padStart(2, '0') +
+    '-' +
+    String(n.getHours()).padStart(2, '0') +
+    String(n.getMinutes()).padStart(2, '0') +
+    String(n.getSeconds()).padStart(2, '0')
+  )
 }
 
 function confirmDeleteItem(item) { selectedTagihan.value = item; deleteError.value = ''; showDelete.value = true }
