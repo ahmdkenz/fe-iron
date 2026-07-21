@@ -55,25 +55,38 @@
           @update:model-value="doFetch"
         />
         <VTextField
-          v-model="params.tanggal_dari"
+          v-model="dateDraft.tanggal_dari"
           type="date"
           label="Dari"
           density="compact"
           variant="outlined"
           hide-details
           style="max-width: 180px"
-          @update:model-value="doFetch"
         />
         <VTextField
-          v-model="params.tanggal_sampai"
+          v-model="dateDraft.tanggal_sampai"
           type="date"
           label="Sampai"
           density="compact"
           variant="outlined"
           hide-details
           style="max-width: 180px"
-          @update:model-value="doFetch"
         />
+        <VBtn
+          color="primary"
+          variant="tonal"
+          prepend-icon="ri-filter-3-line"
+          @click="applyFilter"
+        >
+          Filter
+        </VBtn>
+        <VBtn
+          variant="text"
+          prepend-icon="ri-refresh-line"
+          @click="resetFilters"
+        >
+          Reset
+        </VBtn>
         <VSpacer />
         <div class="text-body-2 text-medium-emphasis">
           Total: <strong>{{ formatCurrency(totalJumlah) }}</strong>
@@ -288,7 +301,7 @@
 </template>
 
 <script setup>
-import { computed, nextTick, onDeactivated, ref } from 'vue'
+import { computed, nextTick, onDeactivated, reactive, ref } from 'vue'
 import { useAuthStore } from '@/stores/auth.store'
 import { useCrud } from '@/composables/useCrud'
 import { useFormatter } from '@/composables/useFormatter'
@@ -296,11 +309,16 @@ import { useSweetAlert } from '@/composables/useSweetAlert'
 import api from '@/utils/axios'
 import { openLoadingPrintTab } from '@/utils/printWindow.js'
 import { readBlobError } from '@/utils/readBlobError'
+import { getCurrentMonthRange } from '@/modules/AP/shared/utils/dateRange'
 
 const authStore = useAuthStore()
 const { items, loading, meta, params, fetchList, remove } = useCrud('/ap/pembayaran')
 const { formatCurrency } = useFormatter()
 const { showSuccess, showError } = useSweetAlert()
+
+const dateDraft = reactive(getCurrentMonthRange())
+
+Object.assign(params, dateDraft)
 
 // Backend menyertakan `total_jumlah` di response meta — useCrud.fetchList()
 // meng-Object.assign seluruh meta, jadi field ini otomatis tersedia di sini.
@@ -338,6 +356,24 @@ const kategoriOptions = [
 function doFetch() {
   params.page = 1
   fetchList()
+}
+
+function applyFilter() {
+  if (!dateDraft.tanggal_dari || !dateDraft.tanggal_sampai)
+    Object.assign(dateDraft, getCurrentMonthRange())
+
+  params.tanggal_dari = dateDraft.tanggal_dari
+  params.tanggal_sampai = dateDraft.tanggal_sampai
+  doFetch()
+}
+
+function resetFilters() {
+  params.metode_pembayaran = null
+  params.kategori_voucher = null
+  Object.assign(dateDraft, getCurrentMonthRange())
+  params.tanggal_dari = dateDraft.tanggal_dari
+  params.tanggal_sampai = dateDraft.tanggal_sampai
+  doFetch()
 }
 
 function onTableOptions({ page, itemsPerPage }) {

@@ -74,7 +74,7 @@
           @update:model-value="doFetch"
         />
         <VTextField
-          v-model="params.tanggal_dari"
+          v-model="dateDraft.tanggal_dari"
           label="Dari Tanggal"
           type="date"
           clearable
@@ -83,7 +83,7 @@
           style="max-width: 160px"
         />
         <VTextField
-          v-model="params.tanggal_sampai"
+          v-model="dateDraft.tanggal_sampai"
           label="Sampai Tanggal"
           type="date"
           clearable
@@ -95,7 +95,7 @@
           color="primary"
           variant="tonal"
           prepend-icon="ri-filter-3-line"
-          @click="doFetch"
+          @click="applyFilter"
         >
           Filter
         </VBtn>
@@ -293,12 +293,17 @@ import { readBlobError } from '@/utils/readBlobError'
 import TagihanApStatusBadge from '../../TagihanAp/components/TagihanApStatusBadge.vue'
 import ApprovalStatusBadge from '@/modules/Finance/shared/components/ApprovalStatusBadge.vue'
 import ApSummaryInsights from '@/modules/AP/shared/components/ApSummaryInsights.vue'
+import { getCurrentMonthRange } from '@/modules/AP/shared/utils/dateRange'
 
 const authStore = useAuthStore()
 const { showAlert, showSuccess, showError, resolveThemeTokens } = useSweetAlert()
 const { formatCurrency, formatDate } = useFormatter()
 
 const { items, loading, meta, params, fetchList } = useCrud('/ap/opening-balance')
+
+const dateDraft = reactive(getCurrentMonthRange())
+
+Object.assign(params, dateDraft)
 
 const summary = reactive({
   total_tagihan: null,
@@ -394,12 +399,22 @@ function doFetch() {
   loadSummary()
 }
 
+function applyFilter() {
+  if (!dateDraft.tanggal_dari || !dateDraft.tanggal_sampai)
+    Object.assign(dateDraft, getCurrentMonthRange())
+
+  params.tanggal_dari = dateDraft.tanggal_dari
+  params.tanggal_sampai = dateDraft.tanggal_sampai
+  doFetch()
+}
+
 function resetFilters() {
   params.search = ''
   params.status = null
   params.approval_status = null
-  params.tanggal_dari = null
-  params.tanggal_sampai = null
+  Object.assign(dateDraft, getCurrentMonthRange())
+  params.tanggal_dari = dateDraft.tanggal_dari
+  params.tanggal_sampai = dateDraft.tanggal_sampai
   doFetch()
 }
 

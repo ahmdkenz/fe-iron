@@ -69,7 +69,7 @@
           @update:model-value="doFetch"
         />
         <VTextField
-          v-model="params.tanggal_dari"
+          v-model="dateDraft.tanggal_dari"
           label="Dari Tanggal"
           type="date"
           clearable
@@ -78,7 +78,7 @@
           style="max-width: 160px"
         />
         <VTextField
-          v-model="params.tanggal_sampai"
+          v-model="dateDraft.tanggal_sampai"
           label="Sampai Tanggal"
           type="date"
           clearable
@@ -90,7 +90,7 @@
           color="primary"
           variant="tonal"
           prepend-icon="ri-filter-3-line"
-          @click="doFetch"
+          @click="applyFilter"
         >
           Filter
         </VBtn>
@@ -307,6 +307,7 @@ import { openLoadingPrintTab, openPrintTab } from '@/utils/printWindow.js'
 import { readBlobError } from '@/utils/readBlobError'
 import BulkDeleteBar from '@/components/base/BulkDeleteBar.vue'
 import ApSummaryInsights from '@/modules/AP/shared/components/ApSummaryInsights.vue'
+import { getCurrentMonthRange } from '@/modules/AP/shared/utils/dateRange'
 import TagihanApStatusBadge from '../components/TagihanApStatusBadge.vue'
 
 const router = useRouter()
@@ -316,6 +317,10 @@ const { formatCurrency, formatDate, formatDateTime } = useFormatter()
 
 // ── List Tagihan AP ──────────────────────────────────────────────────────────
 const { items, loading, meta, params, fetchList, remove } = useCrud('/ap/tagihan')
+
+const dateDraft = reactive(getCurrentMonthRange())
+
+Object.assign(params, dateDraft)
 
 const selected = ref([])
 const showDelete = ref(false)
@@ -418,11 +423,21 @@ function doFetch() {
   loadSummary()
 }
 
+function applyFilter() {
+  if (!dateDraft.tanggal_dari || !dateDraft.tanggal_sampai)
+    Object.assign(dateDraft, getCurrentMonthRange())
+
+  params.tanggal_dari = dateDraft.tanggal_dari
+  params.tanggal_sampai = dateDraft.tanggal_sampai
+  doFetch()
+}
+
 function resetFilters() {
   params.search = ''
   params.status = null
-  params.tanggal_dari = null
-  params.tanggal_sampai = null
+  Object.assign(dateDraft, getCurrentMonthRange())
+  params.tanggal_dari = dateDraft.tanggal_dari
+  params.tanggal_sampai = dateDraft.tanggal_sampai
   doFetch()
 }
 
