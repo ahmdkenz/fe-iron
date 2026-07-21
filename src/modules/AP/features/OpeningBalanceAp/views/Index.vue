@@ -9,6 +9,16 @@
       ]"
     >
       <VBtn
+        color="secondary"
+        variant="tonal"
+        prepend-icon="ri-download-2-line"
+        class="me-2"
+        :loading="exportingExcel"
+        @click="exportExcel"
+      >
+        Export Excel
+      </VBtn>
+      <VBtn
         v-if="authStore.canOperateOpeningBalanceAp"
         color="primary"
         prepend-icon="ri-add-line"
@@ -347,6 +357,8 @@ const { items, loading, meta, params, fetchList } = useCrud('/ap/opening-balance
 
 const summary = reactive({ total_tagihan: null, total_nominal: null, total_pembayaran: null, total_sisa: null })
 
+const exportingExcel = ref(false)
+
 const headers = [
   { title: 'No', key: 'no', sortable: false, width: '60px' },
   { title: 'No. OB', key: 'no_tagihan', sortable: false, minWidth: '170px' },
@@ -400,6 +412,50 @@ async function loadSummary() {
   } catch {
     // biarkan summary kosong jika gagal
   }
+}
+
+async function exportExcel() {
+  exportingExcel.value = true
+  try {
+    const res = await api.get('/ap/opening-balance/export-excel', {
+      params: {
+        search: params.search,
+        status: params.status,
+        approval_status: params.approval_status,
+      },
+      responseType: 'blob',
+      timeout: 300000,
+    })
+
+    const blobUrl = URL.createObjectURL(new Blob([res.data], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    }))
+
+    const link = document.createElement('a')
+
+    link.href = blobUrl
+    link.download = `opening-balance-ap-${buildTimestamp()}.xlsx`
+    link.click()
+    URL.revokeObjectURL(blobUrl)
+  } catch (err) {
+    showError({ text: await readBlobError(err, 'Gagal mengekspor data') })
+  } finally {
+    exportingExcel.value = false
+  }
+}
+
+function buildTimestamp() {
+  const n = new Date()
+
+  return (
+    String(n.getFullYear()) +
+    String(n.getMonth() + 1).padStart(2, '0') +
+    String(n.getDate()).padStart(2, '0') +
+    '-' +
+    String(n.getHours()).padStart(2, '0') +
+    String(n.getMinutes()).padStart(2, '0') +
+    String(n.getSeconds()).padStart(2, '0')
+  )
 }
 
 // ── Print ─────────────────────────────────────────────────────────────────
