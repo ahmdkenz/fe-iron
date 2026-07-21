@@ -52,6 +52,14 @@ const statusMap = {
   50% { transform: scale(1.18); }
 }
 
+.badge-icon-wiggle,
+.badge-icon-fly,
+.badge-icon-spin,
+.badge-icon-pop {
+  display: inline-flex;
+  will-change: transform, opacity;
+}
+
 .badge-icon-wiggle {
   animation: badge-wiggle 1.6s ease-in-out infinite;
   transform-origin: center;
@@ -69,14 +77,5 @@ const statusMap = {
 .badge-icon-pop {
   animation: badge-pop 1.6s ease-in-out infinite;
   transform-origin: center;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .badge-icon-wiggle,
-  .badge-icon-fly,
-  .badge-icon-spin,
-  .badge-icon-pop {
-    animation: none;
-  }
 }
 </style>
