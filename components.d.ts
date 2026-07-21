@@ -7,6 +7,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    ApMatchDialog: typeof import('./src/modules/Finance/features/RekonsiliasiBank/components/ApMatchDialog.vue')['default']
     AppActionButton: typeof import('./src/components/base/AppActionButton.vue')['default']
     AppDrawerHeaderSection: typeof import('./src/@core/components/AppDrawerHeaderSection.vue')['default']
     AppLoadingIndicator: typeof import('./src/components/AppLoadingIndicator.vue')['default']

@@ -9,8 +9,8 @@
       ]"
     />
 
-    <!-- Tombol Upload — disembunyikan untuk role AR -->
-    <VCard v-if="!authStore.isArOnly" class="mb-4">
+    <!-- Tombol Upload — disembunyikan untuk role AR/AP murni (khusus ADMIN/MANAGER/SUPERVISOR) -->
+    <VCard v-if="!authStore.isArOnly && !authStore.isApOnly" class="mb-4">
       <VCardText class="d-flex align-center gap-3">
         <VBtn color="primary" prepend-icon="ri-upload-cloud-2-line" @click="dialog = true">
           Upload Rekening Koran Bank
@@ -62,6 +62,7 @@
               @click="selectReport(item)"
             />
             <VBtn
+              v-if="!authStore.isArOnly && !authStore.isApOnly"
               size="x-small"
               variant="tonal"
               color="error"

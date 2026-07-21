@@ -154,13 +154,13 @@ export default [
     path: '/finance/rekonsiliasi-bank',
     name: 'finance-rekonsiliasi-bank',
     component: () => import('@/modules/Finance/features/RekonsiliasiBank/views/Index.vue'),
-    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'] },
+    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR', 'AP'] },
   },
   {
     path: '/finance/rekonsiliasi-bank/:id',
     name: 'finance-rekonsiliasi-bank-show',
     component: () => import('@/modules/Finance/features/RekonsiliasiBank/views/Show.vue'),
-    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'] },
+    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR', 'AP'] },
   },
   { path: '/finance/jurnal-pic', redirect: { name: 'finance-laporan-jurnal-pic' } },
 ]

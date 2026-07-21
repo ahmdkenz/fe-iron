@@ -116,7 +116,10 @@
           <div v-if="item.pembayaran" class="text-caption">
             <div class="font-weight-medium">{{ item.pembayaran.no_referensi || '-' }}</div>
             <div class="text-medium-emphasis">{{ formatDate(item.pembayaran.tanggal_pembayaran) }}</div>
-            <div class="text-medium-emphasis">{{ item.pembayaran.klien }}</div>
+            <div class="text-medium-emphasis">{{ item.pembayaran.klien ?? item.pembayaran.vendor }}</div>
+            <div v-if="item.pembayaran.jumlah_tagihan > 1" class="text-medium-emphasis">
+              {{ item.pembayaran.jumlah_tagihan }} tagihan
+            </div>
           </div>
           <span v-else class="text-disabled">-</span>
         </template>
@@ -234,6 +237,13 @@
       @matched="onMatched"
       @connection-error="onMatchConnectionError"
     />
+    <ApMatchDialog
+      v-if="apMatchDialog"
+      v-model="apMatchDialog"
+      :item="selectedItem"
+      @matched="onMatched"
+      @connection-error="onMatchConnectionError"
+    />
     <KelebihanDialog
       v-if="kelebihanDialog"
       v-model="kelebihanDialog"
@@ -251,6 +261,7 @@ import { useSweetAlert } from '@/composables/useSweetAlert'
 import api from '@/utils/axios'
 
 const MatchDialog     = defineAsyncComponent(() => import('../components/MatchDialog.vue'))
+const ApMatchDialog   = defineAsyncComponent(() => import('../components/ApMatchDialog.vue'))
 const KelebihanDialog = defineAsyncComponent(() => import('../components/KelebihanDialog.vue'))
 
 const props = defineProps({
@@ -281,9 +292,10 @@ const abaikanLoading  = ref(null)
 const unmatchLoading  = ref(null)
 let fetchRowsAbort    = null
 
-// ── Match dialog — komponen async MatchDialog ──
-const matchDialog  = ref(false)
-const selectedItem = ref(null)
+// ── Match dialog — komponen async MatchDialog (AR) / ApMatchDialog (AP) ──
+const matchDialog   = ref(false)
+const apMatchDialog = ref(false)
+const selectedItem  = ref(null)
 
 // ── Unmatch dialog ──
 const unmatchDialog  = ref(false)
@@ -374,9 +386,15 @@ async function doAbaikan(item) {
 }
 
 // ── Manual Match ──
+// Baris debit (mutasi keluar) dicocokkan ke Payment Voucher AP, baris kredit
+// (mutasi masuk) tetap ke alur Invoice/PDM AR yang sudah ada.
 function openMatchDialog(item) {
   selectedItem.value = item
-  matchDialog.value  = true
+  if (Number(item.debit) > 0) {
+    apMatchDialog.value = true
+  } else {
+    matchDialog.value = true
+  }
 }
 
 async function onMatched() {
