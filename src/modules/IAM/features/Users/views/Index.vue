@@ -12,6 +12,7 @@
       :stats="stats"
       :stats-loading="loading && !items.length"
       search-placeholder="Cari username / email..."
+      compact-actions
       v-model:search="params.search"
       v-model:status="statusFilter"
       @update:search="debouncedFetch"
@@ -19,11 +20,28 @@
     >
       <template #actions>
         <VBtn
+          v-if="!xs"
           color="primary"
           prepend-icon="ri-add-line"
           @click="openCreate"
         >
           Tambah User
+        </VBtn>
+        <VBtn
+          v-else
+          icon
+          color="primary"
+          size="small"
+          aria-label="Tambah User"
+          @click="openCreate"
+        >
+          <VIcon icon="ri-add-line" />
+          <VTooltip
+            activator="parent"
+            location="bottom"
+          >
+            Tambah User
+          </VTooltip>
         </VBtn>
       </template>
 
@@ -247,6 +265,7 @@
 
 <script setup>
 import { computed, nextTick, onActivated, onDeactivated, onMounted, ref, watch } from 'vue'
+import { useDisplay } from 'vuetify'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useCrud } from '@/composables/useCrud.js'
 import { useMinimizeWidgetStore } from '@/stores/minimize-widget.store'
@@ -257,6 +276,7 @@ import MobileCardActions from '@/components/shared/MobileCardActions.vue'
 const { showSuccess, showError, showLoading, closeAlert, confirmDelete: swalConfirmDelete } = useSweetAlert()
 const { items, loading, meta, params, fetchList, remove } = useCrud('/iam/users')
 const minimizeStore = useMinimizeWidgetStore()
+const { xs } = useDisplay()
 
 const FORM_WIDGET_ID = 'user-form'
 

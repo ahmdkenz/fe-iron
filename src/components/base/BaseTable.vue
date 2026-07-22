@@ -481,7 +481,7 @@ onBeforeUnmount(() => {
   gap: 8px;
   border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
   border-radius: 10px;
-  padding: 12px;
+  padding: 10px;
   background: rgba(var(--v-theme-surface), 1);
   transition: border-color 0.15s ease, background-color 0.15s ease;
 }
@@ -496,9 +496,12 @@ onBeforeUnmount(() => {
   margin-top: -6px;
 }
 
+/* Font kartu diperkecil di mobile agar ringkas; nama (tanpa util ukuran) ikut
+   mengecil, sedangkan text-caption/text-body-2 tetap sesuai ukurannya. */
 .base-table-mobile-card__body {
   flex: 1 1 auto;
   min-width: 0;
+  font-size: 0.875rem;
 }
 
 .base-table-mobile-state {

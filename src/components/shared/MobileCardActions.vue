@@ -1,16 +1,16 @@
 <template>
   <div class="mca">
-    <!-- Aksi utama: Detail selalu terlihat agar 1-tap dan tidak "tersembunyi". -->
-    <VBtn
-      size="small"
-      variant="tonal"
+    <!-- Aksi utama: Detail (ikon saja + tooltip) agar 1-tap dan hemat ruang. -->
+    <AppActionButton
+      action="custom"
+      icon="ri-eye-line"
+      :label="detailLabel"
       color="info"
-      prepend-icon="ri-eye-line"
-      class="mca__detail"
+      variant="tonal"
+      size="small"
+      compact
       @click="emit('detail')"
-    >
-      {{ detailLabel }}
-    </VBtn>
+    />
 
     <!-- Aksi sekunder & berisiko masuk menu titik tiga supaya kartu tidak ramai. -->
     <VMenu location="bottom end">
@@ -77,10 +77,5 @@ const emit = defineEmits(['detail', 'edit', 'delete', 'toggleSelect'])
   align-items: center;
   gap: 4px;
   flex-shrink: 0;
-}
-
-.mca__detail {
-  text-transform: none;
-  letter-spacing: 0;
 }
 </style>

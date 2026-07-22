@@ -38,10 +38,4 @@ defineProps({
     opacity: 0.35;
   }
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .status-chip-dot {
-    animation: none;
-  }
-}
 </style>

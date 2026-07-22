@@ -80,7 +80,10 @@
             </p>
           </div>
         </div>
-        <div class="d-flex flex-wrap gap-2 w-100 w-sm-auto">
+        <div
+          class="d-flex flex-wrap gap-2 w-100 w-sm-auto"
+          :class="{ 'mis__head-actions--compact': compactActions }"
+        >
           <slot name="actions" />
         </div>
       </div>
@@ -195,6 +198,7 @@ defineProps({
   search: { type: String, default: '' },
   searchPlaceholder: { type: String, default: 'Cari data...' },
   status: { type: [String, Number], default: 'all' },
+  compactActions: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['update:search', 'update:status'])
@@ -532,12 +536,20 @@ function formatStat(value) {
   }
 
   .mis__title {
-    font-size: 1.15rem !important;
+    font-size: 1.05rem !important;
   }
 
   .mis__icon-badge {
     inline-size: 40px;
     block-size: 40px;
+  }
+
+  /* Opt-in (compactActions): tombol aksi mengecil ke lebar konten & rata kanan
+     agar tombol ikon (mis. + Tambah) duduk sebaris judul. Default tetap w-100. */
+  .mis__head-actions--compact {
+    width: auto !important;
+    margin-inline-start: auto;
+    flex: 0 0 auto;
   }
 
   /* Statistik besar → 3 kartu ringkas sejajar (summary kecil). */
@@ -561,7 +573,7 @@ function formatStat(value) {
   }
 
   .mis__stat-value {
-    font-size: 1rem;
+    font-size: 0.95rem;
   }
 
   .mis__stat-label {
