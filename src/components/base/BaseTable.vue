@@ -86,9 +86,10 @@
         <VPagination
           :model-value="page"
           :length="totalPages"
-          density="comfortable"
+          :show-first-last-page="false"
+          density="compact"
           size="small"
-          total-visible="5"
+          total-visible="4"
           @update:model-value="p => handleOptionsUpdate({ page: p, itemsPerPage: perPage })"
         />
       </div>
@@ -515,6 +516,26 @@ onBeforeUnmount(() => {
   display: flex;
   justify-content: center;
   padding-top: 8px;
+}
+
+/* Pagination mobile diringkas: tombol kecil-rapat, tanpa lompat awal/akhir. */
+.base-table-mobile-pagination :deep(.v-pagination__list) {
+  gap: 2px;
+}
+
+.base-table-mobile-pagination :deep(.v-pagination__item),
+.base-table-mobile-pagination :deep(.v-pagination__prev),
+.base-table-mobile-pagination :deep(.v-pagination__next) {
+  margin: 0;
+}
+
+.base-table-mobile-pagination :deep(.v-pagination__item > .v-btn),
+.base-table-mobile-pagination :deep(.v-pagination__prev > .v-btn),
+.base-table-mobile-pagination :deep(.v-pagination__next > .v-btn) {
+  --v-btn-height: 28px;
+  min-width: 28px;
+  padding-inline: 0;
+  font-size: 0.8125rem;
 }
 </style>
 
