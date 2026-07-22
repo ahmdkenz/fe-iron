@@ -135,6 +135,12 @@
     icon: { icon: 'ri-bank-card-line' },
     roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AP'],
   },
+  {
+    title: 'Laporan AP',
+    to: { name: 'ap-laporan' },
+    icon: { icon: 'ri-file-chart-line' },
+    roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AP'],
+  },
   { heading: 'REKONSILIASI' },
   {
     title: 'Rekonsiliasi Bank',

@@ -91,7 +91,8 @@ export default [
     path: '/finance/laporan/rekening-koran',
     name: 'finance-laporan-rekening-koran',
     component: () => import('@/modules/Finance/features/Laporan/views/RekeningKoran.vue'),
-    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'] },
+    // Laporan global lintas PIC — bukan untuk PIC AR murni.
+    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR'] },
   },
   {
     path: '/finance/laporan/aging',
@@ -127,13 +128,15 @@ export default [
     path: '/finance/laporan/kinerja-ar',
     name: 'finance-laporan-kinerja-ar',
     component: () => import('@/modules/Finance/features/Laporan/views/KinerjaAr.vue'),
-    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'] },
+    // Laporan komparatif lintas PIC — bukan untuk PIC AR murni.
+    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR'] },
   },
   {
     path: '/finance/laporan/pdm',
     name: 'finance-laporan-pdm',
     component: () => import('@/modules/Finance/features/Laporan/views/PendapatanDiMuka.vue'),
-    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'] },
+    // Laporan global lintas PIC — bukan untuk PIC AR murni.
+    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR'] },
   },
   // Redirect URL lama ke route dedicated masing-masing
   { path: '/finance/aging-report',     redirect: { name: 'finance-laporan-aging' } },

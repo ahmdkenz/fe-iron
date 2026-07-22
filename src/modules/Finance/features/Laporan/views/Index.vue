@@ -235,8 +235,15 @@
 
 <script setup>
 import { computed, ref } from 'vue'
+import { useAuthStore } from '@/stores/auth.store'
 
-const reports = [
+const authStore = useAuthStore()
+
+// Laporan global lintas PIC (komparatif/rekening perusahaan) — disembunyikan
+// dari PIC AR murni, yang hanya boleh melihat laporan operasional miliknya sendiri.
+const GLOBAL_ONLY_ROUTES = ['finance-laporan-rekening-koran', 'finance-laporan-kinerja-ar', 'finance-laporan-pdm']
+
+const allReports = [
   {
     title: 'Jurnal Aktivitas per PIC',
     description: 'Penelusuran pembayaran berdasarkan PIC dan nomor referensi',
@@ -340,6 +347,10 @@ const categories = [
 const searchQuery = ref('')
 const activeGroup = ref('all')
 
+const reports = computed(() => authStore.isArOnly
+  ? allReports.filter(report => !GLOBAL_ONLY_ROUTES.includes(report.route))
+  : allReports)
+
 function matchesSearch(report) {
   const keyword = searchQuery.value.trim().toLowerCase()
   if (!keyword) return true
@@ -351,7 +362,7 @@ function matchesSearch(report) {
   return haystack.includes(keyword)
 }
 
-const filteredReports = computed(() => reports.filter(report => {
+const filteredReports = computed(() => reports.value.filter(report => {
   const groupMatch = activeGroup.value === 'all' || report.group === activeGroup.value
   
   return groupMatch && matchesSearch(report)

@@ -91,4 +91,29 @@ export default [
     component: () => import('@/modules/AP/features/EndingBalanceAp/views/Detail.vue'),
     meta: { requiresAuth: true, roles: AP_ROLES },
   },
+  {
+    path: '/ap/laporan',
+    name: 'ap-laporan',
+    component: () => import('@/modules/AP/features/Laporan/views/Index.vue'),
+    meta: { requiresAuth: true, roles: AP_ROLES },
+  },
+  {
+    path: '/ap/laporan/hutang-vendor',
+    name: 'ap-laporan-hutang-vendor',
+    component: () => import('@/modules/AP/features/Laporan/views/HutangVendor.vue'),
+    meta: { requiresAuth: true, roles: AP_ROLES },
+  },
+  {
+    path: '/ap/laporan/histori-pembayaran',
+    name: 'ap-laporan-histori-pembayaran',
+    component: () => import('@/modules/AP/features/Laporan/views/HistoriPembayaran.vue'),
+    meta: { requiresAuth: true, roles: AP_ROLES },
+  },
+  {
+    path: '/ap/laporan/aging',
+    name: 'ap-laporan-aging',
+    component: () => import('@/modules/AP/features/Laporan/views/Aging.vue'),
+    meta: { requiresAuth: true, roles: AP_ROLES },
+  },
+  { path: '/ap/aging', redirect: { name: 'ap-laporan-aging' } },
 ]
