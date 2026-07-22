@@ -9,7 +9,7 @@
     <VForm ref="formRef">
       <!-- Hero Banner -->
       <div
-        class="d-flex align-center gap-3 pa-3 rounded-lg mb-4"
+        class="d-flex align-center gap-3 pa-3 rounded-lg mb-4 mgmt-hero"
         style="background: rgba(var(--v-theme-primary), 0.06); border: 1px solid rgba(var(--v-theme-primary), 0.15)"
       >
         <VAvatar

@@ -94,4 +94,18 @@ const { xs: mobile } = useDisplay()
 :deep(.base-modal-mobile) .base-modal-card {
   max-block-size: 90dvh;
 }
+
+/* Ringkas padding modal di ponsel supaya lebih banyak ruang untuk isi form.
+   Hanya aktif untuk dialog mobile (<600px) → tampilan desktop tidak berubah. */
+:deep(.base-modal-mobile) .base-modal-card > .v-card-title,
+:deep(.base-modal-mobile) .base-modal-card > .v-card-text,
+:deep(.base-modal-mobile) .base-modal-card > .v-card-actions {
+  padding: 12px !important;
+}
+
+/* Hero banner form (opt-in lewat kelas .mgmt-hero) ikut diringkas di ponsel. */
+:deep(.base-modal-mobile) .mgmt-hero {
+  margin-block-end: 12px !important;
+  padding: 10px !important;
+}
 </style>

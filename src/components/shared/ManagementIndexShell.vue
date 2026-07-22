@@ -518,15 +518,60 @@ function formatStat(value) {
   }
 
   .mis__header {
-    padding: 16px;
+    padding: 14px;
+  }
+
+  /* Ringkas header di ponsel: breadcrumb & subtitle panjang disembunyikan
+     agar area di atas tabel tidak boros ruang. */
+  .modern-breadcrumb-wrapper {
+    display: none !important;
+  }
+
+  .mis__subtitle {
+    display: none;
+  }
+
+  .mis__title {
+    font-size: 1.15rem !important;
+  }
+
+  .mis__icon-badge {
+    inline-size: 40px;
+    block-size: 40px;
+  }
+
+  /* Statistik besar → 3 kartu ringkas sejajar (summary kecil). */
+  .mis__stats {
+    gap: 8px;
+    margin-top: 12px;
   }
 
   .mis__stat {
-    flex: 1 1 100%;
+    flex: 1 1 0;
+    min-width: 0;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    padding: 8px 10px;
+    border-radius: 12px;
+  }
+
+  .mis__stat-icon {
+    display: none;
+  }
+
+  .mis__stat-value {
+    font-size: 1rem;
+  }
+
+  .mis__stat-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.02em;
   }
 
   .mis__toolbar {
-    padding: 14px;
+    padding: 12px;
+    gap: 10px;
   }
 }
 </style>

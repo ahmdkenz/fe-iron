@@ -57,9 +57,10 @@
           v-for="(item, index) in items"
           :key="item[itemValue] ?? index"
           class="base-table-mobile-card"
+          :class="{ 'base-table-mobile-card--selected': isItemSelected(item) }"
         >
           <VCheckbox
-            v-if="showSelect"
+            v-if="showSelect && !mobileMenuSelect"
             :model-value="isItemSelected(item)"
             hide-details
             density="compact"
@@ -71,6 +72,8 @@
               name="mobile-card"
               :item="item"
               :index="index"
+              :selected="isItemSelected(item)"
+              :toggle="() => toggleItemSelected(item)"
             />
           </div>
         </div>
@@ -110,6 +113,7 @@ const props = defineProps({
   columnResizeKey: { type: String, default: '' },
   columnResizeMinWidth: { type: Number, default: 72 },
   mobileCards: { type: Boolean, default: false },
+  mobileMenuSelect: { type: Boolean, default: false },
   itemValue: { type: String, default: 'id' },
   selected: { type: Array, default: () => [] },
 })
@@ -479,6 +483,12 @@ onBeforeUnmount(() => {
   border-radius: 10px;
   padding: 12px;
   background: rgba(var(--v-theme-surface), 1);
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.base-table-mobile-card--selected {
+  border-color: rgb(var(--v-theme-primary));
+  background: rgba(var(--v-theme-primary), 0.06);
 }
 
 .base-table-mobile-card__select {

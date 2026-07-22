@@ -36,10 +36,11 @@
         :page="meta.current_page"
         show-select
         mobile-cards
+        mobile-menu-select
         v-model:selected="selectedItems"
         @update:options="onTableOptions"
       >
-        <template #mobile-card="{ item }">
+        <template #mobile-card="{ item, selected, toggle }">
           <div class="d-flex align-center justify-space-between gap-2 mb-2">
             <div class="min-width-0">
               <div class="font-weight-medium text-truncate">{{ item.nama_perusahaan }}</div>
@@ -51,17 +52,13 @@
             <VChip color="primary" size="small" variant="tonal" label>
               {{ item.kode_perusahaan }}
             </VChip>
-            <div class="d-flex gap-1">
-              <VBtn icon size="small" variant="text" color="info" @click="openDetail(item)">
-                <VIcon icon="ri-eye-line" size="18" />
-              </VBtn>
-              <VBtn icon size="small" variant="text" color="primary" @click="openEdit(item)">
-                <VIcon icon="ri-pencil-line" size="18" />
-              </VBtn>
-              <VBtn icon size="small" variant="text" color="error" @click="confirmDelete(item)">
-                <VIcon icon="ri-delete-bin-line" size="18" />
-              </VBtn>
-            </div>
+            <MobileCardActions
+              :selected="selected"
+              @detail="openDetail(item)"
+              @edit="openEdit(item)"
+              @delete="confirmDelete(item)"
+              @toggle-select="toggle"
+            />
           </div>
         </template>
 
@@ -310,6 +307,7 @@ import { useCrud } from '@/composables/useCrud.js'
 import { useMinimizeWidgetStore } from '@/stores/minimize-widget.store'
 import api from '@/utils/axios'
 import BulkDeleteBar from '@/components/base/BulkDeleteBar.vue'
+import MobileCardActions from '@/components/shared/MobileCardActions.vue'
 
 const { showSuccess, showError, showLoading, closeAlert, confirmDelete: swalConfirmDelete } = useSweetAlert()
 const { items, loading, meta, params, fetchList, remove } = useCrud('/master/perusahaan')
