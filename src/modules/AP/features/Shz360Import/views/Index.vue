@@ -63,6 +63,12 @@
       <VAlert v-if="!lastRun" type="info" variant="tonal" density="compact" class="ma-0" tile>
         Belum pernah ada sync yang berjalan. Klik "Sync Sekarang" untuk memulai.
       </VAlert>
+      <VAlert v-else-if="lastRun.status === 'failed'" type="error" variant="tonal" density="compact" class="ma-0" tile>
+        Sync gagal total (transport ke SHZ360 bermasalah, bukan error per baris): {{ lastRun.message }}
+      </VAlert>
+      <VAlert v-else-if="lastRun.status === 'partial_success'" type="warning" variant="tonal" density="compact" class="ma-0" tile>
+        Sync selesai, tapi {{ lastRun.error_count }} baris data gagal diproses (sync tidak diulang otomatis untuk baris ini sampai berhasil).
+      </VAlert>
       <VAlert v-else-if="lastRun.message" type="warning" variant="tonal" density="compact" class="ma-0" tile>
         {{ lastRun.message }}
       </VAlert>
@@ -522,24 +528,32 @@
       <div v-else-if="syncErrorList.length === 0" class="text-center text-medium-emphasis py-6">
         Tidak ada error sync.
       </div>
-      <VTable v-else density="compact">
-        <thead>
-          <tr>
-            <th>Waktu Run</th>
-            <th>Sumber</th>
-            <th>ID</th>
-            <th>Pesan</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="err in syncErrorList" :key="err.id">
-            <td class="text-caption">{{ formatDateTime(err.run_started_at) }}</td>
-            <td><VChip size="x-small" variant="tonal" label>{{ err.source_type }}</VChip></td>
-            <td class="text-caption">{{ err.source_id ?? '-' }}</td>
-            <td class="text-caption text-error">{{ err.message }}</td>
-          </tr>
-        </tbody>
-      </VTable>
+      <div v-else>
+        <VAlert type="info" variant="tonal" density="compact" class="mb-3" icon="ri-information-line">
+          Daftar ini adalah baris data yang gagal diproses saat sync (sync run tetap selesai sebagai "Selesai Sebagian"),
+          berbeda dengan sync yang gagal total karena transport/koneksi ke SHZ360.
+        </VAlert>
+        <VTable density="compact">
+          <thead>
+            <tr>
+              <th>Run</th>
+              <th>Waktu Run</th>
+              <th>Sumber</th>
+              <th>ID</th>
+              <th>Pesan</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="err in syncErrorList" :key="err.id">
+              <td class="text-caption">#{{ err.sync_run_id }}</td>
+              <td class="text-caption">{{ formatDateTime(err.run_started_at) }}</td>
+              <td><VChip size="x-small" variant="tonal" label>{{ err.source_type }}</VChip></td>
+              <td class="text-caption">{{ err.source_id ?? '-' }}</td>
+              <td class="text-caption text-error">{{ err.message }}</td>
+            </tr>
+          </tbody>
+        </VTable>
+      </div>
       <template #actions>
         <AppActionButton action="batalkan" label="Tutup" @click="showSyncErrors = false" />
       </template>
@@ -560,7 +574,7 @@ import Shz360ImportStatusBadge from '../components/Shz360ImportStatusBadge.vue'
 import DetailRow from '@/components/shared/DetailRow.vue'
 
 const authStore = useAuthStore()
-const { showSuccess, showError, confirmDelete: swalConfirm } = useSweetAlert()
+const { showAlert, showSuccess, showError, confirmDelete: swalConfirm } = useSweetAlert()
 const { formatCurrency, formatDate } = useFormatter()
 
 const itemStatusMap = AP_ITEM_RECEIPT_STATUS_MAP
@@ -631,6 +645,7 @@ const lastRun = ref(null)
 
 const syncStatusMetaMap = {
   success: { color: 'success', icon: 'ri-checkbox-circle-line', label: 'Berhasil' },
+  partial_success: { color: 'warning', icon: 'ri-alert-line', label: 'Selesai Sebagian' },
   failed: { color: 'error', icon: 'ri-close-circle-line', label: 'Gagal' },
   running: { color: 'info', icon: 'ri-loader-4-line', label: 'Berjalan' },
 }
@@ -655,13 +670,30 @@ async function doRetrySync() {
     lastRun.value = data.data
     if (data.data.status === 'success') {
       await showSuccess(data.message)
+    } else if (data.data.status === 'partial_success') {
+      await showAlert({ icon: 'warning', title: 'Selesai Sebagian', text: data.message })
     } else {
       await showError(data.data.message || 'Sync gagal')
     }
     fetchList()
     loadSummary()
   } catch (err) {
-    await showError(err.response?.data?.message ?? 'Gagal menjalankan sync')
+    if (err.response?.status === 409) {
+      // Lock sync aktif (scheduler/klik lain sedang berjalan) — bukan kegagalan, tunggu saja.
+      await showAlert({ icon: 'warning', title: 'Sync Sedang Berjalan', text: err.response?.data?.message ?? 'Sync sedang berjalan, tunggu selesai.' })
+    } else if (!err.response) {
+      // Request timeout/koneksi terputus di sisi client. Sync manual berjalan synchronous
+      // di server, jadi prosesnya bisa saja tetap selesai walau HTTP response tidak sampai —
+      // jangan klaim "gagal" tanpa cek status sebenarnya.
+      await showAlert({
+        icon: 'warning',
+        title: 'Permintaan Timeout',
+        text: 'Koneksi ke server terputus/timeout. Sync mungkin masih berjalan di server — status akan diperbarui otomatis.',
+      })
+    } else {
+      await showError(err.response?.data?.message ?? 'Gagal menjalankan sync')
+    }
+    await loadLastRun()
   } finally {
     retrying.value = false
   }
