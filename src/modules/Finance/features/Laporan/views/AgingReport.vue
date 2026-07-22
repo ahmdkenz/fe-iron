@@ -17,7 +17,7 @@
         class="me-2"
         @click="doExport"
       >
-        Export Excel
+        Export
       </VBtn>
       <VBtn
         variant="text"

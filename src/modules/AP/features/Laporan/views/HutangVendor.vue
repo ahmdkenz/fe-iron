@@ -10,26 +10,14 @@
       ]"
     >
       <VBtn
-        variant="tonal"
         color="primary"
-        prepend-icon="ri-file-excel-2-line"
-        size="small"
+        variant="flat"
+        prepend-icon="ri-download-2-line"
         class="me-2"
-        :loading="exporting.excel"
-        @click="doExport('excel')"
+        :loading="exporting"
+        @click="doExport"
       >
-        Excel
-      </VBtn>
-      <VBtn
-        variant="tonal"
-        color="error"
-        prepend-icon="ri-file-pdf-2-line"
-        size="small"
-        class="me-2"
-        :loading="exporting.pdf"
-        @click="doExport('pdf')"
-      >
-        PDF
+        Export
       </VBtn>
       <VBtn
         variant="text"
@@ -294,7 +282,7 @@ const { items: vendorList, loading: vendorLoading, fetchAll: fetchVendor } = use
 const { ensureLoaded: ensureVendorLoaded } = useLazyFetchAll(fetchVendor)
 
 const loading   = ref(false)
-const exporting = reactive({ excel: false, pdf: false })
+const exporting = ref(false)
 const report    = reactive({ as_of_date: null, summary: null, rows: [], meta: null })
 const expanded  = ref([])
 
@@ -360,24 +348,23 @@ function doFetch() {
   fetchReport({ resetPage: true })
 }
 
-async function doExport(type) {
-  exporting[type] = true
+async function doExport() {
+  exporting.value = true
   try {
-    const response = await api.get(`/ap/laporan/hutang-vendor/export-${type === 'excel' ? 'excel' : 'pdf'}`, {
+    const response = await api.get('/ap/laporan/hutang-vendor/export-excel', {
       params: buildParams(),
       responseType: 'blob',
     })
-    const mime = type === 'excel'
-      ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-      : 'application/pdf'
-    const url  = URL.createObjectURL(new Blob([response.data], { type: mime }))
+    const url  = URL.createObjectURL(new Blob([response.data], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    }))
     const link = document.createElement('a')
     link.href     = url
-    link.download = `hutang-vendor-${report.as_of_date ?? ''}.${type === 'excel' ? 'xlsx' : 'pdf'}`
+    link.download = `hutang-vendor-${report.as_of_date ?? ''}.xlsx`
     link.click()
     URL.revokeObjectURL(url)
   } finally {
-    exporting[type] = false
+    exporting.value = false
   }
 }
 
