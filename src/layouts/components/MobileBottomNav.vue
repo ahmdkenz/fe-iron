@@ -13,32 +13,122 @@ const configStore = useConfigStore()
 const authStore = useAuthStore()
 const route = useRoute()
 
-// AP murni tidak punya akses ke dashboard global, jadi shortcut pinned-nya
-// mengarah ke ap-dashboard alih-alih route dashboard biasa.
-const pinnedItems = computed(() => [
-  {
-    title: 'Dashboard',
-    to: { name: authStore.isApOnly ? 'ap-dashboard' : 'dashboard' },
-    icon: 'ri-home-smile-2-line',
-  },
-  { title: 'Client', to: { name: 'finance-klien-ar' }, icon: 'ri-building-4-line' },
-  { title: 'Invoice', to: { name: 'finance-invoice-index' }, icon: 'ri-file-list-3-line' },
-  { title: 'Saldo Akhir', to: { name: 'finance-ending-balance' }, icon: 'ri-scales-2-line' },
-])
+// Dock bawah dikomposisi eksplisit per role — bukan lagi lewat flag generik
+// di nav data, karena bentuknya beda secara struktural per role (ADMIN dkk.
+// dapat tombol grup "AR"/"AP" yang membuka sheet, bukan navigasi langsung).
+// Slot 'route' di-resolve dari props.navItems (sudah difilter role) supaya
+// title/icon/badge tetap satu sumber kebenaran dengan nav data.
+const DOCK_CONFIG = {
+  AR: [
+    { type: 'route', name: 'dashboard' },
+    { type: 'route', name: 'finance-klien-ar' },
+    { type: 'route', name: 'finance-invoice-index' },
+    { type: 'route', name: 'finance-ending-balance' },
+  ],
+  AP: [
+    { type: 'route', name: 'ap-dashboard' },
+    { type: 'route', name: 'ap-vendor-index' },
+    { type: 'route', name: 'ap-tagihan-index' },
+    { type: 'route', name: 'ap-pembayaran-index' },
+  ],
+  DEFAULT: [
+    { type: 'route', name: 'dashboard' },
+    { type: 'group', heading: 'ACCOUNT RECEIVABLE', label: 'AR' },
+    { type: 'group', heading: 'ACCOUNT PAYABLE', label: 'AP' },
+    { type: 'route', name: 'finance-rekonsiliasi-bank', label: 'Rekonsiliasi' },
+  ],
+}
 
-// Only show a pinned shortcut if the current user actually has access to it
-// (mirrors whatever role filtering already produced `props.navItems`).
-const visiblePinnedItems = computed(() => pinnedItems.value.filter(
-  item => props.navItems.some(navItem => navItem.to?.name === item.to.name),
-))
+const dockBucket = computed(() => {
+  if (authStore.isApOnly && !authStore.isArOnly)
+    return 'AP'
+  if (authStore.isArOnly && !authStore.isApOnly)
+    return 'AR'
 
-const isItemActive = item => route.name === item.to.name
+  // ADMIN/MANAGER/SUPERVISOR, dan kasus langka AR+AP tanpa role admin-tier.
+  return 'DEFAULT'
+})
 
 const isMoreMenuOpen = ref(false)
+const searchQuery = ref('')
+
+// null = showing the top-level group grid; otherwise the heading drilled into.
+const activeGroupHeading = ref(null)
+
+// Peta heading → semua item di bawahnya (tanpa filter mobileNav), dipakai
+// untuk deteksi active-state & badge tombol grup "AR"/"AP" di dock — harus
+// tetap benar walau item tsb tidak (lagi) ditandai 'more'.
+const rawGroupsByHeading = computed(() => {
+  const map = {}
+  let current = null
+
+  props.navItems.forEach(item => {
+    if ('heading' in item) {
+      current = item.heading
+      map[current] = []
+
+      return
+    }
+
+    if (current)
+      map[current].push(item)
+  })
+
+  return map
+})
+
+const isHeadingActive = heading => (rawGroupsByHeading.value[heading] ?? []).some(item => item.to?.name === route.name)
+const headingHasBadge = heading => (rawGroupsByHeading.value[heading] ?? []).some(item => !!item.badgeContent)
+
+function openGroupFromDock(heading) {
+  searchQuery.value = ''
+  activeGroupHeading.value = heading
+  isMoreMenuOpen.value = true
+}
+
+function openMoreMenu() {
+  searchQuery.value = ''
+  isMoreMenuOpen.value = true
+}
+
+const resolvedDockItems = computed(() => DOCK_CONFIG[dockBucket.value]
+  .map(slot => {
+    if (slot.type === 'group') {
+      return {
+        type: 'group',
+        key: `group:${slot.heading}`,
+        title: slot.label,
+        icon: groupIcons[slot.heading] ?? 'ri-folder-2-line',
+        heading: slot.heading,
+        active: isHeadingActive(slot.heading) || (isMoreMenuOpen.value && activeGroupHeading.value === slot.heading),
+        hasBadge: headingHasBadge(slot.heading),
+      }
+    }
+
+    const navItem = props.navItems.find(item => item.to?.name === slot.name)
+
+    // Role memfilter navItem-nya — jangan render slot dock yang datanya hilang.
+    if (!navItem)
+      return null
+
+    return {
+      type: 'route',
+      key: `route:${slot.name}`,
+      title: slot.label ?? navItem.title,
+      icon: navItem.icon?.icon,
+      to: navItem.to,
+      badgeContent: navItem.badgeContent,
+      active: route.name === navItem.to.name,
+    }
+  })
+  .filter(Boolean))
 
 // Turn the flat heading/item list into { heading, items[] } groups so "Lainnya"
 // can show a compact grid of group tiles first, drilling down into a group's
 // own item grid on tap instead of listing everything at once.
+// Hanya item bertanda `mobileNav: 'more'` yang masuk sini — item 'primary'
+// sudah tampil di bottom nav dan sisanya sengaja disembunyikan dari menu mobile
+// (tetap bisa diakses lewat URL langsung sesuai role, hanya tidak dipromosikan di sini).
 const groupedNavItems = computed(() => {
   const groups = []
   let current = { heading: 'Umum', items: [] }
@@ -52,12 +142,8 @@ const groupedNavItems = computed(() => {
       return
     }
 
-    // Dashboard (or ap-dashboard for AP-only users) already has its own
-    // shortcut in the pinned bottom bar, so skip it here to avoid showing it twice.
-    if (item.to?.name === pinnedItems.value[0].to.name)
-      return
-
-    current.items.push(item)
+    if (item.mobileNav === 'more')
+      current.items.push(item)
   })
 
   if (current.items.length)
@@ -73,14 +159,12 @@ const groupIcons = {
   'USER MANAGEMENT': 'ri-team-line',
   'MASTER DATA': 'ri-database-2-line',
   'ACCOUNT RECEIVABLE': 'ri-hand-coin-line',
+  'ACCOUNT PAYABLE': 'ri-wallet-3-line',
   REKONSILIASI: 'ri-bank-line',
   LAPORAN: 'ri-file-chart-line',
 }
 
 const groupIcon = group => groupIcons[group.heading] ?? group.items[0]?.icon?.icon ?? 'ri-folder-2-line'
-
-// null = showing the top-level group grid; otherwise the heading drilled into.
-const activeGroupHeading = ref(null)
 
 const activeGroup = computed(() => groupedNavItems.value.find(
   group => group.heading === activeGroupHeading.value,
@@ -94,13 +178,32 @@ function closeGroup() {
   activeGroupHeading.value = null
 }
 
+// Hasil pencarian lintas grup — flatten semua item 'more' (yang memang sudah
+// role-filtered lewat props.navItems) plus heading asalnya untuk ditampilkan
+// sebagai breadcrumb kecil di tiap tile hasil.
+const allMoreItemsFlat = computed(() => groupedNavItems.value.flatMap(
+  group => group.items.map(item => ({ ...item, heading: group.heading })),
+))
+
+const isSearching = computed(() => searchQuery.value.trim().length > 0)
+
+const searchResults = computed(() => {
+  const query = searchQuery.value.trim().toLowerCase()
+
+  return query
+    ? allMoreItemsFlat.value.filter(item => item.title.toLowerCase().includes(query))
+    : []
+})
+
 watch(() => route.name, () => {
   isMoreMenuOpen.value = false
 })
 
 watch(isMoreMenuOpen, isOpen => {
-  if (!isOpen)
+  if (!isOpen) {
     activeGroupHeading.value = null
+    searchQuery.value = ''
+  }
 })
 </script>
 
@@ -110,31 +213,69 @@ watch(isMoreMenuOpen, isOpen => {
       v-if="configStore.isLessThanOverlayNavBreakpoint"
       class="mobile-bottom-nav"
     >
-      <RouterLink
-        v-for="item in visiblePinnedItems"
-        :key="item.to.name"
-        :to="item.to"
-        class="mobile-bottom-nav-item"
-        :class="{ active: isItemActive(item) }"
+      <template
+        v-for="item in resolvedDockItems"
+        :key="item.key"
       >
-        <VIcon
-          :icon="item.icon"
-          size="22"
-        />
-        <span>{{ item.title }}</span>
-      </RouterLink>
+        <RouterLink
+          v-if="item.type === 'route'"
+          :to="item.to"
+          class="mobile-bottom-nav-item"
+          :class="{ active: item.active }"
+        >
+          <VBadge
+            :model-value="!!item.badgeContent"
+            :content="item.badgeContent"
+            color="error"
+            location="top end"
+          >
+            <span class="mobile-bottom-nav-item-icon">
+              <VIcon
+                :icon="item.icon"
+                size="22"
+              />
+            </span>
+          </VBadge>
+          <span class="mobile-bottom-nav-item-label">{{ item.title }}</span>
+        </RouterLink>
+
+        <button
+          v-else
+          type="button"
+          class="mobile-bottom-nav-item"
+          :class="{ active: item.active }"
+          @click="openGroupFromDock(item.heading)"
+        >
+          <VBadge
+            :model-value="item.hasBadge"
+            dot
+            color="error"
+            location="top end"
+          >
+            <span class="mobile-bottom-nav-item-icon">
+              <VIcon
+                :icon="item.icon"
+                size="22"
+              />
+            </span>
+          </VBadge>
+          <span class="mobile-bottom-nav-item-label">{{ item.title }}</span>
+        </button>
+      </template>
 
       <button
         type="button"
         class="mobile-bottom-nav-item"
         :class="{ active: isMoreMenuOpen }"
-        @click="isMoreMenuOpen = true"
+        @click="openMoreMenu"
       >
-        <VIcon
-          icon="ri-menu-line"
-          size="22"
-        />
-        <span>Lainnya</span>
+        <span class="mobile-bottom-nav-item-icon">
+          <VIcon
+            icon="ri-menu-line"
+            size="22"
+          />
+        </span>
+        <span class="mobile-bottom-nav-item-label">Lainnya</span>
       </button>
     </nav>
 
@@ -146,8 +287,15 @@ watch(isMoreMenuOpen, isOpen => {
         <div class="mobile-more-menu-handle" />
 
         <VCardText>
+          <div
+            v-if="!activeGroup && !isSearching"
+            class="mobile-menu-header"
+          >
+            Menu
+          </div>
+
           <button
-            v-if="activeGroup"
+            v-if="activeGroup && !isSearching"
             type="button"
             class="mobile-menu-back"
             @click="closeGroup"
@@ -159,8 +307,51 @@ watch(isMoreMenuOpen, isOpen => {
             <span>{{ activeGroup.heading }}</span>
           </button>
 
+          <VTextField
+            v-model="searchQuery"
+            clearable
+            hide-details
+            density="compact"
+            placeholder="Cari menu..."
+            prepend-inner-icon="ri-search-line"
+            class="mobile-menu-search"
+          />
+
           <div class="mobile-menu-grid">
-            <template v-if="!activeGroup">
+            <template v-if="isSearching">
+              <RouterLink
+                v-for="item in searchResults"
+                :key="item.to.name"
+                :to="item.to"
+                class="mobile-menu-tile"
+                :class="{ active: route.name === item.to.name }"
+              >
+                <VBadge
+                  :model-value="!!item.badgeContent"
+                  :content="item.badgeContent"
+                  color="error"
+                  location="top end"
+                >
+                  <span class="mobile-menu-tile-icon">
+                    <VIcon
+                      :icon="item.icon?.icon"
+                      size="24"
+                    />
+                  </span>
+                </VBadge>
+                <span class="mobile-menu-tile-heading">{{ item.heading }}</span>
+                <span class="mobile-menu-tile-label">{{ item.title }}</span>
+              </RouterLink>
+
+              <p
+                v-if="!searchResults.length"
+                class="mobile-menu-empty"
+              >
+                Menu tidak ditemukan.
+              </p>
+            </template>
+
+            <template v-else-if="!activeGroup">
               <button
                 v-for="group in groupedNavItems"
                 :key="group.heading"
@@ -223,7 +414,7 @@ watch(isMoreMenuOpen, isOpen => {
   display: flex;
   align-items: stretch;
   background: rgb(var(--v-theme-surface));
-  block-size: 60px;
+  block-size: 64px;
   border-block-start: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
   box-shadow: 0 -2px 8px rgb(0 0 0 / 8%);
   inset-block-end: 0;
@@ -245,16 +436,38 @@ watch(isMoreMenuOpen, isOpen => {
   line-height: 1;
   text-decoration: none;
 
-  span {
-    overflow: hidden;
-    max-inline-size: 100%;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
   &.active {
     color: rgb(var(--v-theme-primary));
   }
+}
+
+.mobile-bottom-nav-item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  inline-size: 40px;
+  block-size: 28px;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.mobile-bottom-nav-item.active .mobile-bottom-nav-item-icon {
+  background: rgba(var(--v-theme-primary), 0.14);
+  color: rgb(var(--v-theme-primary));
+}
+
+.mobile-bottom-nav-item-label {
+  display: -webkit-box;
+  overflow: hidden;
+  min-block-size: 2.3em;
+  max-inline-size: 100%;
+  font-size: 0.6875rem;
+  line-height: 1.15;
+  overflow-wrap: break-word;
+  text-align: center;
+  white-space: normal;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .mobile-more-menu {
@@ -283,6 +496,14 @@ watch(isMoreMenuOpen, isOpen => {
   }
 }
 
+.mobile-menu-header {
+  color: rgb(var(--v-theme-on-surface));
+  font-size: 0.9375rem;
+  font-weight: 600;
+  margin-block-end: 4px;
+  padding-block: 8px;
+}
+
 .mobile-menu-back {
   display: flex;
   align-items: center;
@@ -294,6 +515,18 @@ watch(isMoreMenuOpen, isOpen => {
   gap: 2px;
   margin-block-end: 4px;
   padding-block: 8px;
+}
+
+.mobile-menu-search {
+  margin-block-end: 8px;
+}
+
+.mobile-menu-empty {
+  color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
+  font-size: 0.8125rem;
+  padding-block: 24px;
+  text-align: center;
+  inline-size: 100%;
 }
 
 .mobile-menu-grid {
@@ -329,6 +562,18 @@ watch(isMoreMenuOpen, isOpen => {
   block-size: 48px;
   color: rgb(var(--v-theme-primary));
   inline-size: 48px;
+}
+
+.mobile-menu-tile-heading {
+  display: block;
+  overflow: hidden;
+  margin-block-end: 2px;
+  max-inline-size: 100%;
+  color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
+  font-size: 0.5625rem;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .mobile-menu-tile-label {

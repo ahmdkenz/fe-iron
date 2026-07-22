@@ -1,4 +1,10 @@
-﻿export default [
+﻿// ℹ️ `mobileNav` hanya memengaruhi tampilan navigasi di mobile (bottom sheet
+// "Lainnya"); tidak memengaruhi sidebar desktop, route guard, atau role.
+// Dock bawah (bottom nav) sendiri dikomposisi per role secara eksplisit di
+// MobileBottomNav.vue (DOCK_CONFIG), tidak lagi baca field ini.
+//   - 'more'   → muncul di sheet "Lainnya" mobile (dikelompokkan per heading)
+//   - (kosong) → disembunyikan dari menu mobile, tapi tetap bisa diakses lewat URL langsung
+export default [
   {
     title: 'Dashboard',
     to: { name: 'dashboard' },
@@ -10,6 +16,7 @@
     to: { name: 'finance-export-data' },
     icon: { icon: 'ri-download-2-line' },
     roles: ['ADMIN', 'MANAGER', 'SUPERVISOR'],
+    mobileNav: 'more',
   },
   { heading: 'USER MANAGEMENT' },
   {
@@ -17,24 +24,28 @@
     to: { name: 'iam-users' },
     icon: { icon: 'ri-user-3-line' },
     roles: ['ADMIN'],
+    mobileNav: 'more',
   },
   {
     title: 'Data Karyawan',
     to: { name: 'master-karyawan' },
     icon: { icon: 'ri-contacts-line' },
     roles: ['ADMIN'],
+    mobileNav: 'more',
   },
   {
     title: 'Data Role',
     to: { name: 'iam-roles' },
     icon: { icon: 'ri-shield-user-line' },
     roles: ['ADMIN'],
+    mobileNav: 'more',
   },
   {
     title: 'Data Entitas',
     to: { name: 'master-perusahaan' },
     icon: { icon: 'ri-building-line' },
     roles: ['ADMIN', 'MANAGER', 'SUPERVISOR'],
+    mobileNav: 'more',
   },
   { heading: 'MASTER DATA' },
   {
@@ -42,30 +53,35 @@
     to: { name: 'master-unified-import' },
     icon: { icon: 'ri-file-upload-line' },
     roles: ['ADMIN', 'MANAGER', 'SUPERVISOR'],
+    mobileNav: 'more',
   },
   {
     title: 'Data Investor',
     to: { name: 'master-investor' },
     icon: { icon: 'ri-money-dollar-circle-line' },
     roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'],
+    mobileNav: 'more',
   },
   {
     title: 'Data Resto',
     to: { name: 'master-resto' },
     icon: { icon: 'ri-store-2-line' },
     roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'],
+    mobileNav: 'more',
   },
   {
     title: 'Data Brand',
     to: { name: 'master-brand' },
     icon: { icon: 'ri-price-tag-3-line' },
     roles: ['ADMIN'],
+    mobileNav: 'more',
   },
   {
     title: 'Data Barang',
     to: { name: 'master-barang' },
     icon: { icon: 'ri-box-3-line' },
     roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'],
+    mobileNav: 'more',
   },
   { heading: 'ACCOUNT RECEIVABLE' },
   {
@@ -73,24 +89,28 @@
     to: { name: 'finance-klien-ar' },
     icon: { icon: 'ri-building-4-line' },
     roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'],
+    mobileNav: 'more',
   },
   {
     title: 'Invoice',
     to: { name: 'finance-invoice-index' },
     icon: { icon: 'ri-file-list-3-line' },
     roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'],
+    mobileNav: 'more',
   },
   {
     title: 'Opening Balance',
     to: { name: 'finance-opening-balance' },
     icon: { icon: 'ri-history-line' },
     roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'],
+    mobileNav: 'more',
   },
   {
     title: 'Ending Balance',
     to: { name: 'finance-ending-balance' },
     icon: { icon: 'ri-scales-2-line' },
     roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'],
+    mobileNav: 'more',
   },
   { heading: 'ACCOUNT PAYABLE' },
   {
@@ -98,48 +118,56 @@
     to: { name: 'ap-dashboard' },
     icon: { icon: 'ri-dashboard-line' },
     roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AP'],
+    mobileNav: 'more',
   },
   {
     title: 'Import SHZ360',
     to: { name: 'ap-shz360-import-index' },
     icon: { icon: 'ri-refresh-line' },
     roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AP'],
+    mobileNav: 'more',
   },
   {
     title: 'Vendor',
     to: { name: 'ap-vendor-index' },
     icon: { icon: 'ri-store-2-line' },
     roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AP'],
+    mobileNav: 'more',
   },
   {
     title: 'Tagihan',
     to: { name: 'ap-tagihan-index' },
     icon: { icon: 'ri-bill-line' },
     roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AP'],
+    mobileNav: 'more',
   },
   {
     title: 'Opening Balance',
     to: { name: 'ap-opening-balance-index' },
     icon: { icon: 'ri-history-line' },
     roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AP'],
+    mobileNav: 'more',
   },
   {
     title: 'Ending Balance',
     to: { name: 'ap-ending-balance-index' },
     icon: { icon: 'ri-scales-2-line' },
     roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AP'],
+    mobileNav: 'more',
   },
   {
     title: 'Payment Voucher',
     to: { name: 'ap-pembayaran-index' },
     icon: { icon: 'ri-bank-card-line' },
     roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AP'],
+    mobileNav: 'more',
   },
   {
     title: 'Laporan AP',
     to: { name: 'ap-laporan' },
     icon: { icon: 'ri-file-chart-line' },
     roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AP'],
+    mobileNav: 'more',
   },
   { heading: 'REKONSILIASI' },
   {
@@ -147,6 +175,7 @@
     to: { name: 'finance-rekonsiliasi-bank' },
     icon: { icon: 'ri-bank-line' },
     roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR', 'AP'],
+    mobileNav: 'more',
   },
   { heading: 'LAPORAN' },
   {
@@ -154,5 +183,6 @@
     to: { name: 'finance-laporan' },
     icon: { icon: 'ri-file-chart-line' },
     roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'],
+    mobileNav: 'more',
   },
 ]

@@ -18,7 +18,40 @@ const keepAliveRouteNames = new Set([
 
 // Halaman finance berat (tabel, dialog, form besar sekaligus) — tidak sepadan
 // disimpan penuh di memori pada layar mobile, hanya di-keep-alive di desktop.
-const mobileExcludedRouteNames = new Set(['finance-opening-balance'])
+// Sebagian nama di bawah ini belum ada di `keepAliveRouteNames` sama sekali
+// (jadi belum di-keep-alive di desktop juga) — tetap didaftarkan di sini agar
+// niatnya terlihat dan langsung berlaku begitu suatu saat ditambahkan ke sana.
+const mobileExcludedRouteNames = new Set([
+  'finance-opening-balance',
+  'finance-export-data',
+  'finance-rekonsiliasi-bank',
+  'finance-rekonsiliasi-bank-show',
+  'finance-ending-balance-show',
+  'ap-shz360-import-index',
+  'ap-ending-balance-show',
+  'finance-laporan-jurnal-pic',
+  'finance-laporan-rekening-koran',
+  'finance-laporan-aging',
+  'finance-laporan-rekap-klien',
+  'finance-laporan-riwayat-bayar',
+  'finance-laporan-mutasi-piutang',
+  'finance-laporan-rekap-pembayaran',
+  'finance-laporan-kinerja-ar',
+  'finance-laporan-pdm',
+  'ap-laporan-hutang-vendor',
+  'ap-laporan-histori-pembayaran',
+  'ap-laporan-aging',
+
+  // Halaman admin/master ini kini disembunyikan dari menu mobile (masih bisa
+  // diakses lewat URL langsung sesuai role), jadi tidak perlu di-keep-alive di mobile.
+  'iam-users',
+  'iam-roles',
+  'master-karyawan',
+  'master-perusahaan',
+  'master-investor',
+  'master-resto',
+  'master-brand',
+])
 
 // ℹ️ This will switch to vertical nav when define breakpoint is reached when in horizontal nav layout
 

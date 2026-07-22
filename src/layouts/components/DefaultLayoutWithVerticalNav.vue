@@ -25,7 +25,7 @@ let financeNotificationIntervalId = null
 let ebKoreksiNotificationIntervalId = null
 
 const canApproveEbKoreksi = computed(() =>
-  authStore.canApproveEndingBalanceSpv || authStore.canApproveEndingBalanceManager
+  authStore.canApproveEndingBalanceSpv || authStore.canApproveEndingBalanceManager,
 )
 
 const enrichedNavItems = computed(() => navItems.map(item => {
@@ -232,6 +232,6 @@ watch([
 
 // 👉 Reserve space for the fixed mobile bottom nav so page content/footer aren't hidden behind it
 .layout-wrapper.layout-overlay-nav .layout-content-wrapper {
-  padding-block-end: calc(60px + env(safe-area-inset-bottom, 0px));
+  padding-block-end: calc(64px + env(safe-area-inset-bottom, 0px));
 }
 </style>
