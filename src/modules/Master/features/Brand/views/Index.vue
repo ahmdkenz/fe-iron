@@ -1,168 +1,73 @@
 <template>
   <div>
-    <!-- ═══ MOBILE (<600px) — tampilan lama, tidak diubah ═══ -->
-    <template v-if="xs">
-      <PageHeader
-        title="Manajemen Brand"
-        subtitle="Kelola data brand"
-        :breadcrumbs="[
-          { title: 'Dashboard', to: { name: 'dashboard' } },
-          { title: 'Brand', disabled: true }
-        ]"
-      >
+    <ManagementIndexShell
+      v-model:search="params.search"
+      v-model:status="statusFilter"
+      tone="indigo"
+      icon="ri-price-tag-3-line"
+      title="Manajemen Brand"
+      subtitle="Kelola data brand"
+      :breadcrumbs="[
+        { title: 'Dashboard', to: { name: 'dashboard' } },
+        { title: 'Brand', disabled: true }
+      ]"
+      :stats="stats"
+      :stats-loading="loading && !items.length"
+      search-placeholder="Cari kode / nama brand..."
+      compact-actions
+      @update:search="debouncedFetch"
+      @update:status="onStatusChange"
+    >
+      <template #actions>
         <VBtn
+          v-if="!xs"
           color="primary"
           prepend-icon="ri-add-line"
           @click="openCreate"
         >
           Tambah Brand
         </VBtn>
-      </PageHeader>
-
-      <VCard>
-        <VCardText class="d-flex gap-4 pb-0">
-          <VTextField
-            v-model="params.search"
-            placeholder="Cari kode / nama brand..."
-            clearable
-            hide-details
-            density="compact"
-            style="max-width: 300px"
-            prepend-inner-icon="ri-search-line"
-            @update:model-value="debouncedFetch"
-          />
-        </VCardText>
-
-        <BaseTable
-          :headers="headers"
-          :items="items"
-          :total="meta.total"
-          :loading="loading"
-          :per-page="meta.per_page"
-          :page="meta.current_page"
-          class="mt-2"
-          @update:options="onTableOptions"
+        <VBtn
+          v-else
+          icon
+          color="primary"
+          size="small"
+          aria-label="Tambah Brand"
+          @click="openCreate"
         >
-          <template #item.no="{ index }">
-            {{ (meta.current_page - 1) * meta.per_page + index + 1 }}
-          </template>
-          <template #item.kode_brand="{ item }">
-            <VChip
-              color="primary"
-              size="small"
-              variant="tonal"
-              label
-            >
-              {{ item.kode_brand }}
-            </VChip>
-          </template>
-          <template #item.keterangan="{ item }">
-            {{ item.keterangan ?? '-' }}
-          </template>
-          <template #item.status="{ item }">
-            <StatusChip :active="item.status" />
-          </template>
-          <template #item.created_by_name="{ item }">
-            {{ item.created_by_name ?? '-' }}
-          </template>
-          <template #item.updated_by_name="{ item }">
-            {{ item.updated_by_name ?? '-' }}
-          </template>
-          <template #item.actions="{ item }">
-            <div class="d-flex gap-1">
-              <VBtn
-                icon
-                size="small"
-                variant="text"
-                color="info"
-                @click="openDetail(item)"
-              >
-                <VIcon
-                  icon="ri-eye-line"
-                  size="18"
-                />
-                <VTooltip activator="parent">
-                  Detail
-                </VTooltip>
-              </VBtn>
-              <VBtn
-                icon
-                size="small"
-                variant="text"
-                color="primary"
-                @click="openEdit(item)"
-              >
-                <VIcon
-                  icon="ri-pencil-line"
-                  size="18"
-                />
-                <VTooltip activator="parent">
-                  Edit
-                </VTooltip>
-              </VBtn>
-              <VBtn
-                icon
-                size="small"
-                variant="text"
-                color="error"
-                @click="confirmDelete(item)"
-              >
-                <VIcon
-                  icon="ri-delete-bin-line"
-                  size="18"
-                />
-                <VTooltip activator="parent">
-                  Hapus
-                </VTooltip>
-              </VBtn>
-            </div>
-          </template>
-        </BaseTable>
-      </VCard>
-    </template>
-
-    <!-- ═══ DESKTOP (≥600px) — redesign modern & berwarna ═══ -->
-    <template v-else>
-      <ManagementIndexShell
-        tone="indigo"
-        icon="ri-price-tag-3-line"
-        title="Manajemen Brand"
-        subtitle="Kelola data brand"
-        :breadcrumbs="[
-          { title: 'Dashboard', to: { name: 'dashboard' } },
-          { title: 'Brand', disabled: true }
-        ]"
-        :stats="stats"
-        :stats-loading="loading && !items.length"
-        search-placeholder="Cari kode / nama brand..."
-        v-model:search="params.search"
-        v-model:status="statusFilter"
-        @update:search="debouncedFetch"
-        @update:status="onStatusChange"
-      >
-        <template #actions>
-          <VBtn
-            color="primary"
-            prepend-icon="ri-add-line"
-            @click="openCreate"
+          <VIcon icon="ri-add-line" />
+          <VTooltip
+            activator="parent"
+            location="bottom"
           >
             Tambah Brand
-          </VBtn>
-        </template>
+          </VTooltip>
+        </VBtn>
+      </template>
 
-        <BaseTable
-          :headers="headers"
-          :items="items"
-          :total="meta.total"
-          :loading="loading"
-          :per-page="meta.per_page"
-          :page="meta.current_page"
-          @update:options="onTableOptions"
-        >
-          <template #item.no="{ index }">
-            {{ (meta.current_page - 1) * meta.per_page + index + 1 }}
-          </template>
-          <template #item.kode_brand="{ item }">
+      <BaseTable
+        :headers="headers"
+        :items="items"
+        :total="meta.total"
+        :loading="loading"
+        :per-page="meta.per_page"
+        :page="meta.current_page"
+        mobile-cards
+        @update:options="onTableOptions"
+      >
+        <template #mobile-card="{ item }">
+          <div class="d-flex align-center justify-space-between gap-2 mb-2">
+            <div class="min-width-0">
+              <div class="font-weight-medium text-truncate">
+                {{ item.nama_brand }}
+              </div>
+              <div class="text-caption text-medium-emphasis text-truncate">
+                {{ item.keterangan ?? '-' }}
+              </div>
+            </div>
+            <StatusChip :active="item.status" />
+          </div>
+          <div class="d-flex align-center justify-space-between gap-2">
             <VChip
               color="primary"
               size="small"
@@ -171,71 +76,91 @@
             >
               {{ item.kode_brand }}
             </VChip>
-          </template>
-          <template #item.keterangan="{ item }">
-            {{ item.keterangan ?? '-' }}
-          </template>
-          <template #item.status="{ item }">
-            <StatusChip :active="item.status" />
-          </template>
-          <template #item.created_by_name="{ item }">
-            {{ item.created_by_name ?? '-' }}
-          </template>
-          <template #item.updated_by_name="{ item }">
-            {{ item.updated_by_name ?? '-' }}
-          </template>
-          <template #item.actions="{ item }">
-            <div class="d-flex gap-1">
-              <VBtn
-                icon
-                size="small"
-                variant="text"
-                color="info"
-                @click="openDetail(item)"
-              >
-                <VIcon
-                  icon="ri-eye-line"
-                  size="18"
-                />
-                <VTooltip activator="parent">
-                  Detail
-                </VTooltip>
-              </VBtn>
-              <VBtn
-                icon
-                size="small"
-                variant="text"
-                color="primary"
-                @click="openEdit(item)"
-              >
-                <VIcon
-                  icon="ri-pencil-line"
-                  size="18"
-                />
-                <VTooltip activator="parent">
-                  Edit
-                </VTooltip>
-              </VBtn>
-              <VBtn
-                icon
-                size="small"
-                variant="text"
-                color="error"
-                @click="confirmDelete(item)"
-              >
-                <VIcon
-                  icon="ri-delete-bin-line"
-                  size="18"
-                />
-                <VTooltip activator="parent">
-                  Hapus
-                </VTooltip>
-              </VBtn>
-            </div>
-          </template>
-        </BaseTable>
-      </ManagementIndexShell>
-    </template>
+            <MobileCardActions
+              :selectable="false"
+              @detail="openDetail(item)"
+              @edit="openEdit(item)"
+              @delete="confirmDelete(item)"
+            />
+          </div>
+        </template>
+
+        <template #item.no="{ index }">
+          {{ (meta.current_page - 1) * meta.per_page + index + 1 }}
+        </template>
+        <template #item.kode_brand="{ item }">
+          <VChip
+            color="primary"
+            size="small"
+            variant="tonal"
+            label
+          >
+            {{ item.kode_brand }}
+          </VChip>
+        </template>
+        <template #item.keterangan="{ item }">
+          {{ item.keterangan ?? '-' }}
+        </template>
+        <template #item.status="{ item }">
+          <StatusChip :active="item.status" />
+        </template>
+        <template #item.created_by_name="{ item }">
+          {{ item.created_by_name ?? '-' }}
+        </template>
+        <template #item.updated_by_name="{ item }">
+          {{ item.updated_by_name ?? '-' }}
+        </template>
+        <template #item.actions="{ item }">
+          <div class="d-flex gap-1">
+            <VBtn
+              icon
+              size="small"
+              variant="text"
+              color="info"
+              @click="openDetail(item)"
+            >
+              <VIcon
+                icon="ri-eye-line"
+                size="18"
+              />
+              <VTooltip activator="parent">
+                Detail
+              </VTooltip>
+            </VBtn>
+            <VBtn
+              icon
+              size="small"
+              variant="text"
+              color="primary"
+              @click="openEdit(item)"
+            >
+              <VIcon
+                icon="ri-pencil-line"
+                size="18"
+              />
+              <VTooltip activator="parent">
+                Edit
+              </VTooltip>
+            </VBtn>
+            <VBtn
+              icon
+              size="small"
+              variant="text"
+              color="error"
+              @click="confirmDelete(item)"
+            >
+              <VIcon
+                icon="ri-delete-bin-line"
+                size="18"
+              />
+              <VTooltip activator="parent">
+                Hapus
+              </VTooltip>
+            </VBtn>
+          </div>
+        </template>
+      </BaseTable>
+    </ManagementIndexShell>
 
 
 
@@ -328,6 +253,7 @@ import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useCrud } from '@/composables/useCrud.js'
 import { useMinimizeWidgetStore } from '@/stores/minimize-widget.store'
 import api from '@/utils/axios'
+import MobileCardActions from '@/components/shared/MobileCardActions.vue'
 
 const { xs } = useDisplay()
 const { showSuccess, showError } = useSweetAlert()
@@ -397,7 +323,7 @@ function minimizeForm() {
 }
 function onFormSaved() { minimizeStore.remove(FORM_WIDGET_ID); showForm.value = false; fetchList() }
 
-watch(showForm, (val) => {
+watch(showForm, val => {
   if (!val) {
     const w = minimizeStore.widgets[FORM_WIDGET_ID]
     if (w && !w.minimized) minimizeStore.remove(FORM_WIDGET_ID)
@@ -407,11 +333,13 @@ watch(showForm, (val) => {
 onActivated(async () => {
   if (minimizeStore.widgets[FORM_WIDGET_ID]?.pendingRestore) {
     const widget = minimizeStore.widgets[FORM_WIDGET_ID]
+
     minimizeStore.clearPendingRestore(FORM_WIDGET_ID)
     minimizeStore.setMinimizedFalse(FORM_WIDGET_ID)
     if (widget.mode === 'edit' && widget.recordId && widget.endpoint) {
       try {
         const res = await api.get(`${widget.endpoint}/${widget.recordId}`)
+
         selectedForm.value = res.data?.data ?? null
       } catch {
         selectedForm.value = null

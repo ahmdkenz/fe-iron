@@ -19,10 +19,29 @@
           variant="tonal"
           class="mb-4"
         >
-          <div class="mb-2 font-weight-medium">
-            Tentang halaman ini:
+          <div class="d-flex align-center justify-space-between ga-2">
+            <div class="font-weight-medium">
+              Tentang halaman ini:
+            </div>
+            <VBtn
+              v-if="xs"
+              variant="text"
+              size="small"
+              density="comfortable"
+              color="info"
+              @click="showInfo = !showInfo"
+            >
+              {{ showInfo ? 'Sembunyikan' : 'Lihat' }}
+              <VIcon
+                :icon="showInfo ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'"
+                end
+              />
+            </VBtn>
           </div>
-          <ul class="ps-4">
+          <ul
+            v-show="!xs || showInfo"
+            class="ps-4 mt-2"
+          >
             <li>Upload <strong>1 file Excel</strong> dengan <strong>4 sheet</strong>: <strong>MASTER DATA</strong> (Investor + Resto + Client AR), <strong>MASTER BARANG</strong> (Produk/Barang), <strong>MASTER INVOICE</strong> (Invoice B2B &amp; B2C), dan <strong>Petunjuk Pengisian</strong>.</li>
             <li>Urutan import: MASTER DATA → MASTER BARANG → MASTER INVOICE. Invoice dapat langsung menggunakan data master yang baru diimport.</li>
             <li>Sheet <strong>MASTER DATA</strong>: 1 baris = 1 outlet. Field Client AR: <strong>pic_ar</strong> (PIC AR) wajib jika <code>tipe_klien</code> diisi. Kolom <strong>nama_entitas wajib</strong> jika <code>tipe_klien = PT</code>.</li>
@@ -80,7 +99,7 @@
           <VCol
             v-for="card in summaryCards"
             :key="card.label"
-            cols="12"
+            :cols="xs ? 6 : 12"
             sm="6"
             md="3"
           >
@@ -89,17 +108,23 @@
               :color="card.color"
               height="100%"
             >
-              <VCardText class="pa-4">
-                <div class="d-flex align-center ga-3 mb-3">
+              <VCardText :class="xs ? 'pa-3' : 'pa-4'">
+                <div
+                  class="d-flex align-center"
+                  :class="xs ? 'ga-2 mb-2' : 'ga-3 mb-3'"
+                >
                   <VIcon
                     :icon="card.icon"
-                    size="28"
+                    :size="xs ? 22 : 28"
                   />
-                  <div>
-                    <div class="text-subtitle-2 font-weight-medium">
+                  <div class="min-width-0">
+                    <div class="text-subtitle-2 font-weight-medium text-truncate">
                       {{ card.label }}
                     </div>
-                    <div class="text-caption text-medium-emphasis">
+                    <div
+                      v-if="!xs"
+                      class="text-caption text-medium-emphasis"
+                    >
                       {{ card.hint }}
                     </div>
                   </div>
@@ -175,6 +200,7 @@
     <VDialog
       v-model="showImport"
       max-width="640"
+      :fullscreen="xs"
       persistent
     >
       <VCard>
@@ -506,7 +532,9 @@
                 />
                 {{ importResult.errors.length }} baris gagal diproses:
               </div>
+              <!-- Desktop: tabel error -->
               <VTable
+                v-if="!xs"
                 density="compact"
                 fixed-header
                 height="180"
@@ -529,6 +557,43 @@
                   </tr>
                 </tbody>
               </VTable>
+
+              <!-- Mobile: daftar kartu error (hindari tabel lebar) -->
+              <div
+                v-else
+                class="d-flex flex-column ga-2 overflow-y-auto"
+                style="max-height: 260px;"
+              >
+                <VCard
+                  v-for="(err, i) in importResult.errors"
+                  :key="i"
+                  variant="tonal"
+                  color="error"
+                  rounded="lg"
+                >
+                  <VCardText class="pa-2">
+                    <div class="d-flex flex-wrap ga-1 mb-1">
+                      <VChip
+                        size="x-small"
+                        color="error"
+                        variant="flat"
+                      >
+                        {{ err.sheet || '-' }}
+                      </VChip>
+                      <VChip
+                        size="x-small"
+                        color="error"
+                        variant="tonal"
+                      >
+                        Baris {{ err.row }}
+                      </VChip>
+                    </div>
+                    <div class="text-caption">
+                      {{ err.message }}
+                    </div>
+                  </VCardText>
+                </VCard>
+              </div>
             </div>
           </div>
         </VCardText>
@@ -553,22 +618,24 @@
         </VCardActions>
       </VCard>
     </VDialog>
-
   </div>
 </template>
 
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
+import { useDisplay } from 'vuetify'
 import api from '@/utils/axios'
 import { useMasterDataImportStore, WIDGET_ID } from '@/stores/master-data-import.store'
 import { useMinimizeWidgetStore } from '@/stores/minimize-widget.store'
 
+const { xs } = useDisplay()
 const importStore   = useMasterDataImportStore()
 const minimizeStore = useMinimizeWidgetStore()
 const { importing, progress: importProgress, result: importResult } = storeToRefs(importStore)
 
 const showImport          = ref(false)
+const showInfo            = ref(false)
 const importFile          = ref(null)
 const downloadingTemplate = ref(false)
 const latestImport        = ref(null)
@@ -576,40 +643,40 @@ const loadingLatest       = ref(true)
 
 const summaryCards = [
   {
-    label:   'Investor',
-    hint:    'Upsert by nama+cabang',
-    icon:    'ri-money-dollar-circle-line',
-    color:   'primary',
-    insKey:  'investor_inserted',
-    updKey:  'investor_updated',
+    label: 'Investor',
+    hint: 'Upsert by nama+cabang',
+    icon: 'ri-money-dollar-circle-line',
+    color: 'primary',
+    insKey: 'investor_inserted',
+    updKey: 'investor_updated',
     failKey: 'investor_failed',
   },
   {
-    label:   'Resto',
-    hint:    'Upsert by nama_cabang',
-    icon:    'ri-store-2-line',
-    color:   'success',
-    insKey:  'resto_inserted',
-    updKey:  'resto_updated',
+    label: 'Resto',
+    hint: 'Upsert by nama_cabang',
+    icon: 'ri-store-2-line',
+    color: 'success',
+    insKey: 'resto_inserted',
+    updKey: 'resto_updated',
     failKey: 'resto_failed',
   },
   {
-    label:   'Client AR',
-    hint:    'Upsert by entitas (PT) / resto (RESTO)',
-    icon:    'ri-building-4-line',
-    color:   'warning',
-    insKey:  'klien_inserted',
-    updKey:  'klien_updated',
+    label: 'Client AR',
+    hint: 'Upsert by entitas (PT) / resto (RESTO)',
+    icon: 'ri-building-4-line',
+    color: 'warning',
+    insKey: 'klien_inserted',
+    updKey: 'klien_updated',
     failKey: 'klien_failed',
     skipKey: 'klien_skipped',
   },
   {
-    label:   'Barang',
-    hint:    'Upsert by kode_barang',
-    icon:    'ri-box-3-line',
-    color:   'info',
-    insKey:  'barang_inserted',
-    updKey:  'barang_updated',
+    label: 'Barang',
+    hint: 'Upsert by kode_barang',
+    icon: 'ri-box-3-line',
+    color: 'info',
+    insKey: 'barang_inserted',
+    updKey: 'barang_updated',
     failKey: 'barang_failed',
     skipKey: 'barang_skipped',
   },
@@ -633,10 +700,10 @@ function formatDateTime(isoString) {
   const d = new Date(isoString)
 
   return d.toLocaleString('id-ID', {
-    day:    '2-digit',
-    month:  'long',
-    year:   'numeric',
-    hour:   '2-digit',
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
     minute: '2-digit',
   })
 }
@@ -645,6 +712,7 @@ async function fetchLatestImport() {
   loadingLatest.value = true
   try {
     const res = await api.get('/master/master-data/import/latest')
+
     latestImport.value = res.data?.data ?? null
   } catch {
     latestImport.value = null
@@ -658,6 +726,7 @@ function openImport() {
 
   if (importing.value) {
     showImport.value = true
+    
     return
   }
 
@@ -682,6 +751,7 @@ async function downloadTemplate() {
     const res = await api.get('/master/master-data/import-template', { responseType: 'blob' })
     const url = URL.createObjectURL(new Blob([res.data]))
     const a   = document.createElement('a')
+
     a.href     = url
     a.download = 'template-import-master-data.xlsx'
     a.click()
