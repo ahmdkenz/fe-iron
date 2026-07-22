@@ -45,6 +45,7 @@ declare module 'vue' {
     ManagementIndexShell: typeof import('./src/components/shared/ManagementIndexShell.vue')['default']
     ManagerDashboardSection: typeof import('./src/modules/Finance/features/Dashboard/components/ManagerDashboardSection.vue')['default']
     MatchDialog: typeof import('./src/modules/Finance/features/RekonsiliasiBank/components/MatchDialog.vue')['default']
+    MobileCardActions: typeof import('./src/components/shared/MobileCardActions.vue')['default']
     MoreBtn: typeof import('./src/@core/components/MoreBtn.vue')['default']
     MutasiPiutangSection: typeof import('./src/modules/Finance/features/Laporan/components/MutasiPiutangSection.vue')['default']
     OpeningBalanceApDetailItemRow: typeof import('./src/modules/AP/features/OpeningBalanceAp/components/OpeningBalanceApDetailItemRow.vue')['default']
