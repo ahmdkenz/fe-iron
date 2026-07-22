@@ -10,25 +10,62 @@
     >
       <div
         v-if="!authStore.canApproveOpeningBalance"
-        class="d-flex gap-2"
+        class="d-flex gap-2 justify-end w-100"
       >
-        <VBtn
-          v-if="authStore.canViewOpeningBalance"
-          color="primary"
-          prepend-icon="ri-file-excel-line"
-          :loading="isExporting"
-          @click="showExportModal = true"
-        >
-          Export
-        </VBtn>
-        <VBtn
-          v-if="authStore.canOperateOpeningBalance"
-          color="primary"
-          prepend-icon="ri-add-line"
-          :to="{ name: 'finance-opening-balance-create' }"
-        >
-          Ajukan Opening Balance
-        </VBtn>
+        <template v-if="!xs">
+          <VBtn
+            v-if="authStore.canViewOpeningBalance"
+            color="primary"
+            prepend-icon="ri-file-excel-line"
+            :loading="isExporting"
+            @click="showExportModal = true"
+          >
+            Export
+          </VBtn>
+          <VBtn
+            v-if="authStore.canOperateOpeningBalance"
+            color="primary"
+            prepend-icon="ri-add-line"
+            :to="{ name: 'finance-opening-balance-create' }"
+          >
+            Ajukan Opening Balance
+          </VBtn>
+        </template>
+        <template v-else>
+          <VBtn
+            v-if="authStore.canViewOpeningBalance"
+            icon
+            color="primary"
+            size="small"
+            :loading="isExporting"
+            aria-label="Export"
+            @click="showExportModal = true"
+          >
+            <VIcon icon="ri-file-excel-line" />
+            <VTooltip
+              activator="parent"
+              location="bottom"
+            >
+              Export
+            </VTooltip>
+          </VBtn>
+          <VBtn
+            v-if="authStore.canOperateOpeningBalance"
+            icon
+            color="primary"
+            size="small"
+            aria-label="Ajukan Opening Balance"
+            :to="{ name: 'finance-opening-balance-create' }"
+          >
+            <VIcon icon="ri-add-line" />
+            <VTooltip
+              activator="parent"
+              location="bottom"
+            >
+              Ajukan Opening Balance
+            </VTooltip>
+          </VBtn>
+        </template>
       </div>
     </PageHeader>
 
@@ -276,9 +313,89 @@
           show-select
           v-model:selected="selectedInvoices"
           class="mt-2"
+          mobile-cards
+          mobile-menu-select
           column-resize-key="finance-opening-balance-b2b"
           @update:options="onTableOptionsB2B"
         >
+          <template #mobile-card="{ item, selected, toggle }">
+            <div class="d-flex align-center justify-space-between gap-2 mb-2">
+              <div class="min-width-0">
+                <div class="d-flex align-center gap-1">
+                  <VChip
+                    color="primary"
+                    size="small"
+                    variant="tonal"
+                    label
+                  >
+                    {{ item.no_invoice }}
+                  </VChip>
+                  <VIcon
+                    v-if="item.is_eb_locked"
+                    icon="ri-lock-line"
+                    size="14"
+                    color="warning"
+                  />
+                </div>
+                <div class="text-caption text-medium-emphasis text-truncate mt-1">
+                  {{ item.klien_ar?.nama_klien ?? '-' }}
+                </div>
+              </div>
+              <div class="d-flex flex-column align-end gap-1 flex-shrink-0">
+                <InvoiceStatusBadge :status="item.status" />
+                <ApprovalStatusBadge :status="item.approval_status" />
+              </div>
+            </div>
+            <div class="d-flex align-end justify-space-between gap-2">
+              <div class="min-width-0">
+                <div class="text-caption text-medium-emphasis">
+                  {{ formatDate(item.tanggal_invoice) }} · Saldo Awal {{ formatCurrency(item.total_tagihan) }}
+                </div>
+                <div
+                  class="font-weight-bold"
+                  :class="item.sisa_tagihan > 0 ? 'text-error' : 'text-success'"
+                >
+                  Sisa: {{ formatCurrency(item.sisa_tagihan) }}
+                </div>
+              </div>
+              <div class="d-flex align-center gap-1 flex-shrink-0">
+                <VBtn
+                  v-if="item.can_record_payment && item.status !== 'LUNAS'"
+                  icon="ri-money-cny-circle-line"
+                  size="small"
+                  variant="tonal"
+                  color="success"
+                  aria-label="Catat Bayar"
+                  @click="openCatatBayar(item)"
+                />
+                <MobileCardActions
+                  :selected="selected"
+                  :editable="item.can_edit"
+                  :deletable="false"
+                  @detail="router.push({ name: 'finance-invoice-show', params: { id: item.id } })"
+                  @edit="router.push({ name: 'finance-opening-balance-edit', params: { id: item.id } })"
+                  @toggle-select="toggle"
+                >
+                  <template #menu-extra>
+                    <template v-if="item.can_print">
+                      <VDivider class="my-1" />
+                      <VListItem
+                        prepend-icon="ri-whatsapp-line"
+                        title="Kirim WhatsApp"
+                        @click="openShareDialog([item])"
+                      />
+                      <VListItem
+                        prepend-icon="ri-printer-line"
+                        title="Cetak"
+                        @click="printInvoice(item.id)"
+                      />
+                    </template>
+                  </template>
+                </MobileCardActions>
+              </div>
+            </div>
+          </template>
+
           <template #item.no="{ index }">
             {{ (metaB2B.current_page - 1) * metaB2B.per_page + index + 1 }}
           </template>
@@ -539,9 +656,89 @@
           show-select
           v-model:selected="selectedInvoices"
           class="mt-2"
+          mobile-cards
+          mobile-menu-select
           column-resize-key="finance-opening-balance-b2c"
           @update:options="onTableOptions"
         >
+          <template #mobile-card="{ item, selected, toggle }">
+            <div class="d-flex align-center justify-space-between gap-2 mb-2">
+              <div class="min-width-0">
+                <div class="d-flex align-center gap-1">
+                  <VChip
+                    color="primary"
+                    size="small"
+                    variant="tonal"
+                    label
+                  >
+                    {{ item.no_invoice }}
+                  </VChip>
+                  <VIcon
+                    v-if="item.is_eb_locked"
+                    icon="ri-lock-line"
+                    size="14"
+                    color="warning"
+                  />
+                </div>
+                <div class="text-caption text-medium-emphasis text-truncate mt-1">
+                  {{ item.klien_ar?.nama_klien ?? '-' }}
+                </div>
+              </div>
+              <div class="d-flex flex-column align-end gap-1 flex-shrink-0">
+                <InvoiceStatusBadge :status="item.status" />
+                <ApprovalStatusBadge :status="item.approval_status" />
+              </div>
+            </div>
+            <div class="d-flex align-end justify-space-between gap-2">
+              <div class="min-width-0">
+                <div class="text-caption text-medium-emphasis">
+                  {{ formatDate(item.tanggal_invoice) }} · Saldo Awal {{ formatCurrency(item.total_tagihan) }}
+                </div>
+                <div
+                  class="font-weight-bold"
+                  :class="item.sisa_tagihan > 0 ? 'text-error' : 'text-success'"
+                >
+                  Sisa: {{ formatCurrency(item.sisa_tagihan) }}
+                </div>
+              </div>
+              <div class="d-flex align-center gap-1 flex-shrink-0">
+                <VBtn
+                  v-if="item.can_record_payment && item.status !== 'LUNAS'"
+                  icon="ri-money-cny-circle-line"
+                  size="small"
+                  variant="tonal"
+                  color="success"
+                  aria-label="Catat Bayar"
+                  @click="openCatatBayar(item)"
+                />
+                <MobileCardActions
+                  :selected="selected"
+                  :editable="item.can_edit"
+                  :deletable="false"
+                  @detail="router.push({ name: 'finance-invoice-show', params: { id: item.id } })"
+                  @edit="router.push({ name: 'finance-opening-balance-edit', params: { id: item.id } })"
+                  @toggle-select="toggle"
+                >
+                  <template #menu-extra>
+                    <template v-if="item.can_print">
+                      <VDivider class="my-1" />
+                      <VListItem
+                        prepend-icon="ri-whatsapp-line"
+                        title="Kirim WhatsApp"
+                        @click="openShareDialog([item])"
+                      />
+                      <VListItem
+                        prepend-icon="ri-printer-line"
+                        title="Cetak"
+                        @click="printInvoice(item.id)"
+                      />
+                    </template>
+                  </template>
+                </MobileCardActions>
+              </div>
+            </div>
+          </template>
+
           <template #item.no="{ index }">
             {{ (meta.current_page - 1) * meta.per_page + index + 1 }}
           </template>
@@ -907,6 +1104,22 @@
       </VCard>
 
       <VCard>
+        <!-- Mobile: slot #top BaseTable tidak dirender di mode kartu, jadi tombol
+             "Approve Semua" ditampilkan terpisah khusus HP. -->
+        <div
+          v-if="xs"
+          class="d-flex justify-end pa-3"
+        >
+          <VBtn
+            color="success"
+            size="small"
+            prepend-icon="ri-check-double-line"
+            :loading="approvingAll"
+            @click="confirmApproveAll"
+          >
+            Approve Semua
+          </VBtn>
+        </div>
         <BaseTable
           :headers="approvalHeaders"
           :items="dirApprovalItems"
@@ -915,6 +1128,7 @@
           :per-page="dirApprovalMeta.per_page"
           :page="dirApprovalMeta.current_page"
           class="mt-2"
+          mobile-cards
           column-resize-key="finance-opening-balance-approval"
           @update:options="onDirApprovalTableOptions"
         >
@@ -928,6 +1142,73 @@
               >
                 Approve Semua
               </VBtn>
+            </div>
+          </template>
+          <template #mobile-card="{ item }">
+            <div class="d-flex align-center justify-space-between gap-2 mb-2">
+              <div class="min-width-0">
+                <div class="d-flex align-center gap-1">
+                  <VChip
+                    color="primary"
+                    size="small"
+                    variant="tonal"
+                    label
+                  >
+                    {{ item.no_invoice }}
+                  </VChip>
+                  <VIcon
+                    v-if="item.is_eb_locked"
+                    icon="ri-lock-line"
+                    size="14"
+                    color="warning"
+                  />
+                </div>
+                <div class="text-caption text-medium-emphasis text-truncate mt-1">
+                  {{ item.klien_ar?.nama_klien ?? '-' }}
+                </div>
+              </div>
+              <ApprovalStatusBadge :status="item.approval_status" />
+            </div>
+            <div class="text-caption text-medium-emphasis">
+              Nominal: <span class="font-weight-bold">{{ formatCurrency(item.total_tagihan) }}</span>
+            </div>
+            <div class="text-caption text-medium-emphasis">
+              {{ formatDate(item.tanggal_invoice) }} · Pengaju: {{ item.submitted_by_name ?? item.created_by_name ?? '-' }}
+            </div>
+            <div class="d-flex align-center justify-space-between gap-2 mt-2">
+              <div class="text-caption text-medium-emphasis text-truncate">
+                Diajukan: {{ formatDateTime(item.submitted_at) }}
+              </div>
+              <div class="d-flex align-center gap-1 flex-shrink-0">
+                <VBtn
+                  v-if="item.approval_status === 'PENDING'"
+                  icon="ri-checkbox-circle-line"
+                  size="small"
+                  variant="tonal"
+                  color="success"
+                  :loading="approvingId === item.id"
+                  aria-label="Approve"
+                  @click="confirmApprove(item)"
+                />
+                <VBtn
+                  v-if="item.approval_status === 'PENDING'"
+                  icon="ri-close-circle-line"
+                  size="small"
+                  variant="tonal"
+                  color="error"
+                  :loading="rejectingId === item.id"
+                  aria-label="Tolak"
+                  @click="confirmReject(item)"
+                />
+                <VBtn
+                  icon="ri-eye-line"
+                  size="small"
+                  variant="text"
+                  color="info"
+                  aria-label="Review"
+                  @click="router.push({ name: 'finance-invoice-show', params: { id: item.id } })"
+                />
+              </div>
             </div>
           </template>
           <template #item.no="{ index }">
@@ -1029,26 +1310,63 @@
 
       <!-- Section 2: List Opening Balance -->
       <div class="d-flex align-center gap-3 mt-6 mb-4">
-        <span class="text-h6 font-weight-semibold">List Opening Balance</span>
+        <span class="text-h6 font-weight-semibold text-truncate">List Opening Balance</span>
         <VDivider />
-        <div class="d-flex gap-2">
-          <VBtn
-            v-if="authStore.canViewOpeningBalance"
-            color="primary"
-            prepend-icon="ri-file-excel-line"
-            :loading="isExporting"
-            @click="exportExcel"
-          >
-            Export
-          </VBtn>
-          <VBtn
-            v-if="authStore.canOperateOpeningBalance"
-            color="primary"
-            prepend-icon="ri-add-line"
-            :to="{ name: 'finance-opening-balance-create' }"
-          >
-            Ajukan Opening Balance
-          </VBtn>
+        <div class="d-flex gap-2 flex-shrink-0">
+          <template v-if="!xs">
+            <VBtn
+              v-if="authStore.canViewOpeningBalance"
+              color="primary"
+              prepend-icon="ri-file-excel-line"
+              :loading="isExporting"
+              @click="exportExcel"
+            >
+              Export
+            </VBtn>
+            <VBtn
+              v-if="authStore.canOperateOpeningBalance"
+              color="primary"
+              prepend-icon="ri-add-line"
+              :to="{ name: 'finance-opening-balance-create' }"
+            >
+              Ajukan Opening Balance
+            </VBtn>
+          </template>
+          <template v-else>
+            <VBtn
+              v-if="authStore.canViewOpeningBalance"
+              icon
+              color="primary"
+              size="small"
+              :loading="isExporting"
+              aria-label="Export"
+              @click="exportExcel"
+            >
+              <VIcon icon="ri-file-excel-line" />
+              <VTooltip
+                activator="parent"
+                location="bottom"
+              >
+                Export
+              </VTooltip>
+            </VBtn>
+            <VBtn
+              v-if="authStore.canOperateOpeningBalance"
+              icon
+              color="primary"
+              size="small"
+              aria-label="Ajukan Opening Balance"
+              :to="{ name: 'finance-opening-balance-create' }"
+            >
+              <VIcon icon="ri-add-line" />
+              <VTooltip
+                activator="parent"
+                location="bottom"
+              >
+                Ajukan Opening Balance
+              </VTooltip>
+            </VBtn>
+          </template>
         </div>
       </div>
 
@@ -1289,9 +1607,86 @@
           :per-page="dirObMetaB2B.per_page"
           :page="dirObMetaB2B.current_page"
           class="mt-2"
+          mobile-cards
           column-resize-key="finance-opening-balance-dir-b2b"
           @update:options="onDirObTableOptionsB2B"
         >
+          <template #mobile-card="{ item }">
+            <div class="d-flex align-center justify-space-between gap-2 mb-2">
+              <div class="min-width-0">
+                <div class="d-flex align-center gap-1">
+                  <VChip
+                    color="primary"
+                    size="small"
+                    variant="tonal"
+                    label
+                  >
+                    {{ item.no_invoice }}
+                  </VChip>
+                  <VIcon
+                    v-if="item.is_eb_locked"
+                    icon="ri-lock-line"
+                    size="14"
+                    color="warning"
+                  />
+                </div>
+                <div class="text-caption text-medium-emphasis text-truncate mt-1">
+                  {{ item.klien_ar?.nama_klien ?? '-' }}
+                </div>
+              </div>
+              <div class="d-flex flex-column align-end gap-1 flex-shrink-0">
+                <InvoiceStatusBadge :status="item.status" />
+                <ApprovalStatusBadge :status="item.approval_status" />
+              </div>
+            </div>
+            <div class="d-flex align-end justify-space-between gap-2">
+              <div class="min-width-0">
+                <div class="text-caption text-medium-emphasis">
+                  {{ formatDate(item.tanggal_invoice) }} · Saldo Awal {{ formatCurrency(item.total_tagihan) }}
+                </div>
+                <div
+                  class="font-weight-bold"
+                  :class="item.sisa_tagihan > 0 ? 'text-error' : 'text-success'"
+                >
+                  Sisa: {{ formatCurrency(item.sisa_tagihan) }}
+                </div>
+              </div>
+              <div class="d-flex align-center gap-1 flex-shrink-0">
+                <VBtn
+                  v-if="item.can_record_payment && item.status !== 'LUNAS'"
+                  icon="ri-money-cny-circle-line"
+                  size="small"
+                  variant="tonal"
+                  color="success"
+                  aria-label="Catat Bayar"
+                  @click="openCatatBayar(item)"
+                />
+                <MobileCardActions
+                  :editable="false"
+                  :deletable="false"
+                  :selectable="false"
+                  :show-menu="item.can_print"
+                  @detail="router.push({ name: 'finance-invoice-show', params: { id: item.id } })"
+                >
+                  <template #menu-extra>
+                    <template v-if="item.can_print">
+                      <VListItem
+                        prepend-icon="ri-whatsapp-line"
+                        title="Kirim WhatsApp"
+                        @click="openShareDialog([item])"
+                      />
+                      <VListItem
+                        prepend-icon="ri-printer-line"
+                        title="Cetak"
+                        @click="printInvoice(item.id)"
+                      />
+                    </template>
+                  </template>
+                </MobileCardActions>
+              </div>
+            </div>
+          </template>
+
           <template #item.no="{ index }">
             {{ (dirObMetaB2B.current_page - 1) * dirObMetaB2B.per_page + index + 1 }}
           </template>
@@ -1534,9 +1929,86 @@
           :per-page="dirObMeta.per_page"
           :page="dirObMeta.current_page"
           class="mt-2"
+          mobile-cards
           column-resize-key="finance-opening-balance-dir-b2c"
           @update:options="onDirObTableOptions"
         >
+          <template #mobile-card="{ item }">
+            <div class="d-flex align-center justify-space-between gap-2 mb-2">
+              <div class="min-width-0">
+                <div class="d-flex align-center gap-1">
+                  <VChip
+                    color="primary"
+                    size="small"
+                    variant="tonal"
+                    label
+                  >
+                    {{ item.no_invoice }}
+                  </VChip>
+                  <VIcon
+                    v-if="item.is_eb_locked"
+                    icon="ri-lock-line"
+                    size="14"
+                    color="warning"
+                  />
+                </div>
+                <div class="text-caption text-medium-emphasis text-truncate mt-1">
+                  {{ item.klien_ar?.nama_klien ?? '-' }}
+                </div>
+              </div>
+              <div class="d-flex flex-column align-end gap-1 flex-shrink-0">
+                <InvoiceStatusBadge :status="item.status" />
+                <ApprovalStatusBadge :status="item.approval_status" />
+              </div>
+            </div>
+            <div class="d-flex align-end justify-space-between gap-2">
+              <div class="min-width-0">
+                <div class="text-caption text-medium-emphasis">
+                  {{ formatDate(item.tanggal_invoice) }} · Saldo Awal {{ formatCurrency(item.total_tagihan) }}
+                </div>
+                <div
+                  class="font-weight-bold"
+                  :class="item.sisa_tagihan > 0 ? 'text-error' : 'text-success'"
+                >
+                  Sisa: {{ formatCurrency(item.sisa_tagihan) }}
+                </div>
+              </div>
+              <div class="d-flex align-center gap-1 flex-shrink-0">
+                <VBtn
+                  v-if="item.can_record_payment && item.status !== 'LUNAS'"
+                  icon="ri-money-cny-circle-line"
+                  size="small"
+                  variant="tonal"
+                  color="success"
+                  aria-label="Catat Bayar"
+                  @click="openCatatBayar(item)"
+                />
+                <MobileCardActions
+                  :editable="false"
+                  :deletable="false"
+                  :selectable="false"
+                  :show-menu="item.can_print"
+                  @detail="router.push({ name: 'finance-invoice-show', params: { id: item.id } })"
+                >
+                  <template #menu-extra>
+                    <template v-if="item.can_print">
+                      <VListItem
+                        prepend-icon="ri-whatsapp-line"
+                        title="Kirim WhatsApp"
+                        @click="openShareDialog([item])"
+                      />
+                      <VListItem
+                        prepend-icon="ri-printer-line"
+                        title="Cetak"
+                        @click="printInvoice(item.id)"
+                      />
+                    </template>
+                  </template>
+                </MobileCardActions>
+              </div>
+            </div>
+          </template>
+
           <template #item.no="{ index }">
             {{ (dirObMeta.current_page - 1) * dirObMeta.per_page + index + 1 }}
           </template>
@@ -1708,9 +2180,14 @@ import ApprovalStatusBadge from '@/modules/Finance/shared/components/ApprovalSta
 import InvoiceStatusBadge from '@/modules/Finance/shared/components/InvoiceStatusBadge.vue'
 import ShareInvoicesDialog from '@/modules/Finance/shared/components/ShareInvoicesDialog.vue'
 import BulkActionBar from '@/modules/Finance/shared/components/BulkActionBar.vue'
+import MobileCardActions from '@/components/shared/MobileCardActions.vue'
+import { useRouter } from 'vue-router'
+import { useDisplay } from 'vuetify'
 
 const PembayaranForm = defineAsyncComponent(() => import('@/modules/Finance/shared/components/PembayaranForm.vue'))
 
+const { xs } = useDisplay()
+const router = useRouter()
 const authStore = useAuthStore()
 const { showAlert, showSuccess, showError, showLoading, closeAlert, confirmDelete, resolveThemeTokens } = useSweetAlert()
 const financeNotificationStore = useFinanceNotificationStore()

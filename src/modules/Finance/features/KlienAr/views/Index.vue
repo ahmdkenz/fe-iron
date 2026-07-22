@@ -8,22 +8,58 @@
         { title: 'Client', disabled: true }
       ]"
     >
-      <div class="d-flex gap-2">
-        <VBtn
-          color="primary"
-          prepend-icon="ri-file-excel-line"
-          :loading="exporting"
-          @click="exportExcel"
-        >
-          Export
-        </VBtn>
-        <VBtn
-          color="primary"
-          prepend-icon="ri-add-line"
-          @click="openCreate"
-        >
-          Tambah Klien
-        </VBtn>
+      <div class="d-flex gap-2 justify-end w-100">
+        <!-- Desktop: tombol dengan label; Mobile: ikon saja agar hemat ruang -->
+        <template v-if="!xs">
+          <VBtn
+            color="primary"
+            prepend-icon="ri-file-excel-line"
+            :loading="exporting"
+            @click="exportExcel"
+          >
+            Export
+          </VBtn>
+          <VBtn
+            color="primary"
+            prepend-icon="ri-add-line"
+            @click="openCreate"
+          >
+            Tambah Klien
+          </VBtn>
+        </template>
+        <template v-else>
+          <VBtn
+            icon
+            color="primary"
+            size="small"
+            :loading="exporting"
+            aria-label="Export"
+            @click="exportExcel"
+          >
+            <VIcon icon="ri-file-excel-line" />
+            <VTooltip
+              activator="parent"
+              location="bottom"
+            >
+              Export
+            </VTooltip>
+          </VBtn>
+          <VBtn
+            icon
+            color="primary"
+            size="small"
+            aria-label="Tambah Klien"
+            @click="openCreate"
+          >
+            <VIcon icon="ri-add-line" />
+            <VTooltip
+              activator="parent"
+              location="bottom"
+            >
+              Tambah Klien
+            </VTooltip>
+          </VBtn>
+        </template>
       </div>
     </PageHeader>
 
@@ -96,9 +132,42 @@
         wrap-text
         show-select
         v-model:selected="selectedB2B"
+        mobile-cards
+        mobile-menu-select
         column-resize-key="finance-klien-ar-b2b"
         @update:options="onTableOptionsB2B"
       >
+        <template #mobile-card="{ item, selected, toggle }">
+          <div class="d-flex align-center justify-space-between gap-2 mb-2">
+            <div class="min-width-0">
+              <div class="font-weight-medium text-truncate">
+                {{ item.nama_klien }}
+              </div>
+              <div class="text-caption text-medium-emphasis text-truncate">
+                PIC AR: {{ item.karyawan_ar?.nama_karyawan ?? '-' }}
+              </div>
+            </div>
+            <StatusChip :active="item.status" />
+          </div>
+          <div class="d-flex align-center justify-space-between gap-2">
+            <VChip
+              color="primary"
+              size="small"
+              variant="tonal"
+              label
+            >
+              {{ item.kode_klien }}
+            </VChip>
+            <MobileCardActions
+              :selected="selected"
+              @detail="openDetail(item)"
+              @edit="openEdit(item)"
+              @delete="confirmDelete(item)"
+              @toggle-select="toggle"
+            />
+          </div>
+        </template>
+
         <template #item.no="{ index }">
           {{ (metaB2B.current_page - 1) * metaB2B.per_page + index + 1 }}
         </template>
@@ -239,9 +308,54 @@
         wrap-text
         show-select
         v-model:selected="selectedB2C"
+        mobile-cards
+        mobile-menu-select
         column-resize-key="finance-klien-ar-b2c"
         @update:options="onTableOptionsB2C"
       >
+        <template #mobile-card="{ item, selected, toggle }">
+          <div class="d-flex align-center justify-space-between gap-2 mb-2">
+            <div class="min-width-0">
+              <div class="font-weight-medium text-truncate">
+                {{ item.nama_klien }}
+              </div>
+              <div class="text-caption text-medium-emphasis text-truncate">
+                {{ item.resto?.nama_resto ?? '-' }}
+              </div>
+              <div
+                v-if="item.resto?.investor"
+                class="text-caption text-medium-emphasis text-truncate"
+              >
+                {{ item.resto.investor.nama_investor }}
+                <template v-if="item.resto.investor.pengelola && item.resto.investor.pengelola !== item.resto.investor.nama_investor">
+                  · {{ item.resto.investor.pengelola }}
+                </template>
+              </div>
+            </div>
+            <StatusChip :active="item.status" />
+          </div>
+          <div class="d-flex align-center justify-space-between gap-2">
+            <VChip
+              color="primary"
+              size="small"
+              variant="tonal"
+              label
+            >
+              {{ item.kode_klien }}
+            </VChip>
+            <MobileCardActions
+              :selected="selected"
+              @detail="openDetail(item)"
+              @edit="openEdit(item)"
+              @delete="confirmDelete(item)"
+              @toggle-select="toggle"
+            />
+          </div>
+          <div class="text-caption text-medium-emphasis mt-1">
+            PIC AR: {{ item.karyawan_ar?.nama_karyawan ?? '-' }}
+          </div>
+        </template>
+
         <template #item.no="{ index }">
           {{ (metaB2C.current_page - 1) * metaB2C.per_page + index + 1 }}
         </template>
@@ -470,12 +584,15 @@
 import { computed, nextTick, onBeforeUnmount, onDeactivated, onMounted, ref } from 'vue'
 
 import { useRouter } from 'vue-router'
+import { useDisplay } from 'vuetify'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useAuthStore } from '@/stores/auth.store'
 import { useCrud } from '@/composables/useCrud'
 import api from '@/utils/axios'
 import BulkDeleteBar from '@/components/base/BulkDeleteBar.vue'
+import MobileCardActions from '@/components/shared/MobileCardActions.vue'
 
+const { xs } = useDisplay()
 const router = useRouter()
 const authStore = useAuthStore()
 const { showSuccess, showError, showLoading, closeAlert, confirmDelete: swalConfirmDelete } = useSweetAlert()

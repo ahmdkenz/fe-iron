@@ -75,9 +75,82 @@
           item-value="id"
           show-expand
           v-model:expanded="expandedB2B"
+          mobile-cards
           column-resize-key="finance-ending-balance-b2b"
           @update:options="onTableOptionsB2B"
         >
+          <template #mobile-card="{ item }">
+            <div class="d-flex align-center justify-space-between gap-2 mb-2">
+              <div class="min-width-0">
+                <div class="font-weight-medium text-truncate">
+                  {{ item.nama_klien }}
+                </div>
+                <div
+                  v-if="item.outlet"
+                  class="text-caption text-medium-emphasis text-truncate"
+                >
+                  {{ item.outlet }}
+                </div>
+                <div class="text-caption text-medium-emphasis">
+                  {{ formatDate(item.periode_awal) }} – {{ formatDate(item.periode_akhir) }}
+                </div>
+              </div>
+              <div class="d-flex flex-column align-end gap-1 flex-shrink-0">
+                <EndingBalanceStatusBadge :status="item.status" />
+                <VChip
+                  v-if="item.has_active_koreksi"
+                  color="info"
+                  size="x-small"
+                  label
+                >
+                  Ada Koreksi
+                </VChip>
+              </div>
+            </div>
+            <div class="d-flex align-end justify-space-between gap-2">
+              <div class="min-width-0">
+                <div class="text-caption text-medium-emphasis">
+                  Saldo Akhir
+                </div>
+                <div
+                  class="font-weight-bold"
+                  :class="item.saldo_akhir_sistem !== item.saldo_akhir_final ? 'text-warning' : ''"
+                >
+                  {{ formatRp(item.saldo_akhir_final) }}
+                </div>
+                <div class="text-caption text-medium-emphasis">
+                  Outstanding {{ formatRp(item.outstanding) }} · Overdue
+                  <span :class="item.overdue > 0 ? 'text-error' : ''">{{ formatRp(item.overdue) }}</span>
+                </div>
+              </div>
+              <MobileCardActions
+                :editable="false"
+                :deletable="false"
+                :selectable="false"
+                :show-menu="authStore.canLockEndingBalance && (item.status === 'DRAFT' || item.status === 'LOCKED')"
+                @detail="router.push({ name: 'finance-ending-balance-show', params: { id: item.id } })"
+              >
+                <template #menu-extra>
+                  <template v-if="authStore.canLockEndingBalance && (item.status === 'DRAFT' || item.status === 'LOCKED')">
+                    <VDivider class="my-1" />
+                    <VListItem
+                      v-if="item.status === 'DRAFT'"
+                      prepend-icon="ri-lock-line"
+                      title="Kunci Periode"
+                      @click="confirmLock(item)"
+                    />
+                    <VListItem
+                      v-if="item.status === 'LOCKED'"
+                      prepend-icon="ri-lock-unlock-line"
+                      title="Buka Periode"
+                      @click="confirmUnlock(item)"
+                    />
+                  </template>
+                </template>
+              </MobileCardActions>
+            </div>
+          </template>
+
           <template #item.no="{ index }">
             <span class="text-medium-emphasis">{{ (currentPageB2B - 1) * metaB2B.per_page + index + 1 }}</span>
           </template>
@@ -242,9 +315,82 @@
           item-value="id"
           show-expand
           v-model:expanded="expanded"
+          mobile-cards
           column-resize-key="finance-ending-balance-b2c"
           @update:options="onTableOptions"
         >
+          <template #mobile-card="{ item }">
+            <div class="d-flex align-center justify-space-between gap-2 mb-2">
+              <div class="min-width-0">
+                <div class="font-weight-medium text-truncate">
+                  {{ item.nama_klien }}
+                </div>
+                <div
+                  v-if="item.outlet"
+                  class="text-caption text-medium-emphasis text-truncate"
+                >
+                  {{ item.outlet }}
+                </div>
+                <div class="text-caption text-medium-emphasis">
+                  {{ formatDate(item.periode_awal) }} – {{ formatDate(item.periode_akhir) }}
+                </div>
+              </div>
+              <div class="d-flex flex-column align-end gap-1 flex-shrink-0">
+                <EndingBalanceStatusBadge :status="item.status" />
+                <VChip
+                  v-if="item.has_active_koreksi"
+                  color="info"
+                  size="x-small"
+                  label
+                >
+                  Ada Koreksi
+                </VChip>
+              </div>
+            </div>
+            <div class="d-flex align-end justify-space-between gap-2">
+              <div class="min-width-0">
+                <div class="text-caption text-medium-emphasis">
+                  Saldo Akhir
+                </div>
+                <div
+                  class="font-weight-bold"
+                  :class="item.saldo_akhir_sistem !== item.saldo_akhir_final ? 'text-warning' : ''"
+                >
+                  {{ formatRp(item.saldo_akhir_final) }}
+                </div>
+                <div class="text-caption text-medium-emphasis">
+                  Outstanding {{ formatRp(item.outstanding) }} · Overdue
+                  <span :class="item.overdue > 0 ? 'text-error' : ''">{{ formatRp(item.overdue) }}</span>
+                </div>
+              </div>
+              <MobileCardActions
+                :editable="false"
+                :deletable="false"
+                :selectable="false"
+                :show-menu="authStore.canLockEndingBalance && (item.status === 'DRAFT' || item.status === 'LOCKED')"
+                @detail="router.push({ name: 'finance-ending-balance-show', params: { id: item.id } })"
+              >
+                <template #menu-extra>
+                  <template v-if="authStore.canLockEndingBalance && (item.status === 'DRAFT' || item.status === 'LOCKED')">
+                    <VDivider class="my-1" />
+                    <VListItem
+                      v-if="item.status === 'DRAFT'"
+                      prepend-icon="ri-lock-line"
+                      title="Kunci Periode"
+                      @click="confirmLock(item)"
+                    />
+                    <VListItem
+                      v-if="item.status === 'LOCKED'"
+                      prepend-icon="ri-lock-unlock-line"
+                      title="Buka Periode"
+                      @click="confirmUnlock(item)"
+                    />
+                  </template>
+                </template>
+              </MobileCardActions>
+            </div>
+          </template>
+
           <template #item.no="{ index }">
             <span class="text-medium-emphasis">{{ (currentPage - 1) * meta.per_page + index + 1 }}</span>
           </template>
@@ -490,9 +636,82 @@
           item-value="id"
           show-expand
           v-model:expanded="expandedB2B"
+          mobile-cards
           column-resize-key="finance-ending-balance-b2b"
           @update:options="onTableOptionsB2B"
         >
+          <template #mobile-card="{ item }">
+            <div class="d-flex align-center justify-space-between gap-2 mb-2">
+              <div class="min-width-0">
+                <div class="font-weight-medium text-truncate">
+                  {{ item.nama_klien }}
+                </div>
+                <div
+                  v-if="item.outlet"
+                  class="text-caption text-medium-emphasis text-truncate"
+                >
+                  {{ item.outlet }}
+                </div>
+                <div class="text-caption text-medium-emphasis">
+                  {{ formatDate(item.periode_awal) }} – {{ formatDate(item.periode_akhir) }}
+                </div>
+              </div>
+              <div class="d-flex flex-column align-end gap-1 flex-shrink-0">
+                <EndingBalanceStatusBadge :status="item.status" />
+                <VChip
+                  v-if="item.has_active_koreksi"
+                  color="info"
+                  size="x-small"
+                  label
+                >
+                  Ada Koreksi
+                </VChip>
+              </div>
+            </div>
+            <div class="d-flex align-end justify-space-between gap-2">
+              <div class="min-width-0">
+                <div class="text-caption text-medium-emphasis">
+                  Saldo Akhir
+                </div>
+                <div
+                  class="font-weight-bold"
+                  :class="item.saldo_akhir_sistem !== item.saldo_akhir_final ? 'text-warning' : ''"
+                >
+                  {{ formatRp(item.saldo_akhir_final) }}
+                </div>
+                <div class="text-caption text-medium-emphasis">
+                  Outstanding {{ formatRp(item.outstanding) }} · Overdue
+                  <span :class="item.overdue > 0 ? 'text-error' : ''">{{ formatRp(item.overdue) }}</span>
+                </div>
+              </div>
+              <MobileCardActions
+                :editable="false"
+                :deletable="false"
+                :selectable="false"
+                :show-menu="authStore.canLockEndingBalance && (item.status === 'DRAFT' || item.status === 'LOCKED')"
+                @detail="router.push({ name: 'finance-ending-balance-show', params: { id: item.id } })"
+              >
+                <template #menu-extra>
+                  <template v-if="authStore.canLockEndingBalance && (item.status === 'DRAFT' || item.status === 'LOCKED')">
+                    <VDivider class="my-1" />
+                    <VListItem
+                      v-if="item.status === 'DRAFT'"
+                      prepend-icon="ri-lock-line"
+                      title="Kunci Periode"
+                      @click="confirmLock(item)"
+                    />
+                    <VListItem
+                      v-if="item.status === 'LOCKED'"
+                      prepend-icon="ri-lock-unlock-line"
+                      title="Buka Periode"
+                      @click="confirmUnlock(item)"
+                    />
+                  </template>
+                </template>
+              </MobileCardActions>
+            </div>
+          </template>
+
           <template #item.no="{ index }">
             <span class="text-medium-emphasis">{{ (currentPageB2B - 1) * metaB2B.per_page + index + 1 }}</span>
           </template>
@@ -657,9 +876,82 @@
           item-value="id"
           show-expand
           v-model:expanded="expanded"
+          mobile-cards
           column-resize-key="finance-ending-balance-b2c"
           @update:options="onTableOptions"
         >
+          <template #mobile-card="{ item }">
+            <div class="d-flex align-center justify-space-between gap-2 mb-2">
+              <div class="min-width-0">
+                <div class="font-weight-medium text-truncate">
+                  {{ item.nama_klien }}
+                </div>
+                <div
+                  v-if="item.outlet"
+                  class="text-caption text-medium-emphasis text-truncate"
+                >
+                  {{ item.outlet }}
+                </div>
+                <div class="text-caption text-medium-emphasis">
+                  {{ formatDate(item.periode_awal) }} – {{ formatDate(item.periode_akhir) }}
+                </div>
+              </div>
+              <div class="d-flex flex-column align-end gap-1 flex-shrink-0">
+                <EndingBalanceStatusBadge :status="item.status" />
+                <VChip
+                  v-if="item.has_active_koreksi"
+                  color="info"
+                  size="x-small"
+                  label
+                >
+                  Ada Koreksi
+                </VChip>
+              </div>
+            </div>
+            <div class="d-flex align-end justify-space-between gap-2">
+              <div class="min-width-0">
+                <div class="text-caption text-medium-emphasis">
+                  Saldo Akhir
+                </div>
+                <div
+                  class="font-weight-bold"
+                  :class="item.saldo_akhir_sistem !== item.saldo_akhir_final ? 'text-warning' : ''"
+                >
+                  {{ formatRp(item.saldo_akhir_final) }}
+                </div>
+                <div class="text-caption text-medium-emphasis">
+                  Outstanding {{ formatRp(item.outstanding) }} · Overdue
+                  <span :class="item.overdue > 0 ? 'text-error' : ''">{{ formatRp(item.overdue) }}</span>
+                </div>
+              </div>
+              <MobileCardActions
+                :editable="false"
+                :deletable="false"
+                :selectable="false"
+                :show-menu="authStore.canLockEndingBalance && (item.status === 'DRAFT' || item.status === 'LOCKED')"
+                @detail="router.push({ name: 'finance-ending-balance-show', params: { id: item.id } })"
+              >
+                <template #menu-extra>
+                  <template v-if="authStore.canLockEndingBalance && (item.status === 'DRAFT' || item.status === 'LOCKED')">
+                    <VDivider class="my-1" />
+                    <VListItem
+                      v-if="item.status === 'DRAFT'"
+                      prepend-icon="ri-lock-line"
+                      title="Kunci Periode"
+                      @click="confirmLock(item)"
+                    />
+                    <VListItem
+                      v-if="item.status === 'LOCKED'"
+                      prepend-icon="ri-lock-unlock-line"
+                      title="Buka Periode"
+                      @click="confirmUnlock(item)"
+                    />
+                  </template>
+                </template>
+              </MobileCardActions>
+            </div>
+          </template>
+
           <template #item.no="{ index }">
             <span class="text-medium-emphasis">{{ (currentPage - 1) * meta.per_page + index + 1 }}</span>
           </template>
@@ -832,9 +1124,13 @@
 
 <script setup>
 import { ref, reactive, onMounted, defineComponent, h } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.store'
 import api from '@/utils/axios'
 import EndingBalanceStatusBadge from '@/modules/Finance/shared/components/EndingBalanceStatusBadge.vue'
+import MobileCardActions from '@/components/shared/MobileCardActions.vue'
+
+const router = useRouter()
 
 // ─── Komponen inline: breakdown invoice per EB ───────────────────────────────
 const EbInvoiceBreakdown = defineComponent({

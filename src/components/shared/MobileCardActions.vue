@@ -12,8 +12,11 @@
       @click="emit('detail')"
     />
 
-    <!-- Aksi sekunder & berisiko masuk menu titik tiga supaya kartu tidak ramai. -->
-    <VMenu location="bottom end">
+    <!-- Aksi sekunder & berisiko masuk menu titik tiga supaya kartu tidak ramai. showMenu dimatikan bila menu bisa kosong (tanpa izin/aksi) agar titik tiga tak hampa. -->
+    <VMenu
+      v-if="showMenu"
+      location="bottom end"
+    >
       <template #activator="{ props: menuProps }">
         <VBtn
           v-bind="menuProps"
@@ -66,6 +69,7 @@ defineProps({
   deletable: { type: Boolean, default: true },
   selectable: { type: Boolean, default: true },
   detailLabel: { type: String, default: 'Detail' },
+  showMenu: { type: Boolean, default: true },
 })
 
 const emit = defineEmits(['detail', 'edit', 'delete', 'toggleSelect'])
