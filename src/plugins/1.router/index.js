@@ -2,7 +2,6 @@ import { setupLayouts } from 'virtual:meta-layouts'
 import { createRouter, createWebHistory } from 'vue-router'
 import routes from '@/router/index'
 import { useAuthStore } from '@/stores/auth.store'
-import { hasSessionMarker } from '@/utils/session-marker'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -34,14 +33,14 @@ router.beforeEach(async (to, _from, next) => {
   const requiresAuth = to.matched.some(r => r.meta.requiresAuth)
   const requiresGuest = to.matched.some(r => r.meta.requiresGuest)
 
-  // Protected route: selalu cek sesi penuh, silent refresh diizinkan.
-  // Halaman guest (mis. /login): tanpa marker sesi, jangan tembak /auth/me
-  // sama sekali — browser ini belum pernah login, pasti 401 tanpa cookie
-  // apapun. Kalau marker ada, cek ulang supaya user yang masih login
-  // (token mungkin sudah expired tapi refresh token masih hidup) tetap
-  // diarahkan ke home, bukan disodori form login lagi.
-  if (requiresAuth || (requiresGuest && hasSessionMarker()))
+  // Protected route: cek sesi penuh lewat /auth/me, silent refresh diizinkan.
+  // Halaman guest (mis. /login): cek lewat /auth/session — endpoint publik yang
+  // selalu 200 dan membaca cookie HttpOnly server-side, jadi tidak pernah memicu
+  // 401 di console meski browser belum pernah login sama sekali.
+  if (requiresAuth)
     await authStore.initAuth()
+  else if (requiresGuest)
+    await authStore.checkGuestSession()
 
   const isLoggedIn = authStore.isLoggedIn
   const roles = normalizeRoles(authStore.user)

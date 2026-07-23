@@ -11,6 +11,10 @@ import '@styles/styles.scss'
 const app = createApp(App)
 registerPlugins(app)
 
+// Cleanup sekali: marker sesi lama di localStorage sudah digantikan endpoint
+// server-side /auth/session, hapus key basi ini dari browser user lama.
+localStorage.removeItem('iron_auth_session')
+
 // Auth state itself is resolved by the router guard (per-route), not here —
 // calling /auth/me unconditionally on every load would 401 on the login page
 // before any session/cookie exists. See plugins/1.router/index.js.

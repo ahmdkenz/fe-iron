@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
 import api from '@/utils/axios'
 import { clearFetchAllCache } from '@/composables/useCrud'
-import { clearSessionMarker, setSessionMarker } from '@/utils/session-marker'
 
 // Module-level singleton — bukan Pinia state karena Promise tidak serializable.
 // Menyimpan satu promise yang sama agar fetchMe() tidak dipanggil dua kali.
@@ -90,27 +89,14 @@ export const useAuthStore = defineStore('auth', {
   },
 
   actions: {
-    // allowRefresh: false → dipakai guard di route requiresGuest (mis. /login).
-    // Cek /auth/me tanpa izin auto-refresh, dan sengaja tidak lewat _initPromise
-    // singleton supaya tidak meninggalkan state "belum dicek dengan refresh"
-    // yang stale begitu user login dan pindah ke route requiresAuth.
     // force: true → abaikan _initPromise lama, paksa fetchMe ulang (dipakai
     // setelah reload paksa/butuh data user terbaru).
-    initAuth({ allowRefresh = true, force = false } = {}) {
-      if (!allowRefresh) {
-        return this.fetchMe({ allowRefresh: false }).catch(error => {
-          this.user = null
-
-          if (error?.response?.status !== 401)
-            console.error('Gagal memuat sesi user:', error)
-        })
-      }
-
+    initAuth({ force = false } = {}) {
       if (force)
         _initPromise = null
 
       if (!_initPromise) {
-        _initPromise = this.fetchMe({ allowRefresh: true }).catch(error => {
+        _initPromise = this.fetchMe().catch(error => {
           this.user = null
 
           // 401 murni berarti memang belum login — state normal, tidak perlu di-log.
@@ -129,11 +115,40 @@ export const useAuthStore = defineStore('auth', {
 
       clearFetchAllCache()
       this.user = data.data.user
-      setSessionMarker()
     },
 
-    async fetchMe({ allowRefresh = true } = {}) {
-      const { data } = await api.get('/auth/me', { skipAuthRefresh: !allowRefresh })
+    // Dipakai router guard di route requiresGuest (mis. /login) — baca sesi lewat
+    // endpoint publik /auth/session (selalu 200, baca cookie HttpOnly server-side)
+    // alih-alih marker localStorage. refresh_required berarti auth_token sudah
+    // habis tapi refresh_token masih hidup: refresh dulu baru fetchMe supaya guard
+    // punya data user lengkap untuk redirect ke dashboard.
+    async checkGuestSession() {
+      try {
+        const { data } = await api.get('/auth/session')
+        const session = data.data
+
+        if (!session.authenticated) {
+          this.user = null
+
+          return
+        }
+
+        if (session.refresh_required) {
+          await api.post('/auth/refresh')
+          await this.fetchMe()
+
+          return
+        }
+
+        this.user = session.user
+      } catch (error) {
+        this.user = null
+        console.error('Gagal memeriksa sesi:', error)
+      }
+    },
+
+    async fetchMe() {
+      const { data } = await api.get('/auth/me')
       const nextUser = data.data
 
       // Sesi bisa berganti user (mis. token direstore untuk akun lain) tanpa
@@ -148,7 +163,6 @@ export const useAuthStore = defineStore('auth', {
       await api.post('/auth/logout').catch(() => {})
       localStorage.removeItem('auth_token')
       localStorage.removeItem('refresh_token')
-      clearSessionMarker()
       clearFetchAllCache()
       this.user = null
     },
