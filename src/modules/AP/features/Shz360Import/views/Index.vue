@@ -570,6 +570,13 @@
         <AppActionButton action="batalkan" label="Tutup" @click="showSyncErrors = false" />
       </template>
     </BaseModal>
+
+    <!-- Sync Progress -->
+    <Shz360SyncProgressDialog
+      v-model="showSyncDialog"
+      :mode="syncDialogMode"
+      :progress="syncProgress"
+    />
   </div>
 </template>
 
@@ -583,10 +590,11 @@ import { useFormatter } from '@/composables/useFormatter'
 import api from '@/utils/axios'
 import { AP_ITEM_RECEIPT_STATUS_MAP } from '@/utils/status'
 import Shz360ImportStatusBadge from '../components/Shz360ImportStatusBadge.vue'
+import Shz360SyncProgressDialog from '../components/Shz360SyncProgressDialog.vue'
 import DetailRow from '@/components/shared/DetailRow.vue'
 
 const authStore = useAuthStore()
-const { showAlert, showSuccess, showError, showLoading, updateLoading, closeAlert, confirmDelete: swalConfirm } = useSweetAlert()
+const { showAlert, showSuccess, showError, confirmDelete: swalConfirm } = useSweetAlert()
 const { formatCurrency, formatDate } = useFormatter()
 
 const itemStatusMap = AP_ITEM_RECEIPT_STATUS_MAP
@@ -679,9 +687,37 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
+// Dialog progress sync — menggantikan popup SweetAlert lama dengan dialog custom
+// yang menampilkan tahapan (PO → Terima PO) secara live.
+const showSyncDialog = ref(false)
+const syncDialogMode = ref('retry')
+const syncProgress = reactive({
+  status: 'sending',
+  po_fetched: 0,
+  po_upserted: 0,
+  receipt_fetched: 0,
+  receipt_upserted: 0,
+})
+
+function resetSyncProgress() {
+  syncProgress.status = 'sending'
+  syncProgress.po_fetched = 0
+  syncProgress.po_upserted = 0
+  syncProgress.receipt_fetched = 0
+  syncProgress.receipt_upserted = 0
+}
+
+function applyRunToProgress(run) {
+  syncProgress.status = run.status
+  syncProgress.po_fetched = run.po_fetched
+  syncProgress.po_upserted = run.po_upserted
+  syncProgress.receipt_fetched = run.receipt_fetched
+  syncProgress.receipt_upserted = run.receipt_upserted
+}
+
 // Poll /sync/last-run sampai muncul row BARU (id beda dari sebelum sync dipicu)
-// yang sudah berstatus final — sepanjang masih 'running' dialog loading diupdate
-// dengan progress asli (kolom-kolom ini ke-increment per baris langsung di DB).
+// yang sudah berstatus final — sepanjang masih 'running' dialog progress diupdate
+// dengan angka asli (kolom-kolom ini ke-increment per baris langsung di DB).
 async function pollSyncRun(previousId) {
   while (true) {
     await sleep(1500)
@@ -697,7 +733,7 @@ async function pollSyncRun(previousId) {
     if (!run || run.id === previousId) continue
 
     if (run.status === 'running') {
-      updateLoading({ text: `Sedang berjalan — PO ${run.po_upserted}/${run.po_fetched}, Terima PO ${run.receipt_upserted}/${run.receipt_fetched}...` })
+      applyRunToProgress(run)
       continue
     }
 
@@ -705,16 +741,22 @@ async function pollSyncRun(previousId) {
   }
 }
 
-async function executeSync(endpoint, loadingTitle) {
+async function executeSync(endpoint, mode) {
   retrying.value = true
   const previousId = lastRun.value?.id ?? null
-  showLoading({ title: loadingTitle, text: 'Mengirim permintaan sync...' })
+  syncDialogMode.value = mode
+  resetSyncProgress()
+  showSyncDialog.value = true
   try {
     await api.post(endpoint)
-    updateLoading({ text: 'Menunggu diproses di background worker...' })
+    syncProgress.status = 'running'
 
     const run = await pollSyncRun(previousId)
     lastRun.value = run
+    applyRunToProgress(run)
+    await sleep(600) // biarkan step tracker sempat tampil "Selesai" sebelum ditutup
+    showSyncDialog.value = false
+
     if (run.status === 'success') {
       await showSuccess('Sync berhasil dijalankan ulang')
     } else if (run.status === 'partial_success') {
@@ -725,6 +767,7 @@ async function executeSync(endpoint, loadingTitle) {
     fetchList()
     loadSummary()
   } catch (err) {
+    showSyncDialog.value = false
     if (!err.response) {
       // Request awal gagal terkirim (koneksi terputus/timeout) — jarang terjadi
       // karena endpoint retry sekarang cuma dispatch job, balasnya instan.
@@ -738,13 +781,12 @@ async function executeSync(endpoint, loadingTitle) {
     }
     await loadLastRun()
   } finally {
-    closeAlert({ onlyLoading: true })
     retrying.value = false
   }
 }
 
 function doRetrySync() {
-  return executeSync('/ap/shz360/sync/retry', 'Sinkronisasi SHZ360')
+  return executeSync('/ap/shz360/sync/retry', 'retry')
 }
 
 async function doFullResync() {
@@ -755,7 +797,7 @@ async function doFullResync() {
   })
   if (!isConfirmed) return
 
-  return executeSync('/ap/shz360/sync/full-resync', 'Full Resync SHZ360')
+  return executeSync('/ap/shz360/sync/full-resync', 'full-resync')
 }
 
 // ─── Sync errors ────────────────────────────────────────────────────

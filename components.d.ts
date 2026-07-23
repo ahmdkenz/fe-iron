@@ -69,6 +69,7 @@ declare module 'vue' {
     ScrollToTop: typeof import('./src/@core/components/ScrollToTop.vue')['default']
     ShareInvoicesDialog: typeof import('./src/modules/Finance/shared/components/ShareInvoicesDialog.vue')['default']
     Shz360ImportStatusBadge: typeof import('./src/modules/AP/features/Shz360Import/components/Shz360ImportStatusBadge.vue')['default']
+    Shz360SyncProgressDialog: typeof import('./src/modules/AP/features/Shz360Import/components/Shz360SyncProgressDialog.vue')['default']
     StatusChip: typeof import('./src/components/shared/StatusChip.vue')['default']
     SupervisorDashboardSection: typeof import('./src/modules/Finance/features/Dashboard/components/SupervisorDashboardSection.vue')['default']
     TagihanApItemRow: typeof import('./src/modules/AP/features/TagihanAp/components/TagihanApItemRow.vue')['default']
