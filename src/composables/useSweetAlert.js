@@ -144,6 +144,20 @@ export function useSweetAlert() {
     return fireSwal(alertOptions)
   }
 
+  // Update teks/opsi dialog loading yang sedang terbuka (mis. progress live saat
+  // polling). No-op kalau popup yang terbuka bukan popup loading (sudah ditutup
+  // atau diganti alert lain).
+  function updateLoading(options = {}) {
+    if (!Swal)
+      return
+
+    const popup = Swal.getPopup()
+    if (!popup || !popup.classList.contains('iron-swal-loading-popup'))
+      return
+
+    Swal.update(options)
+  }
+
   async function closeAlert(options = {}) {
     const { onlyLoading = false } = options
 
@@ -207,6 +221,7 @@ export function useSweetAlert() {
     showSuccess,
     showError,
     showLoading,
+    updateLoading,
     closeAlert,
     confirmDelete,
     confirmPermanentDelete,

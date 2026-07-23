@@ -51,10 +51,22 @@
         <VSpacer />
         <VBtn
           v-if="authStore.canOperateApShz360Import"
+          color="secondary"
+          variant="tonal"
+          size="small"
+          prepend-icon="ri-history-line"
+          :disabled="retrying"
+          class="me-2"
+          @click="doFullResync"
+        >
+          Full Resync
+        </VBtn>
+        <VBtn
+          v-if="authStore.canOperateApShz360Import"
           color="primary"
           size="small"
           prepend-icon="ri-refresh-line"
-          :loading="retrying"
+          :disabled="retrying"
           @click="doRetrySync"
         >
           Sync Sekarang
@@ -574,7 +586,7 @@ import Shz360ImportStatusBadge from '../components/Shz360ImportStatusBadge.vue'
 import DetailRow from '@/components/shared/DetailRow.vue'
 
 const authStore = useAuthStore()
-const { showAlert, showSuccess, showError, confirmDelete: swalConfirm } = useSweetAlert()
+const { showAlert, showSuccess, showError, showLoading, updateLoading, closeAlert, confirmDelete: swalConfirm } = useSweetAlert()
 const { formatCurrency, formatDate } = useFormatter()
 
 const itemStatusMap = AP_ITEM_RECEIPT_STATUS_MAP
@@ -663,40 +675,87 @@ async function loadLastRun() {
   }
 }
 
-async function doRetrySync() {
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+// Poll /sync/last-run sampai muncul row BARU (id beda dari sebelum sync dipicu)
+// yang sudah berstatus final — sepanjang masih 'running' dialog loading diupdate
+// dengan progress asli (kolom-kolom ini ke-increment per baris langsung di DB).
+async function pollSyncRun(previousId) {
+  while (true) {
+    await sleep(1500)
+
+    let run = null
+    try {
+      const { data } = await api.get('/ap/shz360/sync/last-run')
+      run = data.data
+    } catch {
+      continue // belum pernah ada run sama sekali, atau blip jaringan — coba lagi
+    }
+
+    if (!run || run.id === previousId) continue
+
+    if (run.status === 'running') {
+      updateLoading({ text: `Sedang berjalan — PO ${run.po_upserted}/${run.po_fetched}, Terima PO ${run.receipt_upserted}/${run.receipt_fetched}...` })
+      continue
+    }
+
+    return run
+  }
+}
+
+async function executeSync(endpoint, loadingTitle) {
   retrying.value = true
+  const previousId = lastRun.value?.id ?? null
+  showLoading({ title: loadingTitle, text: 'Mengirim permintaan sync...' })
   try {
-    const { data } = await api.post('/ap/shz360/sync/retry')
-    lastRun.value = data.data
-    if (data.data.status === 'success') {
-      await showSuccess(data.message)
-    } else if (data.data.status === 'partial_success') {
-      await showAlert({ icon: 'warning', title: 'Selesai Sebagian', text: data.message })
+    await api.post(endpoint)
+    updateLoading({ text: 'Menunggu diproses di background worker...' })
+
+    const run = await pollSyncRun(previousId)
+    lastRun.value = run
+    if (run.status === 'success') {
+      await showSuccess('Sync berhasil dijalankan ulang')
+    } else if (run.status === 'partial_success') {
+      await showAlert({ icon: 'warning', title: 'Selesai Sebagian', text: `Sync selesai sebagian, ada ${run.error_count} baris gagal.` })
     } else {
-      await showError(data.data.message || 'Sync gagal')
+      await showError(run.message || 'Sync gagal')
     }
     fetchList()
     loadSummary()
   } catch (err) {
-    if (err.response?.status === 409) {
-      // Lock sync aktif (scheduler/klik lain sedang berjalan) — bukan kegagalan, tunggu saja.
-      await showAlert({ icon: 'warning', title: 'Sync Sedang Berjalan', text: err.response?.data?.message ?? 'Sync sedang berjalan, tunggu selesai.' })
-    } else if (!err.response) {
-      // Request timeout/koneksi terputus di sisi client. Sync manual berjalan synchronous
-      // di server, jadi prosesnya bisa saja tetap selesai walau HTTP response tidak sampai —
-      // jangan klaim "gagal" tanpa cek status sebenarnya.
+    if (!err.response) {
+      // Request awal gagal terkirim (koneksi terputus/timeout) — jarang terjadi
+      // karena endpoint retry sekarang cuma dispatch job, balasnya instan.
       await showAlert({
         icon: 'warning',
         title: 'Permintaan Timeout',
-        text: 'Koneksi ke server terputus/timeout. Sync mungkin masih berjalan di server — status akan diperbarui otomatis.',
+        text: 'Koneksi ke server terputus/timeout saat mengirim permintaan sync.',
       })
     } else {
       await showError(err.response?.data?.message ?? 'Gagal menjalankan sync')
     }
     await loadLastRun()
   } finally {
+    closeAlert({ onlyLoading: true })
     retrying.value = false
   }
+}
+
+function doRetrySync() {
+  return executeSync('/ap/shz360/sync/retry', 'Sinkronisasi SHZ360')
+}
+
+async function doFullResync() {
+  const { isConfirmed } = await swalConfirm({
+    title: 'Full Resync SHZ360?',
+    text: 'Ini akan menarik ULANG SEMUA PO & Terima PO berstatus approved_direktur yang ada saat ini, mengabaikan histori sync sebelumnya. Proses bisa memakan waktu beberapa menit untuk data besar.',
+    confirmButtonText: 'Ya, full resync',
+  })
+  if (!isConfirmed) return
+
+  return executeSync('/ap/shz360/sync/full-resync', 'Full Resync SHZ360')
 }
 
 // ─── Sync errors ────────────────────────────────────────────────────
