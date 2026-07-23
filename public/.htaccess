@@ -2,6 +2,13 @@
   RewriteEngine On
   RewriteBase /
 
+  # Reverse-proxy API & Sanctum CSRF endpoint ke backend supaya same-origin dari sudut
+  # pandang browser (cookie auth_token/refresh_token/iron-session/XSRF-TOKEN jadi
+  # first-party untuk testing.shezaerp.net, tidak lagi diblokir kebijakan third-party
+  # cookie browser modern). Butuh mod_proxy + mod_proxy_http aktif di server.
+  RewriteCond %{REQUEST_URI} ^/(api|sanctum)/
+  RewriteRule ^(.*)$ https://api.iron.shezaerp.net/$1 [P,L]
+
   RewriteRule ^index\.html$ - [L]
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
