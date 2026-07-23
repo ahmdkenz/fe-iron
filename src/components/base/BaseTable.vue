@@ -230,7 +230,7 @@ function measureNaturalWidths() {
 
 function readStoredWidths(key) {
   try {
-    const raw = window.localStorage.getItem(STORAGE_PREFIX + key)
+    const raw = window.sessionStorage.getItem(STORAGE_PREFIX + key)
 
     return raw ? JSON.parse(raw) : {}
   }
@@ -241,7 +241,25 @@ function readStoredWidths(key) {
 
 function persistWidths() {
   try {
-    window.localStorage.setItem(STORAGE_PREFIX + resizeStorageKey.value, JSON.stringify(storedWidths.value))
+    window.sessionStorage.setItem(STORAGE_PREFIX + resizeStorageKey.value, JSON.stringify(storedWidths.value))
+  }
+  catch {
+    // sessionStorage tidak tersedia (privasi/kuota) - abaikan
+  }
+}
+
+// Bersihkan sisa key lama dari localStorage (sebelum pindah ke sessionStorage)
+// supaya tidak nyangkut selamanya di Local Storage browser user.
+function cleanupLegacyLocalStorageWidths() {
+  try {
+    const keysToRemove = []
+
+    for (let i = 0; i < window.localStorage.length; i++) {
+      const key = window.localStorage.key(i)
+      if (key?.startsWith(STORAGE_PREFIX)) keysToRemove.push(key)
+    }
+
+    keysToRemove.forEach(key => window.localStorage.removeItem(key))
   }
   catch {
     // localStorage tidak tersedia (privasi/kuota) - abaikan
@@ -377,6 +395,7 @@ function onDblClick(event) {
 }
 
 onMounted(() => {
+  cleanupLegacyLocalStorageWidths()
   rootEl.value?.addEventListener('pointerdown', onPointerDown)
   rootEl.value?.addEventListener('dblclick', onDblClick)
 })
