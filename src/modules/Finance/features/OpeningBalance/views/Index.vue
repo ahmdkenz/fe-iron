@@ -225,51 +225,6 @@
               @update:model-value="debouncedFetchB2B"
             />
           </div>
-          <div style="min-width: 140px; max-width: 180px;">
-            <div class="text-caption text-medium-emphasis mb-2">Status</div>
-            <VSelect
-              v-model="paramsB2B.status"
-              placeholder="Semua Status"
-              clearable
-              hide-details
-              density="compact"
-              :items="statusOptions"
-              item-title="label"
-              item-value="value"
-              @update:model-value="doFetchB2B"
-            />
-          </div>
-          <div style="min-width: 160px; max-width: 220px;">
-            <div class="text-caption text-medium-emphasis mb-2">Approval</div>
-            <VSelect
-              v-model="paramsB2B.approval_status"
-              placeholder="Semua Approval"
-              clearable
-              hide-details
-              density="compact"
-              :items="approvalStatusOptions"
-              item-title="label"
-              item-value="value"
-              @update:model-value="doFetchB2B"
-            />
-          </div>
-          <div style="min-width: 180px; flex: 1; max-width: 260px;">
-            <div class="text-caption text-medium-emphasis mb-2">Klien</div>
-            <VAutocomplete
-              v-model="paramsB2B.klien_ar_id"
-              placeholder="Semua Klien"
-              clearable
-              hide-details
-              density="compact"
-              :items="klienListB2B"
-              item-title="display_label"
-              item-value="id"
-              :filter-keys="['display_label', 'display_subtitle']"
-              :loading="klienLoadingB2B"
-              @focus="ensureKlienB2BLoaded"
-              @update:model-value="doFetchB2B"
-            />
-          </div>
           <VDivider vertical style="height: 40px; align-self: flex-end;" class="d-none d-sm-block" />
           <div>
             <div class="text-caption text-medium-emphasis mb-2">Dari</div>
@@ -566,51 +521,6 @@
               density="compact"
               prepend-inner-icon="ri-search-line"
               @update:model-value="debouncedFetchB2C"
-            />
-          </div>
-          <div style="min-width: 140px; max-width: 180px;">
-            <div class="text-caption text-medium-emphasis mb-2">Status</div>
-            <VSelect
-              v-model="params.status"
-              placeholder="Semua Status"
-              clearable
-              hide-details
-              density="compact"
-              :items="statusOptions"
-              item-title="label"
-              item-value="value"
-              @update:model-value="doFetchB2C"
-            />
-          </div>
-          <div style="min-width: 160px; max-width: 220px;">
-            <div class="text-caption text-medium-emphasis mb-2">Approval</div>
-            <VSelect
-              v-model="params.approval_status"
-              placeholder="Semua Approval"
-              clearable
-              hide-details
-              density="compact"
-              :items="approvalStatusOptions"
-              item-title="label"
-              item-value="value"
-              @update:model-value="doFetchB2C"
-            />
-          </div>
-          <div style="min-width: 180px; flex: 1; max-width: 260px;">
-            <div class="text-caption text-medium-emphasis mb-2">Klien</div>
-            <VAutocomplete
-              v-model="params.klien_ar_id"
-              placeholder="Semua Klien"
-              clearable
-              hide-details
-              density="compact"
-              :items="klienListB2C"
-              item-title="display_label"
-              item-value="id"
-              :filter-keys="['display_label', 'display_subtitle']"
-              :loading="klienLoadingB2C"
-              @focus="ensureKlienB2CLoaded"
-              @update:model-value="doFetchB2C"
             />
           </div>
           <VDivider vertical style="height: 40px; align-self: flex-end;" class="d-none d-sm-block" />
@@ -1035,37 +945,6 @@
                 density="compact"
                 prepend-inner-icon="ri-search-line"
                 @update:model-value="debouncedDirFetch"
-              />
-            </div>
-            <div style="min-width: 160px; max-width: 220px;">
-              <div class="text-caption text-medium-emphasis mb-2">Approval</div>
-              <VSelect
-                v-model="dirApprovalParams.approval_status"
-                placeholder="Semua Approval"
-                clearable
-                hide-details
-                density="compact"
-                :items="approvalStatusOptions"
-                item-title="label"
-                item-value="value"
-                @update:model-value="doDirFetch"
-              />
-            </div>
-            <div style="min-width: 180px; flex: 1; max-width: 260px;">
-              <div class="text-caption text-medium-emphasis mb-2">Klien</div>
-              <VAutocomplete
-                v-model="dirApprovalParams.klien_ar_id"
-                placeholder="Semua Klien"
-                clearable
-                hide-details
-                density="compact"
-                :items="klienListAll"
-                item-title="display_label"
-                item-value="id"
-                :filter-keys="['display_label', 'display_subtitle']"
-                :loading="klienLoadingAll"
-                @focus="ensureKlienAllLoaded"
-                @update:model-value="doDirFetch"
               />
             </div>
             <VDivider vertical style="height: 40px; align-self: flex-end;" class="d-none d-sm-block" />
@@ -1521,51 +1400,6 @@
               @update:model-value="debouncedDirObFetchB2B"
             />
           </div>
-          <div style="min-width: 140px; max-width: 180px;">
-            <div class="text-caption text-medium-emphasis mb-2">Status</div>
-            <VSelect
-              v-model="dirObParamsB2B.status"
-              placeholder="Semua Status"
-              clearable
-              hide-details
-              density="compact"
-              :items="statusOptions"
-              item-title="label"
-              item-value="value"
-              @update:model-value="doDirObFetchB2B"
-            />
-          </div>
-          <div style="min-width: 160px; max-width: 220px;">
-            <div class="text-caption text-medium-emphasis mb-2">Approval</div>
-            <VSelect
-              v-model="dirObParamsB2B.approval_status"
-              placeholder="Semua Approval"
-              clearable
-              hide-details
-              density="compact"
-              :items="approvalStatusOptions"
-              item-title="label"
-              item-value="value"
-              @update:model-value="doDirObFetchB2B"
-            />
-          </div>
-          <div style="min-width: 180px; flex: 1; max-width: 260px;">
-            <div class="text-caption text-medium-emphasis mb-2">Klien</div>
-            <VAutocomplete
-              v-model="dirObParamsB2B.klien_ar_id"
-              placeholder="Semua Klien"
-              clearable
-              hide-details
-              density="compact"
-              :items="klienListB2B"
-              item-title="display_label"
-              item-value="id"
-              :filter-keys="['display_label', 'display_subtitle']"
-              :loading="klienLoadingB2B"
-              @focus="ensureKlienB2BLoaded"
-              @update:model-value="doDirObFetchB2B"
-            />
-          </div>
           <VDivider vertical style="height: 40px; align-self: flex-end;" class="d-none d-sm-block" />
           <div>
             <div class="text-caption text-medium-emphasis mb-2">Dari</div>
@@ -1841,51 +1675,6 @@
               density="compact"
               prepend-inner-icon="ri-search-line"
               @update:model-value="debouncedDirObFetch"
-            />
-          </div>
-          <div style="min-width: 140px; max-width: 180px;">
-            <div class="text-caption text-medium-emphasis mb-2">Status</div>
-            <VSelect
-              v-model="dirObParams.status"
-              placeholder="Semua Status"
-              clearable
-              hide-details
-              density="compact"
-              :items="statusOptions"
-              item-title="label"
-              item-value="value"
-              @update:model-value="doDirObFetch"
-            />
-          </div>
-          <div style="min-width: 160px; max-width: 220px;">
-            <div class="text-caption text-medium-emphasis mb-2">Approval</div>
-            <VSelect
-              v-model="dirObParams.approval_status"
-              placeholder="Semua Approval"
-              clearable
-              hide-details
-              density="compact"
-              :items="approvalStatusOptions"
-              item-title="label"
-              item-value="value"
-              @update:model-value="doDirObFetch"
-            />
-          </div>
-          <div style="min-width: 180px; flex: 1; max-width: 260px;">
-            <div class="text-caption text-medium-emphasis mb-2">Klien</div>
-            <VAutocomplete
-              v-model="dirObParams.klien_ar_id"
-              placeholder="Semua Klien"
-              clearable
-              hide-details
-              density="compact"
-              :items="klienListB2C"
-              item-title="display_label"
-              item-value="id"
-              :filter-keys="['display_label', 'display_subtitle']"
-              :loading="klienLoadingB2C"
-              @focus="ensureKlienB2CLoaded"
-              @update:model-value="doDirObFetch"
             />
           </div>
           <VDivider vertical style="height: 40px; align-self: flex-end;" class="d-none d-sm-block" />
@@ -2170,7 +1959,6 @@ function getDefaultMonthRange() {
 }
 import { useAuthStore } from '@/stores/auth.store'
 import { useCrud } from '@/composables/useCrud'
-import { useLazyFetchAll } from '@/composables/useLazyFetchAll'
 import { useFormatter } from '@/composables/useFormatter'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useFinanceNotificationStore } from '@/stores/finance-notification.store'
@@ -2192,14 +1980,6 @@ const authStore = useAuthStore()
 const { showAlert, showSuccess, showError, showLoading, closeAlert, confirmDelete, resolveThemeTokens } = useSweetAlert()
 const financeNotificationStore = useFinanceNotificationStore()
 
-// ── Shared: klien list ─────────────────────────────────────────────────────
-const { items: klienListAll, loading: klienLoadingAll, fetchAll: fetchKlienAll } = useCrud('/finance/klien-ar')
-const { items: klienListB2B, loading: klienLoadingB2B, fetchAll: fetchKlienB2B } = useCrud('/finance/klien-ar')
-const { items: klienListB2C, loading: klienLoadingB2C, fetchAll: fetchKlienB2C } = useCrud('/finance/klien-ar')
-const { ensureLoaded: ensureKlienAllLoaded } = useLazyFetchAll(fetchKlienAll)
-const { ensureLoaded: ensureKlienB2BLoaded } = useLazyFetchAll(() => fetchKlienB2B({ params: { segment: 'B2B' } }))
-const { ensureLoaded: ensureKlienB2CLoaded } = useLazyFetchAll(() => fetchKlienB2C({ params: { segment: 'B2C' } }))
-
 // ── Non-director: single table ─────────────────────────────────────────────
 const { items, loading, meta, params, fetchList } = useCrud('/finance/opening-balance')
 const { items: itemsB2B, loading: loadingB2B, meta: metaB2B, params: paramsB2B, fetchList: fetchListB2B } = useCrud('/finance/opening-balance')
@@ -2209,15 +1989,9 @@ const canSeeAll = authStore.hasAnyRole(['ADMIN', 'MANAGER', 'SUPERVISOR'])
 
 const { tanggal_dari: defaultDari, tanggal_sampai: defaultSampai } = getDefaultMonthRange()
 
-params.status = ''
-params.approval_status = ''
-params.klien_ar_id = null
 params.tanggal_dari = defaultDari
 params.tanggal_sampai = defaultSampai
 
-paramsB2B.status = ''
-paramsB2B.approval_status = ''
-paramsB2B.klien_ar_id = null
 paramsB2B.tanggal_dari = defaultDari
 paramsB2B.tanggal_sampai = defaultSampai
 
@@ -2239,8 +2013,6 @@ const summary = reactive({
 // ── Director: approval table ───────────────────────────────────────────────
 const { items: dirApprovalItems, loading: dirApprovalLoading, meta: dirApprovalMeta, params: dirApprovalParams, fetchList: fetchDirApprovalList } = useCrud('/finance/opening-balance')
 
-dirApprovalParams.approval_status = 'PENDING'
-dirApprovalParams.klien_ar_id = null
 dirApprovalParams.tanggal_dari = defaultDari
 dirApprovalParams.tanggal_sampai = defaultSampai
 
@@ -2262,16 +2034,12 @@ const printingId   = ref(null)
 const { items: dirObItems, loading: dirObLoading, meta: dirObMeta, params: dirObParams, fetchList: fetchDirObList } = useCrud('/finance/opening-balance')
 const { items: dirObItemsB2B, loading: dirObLoadingB2B, meta: dirObMetaB2B, params: dirObParamsB2B, fetchList: fetchDirObListB2B } = useCrud('/finance/opening-balance')
 
-dirObParams.status = ''
 dirObParams.approval_status = 'APPROVED'
-dirObParams.klien_ar_id = null
 dirObParams.tanggal_dari = defaultDari
 dirObParams.tanggal_sampai = defaultSampai
 dirObParams.segment = 'B2C'
 
-dirObParamsB2B.status = ''
 dirObParamsB2B.approval_status = 'APPROVED'
-dirObParamsB2B.klien_ar_id = null
 dirObParamsB2B.tanggal_dari = defaultDari
 dirObParamsB2B.tanggal_sampai = defaultSampai
 dirObParamsB2B.segment = 'B2B'
@@ -2373,11 +2141,8 @@ async function exportExcel() {
     const { tanggal_dari, tanggal_sampai } = monthToRange(exportMonth.value)
     const res = await api.get('/finance/opening-balance/export', {
       params: {
-        search:          params.search          || undefined,
-        status:          params.status          || undefined,
-        approval_status: params.approval_status || undefined,
-        klien_ar_id:     params.klien_ar_id     || undefined,
-        karyawan_id:     params.karyawan_id     || undefined,
+        search:          params.search      || undefined,
+        karyawan_id:     params.karyawan_id || undefined,
         tanggal_dari,
         tanggal_sampai,
       },
@@ -2409,9 +2174,7 @@ async function exportDirExcel() {
     const res = await api.get('/finance/opening-balance/export', {
       params: {
         search:          dirObParams.search          || undefined,
-        status:          dirObParams.status          || undefined,
         approval_status: dirObParams.approval_status || undefined,
-        klien_ar_id:     dirObParams.klien_ar_id     || undefined,
         tanggal_dari:    dirObParams.tanggal_dari    || undefined,
         tanggal_sampai:  dirObParams.tanggal_sampai  || undefined,
         segment:         'B2C',
@@ -2440,9 +2203,7 @@ async function exportDirExcelB2B() {
     const res = await api.get('/finance/opening-balance/export', {
       params: {
         search:          dirObParamsB2B.search          || undefined,
-        status:          dirObParamsB2B.status          || undefined,
         approval_status: dirObParamsB2B.approval_status || undefined,
-        klien_ar_id:     dirObParamsB2B.klien_ar_id     || undefined,
         tanggal_dari:    dirObParamsB2B.tanggal_dari    || undefined,
         tanggal_sampai:  dirObParamsB2B.tanggal_sampai  || undefined,
         segment:         'B2B',
@@ -2532,20 +2293,6 @@ const dirObHeadersB2B = [
   { title: 'Aksi', key: 'dir_ob_b2b_actions', sortable: false, align: 'center', width: '120px' },
 ]
 
-const statusOptions = [
-  { label: 'Draft', value: 'DRAFT' },
-  { label: 'Terkirim', value: 'TERKIRIM' },
-  { label: 'Sebagian', value: 'SEBAGIAN' },
-  { label: 'Lunas', value: 'LUNAS' },
-]
-
-const approvalStatusOptions = [
-  { label: 'Menunggu Persetujuan', value: 'PENDING' },
-  { label: 'Disetujui', value: 'APPROVED' },
-  { label: 'Ditolak', value: 'REJECTED' },
-]
-
-
 // ── Abort controllers ──────────────────────────────────────────────────────
 let listController          = null
 let listControllerB2B       = null
@@ -2616,9 +2363,6 @@ async function loadSummary() {
     const { data } = await api.get('/finance/opening-balance/summary', {
       params: {
         search:          params.search,
-        status:          params.status,
-        approval_status: params.approval_status,
-        klien_ar_id:     params.klien_ar_id,
         karyawan_id:     params.karyawan_id,
         tanggal_dari:    params.tanggal_dari,
         tanggal_sampai:  params.tanggal_sampai,
@@ -2651,8 +2395,6 @@ async function loadDirApprovalSummary() {
     const { data } = await api.get('/finance/opening-balance/summary', {
       params: {
         search:          dirApprovalParams.search,
-        approval_status: dirApprovalParams.approval_status,
-        klien_ar_id:     dirApprovalParams.klien_ar_id,
         tanggal_dari:    dirApprovalParams.tanggal_dari,
         tanggal_sampai:  dirApprovalParams.tanggal_sampai,
       },
@@ -2692,9 +2434,7 @@ async function loadDirObSummary() {
     const { data } = await api.get('/finance/opening-balance/summary', {
       params: {
         search:          dirObParams.search,
-        status:          dirObParams.status,
         approval_status: dirObParams.approval_status,
-        klien_ar_id:     dirObParams.klien_ar_id,
         tanggal_dari:    dirObParams.tanggal_dari,
         tanggal_sampai:  dirObParams.tanggal_sampai,
       },
@@ -2763,9 +2503,6 @@ function applyDateFiltersB2B() {
 function resetFiltersB2C() {
   const { tanggal_dari, tanggal_sampai } = getDefaultMonthRange()
   params.search          = ''
-  params.status          = ''
-  params.approval_status = ''
-  params.klien_ar_id     = null
   params.tanggal_dari    = tanggal_dari
   params.tanggal_sampai  = tanggal_sampai
   Object.assign(dateDraftB2C, { tanggal_dari, tanggal_sampai })
@@ -2775,9 +2512,6 @@ function resetFiltersB2C() {
 function resetFiltersB2B() {
   const { tanggal_dari, tanggal_sampai } = getDefaultMonthRange()
   paramsB2B.search          = ''
-  paramsB2B.status          = ''
-  paramsB2B.approval_status = ''
-  paramsB2B.klien_ar_id     = null
   paramsB2B.tanggal_dari    = tanggal_dari
   paramsB2B.tanggal_sampai  = tanggal_sampai
   Object.assign(dateDraftB2B, { tanggal_dari, tanggal_sampai })
@@ -2787,24 +2521,10 @@ function resetFiltersB2B() {
 function resetDirApprovalFilter() {
   const { tanggal_dari, tanggal_sampai } = getDefaultMonthRange()
   dirApprovalParams.search          = ''
-  dirApprovalParams.approval_status = 'PENDING'
-  dirApprovalParams.klien_ar_id     = null
   dirApprovalParams.tanggal_dari    = tanggal_dari
   dirApprovalParams.tanggal_sampai  = tanggal_sampai
   Object.assign(dateDraftDirApproval, { tanggal_dari, tanggal_sampai })
   doDirFetch()
-}
-
-function resetDirObFilter() {
-  const { tanggal_dari, tanggal_sampai } = getDefaultMonthRange()
-  dirObParams.search          = ''
-  dirObParams.status          = ''
-  dirObParams.approval_status = 'APPROVED'
-  dirObParams.klien_ar_id     = null
-  dirObParams.tanggal_dari    = tanggal_dari
-  dirObParams.tanggal_sampai  = tanggal_sampai
-  Object.assign(dateDraftDirOb, { tanggal_dari, tanggal_sampai })
-  doDirObFetch()
 }
 
 // ── Fetch helpers: director approval table ─────────────────────────────────
@@ -2886,9 +2606,7 @@ function onDirObTableOptionsB2B({ page, itemsPerPage }) {
 function resetDirObFilterB2B() {
   const { tanggal_dari, tanggal_sampai } = getDefaultMonthRange()
   dirObParamsB2B.search          = ''
-  dirObParamsB2B.status          = ''
   dirObParamsB2B.approval_status = 'APPROVED'
-  dirObParamsB2B.klien_ar_id     = null
   dirObParamsB2B.tanggal_dari    = tanggal_dari
   dirObParamsB2B.tanggal_sampai  = tanggal_sampai
   Object.assign(dateDraftDirObB2B, { tanggal_dari, tanggal_sampai })
@@ -2898,9 +2616,7 @@ function resetDirObFilterB2B() {
 function resetDirObFilterB2C() {
   const { tanggal_dari, tanggal_sampai } = getDefaultMonthRange()
   dirObParams.search          = ''
-  dirObParams.status          = ''
   dirObParams.approval_status = 'APPROVED'
-  dirObParams.klien_ar_id     = null
   dirObParams.tanggal_dari    = tanggal_dari
   dirObParams.tanggal_sampai  = tanggal_sampai
   Object.assign(dateDraftDirOb, { tanggal_dari, tanggal_sampai })

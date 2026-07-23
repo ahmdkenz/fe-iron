@@ -49,30 +49,6 @@
           prepend-inner-icon="ri-search-line"
           @update:model-value="debouncedFetch"
         />
-        <VSelect
-          v-model="params.status"
-          placeholder="Semua Status"
-          clearable
-          hide-details
-          density="compact"
-          style="max-width: 150px"
-          :items="statusOptions"
-          item-title="label"
-          item-value="value"
-          @update:model-value="doFetch"
-        />
-        <VSelect
-          v-model="params.approval_status"
-          placeholder="Semua Approval"
-          clearable
-          hide-details
-          density="compact"
-          style="max-width: 180px"
-          :items="approvalOptions"
-          item-title="label"
-          item-value="value"
-          @update:model-value="doFetch"
-        />
         <VTextField
           v-model="dateDraft.tanggal_dari"
           label="Dari Tanggal"
@@ -374,19 +350,6 @@ const headers = [
   { title: 'Aksi', key: 'actions', sortable: false, align: 'center', width: '180px' },
 ]
 
-const statusOptions = [
-  { label: 'Draft', value: 'DRAFT' },
-  { label: 'Diterima', value: 'DITERIMA' },
-  { label: 'Sebagian', value: 'SEBAGIAN' },
-  { label: 'Lunas', value: 'LUNAS' },
-]
-
-const approvalOptions = [
-  { label: 'Menunggu Persetujuan', value: 'PENDING' },
-  { label: 'Disetujui', value: 'APPROVED' },
-  { label: 'Ditolak', value: 'REJECTED' },
-]
-
 let debounceTimer = null
 function debouncedFetch() {
   clearTimeout(debounceTimer)
@@ -410,8 +373,6 @@ function applyFilter() {
 
 function resetFilters() {
   params.search = ''
-  params.status = null
-  params.approval_status = null
   Object.assign(dateDraft, getCurrentMonthRange())
   params.tanggal_dari = dateDraft.tanggal_dari
   params.tanggal_sampai = dateDraft.tanggal_sampai
@@ -427,8 +388,6 @@ function onTableOptions({ page, itemsPerPage }) {
 function activeFilterParams() {
   return {
     search: params.search,
-    status: params.status,
-    approval_status: params.approval_status,
     tanggal_dari: params.tanggal_dari,
     tanggal_sampai: params.tanggal_sampai,
   }

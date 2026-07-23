@@ -220,37 +220,6 @@
             @update:model-value="debouncedFetchB2B"
           />
         </div>
-        <div style="min-width: 140px; max-width: 180px;">
-          <div class="text-caption text-medium-emphasis mb-2">Status</div>
-          <VSelect
-            v-model="filtersB2B.status"
-            placeholder="Semua Status"
-            clearable
-            hide-details
-            density="compact"
-            :items="statusOptions"
-            item-title="label"
-            item-value="value"
-            @update:model-value="doFetchB2B"
-          />
-        </div>
-        <div style="min-width: 180px; flex: 1; max-width: 260px;">
-          <div class="text-caption text-medium-emphasis mb-2">Klien</div>
-          <VAutocomplete
-            v-model="filtersB2B.klien_ar_id"
-            placeholder="Semua Klien"
-            clearable
-            hide-details
-            density="compact"
-            :items="klienListB2B"
-            item-title="display_label"
-            item-value="id"
-            :filter-keys="['display_label', 'display_subtitle']"
-            :loading="klienLoadingB2B"
-            @focus="ensureKlienB2BLoaded"
-            @update:model-value="doFetchB2B"
-          />
-        </div>
         <VDivider vertical style="height: 40px; align-self: flex-end;" class="d-none d-sm-block" />
         <div>
           <div class="text-caption text-medium-emphasis mb-2">Dari</div>
@@ -525,37 +494,6 @@
             density="compact"
             prepend-inner-icon="ri-search-line"
             @update:model-value="debouncedFetchB2C"
-          />
-        </div>
-        <div style="min-width: 140px; max-width: 180px;">
-          <div class="text-caption text-medium-emphasis mb-2">Status</div>
-          <VSelect
-            v-model="filtersB2C.status"
-            placeholder="Semua Status"
-            clearable
-            hide-details
-            density="compact"
-            :items="statusOptions"
-            item-title="label"
-            item-value="value"
-            @update:model-value="doFetchB2C"
-          />
-        </div>
-        <div style="min-width: 180px; flex: 1; max-width: 260px;">
-          <div class="text-caption text-medium-emphasis mb-2">Klien</div>
-          <VAutocomplete
-            v-model="filtersB2C.klien_ar_id"
-            placeholder="Semua Klien"
-            clearable
-            hide-details
-            density="compact"
-            :items="klienListB2C"
-            item-title="display_label"
-            item-value="id"
-            :filter-keys="['display_label', 'display_subtitle']"
-            :loading="klienLoadingB2C"
-            @focus="ensureKlienB2CLoaded"
-            @update:model-value="doFetchB2C"
           />
         </div>
         <VDivider vertical style="height: 40px; align-self: flex-end;" class="d-none d-sm-block" />
@@ -883,7 +821,6 @@ function getDefaultMonthRange() {
 }
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useCrud } from '@/composables/useCrud.js'
-import { useLazyFetchAll } from '@/composables/useLazyFetchAll.js'
 import { useFormatter } from '@/composables/useFormatter.js'
 import { useAuthStore } from '@/stores/auth.store'
 import api from '@/utils/axios.js'
@@ -904,17 +841,13 @@ const { showSuccess, showError, showLoading, closeAlert, confirmDelete: confirmD
 const authStore = useAuthStore()
 const { items: itemsB2C, loading: loadingB2C, meta: metaB2C, params: paramsB2C, fetchList: fetchListB2C, remove } = useCrud('/finance/invoices')
 const { items: itemsB2B, loading: loadingB2B, meta: metaB2B, params: paramsB2B, fetchList: fetchListB2B } = useCrud('/finance/invoices')
-const { items: klienListB2B, loading: klienLoadingB2B, fetchAll: fetchKlienB2B } = useCrud('/finance/klien-ar')
-const { items: klienListB2C, loading: klienLoadingB2C, fetchAll: fetchKlienB2C } = useCrud('/finance/klien-ar')
-const { ensureLoaded: ensureKlienB2BLoaded } = useLazyFetchAll(() => fetchKlienB2B({ params: { segment: 'B2B' } }))
-const { ensureLoaded: ensureKlienB2CLoaded } = useLazyFetchAll(() => fetchKlienB2C({ params: { segment: 'B2C' } }))
 const { formatCurrency, formatDate } = useFormatter()
 
 const canSeeAll = authStore.hasAnyRole(['ADMIN', 'MANAGER', 'SUPERVISOR'])
 
 const { tanggal_dari: defaultDari, tanggal_sampai: defaultSampai } = getDefaultMonthRange()
-const filtersB2B = reactive({ search: '', status: '', klien_ar_id: null })
-const filtersB2C = reactive({ search: '', status: '', klien_ar_id: null })
+const filtersB2B = reactive({ search: '' })
+const filtersB2C = reactive({ search: '' })
 const dateFiltersB2B = reactive({ tanggal_dari: defaultDari, tanggal_sampai: defaultSampai })
 const dateFiltersB2C = reactive({ tanggal_dari: defaultDari, tanggal_sampai: defaultSampai })
 
@@ -963,13 +896,6 @@ const headersB2B = [
   { title: 'Sisa Tagihan',     key: 'sisa_tagihan',         sortable: false },
   { title: 'Status',           key: 'status',               sortable: false },
   { title: 'Aksi',             key: 'actions',              sortable: false, align: 'center', width: '160px' },
-]
-
-const statusOptions = [
-  { label: 'Draft',    value: 'DRAFT'    },
-  { label: 'Terkirim', value: 'TERKIRIM' },
-  { label: 'Sebagian', value: 'SEBAGIAN' },
-  { label: 'Lunas',    value: 'LUNAS'    },
 ]
 
 let listControllerB2C = null
@@ -1063,7 +989,7 @@ function applyDateFiltersB2C() {
 
 function resetFiltersB2B() {
   const { tanggal_dari, tanggal_sampai } = getDefaultMonthRange()
-  Object.assign(filtersB2B, { search: '', status: '', klien_ar_id: null })
+  Object.assign(filtersB2B, { search: '' })
   Object.assign(dateFiltersB2B, { tanggal_dari, tanggal_sampai })
   Object.assign(paramsB2B, filtersB2B, dateFiltersB2B)
   paramsB2B.page = 1
@@ -1072,7 +998,7 @@ function resetFiltersB2B() {
 
 function resetFiltersB2C() {
   const { tanggal_dari, tanggal_sampai } = getDefaultMonthRange()
-  Object.assign(filtersB2C, { search: '', status: '', klien_ar_id: null })
+  Object.assign(filtersB2C, { search: '' })
   Object.assign(dateFiltersB2C, { tanggal_dari, tanggal_sampai })
   Object.assign(paramsB2C, filtersB2C, dateFiltersB2C)
   paramsB2C.page = 1
@@ -1120,12 +1046,9 @@ async function exportExcel() {
   showLoading({ title: 'Mengeksport Data Invoice', text: 'Mohon tunggu sebentar...' })
   try {
     const { tanggal_dari, tanggal_sampai } = monthToRange(exportMonth.value)
-    const isB2B   = canSeeAll && activeSegmentTab.value === 'b2b'
-    const filters = isB2B ? filtersB2B : filtersB2C
+    const isB2B = canSeeAll && activeSegmentTab.value === 'b2b'
 
     const query = new URLSearchParams()
-    if (filters.status)      query.set('status', filters.status)
-    if (filters.klien_ar_id) query.set('klien_ar_id', filters.klien_ar_id)
     query.set('tanggal_dari', tanggal_dari)
     query.set('tanggal_sampai', tanggal_sampai)
     query.set('segment', isB2B ? 'B2B' : 'B2C')
