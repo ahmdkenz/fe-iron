@@ -2,6 +2,7 @@ import { setupLayouts } from 'virtual:meta-layouts'
 import { createRouter, createWebHistory } from 'vue-router'
 import routes from '@/router/index'
 import { useAuthStore } from '@/stores/auth.store'
+import { hasSessionMarker } from '@/utils/session-marker'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -27,18 +28,23 @@ function normalizeRoles(user) {
   return [...new Set(roles.filter(Boolean))]
 }
 
-// Auth guard — reads from Pinia store (populated by bootstrap fetchMe before mount)
+// Auth guard — resolves auth state per-route (no global bootstrap check anymore)
 router.beforeEach(async (to, _from, next) => {
   const authStore = useAuthStore()
+  const requiresAuth = to.matched.some(r => r.meta.requiresAuth)
+  const requiresGuest = to.matched.some(r => r.meta.requiresGuest)
 
-  // Tunggu auth selesai diinisialisasi agar guard tidak membaca user === null
-  // saat fetchMe() belum selesai (race condition on initial navigation).
-  await authStore.initAuth()
+  // Protected route: selalu cek sesi penuh, silent refresh diizinkan.
+  // Halaman guest (mis. /login): tanpa marker sesi, jangan tembak /auth/me
+  // sama sekali — browser ini belum pernah login, pasti 401 tanpa cookie
+  // apapun. Kalau marker ada, cek ulang supaya user yang masih login
+  // (token mungkin sudah expired tapi refresh token masih hidup) tetap
+  // diarahkan ke home, bukan disodori form login lagi.
+  if (requiresAuth || (requiresGuest && hasSessionMarker()))
+    await authStore.initAuth()
 
   const isLoggedIn = authStore.isLoggedIn
   const roles = normalizeRoles(authStore.user)
-  const requiresAuth = to.matched.some(r => r.meta.requiresAuth)
-  const requiresGuest = to.matched.some(r => r.meta.requiresGuest)
   const routeRoles = to.matched.flatMap(r => r.meta.roles ?? [])
 
   // AP murni tidak punya akses ke dashboard global, jadi "home"-nya adalah ap-dashboard.

@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { clearSessionMarker } from '@/utils/session-marker'
 
 // VITE_API_BASE_URL sudah termasuk '/api/v1'; endpoint csrf-cookie ada di root.
 const API_ORIGIN = import.meta.env.VITE_API_BASE_URL.replace(/\/api\/v1\/?$/, '')
@@ -56,6 +57,12 @@ api.interceptors.response.use(
     const isAuthRefresh = originalRequest?.url?.endsWith('/auth/refresh')
     const isAuthLogin   = originalRequest?.url?.endsWith('/auth/login')
 
+    // Guest-mode /auth/me (mis. cek sesi di halaman login) sengaja tidak boleh
+    // memicu refresh sama sekali — tanpa cookie sesi, refresh pasti gagal 401 juga,
+    // jadi ini murni derau di console/network tab tanpa cookie apapun.
+    if (status === 401 && originalRequest?.skipAuthRefresh)
+      return Promise.reject(error)
+
     // 419 = CSRF token basi/hilang (sesi Laravel expired, XSRF-TOKEN belum
     // pernah di-set, dll). Self-heal: ambil cookie XSRF baru, retry sekali.
     // Berlaku untuk SEMUA request termasuk /auth/login & /auth/refresh.
@@ -88,6 +95,9 @@ api.interceptors.response.use(
         return api(originalRequest)
       } catch (refreshError) {
         processQueue(refreshError)
+        // refresh_token invalid/habis — sesi benar-benar berakhir, jadi guard
+        // di /login tidak perlu cek /auth/me lagi sampai user login ulang.
+        clearSessionMarker()
         // Untuk /auth/me, biarkan store yang menangani state "belum login" —
         // redirect paksa di sini bisa memicu loop saat bootstrap awal.
         if (!isAuthMe) {

@@ -372,6 +372,10 @@
     "openLoadingPrintTab": true,
     "openPrintTab": true,
     "AP_ITEM_RECEIPT_STATUS_MAP": true,
-    "clearFetchAllCache": true
+    "clearFetchAllCache": true,
+    "SESSION_MARKER_KEY": true,
+    "clearSessionMarker": true,
+    "hasSessionMarker": true,
+    "setSessionMarker": true
   }
 }

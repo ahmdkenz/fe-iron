@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import api from '@/utils/axios'
 import { clearFetchAllCache } from '@/composables/useCrud'
+import { clearSessionMarker, setSessionMarker } from '@/utils/session-marker'
 
 // Module-level singleton — bukan Pinia state karena Promise tidak serializable.
 // Menyimpan satu promise yang sama agar fetchMe() tidak dipanggil dua kali.
@@ -89,9 +90,27 @@ export const useAuthStore = defineStore('auth', {
   },
 
   actions: {
-    initAuth() {
+    // allowRefresh: false → dipakai guard di route requiresGuest (mis. /login).
+    // Cek /auth/me tanpa izin auto-refresh, dan sengaja tidak lewat _initPromise
+    // singleton supaya tidak meninggalkan state "belum dicek dengan refresh"
+    // yang stale begitu user login dan pindah ke route requiresAuth.
+    // force: true → abaikan _initPromise lama, paksa fetchMe ulang (dipakai
+    // setelah reload paksa/butuh data user terbaru).
+    initAuth({ allowRefresh = true, force = false } = {}) {
+      if (!allowRefresh) {
+        return this.fetchMe({ allowRefresh: false }).catch(error => {
+          this.user = null
+
+          if (error?.response?.status !== 401)
+            console.error('Gagal memuat sesi user:', error)
+        })
+      }
+
+      if (force)
+        _initPromise = null
+
       if (!_initPromise) {
-        _initPromise = this.fetchMe().catch(error => {
+        _initPromise = this.fetchMe({ allowRefresh: true }).catch(error => {
           this.user = null
 
           // 401 murni berarti memang belum login — state normal, tidak perlu di-log.
@@ -110,10 +129,11 @@ export const useAuthStore = defineStore('auth', {
 
       clearFetchAllCache()
       this.user = data.data.user
+      setSessionMarker()
     },
 
-    async fetchMe() {
-      const { data } = await api.get('/auth/me')
+    async fetchMe({ allowRefresh = true } = {}) {
+      const { data } = await api.get('/auth/me', { skipAuthRefresh: !allowRefresh })
       const nextUser = data.data
 
       // Sesi bisa berganti user (mis. token direstore untuk akun lain) tanpa
@@ -128,6 +148,7 @@ export const useAuthStore = defineStore('auth', {
       await api.post('/auth/logout').catch(() => {})
       localStorage.removeItem('auth_token')
       localStorage.removeItem('refresh_token')
+      clearSessionMarker()
       clearFetchAllCache()
       this.user = null
     },
