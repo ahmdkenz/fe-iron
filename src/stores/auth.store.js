@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import api from '@/utils/axios'
+import { clearFetchAllCache } from '@/composables/useCrud'
 
 // Module-level singleton — bukan Pinia state karena Promise tidak serializable.
 // Menyimpan satu promise yang sama agar fetchMe() tidak dipanggil dua kali.
@@ -107,19 +108,27 @@ export const useAuthStore = defineStore('auth', {
     async login(username, password) {
       const { data } = await api.post('/auth/login', { username, password })
 
+      clearFetchAllCache()
       this.user = data.data.user
     },
 
     async fetchMe() {
       const { data } = await api.get('/auth/me')
+      const nextUser = data.data
 
-      this.user = data.data
+      // Sesi bisa berganti user (mis. token direstore untuk akun lain) tanpa
+      // lewat login()/logout() eksplisit — bersihkan cache dropdown lama.
+      if (this.user && nextUser && this.user.id !== nextUser.id)
+        clearFetchAllCache()
+
+      this.user = nextUser
     },
 
     async logout() {
       await api.post('/auth/logout').catch(() => {})
       localStorage.removeItem('auth_token')
       localStorage.removeItem('refresh_token')
+      clearFetchAllCache()
       this.user = null
     },
   },

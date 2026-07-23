@@ -371,6 +371,7 @@
     "ensureCsrfCookie": true,
     "openLoadingPrintTab": true,
     "openPrintTab": true,
-    "AP_ITEM_RECEIPT_STATUS_MAP": true
+    "AP_ITEM_RECEIPT_STATUS_MAP": true,
+    "clearFetchAllCache": true
   }
 }

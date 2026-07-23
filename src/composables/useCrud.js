@@ -15,6 +15,17 @@ function invalidateFetchAllCache(endpoint) {
 }
 
 /**
+ * Bersihkan seluruh cache fetchAll lintas endpoint. fetchAllCache adalah
+ * singleton module-level (dipakai bersama semua instance useCrud), jadi
+ * kalau tidak dibersihkan saat ganti user, data user sebelumnya (mis. daftar
+ * Client PIC AR lain) bisa kebawa ke sesi user berikutnya di browser yang sama.
+ */
+export function clearFetchAllCache() {
+  fetchAllCache.clear()
+  fetchAllRequests.clear()
+}
+
+/**
  * Generic CRUD composable
  * @param {string} endpoint - API endpoint e.g. '/iam/users'
  * @param {object} [options]

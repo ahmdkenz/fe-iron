@@ -338,6 +338,19 @@
                 :loading="isEditing && karyawanLoading"
                 readonly
               />
+              <VTextField
+                v-else-if="!isB2B"
+                :model-value="selectedResto?.pic?.nama_karyawan ?? ''"
+                label="PIC AR (Staff Penagihan)"
+                density="compact"
+                variant="outlined"
+                :rules="[() => !!form.karyawan_ar_id || 'Pilih Resto dengan PIC terlebih dahulu']"
+                :error-messages="errors.karyawan_ar_id"
+                :loading="restoLoading"
+                readonly
+                hint="Mengikuti PIC Resto yang dipilih — ubah di Data Resto bila perlu"
+                persistent-hint
+              />
               <VAutocomplete
                 v-else
                 v-model="form.karyawan_ar_id"
@@ -584,6 +597,8 @@ const panduanTab        = ref('b2c')
 
 const selectedRestoInvestor = ref(null)
 
+const selectedResto = computed(() => restoList.value?.find(r => r.id === form.resto_id) ?? null)
+
 const statusOptions = BOOLEAN_STATUS_OPTIONS
 
 const displayKaryawan = computed(() => {
@@ -638,25 +653,22 @@ watch(() => form.tipe_klien, newType => {
   if (newType) panduanTab.value = newType === 'PT' ? 'b2b' : 'b2c'
 })
 
-watch(() => form.karyawan_ar_id, (newId, oldId) => {
-  if (!isArRole.value && newId !== oldId && !isEditing.value) {
-    form.resto_id = null
-    selectedRestoInvestor.value = null
-  }
-})
-
 function onRestoChange(restoId) {
   if (!restoId) {
     selectedRestoInvestor.value = null
+    if (!isArRole.value) form.karyawan_ar_id = null
     return
   }
 
-  const selectedResto = restoList.value?.find(r => r.id === restoId)
-  selectedRestoInvestor.value = selectedResto?.investor ?? null
+  const resto = restoList.value?.find(r => r.id === restoId)
+  selectedRestoInvestor.value = resto?.investor ?? null
 
   if (selectedRestoInvestor.value?.nama_investor && !form.nama_klien) {
     form.nama_klien = selectedRestoInvestor.value.nama_investor
   }
+
+  // PIC AR untuk tipe RESTO mengikuti PIC Resto — dipaksa juga di backend (KlienArService).
+  if (!isArRole.value) form.karyawan_ar_id = resto?.karyawan_id ?? null
 }
 
 async function handleSubmit() {
