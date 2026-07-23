@@ -450,6 +450,7 @@
                   :value="formatCurrency(invoice.subtotal)"
                 />
                 <DetailRow
+                  v-if="invoice.is_opening_balance"
                   label="Tagihan Sebelumnya"
                   :value="formatCurrency(invoice.tagihan_periode_sebelumnya)"
                 />

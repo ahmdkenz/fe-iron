@@ -31,12 +31,12 @@
         </div>
 
         <div class="text-caption text-medium-emphasis text-uppercase font-weight-medium mb-2" style="letter-spacing: 0.6px">
-          Pilih Invoice B2C (investor yang sama)
+          Pilih Invoice B2C (klien/resto yang sama)
         </div>
 
         <VProgressLinear v-if="invoiceB2CLoading" indeterminate color="primary" class="mb-3" rounded />
         <VAlert v-if="!invoiceB2CLoading && invoiceB2CList.length === 0" type="info" variant="tonal" density="compact" class="mb-3">
-          Tidak ada invoice B2C yang terbuka untuk investor ini.
+          Tidak ada invoice B2C yang terbuka untuk klien/resto ini.
         </VAlert>
 
         <div v-if="invoiceB2CList.length > 0" class="d-flex flex-column gap-2 mb-3">
