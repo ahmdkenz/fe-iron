@@ -11,14 +11,30 @@ import { cookieRef } from '@/@layouts/stores/config'
 import '@core/scss/template/libs/vuetify/index.scss'
 import 'vuetify/styles'
 
+// Warna primary lama (Bootstrap blue) dari skin sebelum di-restore ke skin admin ungu.
+// Cookie yang masih menyimpan warna ini belum pernah di-custom manual oleh user secara
+// sadar (nilai ini hanya pernah jadi default lama), jadi aman dialihkan otomatis ke
+// default baru. Warna custom lain yang benar-benar dipilih user tetap dipertahankan.
+const legacyLightPrimaryColors = ['#0d6efd', '#0D6EFD']
+const legacyLightPrimaryDarkenColors = ['#0b5ed7', '#0B5ED7']
+
+function resolveLightPrimaryColor(cookieKey, legacyColors, fallback) {
+  const colorRef = cookieRef(cookieKey, fallback)
+
+  if (legacyColors.includes(colorRef.value))
+    colorRef.value = fallback
+
+  return colorRef.value
+}
+
 export default function (app) {
   const cookieThemeValues = {
     defaultTheme: resolveVuetifyTheme(themeConfig.app.theme),
     themes: {
       light: {
         colors: {
-          'primary': cookieRef('lightThemePrimaryColor', staticPrimaryColor).value,
-          'primary-darken-1': cookieRef('lightThemePrimaryDarkenColor', staticPrimaryDarkenColor).value,
+          'primary': resolveLightPrimaryColor('lightThemePrimaryColor', legacyLightPrimaryColors, staticPrimaryColor),
+          'primary-darken-1': resolveLightPrimaryColor('lightThemePrimaryDarkenColor', legacyLightPrimaryDarkenColors, staticPrimaryDarkenColor),
         },
       },
       dark: {

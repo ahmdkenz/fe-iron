@@ -497,7 +497,7 @@
                 size="18"
               />
             </VAvatar>
-            <span class="text-subtitle-1 font-weight-semibold">Opening Balance B2C</span>
+            <span class="text-subtitle-1 font-weight-semibold">{{ b2cTableTitle }}</span>
           </div>
           <VBtn
             variant="text"
@@ -1945,7 +1945,7 @@
 
 <script setup>
 /* eslint-disable camelcase */
-import { defineAsyncComponent, onActivated, onBeforeUnmount, onDeactivated, reactive, ref } from 'vue'
+import { computed, defineAsyncComponent, onActivated, onBeforeUnmount, onDeactivated, reactive, ref } from 'vue'
 
 function getDefaultMonthRange() {
   const now = new Date()
@@ -1986,6 +1986,7 @@ const { items: itemsB2B, loading: loadingB2B, meta: metaB2B, params: paramsB2B, 
 const { formatCurrency, formatDate } = useFormatter()
 
 const canSeeAll = authStore.hasAnyRole(['ADMIN', 'MANAGER', 'SUPERVISOR'])
+const b2cTableTitle = computed(() => authStore.isArOnly ? 'Table Opening Balance' : 'Opening Balance B2C')
 
 const { tanggal_dari: defaultDari, tanggal_sampai: defaultSampai } = getDefaultMonthRange()
 

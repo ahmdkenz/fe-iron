@@ -1,12 +1,17 @@
 // ─── Light mode refinements ───────────────────────────────────────────────
-// Soft light palette — background #EEF3F8, sidebar navy #0B1730, primary Bootstrap blue #0d6efd
+// Skin admin light — canvas warm #F5F1EE, sidebar navy gelap #0B1730,
+// primary ungu #666CFF, aksen kuning #FDB528 (lihat plugins/vuetify/theme.js)
 
-.v-theme--light {
-  // Sidebar: navy gelap lembut
-  .layout-vertical-nav {
+.v-application.v-theme--light {
+  // Sidebar: navy gelap lembut.
+  // Selector lewat .vertical-nav-wrapper karena sidebar dibungkus VThemeProvider
+  // (lihat @core/composable/useSkins.js) yang bisa menyisipkan class v-theme--dark
+  // di tengah pohon DOM saat mode semi-dark aktif — path eksplisit ini memastikan
+  // override tetap menang tanpa bergantung urutan/­specificity CSS variable Vuetify.
+  .vertical-nav-wrapper .layout-vertical-nav {
     background-color: #0B1730 !important;
-    border-right: 1px solid rgba(15, 23, 42, 0.25) !important;
-    box-shadow: 4px 0 20px rgba(15, 23, 42, 0.18) !important;
+    border-right: 1px solid rgba(51, 46, 42, 0.25) !important;
+    box-shadow: 4px 0 20px rgba(51, 46, 42, 0.18) !important;
 
     // Teks nav items terang agar terbaca di atas sidebar navy
     .nav-item-title,
@@ -50,36 +55,36 @@
   .layout-navbar {
     background-color: rgba(255, 255, 255, 0.95) !important;
     backdrop-filter: blur(12px) !important;
-    border-bottom: 1px solid #DFE7F0 !important;
-    box-shadow: 0 1px 10px rgba(15, 23, 42, 0.05) !important;
-    color: #172033;
+    border-bottom: 1px solid #E7E0D9 !important;
+    box-shadow: 0 1px 10px rgba(51, 46, 42, 0.05) !important;
+    color: #332E2A;
   }
 
   // Content area safeguard — explicit dark text agar tidak tertimpa warna putih
   .layout-page-content {
-    color: #172033;
+    color: #332E2A;
   }
 
   // Card: putih dengan border tipis & shadow rendah
   .v-card {
     background-color: #ffffff !important;
-    border: 1px solid #DFE7F0 !important;
-    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.07) !important;
+    border: 1px solid #E7E0D9 !important;
+    box-shadow: 0 10px 30px rgba(51, 46, 42, 0.07) !important;
   }
 
   // Dialog
   .v-overlay__content > .v-card,
   .v-dialog > .v-overlay__content > .v-card {
     background-color: #ffffff !important;
-    box-shadow: 0 8px 40px rgba(15, 23, 42, 0.12) !important;
+    box-shadow: 0 8px 40px rgba(51, 46, 42, 0.12) !important;
   }
 
   // Dropdown / Menu
   .v-menu > .v-overlay__content > .v-list,
   .v-select__content > .v-list {
     background-color: #ffffff !important;
-    border: 1px solid #DFE7F0 !important;
-    box-shadow: 0 6px 28px rgba(15, 23, 42, 0.09) !important;
+    border: 1px solid #E7E0D9 !important;
+    box-shadow: 0 6px 28px rgba(51, 46, 42, 0.09) !important;
   }
 
   // Input field: putih dengan border tipis
@@ -88,18 +93,18 @@
   }
 
   .v-field__outline::before {
-    border-color: #DFE7F0 !important;
+    border-color: #E7E0D9 !important;
   }
 
   // Data table header
   .v-data-table > .v-table__wrapper > table > thead > tr > th {
-    background-color: #F8FAFC !important;
-    color: #667085 !important;
+    background-color: #F3EFEB !important;
+    color: #7A7266 !important;
     letter-spacing: 0.02em;
   }
 
   .v-data-table__tr--odd > td {
-    background-color: #F8FAFC !important;
+    background-color: #FAF8F6 !important;
   }
 
   // Chip
@@ -109,16 +114,16 @@
 
   // Scrollbar
   ::-webkit-scrollbar-track {
-    background: #F8FAFC;
+    background: #FAF8F6;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #CBD5E1;
+    background: #D6CCC0;
     border-radius: 4px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: #94A3B8;
+    background: #A79C8E;
   }
 
   // Breadcrumb: hapus glass box & pill background di light mode → plain text style
@@ -142,8 +147,8 @@
 
   // Footer
   .layout-footer {
-    background-color: #EEF3F8 !important;
-    border-top: 1px solid #DFE7F0 !important;
+    background-color: #F5F1EE !important;
+    border-top: 1px solid #E7E0D9 !important;
   }
 }
 

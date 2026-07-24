@@ -266,7 +266,7 @@
       <VCard v-if="activeSegmentTab === 'b2c'">
         <VCardTitle class="px-4 pt-4 pb-0 text-body-1 font-weight-bold d-flex align-center gap-2">
           <VIcon icon="ri-store-line" size="20" color="secondary" />
-          Ending Balance B2C
+          {{ b2cTableTitle }}
         </VCardTitle>
         <VCardText class="d-flex flex-wrap align-center gap-3 pb-0">
           <VTextField
@@ -1123,7 +1123,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, defineComponent, h } from 'vue'
+import { computed, ref, reactive, onMounted, defineComponent, h } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.store'
 import api from '@/utils/axios'
@@ -1223,6 +1223,7 @@ const EbInvoiceBreakdown = defineComponent({
 
 const authStore = useAuthStore()
 const canSeeAll = authStore.hasAnyRole(['ADMIN', 'MANAGER', 'SUPERVISOR'])
+const b2cTableTitle = computed(() => authStore.isArOnly ? 'Table Ending Balance' : 'Ending Balance B2C')
 
 // ─── State B2C ────────────────────────────────────────────────────────────────
 const loading     = ref(false)

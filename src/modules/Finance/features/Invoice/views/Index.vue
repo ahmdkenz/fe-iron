@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div>
     <PageHeader
       title="Invoice AR"
@@ -470,7 +470,7 @@
               size="18"
             />
           </VAvatar>
-          <span class="text-subtitle-1 font-weight-semibold">Invoice B2C</span>
+          <span class="text-subtitle-1 font-weight-semibold">{{ invoiceB2CTableTitle }}</span>
         </div>
         <VBtn
           variant="text"
@@ -807,7 +807,7 @@
 </template>
 
 <script setup>
-import { defineAsyncComponent, nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
+import { computed, defineAsyncComponent, nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 
 function getDefaultMonthRange() {
   const now = new Date()
@@ -844,6 +844,7 @@ const { items: itemsB2B, loading: loadingB2B, meta: metaB2B, params: paramsB2B, 
 const { formatCurrency, formatDate } = useFormatter()
 
 const canSeeAll = authStore.hasAnyRole(['ADMIN', 'MANAGER', 'SUPERVISOR'])
+const invoiceB2CTableTitle = computed(() => authStore.isArOnly ? 'Table Invoice' : 'Invoice B2C')
 
 const { tanggal_dari: defaultDari, tanggal_sampai: defaultSampai } = getDefaultMonthRange()
 const filtersB2B = reactive({ search: '' })
