@@ -1,12 +1,12 @@
 // ─── Light mode refinements ───────────────────────────────────────────────
-// TailAdmin palette — background #f4f6f9, sidebar navy #1C2434, primary Bootstrap blue #0d6efd
+// Soft light palette — background #EEF3F8, sidebar navy #0B1730, primary Bootstrap blue #0d6efd
 
 .v-theme--light {
-  // Sidebar: TailAdmin dark navy #1C2434
+  // Sidebar: navy gelap lembut
   .layout-vertical-nav {
-    background-color: #1C2434 !important;
-    border-right: 1px solid rgba(0, 0, 0, 0.25) !important;
-    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.18) !important;
+    background-color: #0B1730 !important;
+    border-right: 1px solid rgba(15, 23, 42, 0.25) !important;
+    box-shadow: 4px 0 20px rgba(15, 23, 42, 0.18) !important;
 
     // Teks nav items terang agar terbaca di atas sidebar navy
     .nav-item-title,
@@ -16,7 +16,7 @@
       color: rgba(255, 255, 255, 0.85) !important;
     }
 
-    // Section title text — lebih subtle seperti TailAdmin
+    // Section title text — lebih subtle
     .nav-section-title .title-text {
       color: rgba(255, 255, 255, 0.40) !important;
     }
@@ -41,7 +41,7 @@
     // Hover state
     .v-list-item:hover,
     .nav-link > a:not(.router-link-active, .router-link-exact-active):hover {
-      background-color: rgba(255, 255, 255, 0.08) !important;
+      background-color: #10213F !important;
     }
   }
 
@@ -50,56 +50,56 @@
   .layout-navbar {
     background-color: rgba(255, 255, 255, 0.95) !important;
     backdrop-filter: blur(12px) !important;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.10) !important;
-    box-shadow: 0 1px 10px rgba(0, 0, 0, 0.06) !important;
-    color: #212529;
+    border-bottom: 1px solid #DFE7F0 !important;
+    box-shadow: 0 1px 10px rgba(15, 23, 42, 0.05) !important;
+    color: #172033;
   }
 
   // Content area safeguard — explicit dark text agar tidak tertimpa warna putih
   .layout-page-content {
-    color: #212529;
+    color: #172033;
   }
 
-  // Card: putih dengan shadow netral
+  // Card: putih dengan border tipis & shadow rendah
   .v-card {
     background-color: #ffffff !important;
-    border: 1px solid rgba(0, 0, 0, 0.09) !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+    border: 1px solid #DFE7F0 !important;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.07) !important;
   }
 
   // Dialog
   .v-overlay__content > .v-card,
   .v-dialog > .v-overlay__content > .v-card {
     background-color: #ffffff !important;
-    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.13) !important;
+    box-shadow: 0 8px 40px rgba(15, 23, 42, 0.12) !important;
   }
 
   // Dropdown / Menu
   .v-menu > .v-overlay__content > .v-list,
   .v-select__content > .v-list {
     background-color: #ffffff !important;
-    border: 1px solid rgba(0, 0, 0, 0.10) !important;
-    box-shadow: 0 6px 28px rgba(0, 0, 0, 0.10) !important;
+    border: 1px solid #DFE7F0 !important;
+    box-shadow: 0 6px 28px rgba(15, 23, 42, 0.09) !important;
   }
 
-  // Input field: putih dengan border abu Bootstrap
+  // Input field: putih dengan border tipis
   .v-field {
     background-color: #ffffff !important;
   }
 
   .v-field__outline::before {
-    border-color: rgba(0, 0, 0, 0.16) !important;
+    border-color: #DFE7F0 !important;
   }
 
-  // Data table header: Bootstrap grey
+  // Data table header
   .v-data-table > .v-table__wrapper > table > thead > tr > th {
-    background-color: #e9ecef !important;
-    color: rgba(33, 37, 41, 0.72) !important;
+    background-color: #F8FAFC !important;
+    color: #667085 !important;
     letter-spacing: 0.02em;
   }
 
   .v-data-table__tr--odd > td {
-    background-color: #f8f9fa !important;
+    background-color: #F8FAFC !important;
   }
 
   // Chip
@@ -107,18 +107,18 @@
     filter: saturate(0.88);
   }
 
-  // Scrollbar: Bootstrap grey tones
+  // Scrollbar
   ::-webkit-scrollbar-track {
-    background: #e9ecef;
+    background: #F8FAFC;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #ced4da;
+    background: #CBD5E1;
     border-radius: 4px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: #adb5bd;
+    background: #94A3B8;
   }
 
   // Breadcrumb: hapus glass box & pill background di light mode → plain text style
@@ -142,8 +142,8 @@
 
   // Footer
   .layout-footer {
-    background-color: #f4f6f9 !important;
-    border-top: 1px solid rgba(0, 0, 0, 0.09) !important;
+    background-color: #EEF3F8 !important;
+    border-top: 1px solid #DFE7F0 !important;
   }
 }
 
