@@ -9,7 +9,7 @@ export default [
     path: '/master/karyawan',
     name: 'master-karyawan',
     component: () => import('@/modules/Master/features/Karyawan/views/Index.vue'),
-    meta: { requiresAuth: true, roles: ['ADMIN'] },
+    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR'] },
   },
   {
     path: '/master/perusahaan',
@@ -45,13 +45,13 @@ export default [
     path: '/master/karyawan/create',
     name: 'master-karyawan-create',
     component: () => import('@/modules/Master/features/Karyawan/views/Form.vue'),
-    meta: { requiresAuth: true, roles: ['ADMIN'] },
+    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR'] },
   },
   {
     path: '/master/karyawan/:id/edit',
     name: 'master-karyawan-edit',
     component: () => import('@/modules/Master/features/Karyawan/views/Form.vue'),
-    meta: { requiresAuth: true, roles: ['ADMIN'] },
+    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR'] },
   },
   {
     path: '/master/perusahaan/create',

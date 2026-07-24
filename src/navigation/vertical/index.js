@@ -30,7 +30,7 @@ export default [
     title: 'Data Karyawan',
     to: { name: 'master-karyawan' },
     icon: { icon: 'ri-contacts-line' },
-    roles: ['ADMIN'],
+    roles: ['ADMIN', 'MANAGER', 'SUPERVISOR'],
     mobileNav: 'more',
   },
   {
