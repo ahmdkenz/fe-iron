@@ -122,7 +122,6 @@
         </div>
       </VCardText>
       <VDivider class="mt-2" />
-      <VProgressLinear v-if="loading" indeterminate color="primary" />
       <BaseTable
         :headers="headers"
         :items="paginatedRows"

@@ -12,6 +12,7 @@
       :items="items"
       :items-length="total"
       :loading="loading"
+      loading-text=""
       :items-per-page="perPage"
       :items-per-page-options="itemsPerPageOptions"
       :page="page"
@@ -21,6 +22,7 @@
       @update:options="handleOptionsUpdate"
       @update:model-value="v => emit('update:selected', v)"
     >
+      <template #loader />
       <template
         v-for="(_, name) in $slots"
         #[name]="slotProps"
@@ -39,11 +41,14 @@
       <div
         v-if="loading"
         class="base-table-mobile-state"
+        role="status"
+        aria-live="polite"
+        aria-label="Memuat data"
       >
         <VProgressCircular
           indeterminate
           color="primary"
-          size="28"
+          size="36"
         />
       </div>
       <div
@@ -93,6 +98,20 @@
           @update:model-value="p => handleOptionsUpdate({ page: p, itemsPerPage: perPage })"
         />
       </div>
+    </div>
+
+    <div
+      v-if="!isMobileCardView && loading"
+      class="base-table-overlay"
+      role="status"
+      aria-live="polite"
+      aria-label="Memuat data"
+    >
+      <VProgressCircular
+        indeterminate
+        color="primary"
+        size="36"
+      />
     </div>
   </div>
 </template>
@@ -409,6 +428,20 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+.base-table-wrapper {
+  position: relative;
+}
+
+.base-table-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(var(--v-theme-surface), 0.6);
+  z-index: 2;
+}
+
 .base-table--wrap-text :deep(.v-table__wrapper > table) {
   min-width: 100%;
   width: max-content;

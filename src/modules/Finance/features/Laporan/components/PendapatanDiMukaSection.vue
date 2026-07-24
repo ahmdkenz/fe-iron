@@ -131,11 +131,6 @@
 
     <!-- Tabel -->
     <VCard>
-      <VProgressLinear
-        v-if="loading"
-        indeterminate
-        color="deep-purple"
-      />
       <BaseTable
         :headers="headers"
         :items="paginatedRows"

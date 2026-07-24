@@ -106,7 +106,6 @@
 
     <!-- Tabel -->
     <VCard>
-      <VProgressLinear v-if="loading" indeterminate color="primary" />
       <BaseTable
         :headers="headers"
         :items="rows"

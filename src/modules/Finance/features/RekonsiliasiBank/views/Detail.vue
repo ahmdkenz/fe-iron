@@ -76,7 +76,6 @@
         </VBtnToggle>
       </VCardText>
       <VDivider class="mt-3" />
-      <VProgressLinear v-if="loading" indeterminate color="primary" />
       <BaseTable
         :headers="headers"
         :items="rows"

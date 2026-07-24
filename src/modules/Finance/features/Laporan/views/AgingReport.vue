@@ -163,11 +163,6 @@
         </div>
       </VCardText>
       <VDivider class="mt-2" />
-      <VProgressLinear
-        v-if="loading"
-        indeterminate
-        color="primary"
-      />
       <BaseTable
         v-model:expanded="expanded"
         :headers="headers"

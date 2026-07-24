@@ -128,7 +128,6 @@
       </div>
 
       <VDivider />
-      <VProgressLinear v-if="loading" indeterminate color="primary" height="3" />
 
       <BaseTable
         v-model:expanded="expanded"

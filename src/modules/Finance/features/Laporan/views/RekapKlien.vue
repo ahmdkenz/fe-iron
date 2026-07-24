@@ -122,7 +122,6 @@
 
     <!-- Tabel -->
     <VCard>
-      <VProgressLinear v-if="loading" indeterminate color="primary" />
       <BaseTable
         v-model:expanded="expanded"
         :headers="headers"
