@@ -6,7 +6,7 @@ export const useMinimizeWidgetStore = defineStore('minimize-widgets', {
   }),
 
   getters: {
-    minimizedWidgets: (state) => Object.values(state.widgets).filter(w => w.minimized),
+    minimizedWidgets: state => Object.values(state.widgets).filter(w => w.minimized),
   },
 
   actions: {

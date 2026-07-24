@@ -1,5 +1,11 @@
 <template>
-  <VDialog :model-value="modelValue" max-width="760" persistent scrollable @update:model-value="$emit('update:modelValue', $event)">
+  <VDialog
+    :model-value="modelValue"
+    max-width="760"
+    persistent
+    scrollable
+    @update:model-value="$emit('update:modelValue', $event)"
+  >
     <VCard>
       <VCardTitle class="pt-4 px-4 text-body-1 font-weight-bold d-flex align-center">
         <span>Ajukan Koreksi</span>
@@ -10,13 +16,20 @@
       </VCardTitle>
       <VDivider />
 
-      <VCardText class="pt-4" style="max-height: 70vh; overflow-y: auto;">
-
+      <VCardText
+        class="pt-4"
+        style="max-height: 70vh; overflow-y: auto;"
+      >
         <!-- ── Step 1: Pilih Tipe ── -->
         <template v-if="koreksiStep === 1">
-          <div class="text-body-2 font-weight-medium mb-3">Pilih jenis koreksi:</div>
+          <div class="text-body-2 font-weight-medium mb-3">
+            Pilih jenis koreksi:
+          </div>
           <VRow>
-            <VCol cols="12" sm="6">
+            <VCol
+              cols="12"
+              sm="6"
+            >
               <VCard
                 variant="outlined"
                 :color="koreksiForm.tipe === 'CREDIT_NOTE' ? 'error' : undefined"
@@ -25,20 +38,43 @@
                 @click="koreksiForm.tipe = 'CREDIT_NOTE'"
               >
                 <VCardText class="pa-4 d-flex align-center gap-3">
-                  <VAvatar size="44" color="error" variant="tonal" rounded="lg">
-                    <VIcon icon="ri-arrow-down-circle-line" size="22" />
+                  <VAvatar
+                    size="44"
+                    color="error"
+                    variant="tonal"
+                    rounded="lg"
+                  >
+                    <VIcon
+                      icon="ri-arrow-down-circle-line"
+                      size="22"
+                    />
                   </VAvatar>
                   <div class="flex-grow-1">
-                    <div class="font-weight-bold text-error">Credit Note</div>
-                    <div class="text-caption text-medium-emphasis">Pengurangan tagihan klien</div>
+                    <div class="font-weight-bold text-error">
+                      Credit Note
+                    </div>
+                    <div class="text-caption text-medium-emphasis">
+                      Pengurangan tagihan klien
+                    </div>
                   </div>
-                  <VAvatar v-if="koreksiForm.tipe === 'CREDIT_NOTE'" size="22" color="error">
-                    <VIcon icon="ri-check-line" size="14" color="white" />
+                  <VAvatar
+                    v-if="koreksiForm.tipe === 'CREDIT_NOTE'"
+                    size="22"
+                    color="error"
+                  >
+                    <VIcon
+                      icon="ri-check-line"
+                      size="14"
+                      color="white"
+                    />
                   </VAvatar>
                 </VCardText>
               </VCard>
             </VCol>
-            <VCol cols="12" sm="6">
+            <VCol
+              cols="12"
+              sm="6"
+            >
               <VCard
                 variant="outlined"
                 :color="koreksiForm.tipe === 'DEBIT_NOTE' ? 'info' : undefined"
@@ -47,20 +83,44 @@
                 @click="koreksiForm.tipe = 'DEBIT_NOTE'"
               >
                 <VCardText class="pa-4 d-flex align-center gap-3">
-                  <VAvatar size="44" color="info" variant="tonal" rounded="lg">
-                    <VIcon icon="ri-arrow-up-circle-line" size="22" />
+                  <VAvatar
+                    size="44"
+                    color="info"
+                    variant="tonal"
+                    rounded="lg"
+                  >
+                    <VIcon
+                      icon="ri-arrow-up-circle-line"
+                      size="22"
+                    />
                   </VAvatar>
                   <div class="flex-grow-1">
-                    <div class="font-weight-bold text-info">Debit Note</div>
-                    <div class="text-caption text-medium-emphasis">Penambahan tagihan klien</div>
+                    <div class="font-weight-bold text-info">
+                      Debit Note
+                    </div>
+                    <div class="text-caption text-medium-emphasis">
+                      Penambahan tagihan klien
+                    </div>
                   </div>
-                  <VAvatar v-if="koreksiForm.tipe === 'DEBIT_NOTE'" size="22" color="info">
-                    <VIcon icon="ri-check-line" size="14" color="white" />
+                  <VAvatar
+                    v-if="koreksiForm.tipe === 'DEBIT_NOTE'"
+                    size="22"
+                    color="info"
+                  >
+                    <VIcon
+                      icon="ri-check-line"
+                      size="14"
+                      color="white"
+                    />
                   </VAvatar>
                 </VCardText>
               </VCard>
             </VCol>
-            <VCol v-if="eb?.status === 'LOCKED'" cols="12" sm="6">
+            <VCol
+              v-if="eb?.status === 'LOCKED'"
+              cols="12"
+              sm="6"
+            >
               <VCard
                 variant="outlined"
                 :color="koreksiForm.tipe === 'KOREKSI_SALDO' ? 'secondary' : undefined"
@@ -69,15 +129,35 @@
                 @click="koreksiForm.tipe = 'KOREKSI_SALDO'"
               >
                 <VCardText class="pa-4 d-flex align-center gap-3">
-                  <VAvatar size="44" color="secondary" variant="tonal" rounded="lg">
-                    <VIcon icon="ri-funds-line" size="22" />
+                  <VAvatar
+                    size="44"
+                    color="secondary"
+                    variant="tonal"
+                    rounded="lg"
+                  >
+                    <VIcon
+                      icon="ri-funds-line"
+                      size="22"
+                    />
                   </VAvatar>
                   <div class="flex-grow-1">
-                    <div class="font-weight-bold text-secondary">Koreksi Saldo</div>
-                    <div class="text-caption text-medium-emphasis">Penyesuaian saldo tanpa invoice</div>
+                    <div class="font-weight-bold text-secondary">
+                      Koreksi Saldo
+                    </div>
+                    <div class="text-caption text-medium-emphasis">
+                      Penyesuaian saldo tanpa invoice
+                    </div>
                   </div>
-                  <VAvatar v-if="koreksiForm.tipe === 'KOREKSI_SALDO'" size="22" color="secondary">
-                    <VIcon icon="ri-check-line" size="14" color="white" />
+                  <VAvatar
+                    v-if="koreksiForm.tipe === 'KOREKSI_SALDO'"
+                    size="22"
+                    color="secondary"
+                  >
+                    <VIcon
+                      icon="ri-check-line"
+                      size="14"
+                      color="white"
+                    />
                   </VAvatar>
                 </VCardText>
               </VCard>
@@ -89,7 +169,13 @@
         <template v-else>
           <!-- Header step 2 -->
           <div class="d-flex align-center gap-2 mb-4">
-            <VChip :color="tipeBadgeColor(koreksiForm.tipe)" size="small" label>{{ tipeLabel(koreksiForm.tipe) }}</VChip>
+            <VChip
+              :color="tipeBadgeColor(koreksiForm.tipe)"
+              size="small"
+              label
+            >
+              {{ tipeLabel(koreksiForm.tipe) }}
+            </VChip>
             <span class="text-caption text-medium-emphasis">Lengkapi informasi koreksi di bawah ini</span>
           </div>
 
@@ -100,13 +186,26 @@
                 <div class="text-caption font-weight-medium text-medium-emphasis mb-2">
                   Pilih Invoice yang di-{{ koreksiForm.tipe === 'CREDIT_NOTE' ? 'kurangi' : 'tambah' }}
                 </div>
-                <div v-if="invoicesLoading" class="text-center py-4 text-medium-emphasis text-caption">
-                  <VProgressCircular indeterminate size="20" class="mr-2" /> Memuat invoice...
+                <div
+                  v-if="invoicesLoading"
+                  class="text-center py-4 text-medium-emphasis text-caption"
+                >
+                  <VProgressCircular
+                    indeterminate
+                    size="20"
+                    class="mr-2"
+                  /> Memuat invoice...
                 </div>
-                <div v-else-if="!invoices.length" class="text-center py-4 text-medium-emphasis text-caption">
+                <div
+                  v-else-if="!invoices.length"
+                  class="text-center py-4 text-medium-emphasis text-caption"
+                >
                   Tidak ada invoice tersedia.
                 </div>
-                <div v-else class="koreksi-invoice-list">
+                <div
+                  v-else
+                  class="koreksi-invoice-list"
+                >
                   <div
                     v-for="inv in invoices"
                     :key="inv.id"
@@ -117,8 +216,23 @@
                     <div class="flex-grow-1 min-w-0">
                       <div class="d-flex align-center gap-2 mb-1 flex-wrap">
                         <span class="text-body-2 font-weight-bold">{{ inv.no_invoice }}</span>
-                        <VChip size="x-small" :color="invoiceStatusColor(inv.status)" variant="tonal" label>{{ inv.status }}</VChip>
-                        <VChip v-if="isOverdue(inv)" size="x-small" color="error" variant="tonal" label>Jatuh Tempo</VChip>
+                        <VChip
+                          size="x-small"
+                          :color="invoiceStatusColor(inv.status)"
+                          variant="tonal"
+                          label
+                        >
+                          {{ inv.status }}
+                        </VChip>
+                        <VChip
+                          v-if="isOverdue(inv)"
+                          size="x-small"
+                          color="error"
+                          variant="tonal"
+                          label
+                        >
+                          Jatuh Tempo
+                        </VChip>
                       </div>
                       <div class="text-caption text-medium-emphasis">
                         {{ formatDate(inv.tanggal_invoice) }} · JT: {{ formatDate(inv.tanggal_jatuh_tempo) || '-' }}
@@ -128,16 +242,31 @@
                         <span class="text-medium-emphasis ms-2">/ {{ formatRp(inv.subtotal) }}</span>
                       </div>
                     </div>
-                    <VAvatar v-if="koreksiForm.invoice_id === inv.id" size="24" color="primary" class="flex-shrink-0">
-                      <VIcon icon="ri-check-line" size="14" color="white" />
+                    <VAvatar
+                      v-if="koreksiForm.invoice_id === inv.id"
+                      size="24"
+                      color="primary"
+                      class="flex-shrink-0"
+                    >
+                      <VIcon
+                        icon="ri-check-line"
+                        size="14"
+                        color="white"
+                      />
                     </VAvatar>
                   </div>
                 </div>
               </VCol>
             </VRow>
 
-            <div v-if="itemsLoading" class="text-center py-4">
-              <VProgressCircular indeterminate size="24" />
+            <div
+              v-if="itemsLoading"
+              class="text-center py-4"
+            >
+              <VProgressCircular
+                indeterminate
+                size="24"
+              />
               <span class="text-caption ml-2">Memuat item invoice...</span>
             </div>
 
@@ -145,25 +274,59 @@
               <div class="text-caption text-medium-emphasis mb-2 mt-3">
                 Edit qty dan harga baru (kosongkan jika tidak berubah):
               </div>
-              <VTable density="compact" class="eb-item-edit-table mb-3">
+              <VTable
+                density="compact"
+                class="eb-item-edit-table mb-3"
+              >
                 <thead>
                   <tr>
                     <th>Barang</th>
-                    <th class="text-end">Qty Lama</th>
-                    <th class="text-end">Harga Lama</th>
-                    <th class="text-end">Subtotal Lama</th>
-                    <th class="text-end" style="min-width: 110px">Qty Baru</th>
-                    <th class="text-end" style="min-width: 130px">Harga Baru</th>
-                    <th class="text-end">Subtotal Baru</th>
-                    <th class="text-end">Selisih</th>
+                    <th class="text-end">
+                      Qty Lama
+                    </th>
+                    <th class="text-end">
+                      Harga Lama
+                    </th>
+                    <th class="text-end">
+                      Subtotal Lama
+                    </th>
+                    <th
+                      class="text-end"
+                      style="min-width: 110px"
+                    >
+                      Qty Baru
+                    </th>
+                    <th
+                      class="text-end"
+                      style="min-width: 130px"
+                    >
+                      Harga Baru
+                    </th>
+                    <th class="text-end">
+                      Subtotal Baru
+                    </th>
+                    <th class="text-end">
+                      Selisih
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="(item, idx) in koreksiItems" :key="item.id">
-                    <td class="text-caption font-weight-medium">{{ item.nama_barang }}</td>
-                    <td class="text-end text-caption">{{ item.qty }}</td>
-                    <td class="text-end text-caption">{{ formatRp(item.harga_satuan) }}</td>
-                    <td class="text-end text-caption">{{ formatRp(item.subtotalLama) }}</td>
+                  <tr
+                    v-for="(item, idx) in koreksiItems"
+                    :key="item.id"
+                  >
+                    <td class="text-caption font-weight-medium">
+                      {{ item.nama_barang }}
+                    </td>
+                    <td class="text-end text-caption">
+                      {{ item.qty }}
+                    </td>
+                    <td class="text-end text-caption">
+                      {{ formatRp(item.harga_satuan) }}
+                    </td>
+                    <td class="text-end text-caption">
+                      {{ formatRp(item.subtotalLama) }}
+                    </td>
                     <td class="text-end">
                       <VTextField
                         v-model="item.qty_baru"
@@ -188,20 +351,32 @@
                         @update:model-value="recalcSelisih(idx)"
                       />
                     </td>
-                    <td class="text-end text-caption" :class="item.subtotalBaru != null ? (item.subtotalBaru < item.subtotalLama ? 'text-error' : 'text-success') : 'text-medium-emphasis'">
+                    <td
+                      class="text-end text-caption"
+                      :class="item.subtotalBaru != null ? (item.subtotalBaru < item.subtotalLama ? 'text-error' : 'text-success') : 'text-medium-emphasis'"
+                    >
                       {{ item.subtotalBaru != null ? formatRp(item.subtotalBaru) : '—' }}
                     </td>
-                    <td class="text-end font-weight-bold text-caption" :class="(item.selisih ?? 0) >= 0 ? 'text-success' : 'text-error'">
+                    <td
+                      class="text-end font-weight-bold text-caption"
+                      :class="(item.selisih ?? 0) >= 0 ? 'text-success' : 'text-error'"
+                    >
                       {{ item.selisih != null ? ((item.selisih >= 0 ? '+' : '') + formatRp(item.selisih)) : '—' }}
                     </td>
                   </tr>
                 </tbody>
                 <tfoot>
                   <tr>
-                    <td colspan="7" class="text-end font-weight-bold text-caption">
+                    <td
+                      colspan="7"
+                      class="text-end font-weight-bold text-caption"
+                    >
                       {{ koreksiForm.tipe === 'CREDIT_NOTE' ? 'Total Pengurangan:' : 'Total Penambahan:' }}
                     </td>
-                    <td class="text-end font-weight-bold" :class="totalSelisihItems >= 0 ? 'text-success' : 'text-error'">
+                    <td
+                      class="text-end font-weight-bold"
+                      :class="totalSelisihItems >= 0 ? 'text-success' : 'text-error'"
+                    >
                       {{ (totalSelisihItems >= 0 ? '+' : '') + formatRp(totalSelisihItems) }}
                     </td>
                   </tr>
@@ -268,7 +443,9 @@
           <template v-else-if="koreksiForm.tipe === 'KOREKSI_SALDO'">
             <VRow>
               <VCol cols="12">
-                <div class="text-caption text-medium-emphasis mb-2">Jenis Koreksi</div>
+                <div class="text-caption text-medium-emphasis mb-2">
+                  Jenis Koreksi
+                </div>
                 <VBtnToggle
                   v-model="koreksiForm.tipe_koreksi"
                   mandatory
@@ -278,8 +455,20 @@
                   class="mb-4"
                   style="width: 100%"
                 >
-                  <VBtn value="tambah" style="flex: 1" prepend-icon="ri-add-line">Tambah Saldo</VBtn>
-                  <VBtn value="kurangi" style="flex: 1" prepend-icon="ri-subtract-line">Kurangi Saldo</VBtn>
+                  <VBtn
+                    value="tambah"
+                    style="flex: 1"
+                    prepend-icon="ri-add-line"
+                  >
+                    Tambah Saldo
+                  </VBtn>
+                  <VBtn
+                    value="kurangi"
+                    style="flex: 1"
+                    prepend-icon="ri-subtract-line"
+                  >
+                    Kurangi Saldo
+                  </VBtn>
                 </VBtnToggle>
                 <VTextField
                   v-model="koreksiForm.nilai"
@@ -311,19 +500,41 @@
             </VRow>
           </template>
 
-          <VAlert type="info" density="compact" variant="tonal" icon="ri-shield-check-line" class="mt-4">
+          <VAlert
+            type="info"
+            density="compact"
+            variant="tonal"
+            icon="ri-shield-check-line"
+            class="mt-4"
+          >
             Semua koreksi memerlukan persetujuan dua tahap: <strong>SPV</strong> lalu <strong>Manager</strong>. Saldo tidak berubah sampai keduanya menyetujui.
           </VAlert>
-          <VAlert v-if="koreksiError" type="error" class="mt-2" density="compact">{{ koreksiError }}</VAlert>
+          <VAlert
+            v-if="koreksiError"
+            type="error"
+            class="mt-2"
+            density="compact"
+          >
+            {{ koreksiError }}
+          </VAlert>
         </template>
-
       </VCardText>
 
       <VDivider />
       <VCardActions class="px-4 py-3">
-        <AppActionButton action="batalkan" :disabled="submittingKoreksi" @click="$emit('update:modelValue', false)" />
+        <AppActionButton
+          action="batalkan"
+          :disabled="submittingKoreksi"
+          @click="$emit('update:modelValue', false)"
+        />
         <VSpacer />
-        <VBtn v-if="koreksiStep === 2" variant="text" @click="koreksiStep = 1">Kembali</VBtn>
+        <VBtn
+          v-if="koreksiStep === 2"
+          variant="text"
+          @click="koreksiStep = 1"
+        >
+          Kembali
+        </VBtn>
         <AppActionButton
           v-if="koreksiStep === 1"
           action="lanjutkan"
@@ -356,14 +567,16 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue', 'submitted'])
 
 const koreksiStep = ref(1)
+
 const koreksiForm = reactive({
-  tipe:          '',
-  tipe_koreksi:  'tambah',  // untuk KOREKSI_SALDO: tambah | kurangi
-  invoice_id:    null,
-  nilai:         '',
-  alasan_koreksi:'',
-  dokumen_url:   '',
+  tipe: '',
+  tipe_koreksi: 'tambah',  // untuk KOREKSI_SALDO: tambah | kurangi
+  invoice_id: null,
+  nilai: '',
+  alasan_koreksi: '',
+  dokumen_url: '',
 })
+
 const submittingKoreksi = ref(false)
 const koreksiError      = ref('')
 
@@ -372,7 +585,7 @@ const koreksiItems  = ref([])   // { id, nama_barang, qty, harga_satuan, qty_bar
 const itemsLoading  = ref(false)
 
 const totalSelisihItems = computed(() =>
-  koreksiItems.value.reduce((s, i) => s + (i.selisih ?? 0), 0)
+  koreksiItems.value.reduce((s, i) => s + (i.selisih ?? 0), 0),
 )
 
 function formatRp(val) {
@@ -380,6 +593,7 @@ function formatRp(val) {
 }
 function formatDate(d) {
   if (!d) return '-'
+  
   return new Date(d).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 function invoiceStatusColor(s) {
@@ -394,6 +608,7 @@ function tipeLabel(tipe) {
 function sisaPerInvoice(inv) {
   if (inv.subtotal === 0) return inv.sisa_tagihan
   const net = inv.subtotal - inv.total_pembayaran - (inv.total_cn ?? 0) + (inv.total_dn ?? 0)
+  
   return Math.max(0, net)
 }
 function isOverdue(inv) {
@@ -426,17 +641,18 @@ async function onInvoiceSelectedForKoreksiItem(invoiceId) {
   try {
     const { data } = await api.get(`/finance/invoices/${invoiceId}/items`, { params: { all: true } })
     const items = data.data ?? []
+
     koreksiItems.value = items.map(i => ({
-      id:           i.id,
+      id: i.id,
       invoice_item_id: i.id,
-      nama_barang:  i.nama_barang,
-      qty:          Number(i.qty),
+      nama_barang: i.nama_barang,
+      qty: Number(i.qty),
       harga_satuan: Number(i.harga_satuan),
       subtotalLama: Math.round(Number(i.qty) * Number(i.harga_satuan) * 100) / 100,
-      qty_baru:     '',
-      harga_baru:   '',
+      qty_baru: '',
+      harga_baru: '',
       subtotalBaru: null,
-      selisih:      null,
+      selisih: null,
     }))
   } catch {
     koreksiItems.value = []
@@ -449,6 +665,7 @@ function recalcSelisih(idx) {
   const item = koreksiItems.value[idx]
   const qtyBaru    = Number(item.qty_baru) || item.qty
   const hargaBaru  = Number(item.harga_baru) || item.harga_satuan
+
   item.subtotalBaru = Math.round(qtyBaru * hargaBaru * 100) / 100
   item.selisih      = Math.round((item.subtotalBaru - item.subtotalLama) * 100) / 100
 }
@@ -460,41 +677,54 @@ async function submitKoreksiDialog() {
 
   if (!koreksiForm.alasan_koreksi) {
     koreksiError.value = 'Alasan koreksi wajib diisi.'
+    
     return
   }
 
   let payload = { tipe, alasan_koreksi: koreksiForm.alasan_koreksi, dokumen_url: koreksiForm.dokumen_url || null }
 
   if (tipe === 'CREDIT_NOTE' || tipe === 'DEBIT_NOTE') {
-    if (!koreksiForm.invoice_id) { koreksiError.value = 'Invoice wajib dipilih.'; return }
+    if (!koreksiForm.invoice_id) { koreksiError.value = 'Invoice wajib dipilih.' 
+
+      return }
     payload.invoice_id = koreksiForm.invoice_id
 
     const changedItems = koreksiItems.value.filter(i => i.qty_baru !== '' || i.harga_baru !== '')
     if (changedItems.length > 0) {
-      if (itemsLoading.value) { koreksiError.value = 'Tunggu item invoice selesai dimuat.'; return }
+      if (itemsLoading.value) { koreksiError.value = 'Tunggu item invoice selesai dimuat.' 
+
+        return }
       const total = changedItems.reduce((s, i) => s + (i.selisih ?? 0), 0)
       if (tipe === 'CREDIT_NOTE' && total >= 0) {
-        koreksiError.value = 'Credit Note harus menghasilkan pengurangan tagihan (total selisih harus negatif).'; return
+        koreksiError.value = 'Credit Note harus menghasilkan pengurangan tagihan (total selisih harus negatif).' 
+
+        return
       }
       if (tipe === 'DEBIT_NOTE' && total <= 0) {
-        koreksiError.value = 'Debit Note harus menghasilkan penambahan tagihan (total selisih harus positif).'; return
+        koreksiError.value = 'Debit Note harus menghasilkan penambahan tagihan (total selisih harus positif).' 
+
+        return
       }
       payload.items = changedItems.map(i => ({
-        invoice_item_id:   i.id,
-        qty_baru:          Number(i.qty_baru) || i.qty,
+        invoice_item_id: i.id,
+        qty_baru: Number(i.qty_baru) || i.qty,
         harga_satuan_baru: Number(i.harga_baru) || i.harga_satuan,
       }))
     } else {
       if (!koreksiForm.nilai || Number(koreksiForm.nilai) <= 0) {
         koreksiError.value = tipe === 'CREDIT_NOTE' ? 'Nilai pengurangan wajib diisi (> 0).' : 'Nilai penambahan wajib diisi (> 0).'
+        
         return
       }
       payload.nilai_koreksi = tipe === 'CREDIT_NOTE' ? -Math.abs(Number(koreksiForm.nilai)) : Math.abs(Number(koreksiForm.nilai))
     }
 
   } else if (tipe === 'KOREKSI_SALDO') {
-    if (!koreksiForm.nilai || Number(koreksiForm.nilai) <= 0) { koreksiError.value = 'Jumlah koreksi wajib diisi (> 0).'; return }
+    if (!koreksiForm.nilai || Number(koreksiForm.nilai) <= 0) { koreksiError.value = 'Jumlah koreksi wajib diisi (> 0).' 
+
+      return }
     const jumlah = Number(koreksiForm.nilai)
+
     payload.nilai_koreksi = koreksiForm.tipe_koreksi === 'tambah' ? jumlah : -jumlah
   }
 

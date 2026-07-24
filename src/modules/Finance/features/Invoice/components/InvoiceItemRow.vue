@@ -219,20 +219,6 @@ import { reactive, watch } from 'vue'
 import { useRemoteSearch } from '@/composables/useRemoteSearch'
 import api from '@/utils/axios'
 
-const createDefaultItem = () => ({
-  barang_id: null,
-  kode_barang: '',
-  nama_barang: '',
-  qty: 1,
-  satuan: 'pcs',
-  harga_satuan: 0,
-  subtotal: 0,
-  keterangan: '',
-  no_invoice_resto: '',
-  kode_resto: '',
-  nama_resto: '',
-})
-
 const props = defineProps({
   item: {
     type: Object,
@@ -265,6 +251,21 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:item', 'remove'])
+
+const createDefaultItem = () => ({
+  barang_id: null,
+  kode_barang: '',
+  nama_barang: '',
+  qty: 1,
+  satuan: 'pcs',
+  harga_satuan: 0,
+  subtotal: 0,
+  keterangan: '',
+  no_invoice_resto: '',
+  kode_resto: '',
+  nama_resto: '',
+})
+
 const numberFormatter = new Intl.NumberFormat('id-ID')
 const localItem = reactive(createDefaultItem())
 

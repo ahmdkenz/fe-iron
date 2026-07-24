@@ -40,7 +40,7 @@
           item-title="display_label"
           item-value="id"
           :loading="klienArLoading"
-          @focus="ensureKlienArLoaded()"
+          @focus="ensureKlienArLoaded"
           @update:model-value="doFetch"
         />
         <VSelect
@@ -100,38 +100,82 @@
 
     <!-- Summary Cards -->
     <VRow class="mb-4">
-      <VCol cols="12" sm="6" md="3">
-        <VCard color="primary" variant="tonal">
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
+        <VCard
+          color="primary"
+          variant="tonal"
+        >
           <VCardText class="pa-3">
-            <div class="text-caption font-weight-medium mb-1">Total Transaksi</div>
-            <div class="text-subtitle-1 font-weight-bold">{{ summary.total_transaksi }} transaksi</div>
+            <div class="text-caption font-weight-medium mb-1">
+              Total Transaksi
+            </div>
+            <div class="text-subtitle-1 font-weight-bold">
+              {{ summary.total_transaksi }} transaksi
+            </div>
           </VCardText>
         </VCard>
       </VCol>
-      <VCol cols="12" sm="6" md="3">
-        <VCard color="success" variant="tonal">
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
+        <VCard
+          color="success"
+          variant="tonal"
+        >
           <VCardText class="pa-3">
-            <div class="text-caption font-weight-medium mb-1">Total Nominal</div>
-            <div class="text-subtitle-1 font-weight-bold">{{ formatCurrency(summary.total_nominal) }}</div>
+            <div class="text-caption font-weight-medium mb-1">
+              Total Nominal
+            </div>
+            <div class="text-subtitle-1 font-weight-bold">
+              {{ formatCurrency(summary.total_nominal) }}
+            </div>
           </VCardText>
         </VCard>
       </VCol>
-      <VCol cols="12" sm="6" md="3">
-        <VCard color="info" variant="tonal">
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
+        <VCard
+          color="info"
+          variant="tonal"
+        >
           <VCardText class="pa-3">
-            <div class="text-caption font-weight-medium mb-1">Sudah Matched</div>
-            <div class="text-subtitle-1 font-weight-bold">{{ summary.total_matched }} transaksi</div>
+            <div class="text-caption font-weight-medium mb-1">
+              Sudah Matched
+            </div>
+            <div class="text-subtitle-1 font-weight-bold">
+              {{ summary.total_matched }} transaksi
+            </div>
             <div class="text-caption mt-1 font-weight-medium">
               {{ matchedRate }}% dari total
             </div>
           </VCardText>
         </VCard>
       </VCol>
-      <VCol cols="12" sm="6" md="3">
-        <VCard :color="summary.total_belum_cocok > 0 ? 'warning' : 'success'" variant="tonal">
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
+        <VCard
+          :color="summary.total_belum_cocok > 0 ? 'warning' : 'success'"
+          variant="tonal"
+        >
           <VCardText class="pa-3">
-            <div class="text-caption font-weight-medium mb-1">Belum Direkonsiliasi</div>
-            <div class="text-subtitle-1 font-weight-bold">{{ summary.total_belum_cocok }} transaksi</div>
+            <div class="text-caption font-weight-medium mb-1">
+              Belum Direkonsiliasi
+            </div>
+            <div class="text-subtitle-1 font-weight-bold">
+              {{ summary.total_belum_cocok }} transaksi
+            </div>
             <div class="text-caption mt-1 font-weight-medium">
               {{ summary.total_belum_cocok > 0 ? (100 - matchedRate) + '% perlu tindak lanjut' : 'Semua sudah diproses' }}
             </div>
@@ -156,13 +200,21 @@
           {{ (meta.current_page - 1) * meta.per_page + index + 1 }}
         </template>
         <template #item.no_referensi="{ item }">
-          <span v-if="item.no_referensi" class="font-weight-medium text-mono">
+          <span
+            v-if="item.no_referensi"
+            class="font-weight-medium text-mono"
+          >
             {{ item.no_referensi }}
           </span>
-          <span v-else class="text-medium-emphasis">—</span>
+          <span
+            v-else
+            class="text-medium-emphasis"
+          >—</span>
         </template>
         <template #item.pic_nama="{ item }">
-          <div class="font-weight-medium">{{ item.pic_nama ?? '—' }}</div>
+          <div class="font-weight-medium">
+            {{ item.pic_nama ?? '—' }}
+          </div>
         </template>
         <template #item.no_invoice="{ item }">
           <RouterLink
@@ -171,16 +223,27 @@
           >
             {{ item.no_invoice }}
           </RouterLink>
-          <div class="text-caption text-medium-emphasis">{{ item.klien }}</div>
+          <div class="text-caption text-medium-emphasis">
+            {{ item.klien }}
+          </div>
         </template>
         <template #item.sisa_piutang="{ item }">
-          <span :class="item.sisa_piutang > 0 ? 'text-error' : 'text-success'" class="font-weight-medium">
+          <span
+            :class="item.sisa_piutang > 0 ? 'text-error' : 'text-success'"
+            class="font-weight-medium"
+          >
             {{ formatCurrency(item.sisa_piutang ?? 0) }}
           </span>
         </template>
         <template #item.invoice_status="{ item }">
-          <InvoiceStatusBadge v-if="item.invoice_status" :status="item.invoice_status" />
-          <span v-else class="text-medium-emphasis">—</span>
+          <InvoiceStatusBadge
+            v-if="item.invoice_status"
+            :status="item.invoice_status"
+          />
+          <span
+            v-else
+            class="text-medium-emphasis"
+          >—</span>
         </template>
         <template #item.tanggal_pembayaran="{ item }">
           {{ formatDate(item.tanggal_pembayaran) }}
@@ -191,7 +254,12 @@
           </span>
         </template>
         <template #item.metode_pembayaran="{ item }">
-          <VChip :color="metodeColor(item.metode_pembayaran)" size="small" variant="tonal" label>
+          <VChip
+            :color="metodeColor(item.metode_pembayaran)"
+            size="small"
+            variant="tonal"
+            label
+          >
             {{ item.metode_pembayaran }}
           </VChip>
         </template>
@@ -205,7 +273,13 @@
           >
             {{ item.status_rekonsiliasi }}
           </VChip>
-          <VChip v-else size="small" variant="tonal" color="warning" label>
+          <VChip
+            v-else
+            size="small"
+            variant="tonal"
+            color="warning"
+            label
+          >
             Belum Diproses
           </VChip>
         </template>
@@ -229,7 +303,7 @@ const route     = useRoute()
 const { formatCurrency, formatDate } = useFormatter()
 
 const canSeeAll = computed(() =>
-  authStore.isAdmin || authStore.isManager || authStore.isSupervisor
+  authStore.isAdmin || authStore.isManager || authStore.isSupervisor,
 )
 
 const { items: karyawanList, loading: karyawanLoading, fetchAll: fetchKaryawan } = useCrud('/master/karyawan')
@@ -242,6 +316,7 @@ const picItems = computed(() => {
   if (!canSeeAll.value && authStore.user?.karyawan) {
     return [authStore.user.karyawan]
   }
+  
   return karyawanList.value
 })
 
@@ -252,19 +327,20 @@ const meta     = reactive({ current_page: 1, last_page: 1, per_page: 20, total: 
 const summary  = reactive({ total_transaksi: 0, total_nominal: 0, total_matched: 0, total_belum_cocok: 0 })
 
 const params = reactive({
-  page:                 1,
-  per_page:             20,
-  no_referensi:         null,
-  karyawan_id:          null,
-  klien_ar_id:          null,
-  metode_pembayaran:    null,
-  tanggal_dari:         null,
-  tanggal_sampai:       null,
-  status_rekonsiliasi:  null,
+  page: 1,
+  per_page: 20,
+  no_referensi: null,
+  karyawan_id: null,
+  klien_ar_id: null,
+  metode_pembayaran: null,
+  tanggal_dari: null,
+  tanggal_sampai: null,
+  status_rekonsiliasi: null,
 })
 
 const matchedRate = computed(() => {
   if (!summary.total_transaksi) return 0
+  
   return Math.round((summary.total_matched / summary.total_transaksi) * 100)
 })
 
@@ -281,6 +357,7 @@ function buildParams(includePagination = true) {
   if (params.tanggal_dari)        p.tanggal_dari        = params.tanggal_dari
   if (params.tanggal_sampai)      p.tanggal_sampai      = params.tanggal_sampai
   if (params.status_rekonsiliasi) p.status_rekonsiliasi = params.status_rekonsiliasi
+  
   return p
 }
 
@@ -321,6 +398,7 @@ function statusRekonColor(status) {
 function getRowProps({ item }) {
   if (item.status_rekonsiliasi === 'UNMATCHED') return { class: 'jurnal-row--unmatched' }
   if (!item.status_rekonsiliasi) return { class: 'jurnal-row--belum' }
+  
   return {}
 }
 
@@ -336,6 +414,7 @@ async function fetchData(resetPage = false) {
       params: buildParams(true),
       signal: controller.signal,
     })
+
     items.value = data.data
     if (data.meta)    Object.assign(meta, data.meta)
     if (data.summary) Object.assign(summary, data.summary)
@@ -359,13 +438,16 @@ async function doExport() {
   exporting.value = true
   try {
     const response = await api.get('/finance/jurnal-pic/export-excel', {
-      params:       buildParams(false),
+      params: buildParams(false),
       responseType: 'blob',
     })
+
     const url  = URL.createObjectURL(new Blob([response.data], {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     }))
+
     const link      = document.createElement('a')
+
     link.href       = url
     link.download   = `JURNAL PIC - ${getKaryawanLabel()} - ${buildTimestamp()}.xlsx`
     link.click()
@@ -377,6 +459,7 @@ async function doExport() {
 
 function buildTimestamp() {
   const n = new Date()
+  
   return (
     String(n.getDate()).padStart(2, '0') +
     String(n.getMonth() + 1).padStart(2, '0') +
@@ -392,6 +475,7 @@ function getKaryawanLabel() {
     const found = karyawanList.value.find(k => k.id === params.karyawan_id)
     if (found) return found.nama_karyawan
   }
+  
   return authStore.user?.karyawan?.nama_karyawan ?? 'SEMUA'
 }
 

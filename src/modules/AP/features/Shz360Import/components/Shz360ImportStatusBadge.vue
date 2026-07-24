@@ -5,7 +5,10 @@
       :color="statusMap[status]?.color ?? 'secondary'"
       size="18"
     />
-    <span class="text-body-2 font-weight-medium" :class="`text-${statusMap[status]?.color ?? 'secondary'}`">
+    <span
+      class="text-body-2 font-weight-medium"
+      :class="`text-${statusMap[status]?.color ?? 'secondary'}`"
+    >
       {{ statusMap[status]?.label ?? status }}
     </span>
   </span>

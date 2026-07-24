@@ -206,7 +206,10 @@
         >
           <div class="d-flex justify-space-between align-center flex-wrap gap-4">
             <div>
-              <div class="text-caption" style="opacity: .75;">
+              <div
+                class="text-caption"
+                style="opacity: .75;"
+              >
                 Total Alokasi
               </div>
               <div class="text-body-1 font-weight-bold">
@@ -214,7 +217,10 @@
               </div>
             </div>
             <div class="text-end">
-              <div class="text-caption" style="opacity: .75;">
+              <div
+                class="text-caption"
+                style="opacity: .75;"
+              >
                 Selisih
               </div>
               <div class="text-body-1 font-weight-bold">
@@ -351,7 +357,9 @@ watch(isOpen, open => {
 
 async function fetchCandidates(search = '') {
   candidateAbort?.abort()
+
   const controller = new AbortController()
+
   candidateAbort = controller
   candidateLoading.value = true
   try {
@@ -381,6 +389,7 @@ function onPickerConfirm(selectedRows) {
     if (existingIds.has(t.id)) return
     const sisa   = Number(t.sisa_tagihan) || 0
     const jumlah = round2(Math.min(sisa, pool))
+
     pool = round2(Math.max(0, pool - jumlah))
 
     allocations.value.push({
@@ -427,6 +436,7 @@ async function doSubmit() {
   saving.value = true
   try {
     const payload = new FormData()
+
     payload.append('kategori_voucher', kategoriVoucher.value)
     if (keterangan.value) payload.append('keterangan', keterangan.value)
 

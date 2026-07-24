@@ -96,16 +96,18 @@
       <BaseTable
         :headers="headers"
         :items="items"
-        :total="meta.total"
+        :total="total"
         :loading="loading"
-        :per-page="meta.per_page"
-        :page="meta.current_page"
+        pagination-mode="load-more"
+        :has-more="hasMore"
+        :loading-more="loadingMore"
+        :loaded-count="items.length"
         show-expand
         class="mt-2"
-        @update:options="onTableOptions"
+        @load-more="loadMore"
       >
         <template #item.no="{ index }">
-          {{ (meta.current_page - 1) * meta.per_page + index + 1 }}
+          {{ index + 1 }}
         </template>
         <template #item.tanggal_pembayaran="{ item }">
           {{ item.tanggal_pembayaran }}
@@ -301,9 +303,10 @@
 </template>
 
 <script setup>
-import { computed, nextTick, onDeactivated, reactive, ref } from 'vue'
+import { nextTick, onBeforeUnmount, onDeactivated, reactive, ref } from 'vue'
 import { useAuthStore } from '@/stores/auth.store'
 import { useCrud } from '@/composables/useCrud'
+import { useLoadMore } from '@/composables/useLoadMore.js'
 import { useFormatter } from '@/composables/useFormatter'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import api from '@/utils/axios'
@@ -312,7 +315,12 @@ import { readBlobError } from '@/utils/readBlobError'
 import { getCurrentMonthRange } from '@/modules/AP/shared/utils/dateRange'
 
 const authStore = useAuthStore()
-const { items, loading, meta, params, fetchList, remove } = useCrud('/ap/pembayaran')
+const { remove } = useCrud('/ap/pembayaran')
+
+const {
+  items, loading, loadingMore, hasMore, total, params, reset, loadMore, abort,
+} = useLoadMore('/ap/pembayaran', { perPage: 25 })
+
 const { formatCurrency } = useFormatter()
 const { showSuccess, showError } = useSweetAlert()
 
@@ -320,9 +328,33 @@ const dateDraft = reactive(getCurrentMonthRange())
 
 Object.assign(params, dateDraft)
 
-// Backend menyertakan `total_jumlah` di response meta — useCrud.fetchList()
-// meng-Object.assign seluruh meta, jadi field ini otomatis tersedia di sini.
-const totalJumlah = computed(() => meta.total_jumlah ?? 0)
+// Backend menghitung `total_jumlah` (SUM jumlah_pembayaran atas seluruh hasil filter,
+// independen dari pagination) di meta response yang sama dengan list utama.
+// useLoadMore tidak meneruskan field meta custom seperti ini, jadi diambil terpisah
+// (per_page=1 agar payload minimal) — pola sama dengan loadSummary() di Invoice/Index.vue.
+const totalJumlah = ref(0)
+let totalJumlahController = null
+
+async function loadTotalJumlah() {
+  totalJumlahController?.abort()
+
+  const controller = new AbortController()
+
+  totalJumlahController = controller
+  try {
+    const { data } = await api.get('/ap/pembayaran', {
+      params: { ...params, page: 1, per_page: 1 },
+      signal: controller.signal,
+    })
+
+    if (controller.signal.aborted) return
+    totalJumlah.value = data.meta?.total_jumlah ?? 0
+  } catch (err) {
+    if (err.code === 'ERR_CANCELED') return
+  } finally {
+    if (totalJumlahController === controller) totalJumlahController = null
+  }
+}
 
 const showDelete = ref(false)
 const deleteError = ref('')
@@ -354,8 +386,8 @@ const kategoriOptions = [
 ]
 
 function doFetch() {
-  params.page = 1
-  fetchList()
+  reset()
+  loadTotalJumlah()
 }
 
 function applyFilter() {
@@ -374,12 +406,6 @@ function resetFilters() {
   params.tanggal_dari = dateDraft.tanggal_dari
   params.tanggal_sampai = dateDraft.tanggal_sampai
   doFetch()
-}
-
-function onTableOptions({ page, itemsPerPage }) {
-  params.page = page
-  params.per_page = itemsPerPage
-  fetchList()
 }
 
 async function printVoucher(item) {
@@ -466,7 +492,7 @@ async function doDelete() {
 
   deleting.value = false
   if (res.success) {
-    fetchList()
+    doFetch()
     await showSuccess('Payment Voucher berhasil dihapus.')
   } else {
     deleteError.value = res.message || 'Gagal menghapus data'
@@ -475,6 +501,11 @@ async function doDelete() {
 }
 
 doFetch()
+
+onBeforeUnmount(() => {
+  abort()
+  totalJumlahController?.abort()
+})
 </script>
 
 <style scoped>

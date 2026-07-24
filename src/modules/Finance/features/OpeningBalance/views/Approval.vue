@@ -423,7 +423,9 @@
       <VDivider />
       <div class="d-flex flex-wrap align-center gap-4 px-4 py-3">
         <div style="min-width: 200px; flex: 1; max-width: 280px;">
-          <div class="text-caption text-medium-emphasis mb-2">Pencarian</div>
+          <div class="text-caption text-medium-emphasis mb-2">
+            Pencarian
+          </div>
           <VTextField
             v-model="obParamsB2B.search"
             placeholder="Cari no. OB / klien..."
@@ -435,7 +437,9 @@
           />
         </div>
         <div style="min-width: 140px; max-width: 180px;">
-          <div class="text-caption text-medium-emphasis mb-2">Status</div>
+          <div class="text-caption text-medium-emphasis mb-2">
+            Status
+          </div>
           <VSelect
             v-model="obParamsB2B.status"
             placeholder="Semua Status"
@@ -449,7 +453,9 @@
           />
         </div>
         <div style="min-width: 160px; max-width: 220px;">
-          <div class="text-caption text-medium-emphasis mb-2">Approval</div>
+          <div class="text-caption text-medium-emphasis mb-2">
+            Approval
+          </div>
           <VSelect
             v-model="obParamsB2B.approval_status"
             placeholder="Semua Approval"
@@ -463,7 +469,9 @@
           />
         </div>
         <div style="min-width: 180px; flex: 1; max-width: 260px;">
-          <div class="text-caption text-medium-emphasis mb-2">Klien</div>
+          <div class="text-caption text-medium-emphasis mb-2">
+            Klien
+          </div>
           <VAutocomplete
             v-model="obParamsB2B.klien_ar_id"
             placeholder="Semua Klien"
@@ -480,7 +488,9 @@
           />
         </div>
         <div style="min-width: 130px; max-width: 160px;">
-          <div class="text-caption text-medium-emphasis mb-2">Bulan</div>
+          <div class="text-caption text-medium-emphasis mb-2">
+            Bulan
+          </div>
           <VSelect
             v-model="obParamsB2B.periode_bulan"
             placeholder="Semua"
@@ -494,7 +504,9 @@
           />
         </div>
         <div style="min-width: 90px; max-width: 110px;">
-          <div class="text-caption text-medium-emphasis mb-2">Tahun</div>
+          <div class="text-caption text-medium-emphasis mb-2">
+            Tahun
+          </div>
           <VTextField
             v-model="obParamsB2B.periode_tahun"
             placeholder="Tahun"
@@ -638,7 +650,9 @@
       <VDivider />
       <div class="d-flex flex-wrap align-center gap-4 px-4 py-3">
         <div style="min-width: 200px; flex: 1; max-width: 280px;">
-          <div class="text-caption text-medium-emphasis mb-2">Pencarian</div>
+          <div class="text-caption text-medium-emphasis mb-2">
+            Pencarian
+          </div>
           <VTextField
             v-model="obParams.search"
             placeholder="Cari no. OB / klien..."
@@ -650,7 +664,9 @@
           />
         </div>
         <div style="min-width: 140px; max-width: 180px;">
-          <div class="text-caption text-medium-emphasis mb-2">Status</div>
+          <div class="text-caption text-medium-emphasis mb-2">
+            Status
+          </div>
           <VSelect
             v-model="obParams.status"
             placeholder="Semua Status"
@@ -664,7 +680,9 @@
           />
         </div>
         <div style="min-width: 160px; max-width: 220px;">
-          <div class="text-caption text-medium-emphasis mb-2">Approval</div>
+          <div class="text-caption text-medium-emphasis mb-2">
+            Approval
+          </div>
           <VSelect
             v-model="obParams.approval_status"
             placeholder="Semua Approval"
@@ -678,7 +696,9 @@
           />
         </div>
         <div style="min-width: 180px; flex: 1; max-width: 260px;">
-          <div class="text-caption text-medium-emphasis mb-2">Klien</div>
+          <div class="text-caption text-medium-emphasis mb-2">
+            Klien
+          </div>
           <VAutocomplete
             v-model="obParams.klien_ar_id"
             placeholder="Semua Klien"
@@ -695,7 +715,9 @@
           />
         </div>
         <div style="min-width: 130px; max-width: 160px;">
-          <div class="text-caption text-medium-emphasis mb-2">Bulan</div>
+          <div class="text-caption text-medium-emphasis mb-2">
+            Bulan
+          </div>
           <VSelect
             v-model="obParams.periode_bulan"
             placeholder="Semua"
@@ -709,7 +731,9 @@
           />
         </div>
         <div style="min-width: 90px; max-width: 110px;">
-          <div class="text-caption text-medium-emphasis mb-2">Tahun</div>
+          <div class="text-caption text-medium-emphasis mb-2">
+            Tahun
+          </div>
           <VTextField
             v-model="obParams.periode_tahun"
             placeholder="Tahun"
@@ -927,18 +951,20 @@ async function exportExcel() {
   try {
     const res = await api.get('/finance/opening-balance/export', {
       params: {
-        search:          obParams.search          || undefined,
-        status:          obParams.status          || undefined,
+        search: obParams.search          || undefined,
+        status: obParams.status          || undefined,
         approval_status: obParams.approval_status || undefined,
-        klien_ar_id:     obParams.klien_ar_id     || undefined,
-        periode_bulan:   obParams.periode_bulan   || undefined,
-        periode_tahun:   obParams.periode_tahun   || undefined,
-        segment:         'B2C',
+        klien_ar_id: obParams.klien_ar_id     || undefined,
+        periode_bulan: obParams.periode_bulan   || undefined,
+        periode_tahun: obParams.periode_tahun   || undefined,
+        segment: 'B2C',
       },
       responseType: 'blob',
     })
+
     const url  = URL.createObjectURL(res.data)
     const a    = document.createElement('a')
+
     a.href     = url
     a.download = `Data Opening Balance B2C-${new Date().toISOString().slice(0, 10)}.xlsx`
     a.click()
@@ -955,18 +981,20 @@ async function exportExcelB2B() {
   try {
     const res = await api.get('/finance/opening-balance/export', {
       params: {
-        search:          obParamsB2B.search          || undefined,
-        status:          obParamsB2B.status          || undefined,
+        search: obParamsB2B.search          || undefined,
+        status: obParamsB2B.status          || undefined,
         approval_status: obParamsB2B.approval_status || undefined,
-        klien_ar_id:     obParamsB2B.klien_ar_id     || undefined,
-        periode_bulan:   obParamsB2B.periode_bulan   || undefined,
-        periode_tahun:   obParamsB2B.periode_tahun   || undefined,
-        segment:         'B2B',
+        klien_ar_id: obParamsB2B.klien_ar_id     || undefined,
+        periode_bulan: obParamsB2B.periode_bulan   || undefined,
+        periode_tahun: obParamsB2B.periode_tahun   || undefined,
+        segment: 'B2B',
       },
       responseType: 'blob',
     })
+
     const url  = URL.createObjectURL(res.data)
     const a    = document.createElement('a')
+
     a.href     = url
     a.download = `Data Opening Balance B2B-${new Date().toISOString().slice(0, 10)}.xlsx`
     a.click()
@@ -983,6 +1011,7 @@ async function printInvoice(id) {
   try {
     const res = await api.get(`/finance/invoices/${id}/print`, { responseType: 'blob', timeout: 300000 })
     const blobUrl = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }))
+
     window.open(blobUrl, '_blank')
     setTimeout(() => URL.revokeObjectURL(blobUrl), 30_000)
   } catch (err) {
@@ -1096,7 +1125,9 @@ function abortPendingRequests() {
 // ── Loaders: approval table ────────────────────────────────────────────────
 async function loadList() {
   listController?.abort()
+
   const controller = new AbortController()
+
   listController = controller
   await fetchList({}, { signal: controller.signal })
   if (listController === controller) listController = null
@@ -1104,19 +1135,22 @@ async function loadList() {
 
 async function loadSummary() {
   summaryController?.abort()
+
   const controller = new AbortController()
+
   summaryController = controller
   try {
     const { data } = await api.get('/finance/opening-balance/summary', {
       params: {
-        search:          params.search,
+        search: params.search,
         approval_status: params.approval_status,
-        klien_ar_id:     params.klien_ar_id,
-        periode_bulan:   params.periode_bulan,
-        periode_tahun:   params.periode_tahun,
+        klien_ar_id: params.klien_ar_id,
+        periode_bulan: params.periode_bulan,
+        periode_tahun: params.periode_tahun,
       },
       signal: controller.signal,
     })
+
     if (controller.signal.aborted) return
     Object.assign(summary, data.data)
   } catch (err) {
@@ -1129,7 +1163,9 @@ async function loadSummary() {
 // ── Loaders: OB list table ─────────────────────────────────────────────────
 async function loadObList() {
   obListController?.abort()
+
   const controller = new AbortController()
+
   obListController = controller
   await fetchObList({}, { signal: controller.signal })
   if (obListController === controller) obListController = null
@@ -1137,7 +1173,9 @@ async function loadObList() {
 
 async function loadObListB2B() {
   obListB2BController?.abort()
+
   const controller = new AbortController()
+
   obListB2BController = controller
   await fetchObListB2B({}, { signal: controller.signal })
   if (obListB2BController === controller) obListB2BController = null
@@ -1145,20 +1183,23 @@ async function loadObListB2B() {
 
 async function loadObSummary() {
   obSummaryController?.abort()
+
   const controller = new AbortController()
+
   obSummaryController = controller
   try {
     const { data } = await api.get('/finance/opening-balance/summary', {
       params: {
-        search:          obParams.search,
-        status:          obParams.status,
+        search: obParams.search,
+        status: obParams.status,
         approval_status: obParams.approval_status,
-        klien_ar_id:     obParams.klien_ar_id,
-        periode_bulan:   obParams.periode_bulan,
-        periode_tahun:   obParams.periode_tahun,
+        klien_ar_id: obParams.klien_ar_id,
+        periode_bulan: obParams.periode_bulan,
+        periode_tahun: obParams.periode_tahun,
       },
       signal: controller.signal,
     })
+
     if (controller.signal.aborted) return
     Object.assign(obSummary, data.data)
   } catch (err) {
@@ -1249,6 +1290,7 @@ function formatDateTime(value) {
   if (!value) return '-'
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return value
+  
   return new Intl.DateTimeFormat('id-ID', {
     dateStyle: 'medium',
     timeStyle: 'short',
@@ -1281,6 +1323,7 @@ async function confirmApprove(item) {
     financeNotificationStore.fetchPendingOpeningBalanceCount()
   } catch (err) {
     const message = err?.response?.data?.message ?? 'Gagal menyetujui Opening Balance.'
+
     showError({ text: message })
   } finally {
     approvingId.value = null

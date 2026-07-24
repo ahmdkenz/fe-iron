@@ -1,10 +1,6 @@
 <script setup>
 import { computed, defineAsyncComponent, markRaw, onBeforeUnmount, shallowRef, useAttrs, watch } from 'vue'
 
-defineOptions({
-  inheritAttrs: false,
-})
-
 const props = defineProps({
   type: {
     type: String,
@@ -30,6 +26,10 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
+})
+
+defineOptions({
+  inheritAttrs: false,
 })
 
 const attrs = useAttrs()

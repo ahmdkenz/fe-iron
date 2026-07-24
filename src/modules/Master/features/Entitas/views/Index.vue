@@ -1,6 +1,8 @@
 <template>
   <div>
     <ManagementIndexShell
+      v-model:search="params.search"
+      v-model:status="statusFilter"
       tone="teal"
       icon="ri-building-4-line"
       title="Manajemen Entitas"
@@ -13,8 +15,6 @@
       :stats-loading="loading && !items.length"
       search-placeholder="Cari kode / nama entitas..."
       compact-actions
-      v-model:search="params.search"
-      v-model:status="statusFilter"
       @update:search="debouncedFetch"
       @update:status="onStatusChange"
     >
@@ -46,6 +46,7 @@
       </template>
 
       <BaseTable
+        v-model:selected="selectedItems"
         :headers="headers"
         :items="items"
         :total="meta.total"
@@ -55,19 +56,27 @@
         show-select
         mobile-cards
         mobile-menu-select
-        v-model:selected="selectedItems"
         @update:options="onTableOptions"
       >
         <template #mobile-card="{ item, selected, toggle }">
           <div class="d-flex align-center justify-space-between gap-2 mb-2">
             <div class="min-width-0">
-              <div class="font-weight-medium text-truncate">{{ item.nama_perusahaan }}</div>
-              <div class="text-caption text-medium-emphasis text-truncate">{{ item.nama_singkatan_perusahaan ?? '-' }}</div>
+              <div class="font-weight-medium text-truncate">
+                {{ item.nama_perusahaan }}
+              </div>
+              <div class="text-caption text-medium-emphasis text-truncate">
+                {{ item.nama_singkatan_perusahaan ?? '-' }}
+              </div>
             </div>
             <StatusChip :active="item.status" />
           </div>
           <div class="d-flex align-center justify-space-between gap-2">
-            <VChip color="primary" size="small" variant="tonal" label>
+            <VChip
+              color="primary"
+              size="small"
+              variant="tonal"
+              label
+            >
               {{ item.kode_perusahaan }}
             </VChip>
             <MobileCardActions
@@ -398,7 +407,7 @@ function minimizeForm() {
 }
 function onFormSaved() { minimizeStore.remove(FORM_WIDGET_ID); showForm.value = false; fetchList() }
 
-watch(showForm, (val) => {
+watch(showForm, val => {
   if (!val) {
     const w = minimizeStore.widgets[FORM_WIDGET_ID]
     if (w && !w.minimized) minimizeStore.remove(FORM_WIDGET_ID)
@@ -453,6 +462,7 @@ async function doBulkDelete() {
   try {
     const res = await api.delete('/master/perusahaan/bulk', { data: { ids: selectedItems.value.map(i => i.id) } })
     const deleted = res.data?.data?.deleted ?? selectedItems.value.length
+
     selectedItems.value = []
     fetchList()
     await showSuccess(`${deleted} entitas berhasil dihapus.`)

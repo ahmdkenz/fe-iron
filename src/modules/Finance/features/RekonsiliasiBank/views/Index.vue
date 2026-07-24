@@ -10,9 +10,16 @@
     />
 
     <!-- Tombol Upload — disembunyikan untuk role AR/AP murni (khusus ADMIN/MANAGER/SUPERVISOR) -->
-    <VCard v-if="!authStore.isArOnly && !authStore.isApOnly" class="mb-4">
+    <VCard
+      v-if="!authStore.isArOnly && !authStore.isApOnly"
+      class="mb-4"
+    >
       <VCardText class="d-flex align-center gap-3">
-        <VBtn color="primary" prepend-icon="ri-upload-cloud-2-line" @click="dialog = true">
+        <VBtn
+          color="primary"
+          prepend-icon="ri-upload-cloud-2-line"
+          @click="dialog = true"
+        >
           Upload Rekening Koran Bank
         </VBtn>
         <span class="text-caption text-medium-emphasis">
@@ -28,10 +35,16 @@
         :items="items"
         :total="total"
         :loading="loading"
-        :per-page="perPage"
-        :page="page"
-        @update:options="onTableOptions"
+        pagination-mode="load-more"
+        :has-more="hasMore"
+        :loading-more="loadingMore"
+        :loaded-count="items.length"
+        item-value="id"
+        @load-more="loadMore"
       >
+        <template #item.no="{ index }">
+          {{ index + 1 }}
+        </template>
         <template #item.periode="{ item }">
           {{ item.periode_awal }} — {{ item.periode_akhir }}
         </template>
@@ -40,13 +53,25 @@
         </template>
         <template #item.status="{ item }">
           <div class="d-flex gap-1 flex-wrap">
-            <VChip color="success" size="x-small" variant="tonal">
+            <VChip
+              color="success"
+              size="x-small"
+              variant="tonal"
+            >
               {{ item.jumlah_matched }} MATCHED
             </VChip>
-            <VChip color="error" size="x-small" variant="tonal">
+            <VChip
+              color="error"
+              size="x-small"
+              variant="tonal"
+            >
               {{ item.jumlah_unmatched }} UNMATCHED
             </VChip>
-            <VChip color="grey" size="x-small" variant="tonal">
+            <VChip
+              color="grey"
+              size="x-small"
+              variant="tonal"
+            >
               {{ item.total_transaksi - item.jumlah_matched - item.jumlah_unmatched }} lainnya
             </VChip>
           </div>
@@ -74,22 +99,42 @@
     </VCard>
 
     <!-- Detail Rekening Koran (inline) -->
-    <div v-if="selectedId" class="mt-4">
-      <RekonsiliasiBankDetail :report-id="selectedId" @close="selectedId = null" />
+    <div
+      v-if="selectedId"
+      class="mt-4"
+    >
+      <RekonsiliasiBankDetail
+        :key="selectedId"
+        :report-id="selectedId"
+        @close="selectedId = null"
+      />
     </div>
 
     <!-- Dialog Upload -->
-    <VDialog v-model="dialog" max-width="480" persistent>
+    <VDialog
+      v-model="dialog"
+      max-width="480"
+      persistent
+    >
       <VCard>
         <VCardTitle class="d-flex align-center justify-space-between pa-4">
           <span>Upload Rekening Koran Bank</span>
-          <VBtn icon="ri-close-line" variant="text" size="small" @click="closeDialog" />
+          <VBtn
+            icon="ri-close-line"
+            variant="text"
+            size="small"
+            @click="closeDialog"
+          />
         </VCardTitle>
         <VDivider />
         <VCardText class="pt-4 d-flex flex-column gap-4">
           <!-- Download Template -->
           <div class="d-flex align-center gap-2">
-            <VIcon icon="ri-information-line" size="16" class="text-info" />
+            <VIcon
+              icon="ri-information-line"
+              size="16"
+              class="text-info"
+            />
             <span class="text-caption text-medium-emphasis">
               Belum punya file format yang sesuai?
             </span>
@@ -114,13 +159,25 @@
             @drop.prevent="onDrop"
             @click="$refs.fileInput.click()"
           >
-            <VIcon icon="ri-file-upload-line" size="40" class="mb-2 text-primary" />
-            <div v-if="form.file" class="text-body-2 font-weight-medium text-primary">
+            <VIcon
+              icon="ri-file-upload-line"
+              size="40"
+              class="mb-2 text-primary"
+            />
+            <div
+              v-if="form.file"
+              class="text-body-2 font-weight-medium text-primary"
+            >
               {{ form.file.name }}
             </div>
-            <div v-else class="text-body-2 text-medium-emphasis text-center">
+            <div
+              v-else
+              class="text-body-2 text-medium-emphasis text-center"
+            >
               <div>Klik atau drag & drop file di sini</div>
-              <div class="text-caption mt-1">.xlsx atau .xls</div>
+              <div class="text-caption mt-1">
+                .xlsx atau .xls
+              </div>
             </div>
             <input
               ref="fileInput"
@@ -128,15 +185,23 @@
               accept=".xlsx,.xls"
               style="display:none"
               @change="onFileChange"
-            />
+            >
           </div>
 
-          <VAlert v-if="uploadError" type="error" density="compact" variant="tonal">
+          <VAlert
+            v-if="uploadError"
+            type="error"
+            density="compact"
+            variant="tonal"
+          >
             {{ uploadError }}
           </VAlert>
         </VCardText>
         <VCardActions class="pa-4 pt-0 justify-end gap-2">
-          <AppActionButton action="batalkan" @click="closeDialog" />
+          <AppActionButton
+            action="batalkan"
+            @click="closeDialog"
+          />
           <AppActionButton
             action="custom"
             :loading="uploading"
@@ -150,11 +215,20 @@
     </VDialog>
 
     <!-- Dialog Konfirmasi Duplikat Upload -->
-    <VDialog v-model="conflictDialog" max-width="440" persistent>
+    <VDialog
+      v-model="conflictDialog"
+      max-width="440"
+      persistent
+    >
       <VCard>
-        <VCardTitle class="pa-4 text-warning">Rekening Koran Sudah Diupload</VCardTitle>
+        <VCardTitle class="pa-4 text-warning">
+          Rekening Koran Sudah Diupload
+        </VCardTitle>
         <VDivider />
-        <VCardText v-if="conflictData" class="pt-4">
+        <VCardText
+          v-if="conflictData"
+          class="pt-4"
+        >
           <p>
             File <strong>{{ conflictData.nama_file }}</strong> periode
             <strong>{{ conflictData.periode_awal }} – {{ conflictData.periode_akhir }}</strong>
@@ -165,13 +239,26 @@
             ({{ conflictData.jumlah_matched }} matched,
             {{ conflictData.jumlah_unmatched }} unmatched).
           </p>
-          <VAlert type="warning" density="compact" variant="tonal" class="mt-3">
+          <VAlert
+            type="warning"
+            density="compact"
+            variant="tonal"
+            class="mt-3"
+          >
             Jika diganti, semua hasil matching manual akan hilang permanen.
           </VAlert>
         </VCardText>
         <VCardActions class="justify-end pa-4 gap-2">
-          <AppActionButton action="batalkan" @click="conflictDialog = false" />
-          <AppActionButton action="custom" color="warning" :loading="uploading" @click="doUpload(true)">
+          <AppActionButton
+            action="batalkan"
+            @click="conflictDialog = false"
+          />
+          <AppActionButton
+            action="custom"
+            color="warning"
+            :loading="uploading"
+            @click="doUpload(true)"
+          >
             Ganti dengan File Baru
           </AppActionButton>
         </VCardActions>
@@ -179,15 +266,27 @@
     </VDialog>
 
     <!-- Dialog Konfirmasi Hapus -->
-    <VDialog v-model="deleteDialog" max-width="380">
+    <VDialog
+      v-model="deleteDialog"
+      max-width="380"
+    >
       <VCard>
-        <VCardTitle class="pa-4">Hapus Data Upload?</VCardTitle>
+        <VCardTitle class="pa-4">
+          Hapus Data Upload?
+        </VCardTitle>
         <VCardText>
           Semua data transaksi dari file <strong>{{ deleteTarget?.nama_file }}</strong> akan dihapus permanen.
         </VCardText>
         <VCardActions class="justify-end pa-4 gap-2">
-          <AppActionButton action="batalkan" @click="deleteDialog = false" />
-          <AppActionButton action="hapus" :loading="deleting" @click="doDelete" />
+          <AppActionButton
+            action="batalkan"
+            @click="deleteDialog = false"
+          />
+          <AppActionButton
+            action="hapus"
+            :loading="deleting"
+            @click="doDelete"
+          />
         </VCardActions>
       </VCard>
     </VDialog>
@@ -195,7 +294,8 @@
 </template>
 
 <script setup>
-import { markRaw, onMounted, reactive, ref } from 'vue'
+import { markRaw, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
+import { useLoadMore } from '@/composables/useLoadMore.js'
 import { useFormatter } from '@/composables/useFormatter'
 import { useAuthStore } from '@/stores/auth.store'
 import api from '@/utils/axios'
@@ -206,11 +306,10 @@ const authStore = useAuthStore()
 
 const { formatCurrency } = useFormatter()
 
-const loading  = ref(false)
-const items    = ref([])
-const total    = ref(0)
-const page     = ref(1)
-const perPage  = ref(15)
+const {
+  items, loading, loadingMore, hasMore, total,
+  reset, loadMore, abort,
+} = useLoadMore('/finance/rekonsiliasi-bank', { perPage: 15 })
 
 const dialog      = ref(false)
 const uploading   = ref(false)
@@ -234,32 +333,13 @@ const headers = [
   { title: 'Tanggal Upload', key: 'created_at', sortable: false },
   { title: 'Nama File',    key: 'nama_file',   sortable: false },
   { title: 'Periode',      key: 'periode',     sortable: false },
-  { title: 'Total Kredit', key: 'total_kredit',sortable: false, align: 'end' },
+  { title: 'Total Kredit', key: 'total_kredit', sortable: false, align: 'end' },
   { title: 'Status Cocok', key: 'status',      sortable: false },
   { title: 'Aksi',         key: 'aksi',        sortable: false, width: '90px' },
 ]
 
 function selectReport(item) {
   selectedId.value = selectedId.value === item.id ? null : item.id
-}
-
-function onTableOptions({ page: p, itemsPerPage }) {
-  page.value    = p
-  perPage.value = itemsPerPage
-  fetchList()
-}
-
-async function fetchList() {
-  loading.value = true
-  try {
-    const { data } = await api.get('/finance/rekonsiliasi-bank', {
-      params: { page: page.value, per_page: perPage.value },
-    })
-    items.value = data.data?.data ?? []
-    total.value = data.data?.total ?? 0
-  } finally {
-    loading.value = false
-  }
 }
 
 function onFileChange(e) {
@@ -283,12 +363,13 @@ async function doUpload(force = false) {
   uploading.value   = true
   try {
     const fd = new FormData()
+
     fd.append('file', form.file)
     if (force) fd.append('force', '1')
     await api.post('/finance/rekonsiliasi-bank/upload', fd)
     closeDialog()
     conflictDialog.value = false
-    fetchList()
+    reset()
   } catch (err) {
     if (err?.response?.status === 409) {
       conflictData.value   = err.response.data?.errors?.existing ?? null
@@ -309,8 +390,12 @@ async function doDownloadTemplate() {
   const templateSheet = {
     sheet: 'Template',
     columns: [
-      { width: 14 }, { width: 42 }, { width: 22 },
-      { width: 16 }, { width: 16 }, { width: 16 },
+      { width: 14 },
+      { width: 42 },
+      { width: 22 },
+      { width: 16 },
+      { width: 16 },
+      { width: 16 },
     ],
     data: [
       // Baris 1 — Judul (navy gelap, teks putih)
@@ -318,11 +403,13 @@ async function doDownloadTemplate() {
         span: 6, fontWeight: 'bold', fontSize: 14, height: 32,
         color: '#FFFFFF', backgroundColor: '#1F3864', align: 'left',
       })],
+
       // Baris 2 — Sub-info (biru medium, teks putih)
       [c('Isi data mulai baris ke-4  ·  Format Tanggal: DDMMYYYY  ·  Angka tanpa titik, koma, atau simbol Rp', {
         span: 6, fontStyle: 'italic', fontSize: 9, height: 16,
         color: '#DDEEFF', backgroundColor: '#2E75B6', align: 'left',
       })],
+
       // Baris 3 — Header kolom (biru medium-gelap, teks putih)
       [
         c('Tanggal',      { fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#2F5496', align: 'center', height: 22, ...bd }),
@@ -332,6 +419,7 @@ async function doDownloadTemplate() {
         c('Kredit',       { fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#2F5496', align: 'right',  height: 22, ...bd }),
         c('Saldo',        { fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#2F5496', align: 'right',  height: 22, ...bd }),
       ],
+
       // Baris 4 — Contoh data (biru sangat muda, teks abu gelap)
       [
         c('01012025',                            { backgroundColor: '#DEEAF1', align: 'center', color: '#404040', fontStyle: 'italic', height: 18, ...bd }),
@@ -376,18 +464,22 @@ async function doDownloadTemplate() {
         span: 4, fontWeight: 'bold', fontSize: 14, height: 32,
         color: '#FFFFFF', backgroundColor: '#1F3864',
       })],
+
       // Sub-judul (biru medium, italic putih)
       [row('Template Rekening Koran — Sistem IRON', {
         span: 4, fontStyle: 'italic', fontSize: 9, height: 16,
         color: '#DDEEFF', backgroundColor: '#2E75B6',
       })],
+
       // Spasi
       [row('', { span: 4, height: 8, backgroundColor: '#EBF3FB' })],
+
       // Section: Penjelasan Kolom (biru medium-gelap, teks putih)
       [row('PENJELASAN KOLOM', {
         span: 4, fontWeight: 'bold', fontSize: 11, height: 22,
         color: '#FFFFFF', backgroundColor: '#2F5496',
       })],
+
       // Header tabel (biru agak terang, teks putih)
       [
         row('Kolom',        { fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#4472C4', ...pb }),
@@ -395,17 +487,21 @@ async function doDownloadTemplate() {
         row('Keterangan',   { fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#4472C4', ...pb }),
         row('Contoh Nilai', { fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#4472C4', ...pb }),
       ],
+
       // Baris kolom — zebra biru sangat muda & putih
       ...kolomData.map((cols, i) => cols.map(v =>
         row(v, { backgroundColor: i % 2 === 0 ? '#DEEAF1' : '#FFFFFF', color: '#212121', ...pb }),
       )),
+
       // Spasi
       [row('', { span: 4, height: 10 })],
+
       // Section: Aturan Penting (biru medium-gelap, teks putih)
       [row('ATURAN PENTING', {
         span: 4, fontWeight: 'bold', fontSize: 11, height: 22,
         color: '#FFFFFF', backgroundColor: '#2F5496',
       })],
+
       // Baris aturan — zebra biru sangat muda & putih
       ...aturanData.map(([no, teks], i) => [
         row(no,   { fontWeight: 'bold', color: '#1F3864', backgroundColor: i % 2 === 0 ? '#DEEAF1' : '#FFFFFF', ...pb }),
@@ -428,13 +524,14 @@ async function doDelete() {
     await api.delete(`/finance/rekonsiliasi-bank/${deleteTarget.value.id}`)
     if (selectedId.value === deleteTarget.value.id) selectedId.value = null
     deleteDialog.value = false
-    fetchList()
+    reset()
   } finally {
     deleting.value = false
   }
 }
 
-onMounted(fetchList)
+onMounted(reset)
+onBeforeUnmount(abort)
 </script>
 
 <style scoped>

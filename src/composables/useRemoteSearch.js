@@ -16,7 +16,9 @@ export function useRemoteSearch(endpoint, { perPage = 20, debounceMs = 300, para
 
   async function runSearch(term) {
     controller?.abort()
+
     const localController = new AbortController()
+
     controller = localController
     loading.value = true
     try {
@@ -28,6 +30,7 @@ export function useRemoteSearch(endpoint, { perPage = 20, debounceMs = 300, para
         },
         signal: localController.signal,
       })
+
       items.value = data.data ?? []
     } catch (err) {
       if (err?.code === 'ERR_CANCELED') return
@@ -44,6 +47,7 @@ export function useRemoteSearch(endpoint, { perPage = 20, debounceMs = 300, para
 
   function searchNow(term = '') {
     clearTimeout(debounceTimer)
+    
     return runSearch(term)
   }
 

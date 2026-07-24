@@ -376,6 +376,7 @@
     "SESSION_MARKER_KEY": true,
     "clearSessionMarker": true,
     "hasSessionMarker": true,
-    "setSessionMarker": true
+    "setSessionMarker": true,
+    "useLoadMore": true
   }
 }

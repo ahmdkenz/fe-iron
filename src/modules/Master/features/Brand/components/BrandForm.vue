@@ -108,7 +108,9 @@
             size="20"
           />
           <div>
-            <div class="text-body-2 font-weight-medium">Status Brand</div>
+            <div class="text-body-2 font-weight-medium">
+              Status Brand
+            </div>
             <div class="text-caption text-medium-emphasis">
               {{ form.status ? 'Aktif — brand dapat digunakan' : 'Nonaktif — brand dinonaktifkan' }}
             </div>

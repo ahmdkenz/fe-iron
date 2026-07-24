@@ -10,6 +10,7 @@ export async function readBlobError(error, fallbackMessage = 'Terjadi kesalahan,
 
   try {
     const parsed = JSON.parse(await data.text())
+    
     return parsed?.message ?? fallbackMessage
   } catch {
     return fallbackMessage

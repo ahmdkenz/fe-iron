@@ -1,44 +1,107 @@
 <template>
-  <VDialog :model-value="modelValue && !showBuktiStep" max-width="680" persistent scrollable @update:model-value="onDialogUpdate">
+  <VDialog
+    :model-value="modelValue && !showBuktiStep"
+    max-width="680"
+    persistent
+    scrollable
+    @update:model-value="onDialogUpdate"
+  >
     <VCard>
-      <VCardTitle class="pa-4 pb-2"><span class="text-h6">Cocokkan Transaksi</span></VCardTitle>
+      <VCardTitle class="pa-4 pb-2">
+        <span class="text-h6">Cocokkan Transaksi</span>
+      </VCardTitle>
       <VDivider />
-      <VCardText class="pa-4" style="max-height: 70vh">
+      <VCardText
+        class="pa-4"
+        style="max-height: 70vh"
+      >
         <!-- Info bank yang akan otomatis jadi data pembayaran -->
-        <VCard variant="tonal" color="primary" class="mb-4 pa-3">
-          <div class="text-caption text-medium-emphasis mb-2 font-weight-medium">Data Pembayaran Otomatis dari Bank</div>
+        <VCard
+          variant="tonal"
+          color="primary"
+          class="mb-4 pa-3"
+        >
+          <div class="text-caption text-medium-emphasis mb-2 font-weight-medium">
+            Data Pembayaran Otomatis dari Bank
+          </div>
           <div class="d-flex gap-4 flex-wrap">
             <div>
-              <div class="text-caption text-medium-emphasis">Tanggal Bayar</div>
-              <div class="text-body-2 font-weight-medium">{{ formatDate(item?.tanggal) }}</div>
+              <div class="text-caption text-medium-emphasis">
+                Tanggal Bayar
+              </div>
+              <div class="text-body-2 font-weight-medium">
+                {{ formatDate(item?.tanggal) }}
+              </div>
             </div>
             <div>
-              <div class="text-caption text-medium-emphasis">No Referensi</div>
-              <div class="text-body-2 font-weight-medium text-primary">{{ item?.no_referensi || '-' }}</div>
+              <div class="text-caption text-medium-emphasis">
+                No Referensi
+              </div>
+              <div class="text-body-2 font-weight-medium text-primary">
+                {{ item?.no_referensi || '-' }}
+              </div>
             </div>
             <div>
-              <div class="text-caption text-medium-emphasis">Jumlah</div>
-              <div class="text-body-2 font-weight-medium text-success">{{ formatCurrency(item?.kredit ?? 0) }}</div>
+              <div class="text-caption text-medium-emphasis">
+                Jumlah
+              </div>
+              <div class="text-body-2 font-weight-medium text-success">
+                {{ formatCurrency(item?.kredit ?? 0) }}
+              </div>
             </div>
             <div>
-              <div class="text-caption text-medium-emphasis">Metode</div>
-              <div class="text-body-2 font-weight-medium">TRANSFER</div>
+              <div class="text-caption text-medium-emphasis">
+                Metode
+              </div>
+              <div class="text-body-2 font-weight-medium">
+                TRANSFER
+              </div>
             </div>
           </div>
         </VCard>
 
-        <VBtnToggle v-model="mode" mandatory density="compact" variant="outlined" divided class="mb-4">
-          <VBtn value="invoice" size="small" style="min-width: 120px">
-            <VIcon start size="16">ri-file-list-3-line</VIcon>Invoice
+        <VBtnToggle
+          v-model="mode"
+          mandatory
+          density="compact"
+          variant="outlined"
+          divided
+          class="mb-4"
+        >
+          <VBtn
+            value="invoice"
+            size="small"
+            style="min-width: 120px"
+          >
+            <VIcon
+              start
+              size="16"
+            >
+              ri-file-list-3-line
+            </VIcon>Invoice
           </VBtn>
-          <VBtn value="pdm" size="small" style="min-width: 120px">
-            <VIcon start size="16">ri-book-line</VIcon>Catat PDM
+          <VBtn
+            value="pdm"
+            size="small"
+            style="min-width: 120px"
+          >
+            <VIcon
+              start
+              size="16"
+            >
+              ri-book-line
+            </VIcon>Catat PDM
           </VBtn>
         </VBtnToggle>
 
         <template v-if="mode === 'pdm'">
           <div class="d-flex align-center gap-2 mb-2">
-            <VIcon size="18" color="deep-purple">ri-book-line</VIcon>
+            <VIcon
+              size="18"
+              color="deep-purple"
+            >
+              ri-book-line
+            </VIcon>
             <span class="text-body-2 font-weight-medium">Catat sebagai Pendapatan di Muka</span>
           </div>
           <div class="text-caption text-medium-emphasis mb-3">
@@ -82,221 +145,361 @@
         </template>
 
         <template v-else>
-        <!-- ── Section: Invoice Opening Balance ── -->
-        <div class="d-flex align-center gap-2 mb-2">
-          <VIcon size="18" color="deep-purple">ri-bookmark-line</VIcon>
-          <span class="text-body-2 font-weight-medium">Invoice Opening Balance</span>
-        </div>
-        <VTextField
-          v-model="obSearch"
-          placeholder="Cari no invoice OB atau nama klien..."
-          density="compact"
-          variant="outlined"
-          prepend-inner-icon="ri-search-line"
-          clearable
-          class="mb-3"
-          hide-details
-          @input="onObSearchInput"
-          @click:clear="obSearch = ''; fetchCandidates('ob')"
-        />
+          <!-- ── Section: Invoice Opening Balance ── -->
+          <div class="d-flex align-center gap-2 mb-2">
+            <VIcon
+              size="18"
+              color="deep-purple"
+            >
+              ri-bookmark-line
+            </VIcon>
+            <span class="text-body-2 font-weight-medium">Invoice Opening Balance</span>
+          </div>
+          <VTextField
+            v-model="obSearch"
+            placeholder="Cari no invoice OB atau nama klien..."
+            density="compact"
+            variant="outlined"
+            prepend-inner-icon="ri-search-line"
+            clearable
+            class="mb-3"
+            hide-details
+            @input="onObSearchInput"
+            @click:clear="obSearch = ''; fetchCandidates('ob')"
+          />
 
-        <VProgressLinear v-if="obLoading" indeterminate color="primary" class="mb-2" rounded />
-        <VAlert v-if="!obLoading && obCandidates.length === 0" type="info" variant="tonal" density="compact" class="mb-2">
-          Tidak ada invoice Opening Balance yang terbuka.
-        </VAlert>
-
-        <div v-if="obCandidates.length > 0" class="d-flex flex-column gap-2">
-          <VCard
-            v-for="inv in obCandidates"
-            :key="inv.id"
-            :variant="selectedInvoiceId === inv.id ? 'tonal' : 'outlined'"
-            :color="selectedInvoiceId === inv.id ? 'primary' : undefined"
-            class="cursor-pointer"
-            @click="selectedInvoiceId = inv.id"
+          <VProgressLinear
+            v-if="obLoading"
+            indeterminate
+            color="primary"
+            class="mb-2"
+            rounded
+          />
+          <VAlert
+            v-if="!obLoading && obCandidates.length === 0"
+            type="info"
+            variant="tonal"
+            density="compact"
+            class="mb-2"
           >
-            <VCardText class="pa-3">
-              <div class="d-flex align-center gap-2">
-                <VIcon :color="selectedInvoiceId === inv.id ? 'primary' : 'grey'" size="18">
-                  {{ selectedInvoiceId === inv.id ? 'ri-radio-button-fill' : 'ri-checkbox-blank-circle-line' }}
-                </VIcon>
-                <div class="flex-1-1 min-width-0">
-                  <div class="d-flex align-center gap-2 flex-wrap mb-1">
-                    <span class="text-body-2 font-weight-semibold">{{ inv.no_invoice }}</span>
-                    <VChip :color="statusInvoiceColor(inv.status)" size="x-small" variant="tonal">{{ inv.status }}</VChip>
-                    <VChip v-if="inv.is_opening_balance" color="deep-purple" size="x-small" variant="tonal">OB</VChip>
-                  </div>
-                  <div class="d-flex flex-wrap gap-x-3 gap-y-0">
-                    <span class="text-caption text-medium-emphasis">{{ inv.nama_klien ?? '-' }}</span>
-                    <span class="text-caption text-medium-emphasis">Tgl: {{ formatDate(inv.tanggal) }}</span>
-                    <span class="text-caption text-medium-emphasis">Total: {{ formatCurrency(inv.total_tagihan) }}</span>
-                    <span class="text-caption font-weight-medium text-warning">Sisa: {{ formatCurrency(inv.sisa_tagihan) }}</span>
-                  </div>
-                  <div v-if="inv.nama_resto" class="d-flex flex-wrap gap-x-2 mt-0.5">
-                    <span class="text-caption text-primary">{{ inv.nama_resto }}</span>
-                  </div>
-                </div>
-              </div>
-            </VCardText>
-          </VCard>
-        </div>
+            Tidak ada invoice Opening Balance yang terbuka.
+          </VAlert>
 
-        <div v-if="obCandidates.length > 0" class="d-flex align-center justify-space-between mt-2">
-          <span class="text-caption text-medium-emphasis">Menampilkan {{ obCandidates.length }} dari {{ obTotal }}</span>
-          <VBtn v-if="obHasMore" size="small" variant="text" color="primary" :loading="obLoadingMore" @click="loadMore('ob')">
-            Muat lagi
-          </VBtn>
-        </div>
-
-        <!-- ── OB: pilih invoice reguler periode sebelumnya yang ikut dilunaskan ── -->
-        <div v-if="selectedIsOb" class="mt-3">
-          <VCard variant="outlined" color="deep-purple" class="pa-3">
-            <div class="d-flex align-center justify-space-between mb-1">
-              <span class="text-body-2 font-weight-medium">Lunaskan Invoice Reguler Periode Sebelumnya</span>
-              <VBtn
-                v-if="settleableInvoices.length"
-                size="x-small"
-                variant="text"
-                color="primary"
-                @click="toggleSelectAllSettle"
-              >
-                {{ selectedSettleIds.length === settleableInvoices.length ? 'Hapus semua' : 'Pilih semua' }}
-              </VBtn>
-            </div>
-            <div class="text-caption text-medium-emphasis mb-2">
-              Invoice reguler yang tercantum di rincian OB ini akan otomatis LUNAS sesuai nominalnya.
-            </div>
-
-            <VProgressLinear v-if="settleableLoading" indeterminate color="primary" class="mb-2" rounded />
-            <VAlert v-else-if="!settleableInvoices.length" type="info" variant="tonal" density="compact">
-              Tidak ada invoice reguler yang bisa dilunaskan otomatis untuk OB ini.
-            </VAlert>
-            <template v-else>
-              <div style="max-height: 200px; overflow-y: auto;">
-                <VCheckbox
-                  v-for="row in settleRows"
-                  :key="row.id"
-                  v-model="selectedSettleIds"
-                  :value="row.id"
-                  density="compact"
-                  hide-details
-                >
-                  <template #label>
-                    <div class="d-flex flex-column">
-                      <div class="d-flex align-center gap-2">
-                        <span class="text-body-2">{{ row.no_invoice }}</span>
-                        <VChip v-if="row.selected && row.predictedStatus" :color="statusSettleColor(row.predictedStatus)" size="x-small" variant="tonal">
-                          {{ statusSettleLabel(row.predictedStatus) }}
-                        </VChip>
-                      </div>
-                      <span class="text-caption text-medium-emphasis">
-                        {{ formatDate(row.tanggal_invoice) }} · Sisa {{ formatCurrency(row.sisa_tagihan) }}
-                        <template v-if="row.selected && row.predictedStatus === 'SEBAGIAN'">
-                          · Estimasi terbayar {{ formatCurrency(row.predictedAmount) }}
-                        </template>
-                      </span>
+          <div
+            v-if="obCandidates.length > 0"
+            class="d-flex flex-column gap-2"
+          >
+            <VCard
+              v-for="inv in obCandidates"
+              :key="inv.id"
+              :variant="selectedInvoiceId === inv.id ? 'tonal' : 'outlined'"
+              :color="selectedInvoiceId === inv.id ? 'primary' : undefined"
+              class="cursor-pointer"
+              @click="selectedInvoiceId = inv.id"
+            >
+              <VCardText class="pa-3">
+                <div class="d-flex align-center gap-2">
+                  <VIcon
+                    :color="selectedInvoiceId === inv.id ? 'primary' : 'grey'"
+                    size="18"
+                  >
+                    {{ selectedInvoiceId === inv.id ? 'ri-radio-button-fill' : 'ri-checkbox-blank-circle-line' }}
+                  </VIcon>
+                  <div class="flex-1-1 min-width-0">
+                    <div class="d-flex align-center gap-2 flex-wrap mb-1">
+                      <span class="text-body-2 font-weight-semibold">{{ inv.no_invoice }}</span>
+                      <VChip
+                        :color="statusInvoiceColor(inv.status)"
+                        size="x-small"
+                        variant="tonal"
+                      >
+                        {{ inv.status }}
+                      </VChip>
+                      <VChip
+                        v-if="inv.is_opening_balance"
+                        color="deep-purple"
+                        size="x-small"
+                        variant="tonal"
+                      >
+                        OB
+                      </VChip>
                     </div>
-                  </template>
-                </VCheckbox>
-              </div>
-              <div class="d-flex justify-space-between text-caption mt-2">
-                <span>Total dipilih:</span>
-                <strong :class="settleHasShortfall ? 'text-error' : 'text-success'">{{ formatCurrency(selectedSettleTotal) }}</strong>
-              </div>
-              <div class="d-flex justify-space-between text-caption text-medium-emphasis">
-                <span>Estimasi dana OB tersedia (setelah transaksi ini):</span>
-                <strong>{{ formatCurrency(settlePredictedAvailable) }}</strong>
-              </div>
-              <VAlert v-if="settleHasShortfall" type="warning" variant="tonal" density="compact" class="mt-2">
-                <div class="text-body-2 mb-2">
-                  Estimasi dana tidak cukup untuk seluruh invoice terpilih:
-                  {{ settleSummary.fullCount }} invoice akan LUNAS<template v-if="settleSummary.partialCount">,
-                  1 invoice akan SEBAGIAN sebesar {{ formatCurrency(settleSummary.partialAmount) }}</template><template v-if="settleSummary.unpaidCount">,
-                  {{ settleSummary.unpaidCount }} invoice tidak akan terbayar</template>.
-                  Sisanya tetap pada status saat ini dan bisa dilunaskan pada pembayaran OB berikutnya.
+                    <div class="d-flex flex-wrap gap-x-3 gap-y-0">
+                      <span class="text-caption text-medium-emphasis">{{ inv.nama_klien ?? '-' }}</span>
+                      <span class="text-caption text-medium-emphasis">Tgl: {{ formatDate(inv.tanggal) }}</span>
+                      <span class="text-caption text-medium-emphasis">Total: {{ formatCurrency(inv.total_tagihan) }}</span>
+                      <span class="text-caption font-weight-medium text-warning">Sisa: {{ formatCurrency(inv.sisa_tagihan) }}</span>
+                    </div>
+                    <div
+                      v-if="inv.nama_resto"
+                      class="d-flex flex-wrap gap-x-2 mt-0.5"
+                    >
+                      <span class="text-caption text-primary">{{ inv.nama_resto }}</span>
+                    </div>
+                  </div>
                 </div>
-                <VCheckbox v-model="settleShortfallAck" density="compact" hide-details color="warning">
-                  <template #label>
-                    <span class="text-caption">Saya paham dana diperkirakan tidak mencukupi seluruh invoice terpilih dan tetap ingin melanjutkan pembayaran sebagian.</span>
-                  </template>
-                </VCheckbox>
-              </VAlert>
-            </template>
-          </VCard>
-        </div>
+              </VCardText>
+            </VCard>
+          </div>
 
-        <VDivider class="my-4" />
-
-        <!-- ── Section: Invoice Reguler ── -->
-        <div class="d-flex align-center gap-2 mb-2">
-          <VIcon size="18" color="primary">ri-file-list-3-line</VIcon>
-          <span class="text-body-2 font-weight-medium">Invoice Reguler</span>
-        </div>
-        <VTextField
-          v-model="regularSearch"
-          placeholder="Cari no invoice atau nama klien..."
-          density="compact"
-          variant="outlined"
-          prepend-inner-icon="ri-search-line"
-          clearable
-          class="mb-3"
-          hide-details
-          @input="onRegularSearchInput"
-          @click:clear="regularSearch = ''; fetchCandidates('regular')"
-        />
-
-        <VProgressLinear v-if="regularLoading" indeterminate color="primary" class="mb-2" rounded />
-        <VAlert v-if="!regularLoading && regularCandidates.length === 0" type="info" variant="tonal" density="compact" class="mb-2">
-          Tidak ada invoice reguler yang terbuka. Coba ubah kata kunci pencarian.
-        </VAlert>
-
-        <div v-if="regularCandidates.length > 0" class="d-flex flex-column gap-2">
-          <VCard
-            v-for="inv in regularCandidates"
-            :key="inv.id"
-            :variant="selectedInvoiceId === inv.id ? 'tonal' : 'outlined'"
-            :color="selectedInvoiceId === inv.id ? 'primary' : undefined"
-            class="cursor-pointer"
-            @click="selectedInvoiceId = inv.id"
+          <div
+            v-if="obCandidates.length > 0"
+            class="d-flex align-center justify-space-between mt-2"
           >
-            <VCardText class="pa-3">
-              <div class="d-flex align-center gap-2">
-                <VIcon :color="selectedInvoiceId === inv.id ? 'primary' : 'grey'" size="18">
-                  {{ selectedInvoiceId === inv.id ? 'ri-radio-button-fill' : 'ri-checkbox-blank-circle-line' }}
-                </VIcon>
-                <div class="flex-1-1 min-width-0">
-                  <div class="d-flex align-center gap-2 flex-wrap mb-1">
-                    <span class="text-body-2 font-weight-semibold">{{ inv.no_invoice }}</span>
-                    <VChip :color="statusInvoiceColor(inv.status)" size="x-small" variant="tonal">{{ inv.status }}</VChip>
+            <span class="text-caption text-medium-emphasis">Menampilkan {{ obCandidates.length }} dari {{ obTotal }}</span>
+            <VBtn
+              v-if="obHasMore"
+              size="small"
+              variant="text"
+              color="primary"
+              :loading="obLoadingMore"
+              @click="loadMore('ob')"
+            >
+              Muat lagi
+            </VBtn>
+          </div>
+
+          <!-- ── OB: pilih invoice reguler periode sebelumnya yang ikut dilunaskan ── -->
+          <div
+            v-if="selectedIsOb"
+            class="mt-3"
+          >
+            <VCard
+              variant="outlined"
+              color="deep-purple"
+              class="pa-3"
+            >
+              <div class="d-flex align-center justify-space-between mb-1">
+                <span class="text-body-2 font-weight-medium">Lunaskan Invoice Reguler Periode Sebelumnya</span>
+                <VBtn
+                  v-if="settleableInvoices.length"
+                  size="x-small"
+                  variant="text"
+                  color="primary"
+                  @click="toggleSelectAllSettle"
+                >
+                  {{ selectedSettleIds.length === settleableInvoices.length ? 'Hapus semua' : 'Pilih semua' }}
+                </VBtn>
+              </div>
+              <div class="text-caption text-medium-emphasis mb-2">
+                Invoice reguler yang tercantum di rincian OB ini akan otomatis LUNAS sesuai nominalnya.
+              </div>
+
+              <VProgressLinear
+                v-if="settleableLoading"
+                indeterminate
+                color="primary"
+                class="mb-2"
+                rounded
+              />
+              <VAlert
+                v-else-if="!settleableInvoices.length"
+                type="info"
+                variant="tonal"
+                density="compact"
+              >
+                Tidak ada invoice reguler yang bisa dilunaskan otomatis untuk OB ini.
+              </VAlert>
+              <template v-else>
+                <div style="max-height: 200px; overflow-y: auto;">
+                  <VCheckbox
+                    v-for="row in settleRows"
+                    :key="row.id"
+                    v-model="selectedSettleIds"
+                    :value="row.id"
+                    density="compact"
+                    hide-details
+                  >
+                    <template #label>
+                      <div class="d-flex flex-column">
+                        <div class="d-flex align-center gap-2">
+                          <span class="text-body-2">{{ row.no_invoice }}</span>
+                          <VChip
+                            v-if="row.selected && row.predictedStatus"
+                            :color="statusSettleColor(row.predictedStatus)"
+                            size="x-small"
+                            variant="tonal"
+                          >
+                            {{ statusSettleLabel(row.predictedStatus) }}
+                          </VChip>
+                        </div>
+                        <span class="text-caption text-medium-emphasis">
+                          {{ formatDate(row.tanggal_invoice) }} · Sisa {{ formatCurrency(row.sisa_tagihan) }}
+                          <template v-if="row.selected && row.predictedStatus === 'SEBAGIAN'">
+                            · Estimasi terbayar {{ formatCurrency(row.predictedAmount) }}
+                          </template>
+                        </span>
+                      </div>
+                    </template>
+                  </VCheckbox>
+                </div>
+                <div class="d-flex justify-space-between text-caption mt-2">
+                  <span>Total dipilih:</span>
+                  <strong :class="settleHasShortfall ? 'text-error' : 'text-success'">{{ formatCurrency(selectedSettleTotal) }}</strong>
+                </div>
+                <div class="d-flex justify-space-between text-caption text-medium-emphasis">
+                  <span>Estimasi dana OB tersedia (setelah transaksi ini):</span>
+                  <strong>{{ formatCurrency(settlePredictedAvailable) }}</strong>
+                </div>
+                <VAlert
+                  v-if="settleHasShortfall"
+                  type="warning"
+                  variant="tonal"
+                  density="compact"
+                  class="mt-2"
+                >
+                  <div class="text-body-2 mb-2">
+                    Estimasi dana tidak cukup untuk seluruh invoice terpilih:
+                    {{ settleSummary.fullCount }} invoice akan LUNAS<template v-if="settleSummary.partialCount">
+                      ,
+                      1 invoice akan SEBAGIAN sebesar {{ formatCurrency(settleSummary.partialAmount) }}
+                    </template><template v-if="settleSummary.unpaidCount">
+                      ,
+                      {{ settleSummary.unpaidCount }} invoice tidak akan terbayar
+                    </template>.
+                    Sisanya tetap pada status saat ini dan bisa dilunaskan pada pembayaran OB berikutnya.
                   </div>
-                  <div class="d-flex flex-wrap gap-x-3 gap-y-0">
-                    <span class="text-caption text-medium-emphasis">{{ inv.nama_klien ?? '-' }}</span>
-                    <span class="text-caption text-medium-emphasis">Tgl: {{ formatDate(inv.tanggal) }}</span>
-                    <span class="text-caption text-medium-emphasis">Total: {{ formatCurrency(inv.total_tagihan) }}</span>
-                    <span class="text-caption font-weight-medium text-warning">Sisa: {{ formatCurrency(inv.sisa_tagihan) }}</span>
-                  </div>
-                  <div v-if="inv.nama_resto" class="d-flex flex-wrap gap-x-2 mt-0.5">
-                    <span class="text-caption text-primary">{{ inv.nama_resto }}</span>
+                  <VCheckbox
+                    v-model="settleShortfallAck"
+                    density="compact"
+                    hide-details
+                    color="warning"
+                  >
+                    <template #label>
+                      <span class="text-caption">Saya paham dana diperkirakan tidak mencukupi seluruh invoice terpilih dan tetap ingin melanjutkan pembayaran sebagian.</span>
+                    </template>
+                  </VCheckbox>
+                </VAlert>
+              </template>
+            </VCard>
+          </div>
+
+          <VDivider class="my-4" />
+
+          <!-- ── Section: Invoice Reguler ── -->
+          <div class="d-flex align-center gap-2 mb-2">
+            <VIcon
+              size="18"
+              color="primary"
+            >
+              ri-file-list-3-line
+            </VIcon>
+            <span class="text-body-2 font-weight-medium">Invoice Reguler</span>
+          </div>
+          <VTextField
+            v-model="regularSearch"
+            placeholder="Cari no invoice atau nama klien..."
+            density="compact"
+            variant="outlined"
+            prepend-inner-icon="ri-search-line"
+            clearable
+            class="mb-3"
+            hide-details
+            @input="onRegularSearchInput"
+            @click:clear="regularSearch = ''; fetchCandidates('regular')"
+          />
+
+          <VProgressLinear
+            v-if="regularLoading"
+            indeterminate
+            color="primary"
+            class="mb-2"
+            rounded
+          />
+          <VAlert
+            v-if="!regularLoading && regularCandidates.length === 0"
+            type="info"
+            variant="tonal"
+            density="compact"
+            class="mb-2"
+          >
+            Tidak ada invoice reguler yang terbuka. Coba ubah kata kunci pencarian.
+          </VAlert>
+
+          <div
+            v-if="regularCandidates.length > 0"
+            class="d-flex flex-column gap-2"
+          >
+            <VCard
+              v-for="inv in regularCandidates"
+              :key="inv.id"
+              :variant="selectedInvoiceId === inv.id ? 'tonal' : 'outlined'"
+              :color="selectedInvoiceId === inv.id ? 'primary' : undefined"
+              class="cursor-pointer"
+              @click="selectedInvoiceId = inv.id"
+            >
+              <VCardText class="pa-3">
+                <div class="d-flex align-center gap-2">
+                  <VIcon
+                    :color="selectedInvoiceId === inv.id ? 'primary' : 'grey'"
+                    size="18"
+                  >
+                    {{ selectedInvoiceId === inv.id ? 'ri-radio-button-fill' : 'ri-checkbox-blank-circle-line' }}
+                  </VIcon>
+                  <div class="flex-1-1 min-width-0">
+                    <div class="d-flex align-center gap-2 flex-wrap mb-1">
+                      <span class="text-body-2 font-weight-semibold">{{ inv.no_invoice }}</span>
+                      <VChip
+                        :color="statusInvoiceColor(inv.status)"
+                        size="x-small"
+                        variant="tonal"
+                      >
+                        {{ inv.status }}
+                      </VChip>
+                    </div>
+                    <div class="d-flex flex-wrap gap-x-3 gap-y-0">
+                      <span class="text-caption text-medium-emphasis">{{ inv.nama_klien ?? '-' }}</span>
+                      <span class="text-caption text-medium-emphasis">Tgl: {{ formatDate(inv.tanggal) }}</span>
+                      <span class="text-caption text-medium-emphasis">Total: {{ formatCurrency(inv.total_tagihan) }}</span>
+                      <span class="text-caption font-weight-medium text-warning">Sisa: {{ formatCurrency(inv.sisa_tagihan) }}</span>
+                    </div>
+                    <div
+                      v-if="inv.nama_resto"
+                      class="d-flex flex-wrap gap-x-2 mt-0.5"
+                    >
+                      <span class="text-caption text-primary">{{ inv.nama_resto }}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </VCardText>
-          </VCard>
-        </div>
+              </VCardText>
+            </VCard>
+          </div>
 
-        <div v-if="regularCandidates.length > 0" class="d-flex align-center justify-space-between mt-2">
-          <span class="text-caption text-medium-emphasis">Menampilkan {{ regularCandidates.length }} dari {{ regularTotal }}</span>
-          <VBtn v-if="regularHasMore" size="small" variant="text" color="primary" :loading="regularLoadingMore" @click="loadMore('regular')">
-            Muat lagi
-          </VBtn>
-        </div>
+          <div
+            v-if="regularCandidates.length > 0"
+            class="d-flex align-center justify-space-between mt-2"
+          >
+            <span class="text-caption text-medium-emphasis">Menampilkan {{ regularCandidates.length }} dari {{ regularTotal }}</span>
+            <VBtn
+              v-if="regularHasMore"
+              size="small"
+              variant="text"
+              color="primary"
+              :loading="regularLoadingMore"
+              @click="loadMore('regular')"
+            >
+              Muat lagi
+            </VBtn>
+          </div>
         </template>
 
-        <VAlert v-if="matchError" type="error" variant="tonal" class="mt-3" density="compact">{{ matchError }}</VAlert>
+        <VAlert
+          v-if="matchError"
+          type="error"
+          variant="tonal"
+          class="mt-3"
+          density="compact"
+        >
+          {{ matchError }}
+        </VAlert>
       </VCardText>
       <VDivider />
       <VCardActions class="pa-4">
         <VSpacer />
-        <AppActionButton action="batalkan" @click="onDialogUpdate(false)" />
+        <AppActionButton
+          action="batalkan"
+          @click="onDialogUpdate(false)"
+        />
         <AppActionButton
           action="lanjutkan"
           :disabled="mode === 'invoice' ? (!selectedInvoiceId || obLoading || regularLoading || !canProceedSettle) : !pdmKlienId"
@@ -431,6 +634,7 @@ async function loadSettleableOriginals(obInvoiceId) {
   settleableLoading.value = true
   try {
     const { data } = await api.get(`/finance/invoices/${obInvoiceId}/settleable-originals`)
+
     settleableInvoices.value = data?.data?.invoices ?? []
     settleAvailable.value    = Number(data?.data?.available ?? 0)
     selectedSettleIds.value  = settleableInvoices.value.map(inv => inv.id)
@@ -478,6 +682,7 @@ async function fetchCandidates(type, { append = false } = {}) {
     const { data } = await api.get(`/finance/rekonsiliasi-bank/detail/${id}/invoice-candidates`, {
       params: { search: search || undefined, type, page, per_page: PER_PAGE },
     })
+
     const items    = data.data?.data ?? []
     const lastPage = data.data?.last_page ?? 1
     const total    = data.data?.total ?? items.length
@@ -559,6 +764,7 @@ function resetState() {
 watch(() => props.modelValue, open => {
   if (!open) {
     resetState()
+    
     return
   }
   resetState()
@@ -588,6 +794,7 @@ function handleMatchError(err) {
   if (!err?.response || err?.code === 'ECONNABORTED') {
     emit('update:modelValue', false)
     emit('connection-error', 'Koneksi terputus saat menyimpan. Data telah dimuat ulang — silakan periksa status transaksi.')
+    
     return
   }
   const fieldErrors = err?.response?.data?.errors
@@ -610,6 +817,7 @@ async function doManualMatchInvoice() {
   buktiBayarError.value = null
   try {
     const payload = new FormData()
+
     payload.append('invoice_id', selectedInvoiceId.value)
     if (selectedIsOb.value) {
       selectedSettleIds.value.forEach(id => payload.append('settle_original_invoice_ids[]', id))
@@ -622,6 +830,7 @@ async function doManualMatchInvoice() {
       payload,
       { headers: { 'Content-Type': 'multipart/form-data' } },
     )
+
     emit('matched', { itemId: props.item.id, updated: data.data })
     emit('update:modelValue', false)
   } catch (err) {
@@ -638,6 +847,7 @@ async function doManualMatchPdm() {
   buktiBayarError.value = null
   try {
     const payload = new FormData()
+
     payload.append('klien_ar_id', pdmKlienId.value)
     if (pdmKeterangan.value) payload.append('keterangan', pdmKeterangan.value)
     const file = Array.isArray(buktiBayar.value) ? buktiBayar.value[0] : buktiBayar.value
@@ -648,6 +858,7 @@ async function doManualMatchPdm() {
       payload,
       { headers: { 'Content-Type': 'multipart/form-data' } },
     )
+
     emit('matched', { itemId: props.item.id, updated: data.data })
     emit('update:modelValue', false)
   } catch (err) {

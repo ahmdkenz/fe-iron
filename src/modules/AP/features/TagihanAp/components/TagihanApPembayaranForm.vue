@@ -10,12 +10,19 @@
     <VForm ref="formRef">
       <VRow>
         <VCol cols="12">
-          <VAlert type="info" variant="tonal" density="compact">
+          <VAlert
+            type="info"
+            variant="tonal"
+            density="compact"
+          >
             Sisa Tagihan: <strong>{{ formatCurrency(sisaTagihan) }}</strong>
           </VAlert>
         </VCol>
 
-        <VCol cols="12" md="6">
+        <VCol
+          cols="12"
+          md="6"
+        >
           <VTextField
             v-model="form.tanggal_pembayaran"
             label="Tanggal Pembayaran"
@@ -27,7 +34,10 @@
           />
         </VCol>
 
-        <VCol cols="12" md="6">
+        <VCol
+          cols="12"
+          md="6"
+        >
           <VTextField
             v-model.number="form.jumlah_pembayaran"
             label="Jumlah Pembayaran"
@@ -44,7 +54,10 @@
           />
         </VCol>
 
-        <VCol cols="12" md="6">
+        <VCol
+          cols="12"
+          md="6"
+        >
           <VSelect
             v-model="form.metode_pembayaran"
             label="Metode Pembayaran"
@@ -58,7 +71,10 @@
           />
         </VCol>
 
-        <VCol cols="12" md="6">
+        <VCol
+          cols="12"
+          md="6"
+        >
           <VSelect
             v-model="form.kategori_voucher"
             label="Kategori Voucher"
@@ -101,7 +117,12 @@
         </VCol>
       </VRow>
 
-      <VAlert v-if="errorMessage" type="error" variant="tonal" class="mt-2">
+      <VAlert
+        v-if="errorMessage"
+        type="error"
+        variant="tonal"
+        class="mt-2"
+      >
         {{ errorMessage }}
       </VAlert>
     </VForm>
@@ -181,6 +202,7 @@ async function handleSubmit() {
 
   try {
     const payload = new FormData()
+
     payload.append('tanggal_pembayaran', form.tanggal_pembayaran)
     payload.append('jumlah_pembayaran', form.jumlah_pembayaran)
     payload.append('metode_pembayaran', form.metode_pembayaran)

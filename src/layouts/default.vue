@@ -8,10 +8,16 @@ const DefaultLayoutWithHorizontalNav = defineAsyncComponent(() => import('./comp
 const DefaultLayoutWithVerticalNav = defineAsyncComponent(() => import('./components/DefaultLayoutWithVerticalNav.vue'))
 const configStore = useConfigStore()
 const { mobile } = useDisplay()
+
 const keepAliveRouteNames = new Set([
   'finance-opening-balance',
-  'iam-users', 'iam-roles',
-  'master-karyawan', 'master-perusahaan', 'master-investor', 'master-resto', 'master-brand',
+  'iam-users',
+  'iam-roles',
+  'master-karyawan',
+  'master-perusahaan',
+  'master-investor',
+  'master-resto',
+  'master-brand',
   'finance-klien-ar',
   'ap-vendor-index',
 ])

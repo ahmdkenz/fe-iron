@@ -95,7 +95,9 @@
       <VDivider />
       <div class="d-flex flex-wrap align-center gap-4 px-4 py-3">
         <div style="min-width: 260px; flex: 1; max-width: 360px;">
-          <div class="text-caption text-medium-emphasis mb-2">Pencarian</div>
+          <div class="text-caption text-medium-emphasis mb-2">
+            Pencarian
+          </div>
           <VTextField
             v-model="searchB2B"
             placeholder="Cari kode / nama klien..."
@@ -107,7 +109,9 @@
           />
         </div>
         <div style="min-width: 140px; max-width: 180px;">
-          <div class="text-caption text-medium-emphasis mb-2">Status</div>
+          <div class="text-caption text-medium-emphasis mb-2">
+            Status
+          </div>
           <VSelect
             v-model="statusB2B"
             placeholder="Semua Status"
@@ -123,6 +127,7 @@
       </div>
       <VDivider />
       <BaseTable
+        v-model:selected="selectedB2B"
         :headers="headersB2B"
         :items="itemsB2B"
         :total="metaB2B.total"
@@ -131,7 +136,6 @@
         :page="metaB2B.current_page"
         wrap-text
         show-select
-        v-model:selected="selectedB2B"
         mobile-cards
         mobile-menu-select
         column-resize-key="finance-klien-ar-b2b"
@@ -271,7 +275,9 @@
       <VDivider v-if="canSeeAll" />
       <div class="d-flex flex-wrap align-center gap-4 px-4 py-3">
         <div style="min-width: 260px; flex: 1; max-width: 360px;">
-          <div class="text-caption text-medium-emphasis mb-2">Pencarian</div>
+          <div class="text-caption text-medium-emphasis mb-2">
+            Pencarian
+          </div>
           <VTextField
             v-model="searchB2C"
             placeholder="Cari kode / nama klien..."
@@ -283,7 +289,9 @@
           />
         </div>
         <div style="min-width: 140px; max-width: 180px;">
-          <div class="text-caption text-medium-emphasis mb-2">Status</div>
+          <div class="text-caption text-medium-emphasis mb-2">
+            Status
+          </div>
           <VSelect
             v-model="statusB2C"
             placeholder="Semua Status"
@@ -299,6 +307,7 @@
       </div>
       <VDivider />
       <BaseTable
+        v-model:selected="selectedB2C"
         :headers="headersB2C"
         :items="itemsB2C"
         :total="metaB2C.total"
@@ -307,7 +316,6 @@
         :page="metaB2C.current_page"
         wrap-text
         show-select
-        v-model:selected="selectedB2C"
         mobile-cards
         mobile-menu-select
         column-resize-key="finance-klien-ar-b2c"
@@ -545,7 +553,6 @@
           label="Updated By"
           :value="selectedKlien.updated_by_name"
         />
-
       </div>
     </VNavigationDrawer>
 
@@ -736,6 +743,7 @@ async function exportExcel() {
     const res  = await api.get(`/finance/klien-ar/export?${query}`, { responseType: 'blob' })
     const url  = URL.createObjectURL(res.data)
     const a    = document.createElement('a')
+
     a.href     = url
     a.download = `klien-ar-${new Date().toISOString().slice(0, 10)}.xlsx`
     a.click()
@@ -757,6 +765,7 @@ async function doBulkDelete() {
   try {
     const res = await api.delete('/finance/klien-ar/bulk', { data: { ids: selectedKlienAll.value.map(i => i.id) } })
     const deleted = res.data?.data?.deleted ?? selectedKlienAll.value.length
+
     clearAllSelected()
     loadListB2C()
     loadListB2B()

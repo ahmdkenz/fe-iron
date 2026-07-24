@@ -119,7 +119,7 @@
                 :error-messages="errors.perusahaan_id"
                 :loading="entitasLoading"
                 clearable
-                @focus="ensureEntitasLoaded()"
+                @focus="ensureEntitasLoaded"
                 @update:model-value="onEntitasChange"
               >
                 <template #item="{ props: p, item }">
@@ -146,7 +146,7 @@
                 :error-messages="errors.brand_id"
                 :loading="brandLoading"
                 clearable
-                @focus="ensureBrandLoaded()"
+                @focus="ensureBrandLoaded"
                 @update:model-value="onBrandChange"
               >
                 <template #item="{ props: p, item }">
@@ -173,7 +173,7 @@
                 :error-messages="errors.investor_id"
                 :loading="investorLoading"
                 clearable
-                @focus="ensureInvestorLoaded()"
+                @focus="ensureInvestorLoaded"
               />
             </VCol>
             <VCol
@@ -191,7 +191,7 @@
                 :error-messages="errors.karyawan_id"
                 :loading="karyawanLoading"
                 clearable
-                @focus="ensureKaryawanLoaded()"
+                @focus="ensureKaryawanLoaded"
               >
                 <template #item="{ props: p, item }">
                   <VListItem

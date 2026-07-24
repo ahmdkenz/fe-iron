@@ -24,6 +24,7 @@ function parseDate(value) {
   const ddmmyyyy = /^(\d{2})-(\d{2})-(\d{4})/.exec(String(value))
   if (ddmmyyyy) {
     const [, d, m, y] = ddmmyyyy
+    
     return new Date(+y, +m - 1, +d)
   }
 
@@ -31,10 +32,12 @@ function parseDate(value) {
   const yyyymmdd = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value))
   if (yyyymmdd) {
     const [, y, m, d] = yyyymmdd
+    
     return new Date(+y, +m - 1, +d)
   }
 
   const date = new Date(value)
+  
   return Number.isNaN(date.getTime()) ? null : date
 }
 
@@ -46,8 +49,10 @@ export function toISODate(value) {
   const ddmmyyyy = /^(\d{2})-(\d{2})-(\d{4})$/.exec(String(value))
   if (ddmmyyyy) {
     const [, d, m, y] = ddmmyyyy
+    
     return `${y}-${m}-${d}`
   }
+  
   return String(value)
 }
 
@@ -63,6 +68,7 @@ export function useFormatter() {
     const d = String(date.getDate()).padStart(2, '0')
     const m = String(date.getMonth() + 1).padStart(2, '0')
     const y = date.getFullYear()
+    
     return `${d}-${m}-${y}`
   }
 

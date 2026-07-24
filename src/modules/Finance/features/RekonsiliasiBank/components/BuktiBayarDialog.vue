@@ -1,7 +1,15 @@
 <template>
-  <VDialog :model-value="modelValue" max-width="480" persistent scrollable @update:model-value="emit('update:modelValue', $event)">
+  <VDialog
+    :model-value="modelValue"
+    max-width="480"
+    persistent
+    scrollable
+    @update:model-value="emit('update:modelValue', $event)"
+  >
     <VCard>
-      <VCardTitle class="pa-4 pb-2"><span class="text-h6">Upload Bukti Bayar</span></VCardTitle>
+      <VCardTitle class="pa-4 pb-2">
+        <span class="text-h6">Upload Bukti Bayar</span>
+      </VCardTitle>
       <VDivider />
       <VCardText class="pa-4">
         <div class="text-body-2 text-medium-emphasis mb-4">
@@ -24,16 +32,39 @@
           @update:model-value="emit('update:file', $event)"
         />
 
-        <VAlert v-if="errorMessage" type="error" variant="tonal" class="mt-3" density="compact">{{ errorMessage }}</VAlert>
+        <VAlert
+          v-if="errorMessage"
+          type="error"
+          variant="tonal"
+          class="mt-3"
+          density="compact"
+        >
+          {{ errorMessage }}
+        </VAlert>
       </VCardText>
       <VDivider />
       <VCardActions class="pa-4">
-        <VBtn variant="text" @click="emit('back')">
-          <VIcon start size="16">ri-arrow-left-line</VIcon>Kembali
+        <VBtn
+          variant="text"
+          @click="emit('back')"
+        >
+          <VIcon
+            start
+            size="16"
+          >
+            ri-arrow-left-line
+          </VIcon>Kembali
         </VBtn>
         <VSpacer />
-        <AppActionButton action="batalkan" @click="emit('update:modelValue', false)" />
-        <AppActionButton action="cocokkan" :loading="saving" @click="emit('confirm')" />
+        <AppActionButton
+          action="batalkan"
+          @click="emit('update:modelValue', false)"
+        />
+        <AppActionButton
+          action="cocokkan"
+          :loading="saving"
+          @click="emit('confirm')"
+        />
       </VCardActions>
     </VCard>
   </VDialog>

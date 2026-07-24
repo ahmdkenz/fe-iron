@@ -12,11 +12,17 @@
         class="text-caption font-weight-bold text-uppercase d-flex align-center gap-1 mb-2"
         style="color: rgb(var(--v-theme-primary))"
       >
-        <VIcon icon="ri-store-2-line" size="13" />
+        <VIcon
+          icon="ri-store-2-line"
+          size="13"
+        />
         Data Vendor
       </div>
       <VRow dense>
-        <VCol cols="12" md="4">
+        <VCol
+          cols="12"
+          md="4"
+        >
           <BaseInput
             v-model="form.kode_vendor"
             label="Kode Supplier"
@@ -24,7 +30,10 @@
             :error-messages="errors.kode_vendor"
           />
         </VCol>
-        <VCol cols="12" md="8">
+        <VCol
+          cols="12"
+          md="8"
+        >
           <BaseInput
             v-model="form.nama_vendor"
             label="Nama Vendor"
@@ -32,14 +41,20 @@
             :error-messages="errors.nama_vendor"
           />
         </VCol>
-        <VCol cols="12" md="6">
+        <VCol
+          cols="12"
+          md="6"
+        >
           <BaseInput
             v-model="form.no_npwp"
             label="No. NPWP"
             :error-messages="errors.no_npwp"
           />
         </VCol>
-        <VCol cols="12" md="6">
+        <VCol
+          cols="12"
+          md="6"
+        >
           <BaseSelect
             v-model="form.status"
             label="Status"
@@ -55,19 +70,46 @@
         class="text-caption font-weight-bold text-uppercase d-flex align-center gap-1 mt-3 mb-2"
         style="color: rgb(var(--v-theme-warning))"
       >
-        <VIcon icon="ri-bank-line" size="13" />
+        <VIcon
+          icon="ri-bank-line"
+          size="13"
+        />
         Info Rekening Bank
-        <VChip size="x-small" color="secondary" variant="tonal">Opsional</VChip>
+        <VChip
+          size="x-small"
+          color="secondary"
+          variant="tonal"
+        >
+          Opsional
+        </VChip>
       </div>
       <VRow dense>
-        <VCol cols="12" md="4">
-          <BaseInput v-model="form.bank_nama" label="Nama Bank" />
+        <VCol
+          cols="12"
+          md="4"
+        >
+          <BaseInput
+            v-model="form.bank_nama"
+            label="Nama Bank"
+          />
         </VCol>
-        <VCol cols="12" md="4">
-          <BaseInput v-model="form.bank_no_rekening" label="No. Rekening" />
+        <VCol
+          cols="12"
+          md="4"
+        >
+          <BaseInput
+            v-model="form.bank_no_rekening"
+            label="No. Rekening"
+          />
         </VCol>
-        <VCol cols="12" md="4">
-          <BaseInput v-model="form.bank_atas_nama" label="Atas Nama" />
+        <VCol
+          cols="12"
+          md="4"
+        >
+          <BaseInput
+            v-model="form.bank_atas_nama"
+            label="Atas Nama"
+          />
         </VCol>
       </VRow>
 
@@ -76,7 +118,10 @@
         class="text-caption font-weight-bold text-uppercase d-flex align-center gap-1 mt-3 mb-2"
         style="color: rgb(var(--v-theme-primary))"
       >
-        <VIcon icon="ri-links-line" size="13" />
+        <VIcon
+          icon="ri-links-line"
+          size="13"
+        />
         Relasi Internal
       </div>
       <VRow dense>
@@ -95,13 +140,22 @@
             @focus="ensureKaryawanLoaded({ params: { role: 'AP' } })"
           >
             <template #item="{ props: p, item }">
-              <VListItem v-bind="p" :title="item.raw.nama_karyawan" :subtitle="item.raw.nik" />
+              <VListItem
+                v-bind="p"
+                :title="item.raw.nama_karyawan"
+                :subtitle="item.raw.nik"
+              />
             </template>
           </VAutocomplete>
         </VCol>
       </VRow>
 
-      <VAlert v-if="errorMessage" type="error" variant="tonal" class="mt-3">
+      <VAlert
+        v-if="errorMessage"
+        type="error"
+        variant="tonal"
+        class="mt-3"
+      >
         {{ errorMessage }}
       </VAlert>
     </VForm>
@@ -176,6 +230,7 @@ async function handleSubmit() {
   if (!valid) return
 
   const payload = { ...form }
+
   const res = isEditing.value
     ? await update(props.vendorData.id, payload)
     : await create(payload)

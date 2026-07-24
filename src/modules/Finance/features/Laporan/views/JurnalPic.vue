@@ -9,7 +9,13 @@
         { title: 'Jurnal per PIC', disabled: true },
       ]"
     >
-      <VBtn variant="text" prepend-icon="ri-arrow-left-line" :to="{ name: 'finance-laporan' }">Kembali</VBtn>
+      <VBtn
+        variant="text"
+        prepend-icon="ri-arrow-left-line"
+        :to="{ name: 'finance-laporan' }"
+      >
+        Kembali
+      </VBtn>
     </PageHeader>
 
     <!-- Filter -->
@@ -53,7 +59,7 @@
           item-title="display_label"
           item-value="id"
           :loading="klienArLoading"
-          @focus="ensureKlienArLoaded()"
+          @focus="ensureKlienArLoaded"
           @update:model-value="doFetch"
         />
 
@@ -135,14 +141,29 @@
 
         <template #item.no_referensi="{ item }">
           <div class="d-flex align-center gap-1">
-            <span v-if="item.no_referensi" class="font-weight-medium text-mono">
+            <span
+              v-if="item.no_referensi"
+              class="font-weight-medium text-mono"
+            >
               {{ item.no_referensi }}
             </span>
-            <span v-else class="text-medium-emphasis">—</span>
+            <span
+              v-else
+              class="text-medium-emphasis"
+            >—</span>
             <!-- Badge multi-invoice -->
-            <VTooltip v-if="multiRefMap[item.no_referensi] > 1" text="1 referensi untuk beberapa invoice">
+            <VTooltip
+              v-if="multiRefMap[item.no_referensi] > 1"
+              text="1 referensi untuk beberapa invoice"
+            >
               <template #activator="{ props }">
-                <VChip v-bind="props" size="x-small" color="purple" variant="tonal" label>
+                <VChip
+                  v-bind="props"
+                  size="x-small"
+                  color="purple"
+                  variant="tonal"
+                  label
+                >
                   ×{{ multiRefMap[item.no_referensi] }}
                 </VChip>
               </template>
@@ -151,8 +172,13 @@
         </template>
 
         <template #item.pic_nama="{ item }">
-          <div class="font-weight-medium">{{ item.pic_nama ?? '—' }}</div>
-          <div v-if="item.input_oleh && item.input_oleh !== item.pic_nama" class="text-caption text-medium-emphasis">
+          <div class="font-weight-medium">
+            {{ item.pic_nama ?? '—' }}
+          </div>
+          <div
+            v-if="item.input_oleh && item.input_oleh !== item.pic_nama"
+            class="text-caption text-medium-emphasis"
+          >
             Input: {{ item.input_oleh }}
           </div>
         </template>
@@ -165,7 +191,9 @@
           >
             {{ item.no_invoice }}
           </RouterLink>
-          <div class="text-caption text-medium-emphasis">{{ item.klien }}</div>
+          <div class="text-caption text-medium-emphasis">
+            {{ item.klien }}
+          </div>
         </template>
 
         <template #item.tanggal_pembayaran="{ item }">
@@ -179,18 +207,32 @@
         </template>
 
         <template #item.sisa_piutang="{ item }">
-          <span :class="item.sisa_piutang > 0 ? 'text-error' : 'text-success'" class="font-weight-medium">
+          <span
+            :class="item.sisa_piutang > 0 ? 'text-error' : 'text-success'"
+            class="font-weight-medium"
+          >
             {{ formatCurrency(item.sisa_piutang ?? 0) }}
           </span>
         </template>
 
         <template #item.invoice_status="{ item }">
-          <InvoiceStatusBadge v-if="item.invoice_status" :status="item.invoice_status" />
-          <span v-else class="text-medium-emphasis">—</span>
+          <InvoiceStatusBadge
+            v-if="item.invoice_status"
+            :status="item.invoice_status"
+          />
+          <span
+            v-else
+            class="text-medium-emphasis"
+          >—</span>
         </template>
 
         <template #item.metode_pembayaran="{ item }">
-          <VChip :color="metodeColor(item.metode_pembayaran)" size="small" variant="tonal" label>
+          <VChip
+            :color="metodeColor(item.metode_pembayaran)"
+            size="small"
+            variant="tonal"
+            label
+          >
             {{ item.metode_pembayaran }}
           </VChip>
         </template>
@@ -205,7 +247,13 @@
           >
             {{ item.status_rekonsiliasi }}
           </VChip>
-          <VChip v-else size="small" variant="tonal" color="warning" label>
+          <VChip
+            v-else
+            size="small"
+            variant="tonal"
+            color="warning"
+            label
+          >
             Belum Diproses
           </VChip>
         </template>
@@ -213,7 +261,11 @@
     </VCard>
 
     <!-- Detail Dialog -->
-    <VDialog v-model="detailDialog" max-width="620" scrollable>
+    <VDialog
+      v-model="detailDialog"
+      max-width="620"
+      scrollable
+    >
       <VCard v-if="selectedItem">
         <VCardTitle class="d-flex align-center justify-space-between pt-4 px-6">
           <div class="d-flex align-center gap-2">
@@ -228,7 +280,12 @@
               {{ multiInvoices.length }} Invoice
             </VChip>
           </div>
-          <VBtn icon="ri-close-line" variant="text" size="small" @click="detailDialog = false" />
+          <VBtn
+            icon="ri-close-line"
+            variant="text"
+            size="small"
+            @click="detailDialog = false"
+          />
         </VCardTitle>
 
         <VDivider />
@@ -250,31 +307,66 @@
           <!-- Info Bayar -->
           <VRow dense>
             <VCol cols="6">
-              <div class="text-caption text-medium-emphasis mb-1">No. Referensi</div>
-              <div class="font-weight-medium text-mono">{{ selectedItem.no_referensi ?? '—' }}</div>
+              <div class="text-caption text-medium-emphasis mb-1">
+                No. Referensi
+              </div>
+              <div class="font-weight-medium text-mono">
+                {{ selectedItem.no_referensi ?? '—' }}
+              </div>
             </VCol>
             <VCol cols="6">
-              <div class="text-caption text-medium-emphasis mb-1">Tanggal Bayar</div>
-              <div class="font-weight-medium">{{ formatDate(selectedItem.tanggal_pembayaran) }}</div>
+              <div class="text-caption text-medium-emphasis mb-1">
+                Tanggal Bayar
+              </div>
+              <div class="font-weight-medium">
+                {{ formatDate(selectedItem.tanggal_pembayaran) }}
+              </div>
             </VCol>
-            <VCol cols="6" class="mt-3">
-              <div class="text-caption text-medium-emphasis mb-1">Jumlah Bayar</div>
+            <VCol
+              cols="6"
+              class="mt-3"
+            >
+              <div class="text-caption text-medium-emphasis mb-1">
+                Jumlah Bayar
+              </div>
               <div class="text-success font-weight-bold text-subtitle-1">
                 {{ formatCurrency(selectedItem.jumlah_pembayaran) }}
               </div>
             </VCol>
-            <VCol cols="6" class="mt-3">
-              <div class="text-caption text-medium-emphasis mb-1">Metode</div>
-              <VChip :color="metodeColor(selectedItem.metode_pembayaran)" size="small" variant="tonal" label>
+            <VCol
+              cols="6"
+              class="mt-3"
+            >
+              <div class="text-caption text-medium-emphasis mb-1">
+                Metode
+              </div>
+              <VChip
+                :color="metodeColor(selectedItem.metode_pembayaran)"
+                size="small"
+                variant="tonal"
+                label
+              >
                 {{ selectedItem.metode_pembayaran }}
               </VChip>
             </VCol>
-            <VCol cols="6" class="mt-3">
-              <div class="text-caption text-medium-emphasis mb-1">PIC AR</div>
-              <div class="font-weight-medium">{{ selectedItem.pic_nama ?? '—' }}</div>
+            <VCol
+              cols="6"
+              class="mt-3"
+            >
+              <div class="text-caption text-medium-emphasis mb-1">
+                PIC AR
+              </div>
+              <div class="font-weight-medium">
+                {{ selectedItem.pic_nama ?? '—' }}
+              </div>
             </VCol>
-            <VCol cols="6" class="mt-3">
-              <div class="text-caption text-medium-emphasis mb-1">Diinput oleh</div>
+            <VCol
+              cols="6"
+              class="mt-3"
+            >
+              <div class="text-caption text-medium-emphasis mb-1">
+                Diinput oleh
+              </div>
               <div>{{ selectedItem.input_oleh ?? '—' }}</div>
             </VCol>
           </VRow>
@@ -284,7 +376,11 @@
           <!-- Multi-Invoice Section -->
           <template v-if="loadingMulti">
             <div class="d-flex align-center gap-2 py-2 text-medium-emphasis">
-              <VProgressCircular size="16" width="2" indeterminate />
+              <VProgressCircular
+                size="16"
+                width="2"
+                indeterminate
+              />
               <span class="text-caption">Memuat invoice terkait...</span>
             </div>
           </template>
@@ -293,19 +389,37 @@
             <div class="text-caption text-medium-emphasis mb-2 font-weight-medium text-uppercase">
               Invoice yang Dibayar <span class="text-purple">({{ multiInvoices.length }})</span>
             </div>
-            <VTable density="compact" class="rounded border mb-2">
+            <VTable
+              density="compact"
+              class="rounded border mb-2"
+            >
               <thead>
                 <tr>
-                  <th class="text-caption">No. Invoice</th>
-                  <th class="text-caption">Klien</th>
-                  <th class="text-caption text-right">Total Tagihan</th>
-                  <th class="text-caption text-right">Dibayar</th>
-                  <th class="text-caption text-right">Sisa</th>
-                  <th class="text-caption text-center">Status</th>
+                  <th class="text-caption">
+                    No. Invoice
+                  </th>
+                  <th class="text-caption">
+                    Klien
+                  </th>
+                  <th class="text-caption text-right">
+                    Total Tagihan
+                  </th>
+                  <th class="text-caption text-right">
+                    Dibayar
+                  </th>
+                  <th class="text-caption text-right">
+                    Sisa
+                  </th>
+                  <th class="text-caption text-center">
+                    Status
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="pay in multiInvoices" :key="pay.id">
+                <tr
+                  v-for="pay in multiInvoices"
+                  :key="pay.id"
+                >
                   <td class="text-mono">
                     <RouterLink
                       :to="{ name: 'finance-invoice-show', params: { id: pay.invoice_id } }"
@@ -315,16 +429,26 @@
                       {{ pay.no_invoice }}
                     </RouterLink>
                   </td>
-                  <td class="text-caption">{{ pay.klien }}</td>
-                  <td class="text-right text-caption">{{ formatCurrency(pay.total_tagihan) }}</td>
+                  <td class="text-caption">
+                    {{ pay.klien }}
+                  </td>
+                  <td class="text-right text-caption">
+                    {{ formatCurrency(pay.total_tagihan) }}
+                  </td>
                   <td class="text-right text-caption text-success font-weight-medium">
                     {{ formatCurrency(pay.jumlah_pembayaran) }}
                   </td>
-                  <td class="text-right text-caption" :class="pay.sisa_piutang > 0 ? 'text-error' : 'text-success'">
+                  <td
+                    class="text-right text-caption"
+                    :class="pay.sisa_piutang > 0 ? 'text-error' : 'text-success'"
+                  >
                     {{ formatCurrency(pay.sisa_piutang) }}
                   </td>
                   <td class="text-center">
-                    <InvoiceStatusBadge v-if="pay.invoice_status" :status="pay.invoice_status" />
+                    <InvoiceStatusBadge
+                      v-if="pay.invoice_status"
+                      :status="pay.invoice_status"
+                    />
                   </td>
                 </tr>
               </tbody>
@@ -339,11 +463,17 @@
             </div>
             <VRow dense>
               <VCol cols="6">
-                <div class="text-caption text-medium-emphasis mb-1">No. Ref Bank</div>
-                <div class="text-mono">{{ selectedItem.no_ref_bank ?? '—' }}</div>
+                <div class="text-caption text-medium-emphasis mb-1">
+                  No. Ref Bank
+                </div>
+                <div class="text-mono">
+                  {{ selectedItem.no_ref_bank ?? '—' }}
+                </div>
               </VCol>
               <VCol cols="6">
-                <div class="text-caption text-medium-emphasis mb-1">Tgl Rekonsiliasi</div>
+                <div class="text-caption text-medium-emphasis mb-1">
+                  Tgl Rekonsiliasi
+                </div>
                 <div>{{ formatDate(selectedItem.tgl_rekonsiliasi) ?? '—' }}</div>
               </VCol>
             </VRow>
@@ -351,8 +481,12 @@
 
           <template v-if="selectedItem.keterangan">
             <VDivider class="my-4" />
-            <div class="text-caption text-medium-emphasis mb-1">Keterangan</div>
-            <div class="text-body-2">{{ selectedItem.keterangan }}</div>
+            <div class="text-caption text-medium-emphasis mb-1">
+              Keterangan
+            </div>
+            <div class="text-body-2">
+              {{ selectedItem.keterangan }}
+            </div>
           </template>
         </VCardText>
       </VCard>
@@ -373,7 +507,7 @@ const authStore = useAuthStore()
 const { formatCurrency, formatDate } = useFormatter()
 
 const canSeeAll = computed(() =>
-  authStore.isAdmin || authStore.isManager || authStore.isSupervisor
+  authStore.isAdmin || authStore.isManager || authStore.isSupervisor,
 )
 
 const { items, loading, meta, params, fetchList } = useCrud('/finance/jurnal-pic')
@@ -387,6 +521,7 @@ const picItems = computed(() => {
   if (!canSeeAll.value && authStore.user?.karyawan) {
     return [authStore.user.karyawan]
   }
+  
   return karyawanList.value
 })
 
@@ -406,6 +541,7 @@ const multiRefMap = computed(() => {
       map[item.no_referensi] = (map[item.no_referensi] ?? 0) + 1
     }
   }
+  
   return map
 })
 
@@ -428,6 +564,7 @@ async function openDetail(item) {
     const { data } = await api.get('/finance/jurnal-pic/by-referensi', {
       params: { no_referensi: item.no_referensi },
     })
+
     multiInvoices.value = data.data ?? []
   } catch {
     multiInvoices.value = [item]
@@ -468,8 +605,8 @@ function metodeColor(metode) {
 
 function statusRekonColor(status) {
   return {
-    MATCHED:   'success',
-    POSSIBLE:  'warning',
+    MATCHED: 'success',
+    POSSIBLE: 'warning',
     UNMATCHED: 'error',
     DIABAIKAN: 'secondary',
   }[status] ?? 'default'
@@ -478,6 +615,7 @@ function statusRekonColor(status) {
 function getRowProps({ item }) {
   if (item.status_rekonsiliasi === 'UNMATCHED') return { class: 'jurnal-row--unmatched cursor-pointer' }
   if (!item.status_rekonsiliasi) return { class: 'jurnal-row--belum cursor-pointer' }
+  
   return { class: 'cursor-pointer' }
 }
 
@@ -512,10 +650,13 @@ async function doExport() {
       params: p,
       responseType: 'blob',
     })
+
     const url  = URL.createObjectURL(new Blob([response.data], {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     }))
+
     const link    = document.createElement('a')
+
     link.href     = url
     link.download = `JURNAL PIC - ${getKaryawanLabel()} - ${buildTimestamp()}.xlsx`
     link.click()
@@ -527,6 +668,7 @@ async function doExport() {
 
 function buildTimestamp() {
   const n = new Date()
+  
   return (
     String(n.getDate()).padStart(2, '0') +
     String(n.getMonth() + 1).padStart(2, '0') +
@@ -542,6 +684,7 @@ function getKaryawanLabel() {
     const found = karyawanList.value.find(k => k.id === params.karyawan_id)
     if (found) return found.nama_karyawan
   }
+  
   return authStore.user?.karyawan?.nama_karyawan ?? 'SEMUA'
 }
 

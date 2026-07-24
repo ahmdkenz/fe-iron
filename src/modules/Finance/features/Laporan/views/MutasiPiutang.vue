@@ -9,18 +9,33 @@
         { title: 'Mutasi Piutang', disabled: true },
       ]"
     >
-      <VBtn variant="tonal" prepend-icon="ri-arrow-left-line" :to="{ name: 'finance-laporan' }">
+      <VBtn
+        variant="tonal"
+        prepend-icon="ri-arrow-left-line"
+        :to="{ name: 'finance-laporan' }"
+      >
         Kembali
       </VBtn>
     </PageHeader>
 
-    <VCard elevation="0" border rounded="lg" class="mb-6">
+    <VCard
+      elevation="0"
+      border
+      rounded="lg"
+      class="mb-6"
+    >
       <VCardTitle class="px-5 pt-5 pb-0 text-subtitle-2 text-uppercase text-medium-emphasis font-weight-bold">
         Filter Laporan
       </VCardTitle>
       <VCardText class="pa-5">
-        <VRow align="center" dense>
-          <VCol cols="12" sm="auto">
+        <VRow
+          align="center"
+          dense
+        >
+          <VCol
+            cols="12"
+            sm="auto"
+          >
             <VBtnToggle
               v-model="segment"
               color="primary"
@@ -30,13 +45,34 @@
               density="compact"
               @update:model-value="doFetch"
             >
-              <VBtn value="ALL" size="small" style="min-width: 80px">Semua</VBtn>
-              <VBtn value="B2C" size="small" style="min-width: 70px">B2C</VBtn>
-              <VBtn value="B2B" size="small" style="min-width: 70px">B2B</VBtn>
+              <VBtn
+                value="ALL"
+                size="small"
+                style="min-width: 80px"
+              >
+                Semua
+              </VBtn>
+              <VBtn
+                value="B2C"
+                size="small"
+                style="min-width: 70px"
+              >
+                B2C
+              </VBtn>
+              <VBtn
+                value="B2B"
+                size="small"
+                style="min-width: 70px"
+              >
+                B2B
+              </VBtn>
             </VBtnToggle>
           </VCol>
 
-          <VCol cols="6" sm="auto">
+          <VCol
+            cols="6"
+            sm="auto"
+          >
             <VTextField
               v-model="filters.periode_awal"
               label="Dari Tanggal"
@@ -49,7 +85,10 @@
             />
           </VCol>
 
-          <VCol cols="6" sm="auto">
+          <VCol
+            cols="6"
+            sm="auto"
+          >
             <VTextField
               v-model="filters.periode_akhir"
               label="Sampai Tanggal"
@@ -62,7 +101,10 @@
             />
           </VCol>
 
-          <VCol cols="12" sm>
+          <VCol
+            cols="12"
+            sm
+          >
             <VAutocomplete
               v-model="filters.klien_ar_id"
               label="Klien"
@@ -76,7 +118,7 @@
               item-title="display_label"
               item-value="id"
               :loading="klienLoading"
-              @focus="ensureKlienLoaded()"
+              @focus="ensureKlienLoaded"
               @update:model-value="doFetch"
             />
           </VCol>
@@ -85,14 +127,32 @@
     </VCard>
 
     <VRow class="mb-6">
-      <VCol cols="12" sm="6" md="3">
-        <VCard elevation="0" border rounded="lg">
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
+        <VCard
+          elevation="0"
+          border
+          rounded="lg"
+        >
           <VCardText class="d-flex align-center gap-4 pa-5">
-            <VAvatar color="secondary" variant="tonal" size="54" rounded>
-              <VIcon icon="ri-wallet-3-line" size="28" />
+            <VAvatar
+              color="secondary"
+              variant="tonal"
+              size="54"
+              rounded
+            >
+              <VIcon
+                icon="ri-wallet-3-line"
+                size="28"
+              />
             </VAvatar>
             <div>
-              <div class="text-caption text-medium-emphasis font-weight-medium text-uppercase mb-1">Saldo Awal</div>
+              <div class="text-caption text-medium-emphasis font-weight-medium text-uppercase mb-1">
+                Saldo Awal
+              </div>
               <div class="text-h6 font-weight-bold text-high-emphasis">
                 {{ formatCurrency(report.summary?.saldo_awal ?? 0) }}
               </div>
@@ -101,14 +161,32 @@
         </VCard>
       </VCol>
 
-      <VCol cols="12" sm="6" md="3">
-        <VCard elevation="0" border rounded="lg">
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
+        <VCard
+          elevation="0"
+          border
+          rounded="lg"
+        >
           <VCardText class="d-flex align-center gap-4 pa-5">
-            <VAvatar color="warning" variant="tonal" size="54" rounded>
-              <VIcon icon="ri-bill-line" size="28" />
+            <VAvatar
+              color="warning"
+              variant="tonal"
+              size="54"
+              rounded
+            >
+              <VIcon
+                icon="ri-bill-line"
+                size="28"
+              />
             </VAvatar>
             <div>
-              <div class="text-caption text-medium-emphasis font-weight-medium text-uppercase mb-1">Invoice Masuk</div>
+              <div class="text-caption text-medium-emphasis font-weight-medium text-uppercase mb-1">
+                Invoice Masuk
+              </div>
               <div class="text-h6 font-weight-bold text-high-emphasis">
                 {{ formatCurrency(report.summary?.invoice_masuk ?? 0) }}
               </div>
@@ -117,14 +195,32 @@
         </VCard>
       </VCol>
 
-      <VCol cols="12" sm="6" md="3">
-        <VCard elevation="0" border rounded="lg">
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
+        <VCard
+          elevation="0"
+          border
+          rounded="lg"
+        >
           <VCardText class="d-flex align-center gap-4 pa-5">
-            <VAvatar color="success" variant="tonal" size="54" rounded>
-              <VIcon icon="ri-money-cny-circle-line" size="28" />
+            <VAvatar
+              color="success"
+              variant="tonal"
+              size="54"
+              rounded
+            >
+              <VIcon
+                icon="ri-money-cny-circle-line"
+                size="28"
+              />
             </VAvatar>
             <div>
-              <div class="text-caption text-medium-emphasis font-weight-medium text-uppercase mb-1">Pembayaran</div>
+              <div class="text-caption text-medium-emphasis font-weight-medium text-uppercase mb-1">
+                Pembayaran
+              </div>
               <div class="text-h6 font-weight-bold text-high-emphasis">
                 {{ formatCurrency(report.summary?.pembayaran ?? 0) }}
               </div>
@@ -133,14 +229,32 @@
         </VCard>
       </VCol>
 
-      <VCol cols="12" sm="6" md="3">
-        <VCard elevation="0" border rounded="lg">
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
+        <VCard
+          elevation="0"
+          border
+          rounded="lg"
+        >
           <VCardText class="d-flex align-center gap-4 pa-5">
-            <VAvatar color="error" variant="tonal" size="54" rounded>
-              <VIcon icon="ri-error-warning-line" size="28" />
+            <VAvatar
+              color="error"
+              variant="tonal"
+              size="54"
+              rounded
+            >
+              <VIcon
+                icon="ri-error-warning-line"
+                size="28"
+              />
             </VAvatar>
             <div>
-              <div class="text-caption text-medium-emphasis font-weight-medium text-uppercase mb-1">Saldo Akhir</div>
+              <div class="text-caption text-medium-emphasis font-weight-medium text-uppercase mb-1">
+                Saldo Akhir
+              </div>
               <div class="text-h6 font-weight-bold text-high-emphasis">
                 {{ formatCurrency(report.summary?.saldo_akhir ?? 0) }}
               </div>
@@ -150,15 +264,26 @@
       </VCol>
     </VRow>
 
-    <VCard elevation="0" border rounded="lg">
+    <VCard
+      elevation="0"
+      border
+      rounded="lg"
+    >
       <div class="d-flex flex-wrap align-center justify-space-between px-5 py-4 bg-var-theme-background">
         <div>
-          <h3 class="text-subtitle-1 font-weight-bold mb-1">Daftar Mutasi Piutang</h3>
+          <h3 class="text-subtitle-1 font-weight-bold mb-1">
+            Daftar Mutasi Piutang
+          </h3>
           <div class="text-caption text-medium-emphasis">
             Menampilkan periode: <strong>{{ report.periode_awal ?? '-' }}</strong> s/d <strong>{{ report.periode_akhir ?? '-' }}</strong>
           </div>
         </div>
-        <VChip size="small" color="primary" variant="tonal" class="font-weight-medium">
+        <VChip
+          size="small"
+          color="primary"
+          variant="tonal"
+          class="font-weight-medium"
+        >
           Total: {{ report.meta?.total ?? report.rows?.length ?? 0 }} Klien
         </VChip>
       </div>
@@ -185,15 +310,23 @@
         </template>
         
         <template #item.nama_klien="{ item }">
-          <div class="font-weight-medium text-high-emphasis">{{ item.nama_klien }}</div>
+          <div class="font-weight-medium text-high-emphasis">
+            {{ item.nama_klien }}
+          </div>
           <div class="text-caption text-medium-emphasis mt-1">
-            {{ item.kode_klien }}<template v-if="item.nama_resto"> · {{ item.nama_resto }}</template>
+            {{ item.kode_klien }}<template v-if="item.nama_resto">
+              · {{ item.nama_resto }}
+            </template>
           </div>
         </template>
         
         <template #item.pic_ar="{ item }">
-          <div class="font-weight-medium">{{ item.pic_ar ?? '-' }}</div>
-          <div class="text-caption text-medium-emphasis mt-1">{{ item.perusahaan ?? '-' }}</div>
+          <div class="font-weight-medium">
+            {{ item.pic_ar ?? '-' }}
+          </div>
+          <div class="text-caption text-medium-emphasis mt-1">
+            {{ item.perusahaan ?? '-' }}
+          </div>
         </template>
         
         <template #item.saldo_awal="{ item }">
@@ -225,51 +358,99 @@
         
         <template #item.jumlah_mutasi="{ item }">
           <div class="text-end">
-            <div class="font-weight-medium">{{ item.jumlah_invoice_masuk ?? 0 }} Inv</div>
-            <div class="text-caption text-medium-emphasis">{{ item.jumlah_pembayaran ?? 0 }} Bayar</div>
+            <div class="font-weight-medium">
+              {{ item.jumlah_invoice_masuk ?? 0 }} Inv
+            </div>
+            <div class="text-caption text-medium-emphasis">
+              {{ item.jumlah_pembayaran ?? 0 }} Bayar
+            </div>
           </div>
         </template>
 
         <template #expanded-row="{ item, columns }">
           <tr class="mutasi-detail-row">
-            <td :colspan="columns.length" class="pa-0">
+            <td
+              :colspan="columns.length"
+              class="pa-0"
+            >
               <div class="pa-5">
-                <VCard elevation="0" border class="bg-surface">
+                <VCard
+                  elevation="0"
+                  border
+                  class="bg-surface"
+                >
                   <VCardTitle class="px-4 py-3 text-subtitle-2 text-primary bg-primary-lighten-5">
-                    <VIcon icon="ri-list-check-2" class="mr-2" size="20"/>
+                    <VIcon
+                      icon="ri-list-check-2"
+                      class="mr-2"
+                      size="20"
+                    />
                     Detail Transaksi: {{ item.nama_klien }}
                   </VCardTitle>
                   <VDivider />
                   
                   <div class="mutasi-detail-scroll">
-                    <VTable density="comfortable" class="mutasi-detail-table">
+                    <VTable
+                      density="comfortable"
+                      class="mutasi-detail-table"
+                    >
                       <thead>
                         <tr>
-                          <th class="font-weight-bold text-uppercase text-caption">Tanggal</th>
-                          <th class="font-weight-bold text-uppercase text-caption">Tipe</th>
-                          <th class="font-weight-bold text-uppercase text-caption">Dokumen</th>
-                          <th class="font-weight-bold text-uppercase text-caption">Invoice</th>
-                          <th class="font-weight-bold text-uppercase text-caption text-end">Debit</th>
-                          <th class="font-weight-bold text-uppercase text-caption text-end">Kredit</th>
-                          <th class="font-weight-bold text-uppercase text-caption text-end">Saldo</th>
-                          <th class="font-weight-bold text-uppercase text-caption">Keterangan</th>
+                          <th class="font-weight-bold text-uppercase text-caption">
+                            Tanggal
+                          </th>
+                          <th class="font-weight-bold text-uppercase text-caption">
+                            Tipe
+                          </th>
+                          <th class="font-weight-bold text-uppercase text-caption">
+                            Dokumen
+                          </th>
+                          <th class="font-weight-bold text-uppercase text-caption">
+                            Invoice
+                          </th>
+                          <th class="font-weight-bold text-uppercase text-caption text-end">
+                            Debit
+                          </th>
+                          <th class="font-weight-bold text-uppercase text-caption text-end">
+                            Kredit
+                          </th>
+                          <th class="font-weight-bold text-uppercase text-caption text-end">
+                            Saldo
+                          </th>
+                          <th class="font-weight-bold text-uppercase text-caption">
+                            Keterangan
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
                         <tr v-if="!(item.details?.length)">
-                          <td colspan="8" class="text-center text-medium-emphasis py-4">Tidak ada data transaksi.</td>
+                          <td
+                            colspan="8"
+                            class="text-center text-medium-emphasis py-4"
+                          >
+                            Tidak ada data transaksi.
+                          </td>
                         </tr>
                         <tr
                           v-for="(detail, i) in item.details ?? []"
                           :key="`${detail.tipe}-${detail.id ?? i}-${detail.no_dokumen ?? i}`"
                         >
-                          <td class="text-no-wrap">{{ formatDate(detail.tanggal) }}</td>
+                          <td class="text-no-wrap">
+                            {{ formatDate(detail.tanggal) }}
+                          </td>
                           <td>
-                            <VChip :color="mutasiColor(detail.tipe)" size="x-small" variant="flat" class="font-weight-bold text-uppercase">
+                            <VChip
+                              :color="mutasiColor(detail.tipe)"
+                              size="x-small"
+                              variant="flat"
+                              class="font-weight-bold text-uppercase"
+                            >
                               {{ mutasiLabel(detail.tipe) }}
                             </VChip>
                           </td>
-                          <td class="text-no-wrap text-medium-emphasis">{{ detail.no_dokumen ?? '-' }}</td>
+                          <td class="text-no-wrap text-medium-emphasis">
+                            {{ detail.no_dokumen ?? '-' }}
+                          </td>
                           <td class="text-no-wrap">
                             <RouterLink
                               v-if="detail.invoice_id"
@@ -278,7 +459,10 @@
                             >
                               {{ detail.no_invoice ?? '-' }}
                             </RouterLink>
-                            <span v-else class="text-medium-emphasis">{{ detail.no_invoice ?? '-' }}</span>
+                            <span
+                              v-else
+                              class="text-medium-emphasis"
+                            >{{ detail.no_invoice ?? '-' }}</span>
                           </td>
                           <td class="text-end text-warning font-weight-medium text-no-wrap">
                             {{ detail.debit > 0 ? formatCurrency(detail.debit) : '-' }}
@@ -289,7 +473,9 @@
                           <td class="text-end font-weight-bold text-no-wrap bg-grey-lighten-4">
                             {{ formatCurrency(detail.saldo ?? 0) }}
                           </td>
-                          <td class="text-caption">{{ detail.keterangan ?? '-' }}</td>
+                          <td class="text-caption">
+                            {{ detail.keterangan ?? '-' }}
+                          </td>
                         </tr>
                       </tbody>
                     </VTable>
@@ -321,9 +507,9 @@ const segment = ref('ALL')
 const expanded = ref([])
 
 const filters = reactive({
-  periode_awal:  null,
+  periode_awal: null,
   periode_akhir: null,
-  klien_ar_id:   null,
+  klien_ar_id: null,
 })
 
 const page    = ref(1)
@@ -340,7 +526,7 @@ const headers = [
   { title: 'Klien',        key: 'nama_klien',    sortable: false },
   { title: 'PIC/Entitas',  key: 'pic_ar',        sortable: false },
   { title: 'Saldo Awal',   key: 'saldo_awal',    sortable: false, align: 'end' },
-  { title: 'Invoice Masuk',key: 'invoice_masuk', sortable: false, align: 'end' },
+  { title: 'Invoice Masuk', key: 'invoice_masuk', sortable: false, align: 'end' },
   { title: 'Pembayaran',   key: 'pembayaran',    sortable: false, align: 'end' },
   { title: 'Saldo Akhir',  key: 'saldo_akhir',   sortable: false, align: 'end' },
   { title: 'Mutasi',       key: 'jumlah_mutasi', sortable: false, align: 'end' },
@@ -382,6 +568,7 @@ async function doFetch({ resetPage = true } = {}) {
     if (segment.value !== 'ALL') params.segment       = segment.value
 
     const { data } = await api.get('/finance/mutasi-piutang', { params })
+
     Object.assign(report, data.data)
     expanded.value = []
   } finally {

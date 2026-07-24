@@ -1,6 +1,9 @@
 <template>
   <div class="ob-item-row">
-    <VRow dense align="center">
+    <VRow
+      dense
+      align="center"
+    >
       <!-- Baris 1: Kode Barang + Barang -->
       <VCol
         cols="12"
@@ -154,17 +157,6 @@
 import { reactive, watch } from 'vue'
 import { useRemoteSearch } from '@/composables/useRemoteSearch'
 
-const createDefault = () => ({
-  barang_id: null,
-  kode_barang: '',
-  nama_barang: '',
-  qty: 1,
-  satuan: 'pcs',
-  harga_satuan: 0,
-  subtotal: 0,
-  keterangan: '',
-})
-
 const props = defineProps({
   item: {
     type: Object,
@@ -182,6 +174,17 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:item', 'remove'])
+
+const createDefault = () => ({
+  barang_id: null,
+  kode_barang: '',
+  nama_barang: '',
+  qty: 1,
+  satuan: 'pcs',
+  harga_satuan: 0,
+  subtotal: 0,
+  keterangan: '',
+})
 
 const numberFormatter = new Intl.NumberFormat('id-ID')
 const localItem = reactive(createDefault())
@@ -239,6 +242,7 @@ function recalculate() {
 
 function toNum(v) {
   const n = Number(v)
+  
   return Number.isFinite(n) ? n : 0
 }
 

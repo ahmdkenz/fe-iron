@@ -95,17 +95,19 @@
         v-model:selected="selected"
         :headers="headers"
         :items="items"
-        :total="meta.total"
+        :total="total"
         :loading="loading"
-        :per-page="meta.per_page"
-        :page="meta.current_page"
+        pagination-mode="load-more"
+        :has-more="hasMore"
+        :loading-more="loadingMore"
+        :loaded-count="items.length"
         show-select
         column-resize-key="ap-tagihan-index"
         class="mt-2"
-        @update:options="onTableOptions"
+        @load-more="loadMore"
       >
         <template #item.no="{ index }">
-          {{ (meta.current_page - 1) * meta.per_page + index + 1 }}
+          {{ index + 1 }}
         </template>
         <template #item.no_tagihan="{ item }">
           <VChip
@@ -123,7 +125,9 @@
             color="warning"
             class="ms-1"
           >
-            <VTooltip activator="parent">Periode tagihan ini sudah dikunci di Ending Balance AP — tidak dapat diedit/dihapus</VTooltip>
+            <VTooltip activator="parent">
+              Periode tagihan ini sudah dikunci di Ending Balance AP — tidak dapat diedit/dihapus
+            </VTooltip>
           </VIcon>
         </template>
         <template #item.vendor_ap="{ item }">
@@ -284,11 +288,12 @@
 </template>
 
 <script setup>
-import { computed, nextTick, onDeactivated, reactive, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onDeactivated, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useAuthStore } from '@/stores/auth.store'
 import { useCrud } from '@/composables/useCrud'
+import { useLoadMore } from '@/composables/useLoadMore.js'
 import { useFormatter } from '@/composables/useFormatter'
 import api from '@/utils/axios'
 import { openLoadingPrintTab, openPrintTab } from '@/utils/printWindow.js'
@@ -304,7 +309,11 @@ const { showSuccess, showError, showLoading, closeAlert, confirmDelete: swalConf
 const { formatCurrency, formatDate, formatDateTime } = useFormatter()
 
 // ── List Tagihan AP ──────────────────────────────────────────────────────────
-const { items, loading, meta, params, fetchList, remove } = useCrud('/ap/tagihan')
+const { remove } = useCrud('/ap/tagihan')
+
+const {
+  items, loading, loadingMore, hasMore, total, params, reset, loadMore, abort,
+} = useLoadMore('/ap/tagihan', { perPage: 25 })
 
 const dateDraft = reactive(getCurrentMonthRange())
 
@@ -399,8 +408,7 @@ function debouncedFetch() {
 }
 
 function doFetch() {
-  params.page = 1
-  fetchList()
+  reset()
   loadSummary()
 }
 
@@ -419,12 +427,6 @@ function resetFilters() {
   params.tanggal_dari = dateDraft.tanggal_dari
   params.tanggal_sampai = dateDraft.tanggal_sampai
   doFetch()
-}
-
-function onTableOptions({ page, itemsPerPage }) {
-  params.page = page
-  params.per_page = itemsPerPage
-  fetchList()
 }
 
 function activeFilterParams() {
@@ -454,6 +456,7 @@ async function printTagihan(item) {
   }
 
   printingId.value = item.id
+
   const printWindow = openLoadingPrintTab()
   try {
     const res = await api.get(`/ap/tagihan/${item.id}/print`, { responseType: 'blob', timeout: 300000 })
@@ -520,6 +523,11 @@ function confirmDeleteItem(item) { selectedTagihan.value = item; deleteError.val
 
 onDeactivated(() => { showDelete.value = false })
 
+onBeforeUnmount(() => {
+  clearTimeout(debounceTimer)
+  abort()
+})
+
 async function doDelete() {
   deleteError.value = ''
 
@@ -534,7 +542,7 @@ async function doDelete() {
 
   deleting.value = false
   if (res.success) {
-    fetchList()
+    reset()
     loadSummary()
     await showSuccess('Tagihan berhasil dihapus.')
   } else {
@@ -553,7 +561,7 @@ async function doBulkDelete() {
     const deleted = res.data?.data?.deleted ?? selected.value.length
 
     selected.value = []
-    fetchList()
+    reset()
     loadSummary()
     await showSuccess(`${deleted} tagihan berhasil dihapus.`)
   } catch (err) {

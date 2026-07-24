@@ -28,13 +28,24 @@
       </VBtn>
     </PageHeader>
 
-    <VCard elevation="0" border rounded="lg" class="mb-6">
+    <VCard
+      elevation="0"
+      border
+      rounded="lg"
+      class="mb-6"
+    >
       <VCardTitle class="px-5 pt-5 pb-0 text-subtitle-2 text-uppercase text-medium-emphasis font-weight-bold">
         Filter Laporan
       </VCardTitle>
       <VCardText class="pa-5">
-        <VRow align="center" dense>
-          <VCol cols="6" sm="auto">
+        <VRow
+          align="center"
+          dense
+        >
+          <VCol
+            cols="6"
+            sm="auto"
+          >
             <VTextField
               v-model="draft.tanggal_dari"
               label="Dari Tanggal Tagihan"
@@ -45,7 +56,10 @@
               style="min-width: 170px"
             />
           </VCol>
-          <VCol cols="6" sm="auto">
+          <VCol
+            cols="6"
+            sm="auto"
+          >
             <VTextField
               v-model="draft.tanggal_sampai"
               label="Sampai Tanggal Tagihan"
@@ -56,7 +70,10 @@
               style="min-width: 170px"
             />
           </VCol>
-          <VCol cols="12" sm="auto">
+          <VCol
+            cols="12"
+            sm="auto"
+          >
             <VAutocomplete
               v-model="draft.vendor_ap_id"
               label="Vendor"
@@ -71,10 +88,13 @@
               item-title="display_label"
               item-value="id"
               :loading="vendorLoading"
-              @focus="ensureVendorLoaded()"
+              @focus="ensureVendorLoaded"
             />
           </VCol>
-          <VCol cols="12" sm="auto">
+          <VCol
+            cols="12"
+            sm="auto"
+          >
             <VBtn
               color="primary"
               prepend-icon="ri-filter-3-line"
@@ -89,69 +109,160 @@
     </VCard>
 
     <VRow class="mb-6">
-      <VCol cols="12" sm="6" md="3">
-        <VCard elevation="0" border rounded="lg">
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
+        <VCard
+          elevation="0"
+          border
+          rounded="lg"
+        >
           <VCardText class="d-flex align-center gap-4 pa-5">
-            <VAvatar color="primary" variant="tonal" size="54" rounded>
-              <VIcon icon="ri-store-2-line" size="28" />
+            <VAvatar
+              color="primary"
+              variant="tonal"
+              size="54"
+              rounded
+            >
+              <VIcon
+                icon="ri-store-2-line"
+                size="28"
+              />
             </VAvatar>
             <div>
-              <div class="text-caption text-medium-emphasis font-weight-medium text-uppercase mb-1">Jumlah Vendor</div>
-              <div class="text-h6 font-weight-bold text-high-emphasis">{{ report.summary?.jumlah_vendor ?? 0 }}</div>
+              <div class="text-caption text-medium-emphasis font-weight-medium text-uppercase mb-1">
+                Jumlah Vendor
+              </div>
+              <div class="text-h6 font-weight-bold text-high-emphasis">
+                {{ report.summary?.jumlah_vendor ?? 0 }}
+              </div>
             </div>
           </VCardText>
         </VCard>
       </VCol>
-      <VCol cols="12" sm="6" md="3">
-        <VCard elevation="0" border rounded="lg">
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
+        <VCard
+          elevation="0"
+          border
+          rounded="lg"
+        >
           <VCardText class="d-flex align-center gap-4 pa-5">
-            <VAvatar color="secondary" variant="tonal" size="54" rounded>
-              <VIcon icon="ri-bill-line" size="28" />
+            <VAvatar
+              color="secondary"
+              variant="tonal"
+              size="54"
+              rounded
+            >
+              <VIcon
+                icon="ri-bill-line"
+                size="28"
+              />
             </VAvatar>
             <div>
-              <div class="text-caption text-medium-emphasis font-weight-medium text-uppercase mb-1">Total Tagihan</div>
-              <div class="text-h6 font-weight-bold text-high-emphasis">{{ formatCurrency(report.summary?.total_tagihan ?? 0) }}</div>
+              <div class="text-caption text-medium-emphasis font-weight-medium text-uppercase mb-1">
+                Total Tagihan
+              </div>
+              <div class="text-h6 font-weight-bold text-high-emphasis">
+                {{ formatCurrency(report.summary?.total_tagihan ?? 0) }}
+              </div>
             </div>
           </VCardText>
         </VCard>
       </VCol>
-      <VCol cols="12" sm="6" md="3">
-        <VCard elevation="0" border rounded="lg">
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
+        <VCard
+          elevation="0"
+          border
+          rounded="lg"
+        >
           <VCardText class="d-flex align-center gap-4 pa-5">
-            <VAvatar color="error" variant="tonal" size="54" rounded>
-              <VIcon icon="ri-error-warning-line" size="28" />
+            <VAvatar
+              color="error"
+              variant="tonal"
+              size="54"
+              rounded
+            >
+              <VIcon
+                icon="ri-error-warning-line"
+                size="28"
+              />
             </VAvatar>
             <div>
-              <div class="text-caption text-medium-emphasis font-weight-medium text-uppercase mb-1">Sisa Hutang</div>
-              <div class="text-h6 font-weight-bold text-high-emphasis">{{ formatCurrency(report.summary?.sisa_tagihan ?? 0) }}</div>
+              <div class="text-caption text-medium-emphasis font-weight-medium text-uppercase mb-1">
+                Sisa Hutang
+              </div>
+              <div class="text-h6 font-weight-bold text-high-emphasis">
+                {{ formatCurrency(report.summary?.sisa_tagihan ?? 0) }}
+              </div>
             </div>
           </VCardText>
         </VCard>
       </VCol>
-      <VCol cols="12" sm="6" md="3">
-        <VCard elevation="0" border rounded="lg">
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
+        <VCard
+          elevation="0"
+          border
+          rounded="lg"
+        >
           <VCardText class="d-flex align-center gap-4 pa-5">
-            <VAvatar color="warning" variant="tonal" size="54" rounded>
-              <VIcon icon="ri-alarm-warning-line" size="28" />
+            <VAvatar
+              color="warning"
+              variant="tonal"
+              size="54"
+              rounded
+            >
+              <VIcon
+                icon="ri-alarm-warning-line"
+                size="28"
+              />
             </VAvatar>
             <div>
-              <div class="text-caption text-medium-emphasis font-weight-medium text-uppercase mb-1">Overdue</div>
-              <div class="text-h6 font-weight-bold text-high-emphasis">{{ formatCurrency(report.summary?.overdue_amount ?? 0) }}</div>
+              <div class="text-caption text-medium-emphasis font-weight-medium text-uppercase mb-1">
+                Overdue
+              </div>
+              <div class="text-h6 font-weight-bold text-high-emphasis">
+                {{ formatCurrency(report.summary?.overdue_amount ?? 0) }}
+              </div>
             </div>
           </VCardText>
         </VCard>
       </VCol>
     </VRow>
 
-    <VCard elevation="0" border rounded="lg">
+    <VCard
+      elevation="0"
+      border
+      rounded="lg"
+    >
       <div class="d-flex flex-wrap align-center justify-space-between px-5 py-4 bg-var-theme-background">
         <div>
-          <h3 class="text-subtitle-1 font-weight-bold mb-1">Daftar Hutang per Vendor</h3>
+          <h3 class="text-subtitle-1 font-weight-bold mb-1">
+            Daftar Hutang per Vendor
+          </h3>
           <div class="text-caption text-medium-emphasis">
             Per Tanggal: <strong>{{ report.as_of_date ?? '-' }}</strong>
           </div>
         </div>
-        <VChip size="small" color="primary" variant="tonal" class="font-weight-medium">
+        <VChip
+          size="small"
+          color="primary"
+          variant="tonal"
+          class="font-weight-medium"
+        >
           Total: {{ report.meta?.total ?? report.rows?.length ?? 0 }} Vendor
         </VChip>
       </div>
@@ -178,13 +289,21 @@
         </template>
 
         <template #item.nama_vendor="{ item }">
-          <div class="font-weight-medium text-high-emphasis">{{ item.nama_vendor }}</div>
-          <div class="text-caption text-medium-emphasis mt-1">{{ item.kode_vendor }}</div>
+          <div class="font-weight-medium text-high-emphasis">
+            {{ item.nama_vendor }}
+          </div>
+          <div class="text-caption text-medium-emphasis mt-1">
+            {{ item.kode_vendor }}
+          </div>
         </template>
 
         <template #item.pic_ap="{ item }">
-          <div class="font-weight-medium">{{ item.pic_ap ?? '-' }}</div>
-          <div class="text-caption text-medium-emphasis mt-1">{{ item.entitas ?? '-' }}</div>
+          <div class="font-weight-medium">
+            {{ item.pic_ap ?? '-' }}
+          </div>
+          <div class="text-caption text-medium-emphasis mt-1">
+            {{ item.entitas ?? '-' }}
+          </div>
         </template>
 
         <template #item.total_tagihan="{ item }">
@@ -220,40 +339,93 @@
 
         <template #expanded-row="{ item, columns }">
           <tr class="hv-detail-row">
-            <td :colspan="columns.length" class="pa-0">
+            <td
+              :colspan="columns.length"
+              class="pa-0"
+            >
               <div class="pa-5">
-                <VCard elevation="0" border class="bg-surface">
+                <VCard
+                  elevation="0"
+                  border
+                  class="bg-surface"
+                >
                   <VCardTitle class="px-4 py-3 text-subtitle-2 text-primary bg-primary-lighten-5">
-                    <VIcon icon="ri-list-check-2" class="mr-2" size="20" />
+                    <VIcon
+                      icon="ri-list-check-2"
+                      class="mr-2"
+                      size="20"
+                    />
                     Detail Tagihan: {{ item.nama_vendor }}
                   </VCardTitle>
                   <VDivider />
                   <div class="hv-detail-scroll">
-                    <VTable density="comfortable" class="hv-detail-table">
+                    <VTable
+                      density="comfortable"
+                      class="hv-detail-table"
+                    >
                       <thead>
                         <tr>
-                          <th class="font-weight-bold text-uppercase text-caption">No Tagihan</th>
-                          <th class="font-weight-bold text-uppercase text-caption">Tgl Tagihan</th>
-                          <th class="font-weight-bold text-uppercase text-caption">Jatuh Tempo</th>
-                          <th class="font-weight-bold text-uppercase text-caption text-end">Total Tagihan</th>
-                          <th class="font-weight-bold text-uppercase text-caption text-end">Total Bayar</th>
-                          <th class="font-weight-bold text-uppercase text-caption text-end">Sisa</th>
-                          <th class="font-weight-bold text-uppercase text-caption">Status</th>
+                          <th class="font-weight-bold text-uppercase text-caption">
+                            No Tagihan
+                          </th>
+                          <th class="font-weight-bold text-uppercase text-caption">
+                            Tgl Tagihan
+                          </th>
+                          <th class="font-weight-bold text-uppercase text-caption">
+                            Jatuh Tempo
+                          </th>
+                          <th class="font-weight-bold text-uppercase text-caption text-end">
+                            Total Tagihan
+                          </th>
+                          <th class="font-weight-bold text-uppercase text-caption text-end">
+                            Total Bayar
+                          </th>
+                          <th class="font-weight-bold text-uppercase text-caption text-end">
+                            Sisa
+                          </th>
+                          <th class="font-weight-bold text-uppercase text-caption">
+                            Status
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
                         <tr v-if="!(item.details?.length)">
-                          <td colspan="7" class="text-center text-medium-emphasis py-4">Tidak ada tagihan.</td>
+                          <td
+                            colspan="7"
+                            class="text-center text-medium-emphasis py-4"
+                          >
+                            Tidak ada tagihan.
+                          </td>
                         </tr>
-                        <tr v-for="d in item.details ?? []" :key="d.tagihan_id">
-                          <td class="text-no-wrap font-weight-medium">{{ d.no_tagihan }}</td>
-                          <td class="text-no-wrap">{{ formatDate(d.tanggal_tagihan) ?? '-' }}</td>
-                          <td class="text-no-wrap">{{ formatDate(d.tanggal_jatuh_tempo) ?? '-' }}</td>
-                          <td class="text-end text-no-wrap">{{ formatCurrency(d.total_tagihan) }}</td>
-                          <td class="text-end text-no-wrap text-success">{{ formatCurrency(d.total_pembayaran) }}</td>
-                          <td class="text-end text-no-wrap font-weight-bold">{{ formatCurrency(d.sisa_tagihan) }}</td>
+                        <tr
+                          v-for="d in item.details ?? []"
+                          :key="d.tagihan_id"
+                        >
+                          <td class="text-no-wrap font-weight-medium">
+                            {{ d.no_tagihan }}
+                          </td>
+                          <td class="text-no-wrap">
+                            {{ formatDate(d.tanggal_tagihan) ?? '-' }}
+                          </td>
+                          <td class="text-no-wrap">
+                            {{ formatDate(d.tanggal_jatuh_tempo) ?? '-' }}
+                          </td>
+                          <td class="text-end text-no-wrap">
+                            {{ formatCurrency(d.total_tagihan) }}
+                          </td>
+                          <td class="text-end text-no-wrap text-success">
+                            {{ formatCurrency(d.total_pembayaran) }}
+                          </td>
+                          <td class="text-end text-no-wrap font-weight-bold">
+                            {{ formatCurrency(d.sisa_tagihan) }}
+                          </td>
                           <td>
-                            <VChip size="x-small" variant="tonal">{{ d.status }}</VChip>
+                            <VChip
+                              size="x-small"
+                              variant="tonal"
+                            >
+                              {{ d.status }}
+                            </VChip>
                           </td>
                         </tr>
                       </tbody>
@@ -298,7 +470,7 @@ const perPage = ref(15)
 const headers = [
   { title: 'No',            key: 'no',                    sortable: false, width: '50px' },
   { title: 'Vendor',        key: 'nama_vendor',            sortable: false },
-  { title: 'PIC AP/Entitas',key: 'pic_ap',                 sortable: false },
+  { title: 'PIC AP/Entitas', key: 'pic_ap',                 sortable: false },
   { title: 'Total Tagihan', key: 'total_tagihan',          sortable: false, align: 'end' },
   { title: 'Total Bayar',   key: 'total_pembayaran',       sortable: false, align: 'end' },
   { title: 'Sisa Hutang',   key: 'sisa_tagihan',           sortable: false, align: 'end' },
@@ -336,6 +508,7 @@ async function fetchReport({ resetPage = true } = {}) {
   try {
     const params = { ...buildParams(), page: page.value, per_page: perPage.value }
     const { data } = await api.get('/ap/laporan/hutang-vendor', { params })
+
     Object.assign(report, data.data)
     expanded.value = []
   } finally {
@@ -354,10 +527,13 @@ async function doExport() {
       params: buildParams(),
       responseType: 'blob',
     })
+
     const url  = URL.createObjectURL(new Blob([response.data], {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     }))
+
     const link = document.createElement('a')
+
     link.href     = url
     link.download = `hutang-vendor-${report.as_of_date ?? ''}.xlsx`
     link.click()

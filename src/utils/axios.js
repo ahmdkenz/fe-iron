@@ -8,7 +8,7 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
   withCredentials: true,
   withXSRFToken: true, // wajib: origin FE dan BE beda host, axios hanya auto-kirim
-                        // X-XSRF-TOKEN utk same-origin URL kecuali flag ini true
+  // X-XSRF-TOKEN utk same-origin URL kecuali flag ini true
   timeout: 15000,
 })
 
@@ -63,6 +63,7 @@ api.interceptors.response.use(
       originalRequest._csrfRetry = true
       try {
         await ensureCsrfCookie()
+        
         return api(originalRequest)
       } catch {
         return Promise.reject(error)
@@ -85,14 +86,17 @@ api.interceptors.response.use(
       try {
         await api.post('/auth/refresh')
         processQueue(null)
+        
         return api(originalRequest)
       } catch (refreshError) {
         processQueue(refreshError)
+
         // Untuk /auth/me, biarkan store yang menangani state "belum login" —
         // redirect paksa di sini bisa memicu loop saat bootstrap awal.
         if (!isAuthMe) {
           window.location.href = '/login'
         }
+        
         return Promise.reject(refreshError)
       } finally {
         _isRefreshing = false

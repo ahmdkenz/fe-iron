@@ -297,19 +297,35 @@
             </div>
 
             <div class="d-sm-none px-4">
-              <div v-if="loading" class="text-center py-8 text-medium-emphasis">Memuat data dashboard...</div>
-              <div v-else-if="recentInvoices.length === 0" class="text-center py-8 text-medium-emphasis">Belum ada invoice yang ditangani AR ini.</div>
+              <div
+                v-if="loading"
+                class="text-center py-8 text-medium-emphasis"
+              >
+                Memuat data dashboard...
+              </div>
+              <div
+                v-else-if="recentInvoices.length === 0"
+                class="text-center py-8 text-medium-emphasis"
+              >
+                Belum ada invoice yang ditangani AR ini.
+              </div>
               <div
                 v-for="invoice in recentInvoices"
                 v-else
                 :key="invoice.id"
                 class="mobile-list-row"
               >
-                <div class="text-caption font-weight-medium text-primary mobile-list-row__no">{{ invoice.noInvoice }}</div>
+                <div class="text-caption font-weight-medium text-primary mobile-list-row__no">
+                  {{ invoice.noInvoice }}
+                </div>
                 <div class="d-flex justify-space-between align-center gap-2 mt-1">
                   <div class="min-width-0">
-                    <div class="text-caption text-medium-emphasis text-truncate">{{ invoice.klien || '-' }} · {{ invoice.resto || 'Tanpa resto' }}</div>
-                    <div class="mobile-list-row__date text-medium-emphasis">{{ formatDate(invoice.tanggalInvoice) }}</div>
+                    <div class="text-caption text-medium-emphasis text-truncate">
+                      {{ invoice.klien || '-' }} · {{ invoice.resto || 'Tanpa resto' }}
+                    </div>
+                    <div class="mobile-list-row__date text-medium-emphasis">
+                      {{ formatDate(invoice.tanggalInvoice) }}
+                    </div>
                   </div>
                   <div class="text-end flex-shrink-0 mobile-badge">
                     <div
@@ -318,7 +334,10 @@
                     >
                       {{ formatCurrency(invoice.sisaTagihan) }}
                     </div>
-                    <InvoiceStatusBadge :status="invoice.status" class="mt-1" />
+                    <InvoiceStatusBadge
+                      :status="invoice.status"
+                      class="mt-1"
+                    />
                   </div>
                 </div>
               </div>
@@ -331,11 +350,17 @@
     <!-- Pembayaran Terbaru -->
     <VRow class="mb-4">
       <VCol cols="12">
-        <VCard elevation="2" class="rounded-xl">
+        <VCard
+          elevation="2"
+          class="rounded-xl"
+        >
           <VCardItem>
             <VCardTitle class="d-flex align-center justify-space-between text-h6 font-weight-bold">
               <div class="d-flex align-center">
-                <VIcon icon="ri-money-cny-circle-line" class="me-2 text-success" />
+                <VIcon
+                  icon="ri-money-cny-circle-line"
+                  class="me-2 text-success"
+                />
                 5 Pembayaran Terbaru
               </div>
               <VChip
@@ -354,22 +379,40 @@
               <VTable class="text-no-wrap">
                 <thead>
                   <tr>
-                    <th class="text-uppercase font-weight-bold text-caption">No. Referensi</th>
-                    <th class="text-uppercase font-weight-bold text-caption">Invoice / Klien</th>
-                    <th class="text-uppercase font-weight-bold text-caption">Tgl Bayar</th>
-                    <th class="text-uppercase font-weight-bold text-caption text-right">Jumlah</th>
-                    <th class="text-uppercase font-weight-bold text-caption text-center">Metode</th>
-                    <th class="text-uppercase font-weight-bold text-caption text-center">Status Rekon</th>
+                    <th class="text-uppercase font-weight-bold text-caption">
+                      No. Referensi
+                    </th>
+                    <th class="text-uppercase font-weight-bold text-caption">
+                      Invoice / Klien
+                    </th>
+                    <th class="text-uppercase font-weight-bold text-caption">
+                      Tgl Bayar
+                    </th>
+                    <th class="text-uppercase font-weight-bold text-caption text-right">
+                      Jumlah
+                    </th>
+                    <th class="text-uppercase font-weight-bold text-caption text-center">
+                      Metode
+                    </th>
+                    <th class="text-uppercase font-weight-bold text-caption text-center">
+                      Status Rekon
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr v-if="loadingPayments">
-                    <td colspan="6" class="text-center py-8 text-medium-emphasis">
+                    <td
+                      colspan="6"
+                      class="text-center py-8 text-medium-emphasis"
+                    >
                       Memuat data pembayaran...
                     </td>
                   </tr>
                   <tr v-else-if="recentPayments.length === 0">
-                    <td colspan="6" class="text-center py-8 text-medium-emphasis">
+                    <td
+                      colspan="6"
+                      class="text-center py-8 text-medium-emphasis"
+                    >
                       Belum ada pembayaran tercatat.
                     </td>
                   </tr>
@@ -379,14 +422,18 @@
                     :key="pay.id"
                     class="table-row-hover"
                   >
-                    <td class="font-weight-medium text-mono">{{ pay.no_referensi ?? '—' }}</td>
+                    <td class="font-weight-medium text-mono">
+                      {{ pay.no_referensi ?? '—' }}
+                    </td>
                     <td>
                       <div class="d-flex flex-column py-2">
                         <span class="font-weight-medium">{{ pay.no_invoice ?? '—' }}</span>
                         <span class="text-caption text-medium-emphasis">{{ pay.klien ?? '' }}</span>
                       </div>
                     </td>
-                    <td class="text-body-2">{{ formatDate(pay.tanggal_pembayaran) }}</td>
+                    <td class="text-body-2">
+                      {{ formatDate(pay.tanggal_pembayaran) }}
+                    </td>
                     <td class="text-right font-weight-medium text-success">
                       {{ formatCurrency(pay.jumlah_pembayaran) }}
                     </td>
@@ -410,7 +457,13 @@
                       >
                         {{ pay.status_rekonsiliasi }}
                       </VChip>
-                      <VChip v-else size="x-small" variant="tonal" color="warning" label>
+                      <VChip
+                        v-else
+                        size="x-small"
+                        variant="tonal"
+                        color="warning"
+                        label
+                      >
                         Belum Diproses
                       </VChip>
                     </td>
@@ -420,22 +473,40 @@
             </div>
 
             <div class="d-sm-none px-4">
-              <div v-if="loadingPayments" class="text-center py-8 text-medium-emphasis">Memuat data pembayaran...</div>
-              <div v-else-if="recentPayments.length === 0" class="text-center py-8 text-medium-emphasis">Belum ada pembayaran tercatat.</div>
+              <div
+                v-if="loadingPayments"
+                class="text-center py-8 text-medium-emphasis"
+              >
+                Memuat data pembayaran...
+              </div>
+              <div
+                v-else-if="recentPayments.length === 0"
+                class="text-center py-8 text-medium-emphasis"
+              >
+                Belum ada pembayaran tercatat.
+              </div>
               <div
                 v-for="pay in recentPayments"
                 v-else
                 :key="pay.id"
                 class="mobile-list-row"
               >
-                <div class="text-caption font-weight-medium mobile-list-row__no">{{ pay.no_invoice ?? '—' }}</div>
+                <div class="text-caption font-weight-medium mobile-list-row__no">
+                  {{ pay.no_invoice ?? '—' }}
+                </div>
                 <div class="d-flex justify-space-between align-center gap-2 mt-1">
                   <div class="min-width-0">
-                    <div class="text-caption text-medium-emphasis text-truncate">{{ pay.klien ?? '' }}</div>
-                    <div class="mobile-list-row__date text-medium-emphasis">{{ formatDate(pay.tanggal_pembayaran) }}</div>
+                    <div class="text-caption text-medium-emphasis text-truncate">
+                      {{ pay.klien ?? '' }}
+                    </div>
+                    <div class="mobile-list-row__date text-medium-emphasis">
+                      {{ formatDate(pay.tanggal_pembayaran) }}
+                    </div>
                   </div>
                   <div class="text-end flex-shrink-0">
-                    <div class="text-caption font-weight-medium text-success">{{ formatCurrency(pay.jumlah_pembayaran) }}</div>
+                    <div class="text-caption font-weight-medium text-success">
+                      {{ formatCurrency(pay.jumlah_pembayaran) }}
+                    </div>
                     <VChip
                       v-if="pay.status_rekonsiliasi"
                       :color="rekonColorMap[pay.status_rekonsiliasi] ?? 'default'"
@@ -446,7 +517,14 @@
                     >
                       {{ pay.status_rekonsiliasi }}
                     </VChip>
-                    <VChip v-else size="x-small" variant="tonal" color="warning" label class="mt-1">
+                    <VChip
+                      v-else
+                      size="x-small"
+                      variant="tonal"
+                      color="warning"
+                      label
+                      class="mt-1"
+                    >
                       Belum Diproses
                     </VChip>
                   </div>
@@ -568,38 +646,39 @@ const kpiCards = computed(() => {
 
   return [
     {
-      title:   'DSO',
-      value:   loading.value ? '...' : `${dso} hari`,
+      title: 'DSO',
+      value: loading.value ? '...' : `${dso} hari`,
       caption: 'Rata-rata hari piutang beredar',
-      icon:    'ri-calendar-check-line',
-      color:   dso > 30 ? 'error' : dso > 15 ? 'warning' : 'success',
+      icon: 'ri-calendar-check-line',
+      color: dso > 30 ? 'error' : dso > 15 ? 'warning' : 'success',
     },
     {
-      title:   'Collection Rate',
-      value:   loading.value ? '...' : `${collectionRate}%`,
+      title: 'Collection Rate',
+      value: loading.value ? '...' : `${collectionRate}%`,
       caption: 'Persentase piutang yang sudah terkumpul',
-      icon:    'ri-percent-line',
-      color:   collectionRate >= 90 ? 'success' : collectionRate >= 70 ? 'warning' : 'error',
+      icon: 'ri-percent-line',
+      color: collectionRate >= 90 ? 'success' : collectionRate >= 70 ? 'warning' : 'error',
     },
     {
-      title:   'Invoice Overdue',
-      value:   loading.value ? '...' : `${overduePerc}%`,
+      title: 'Invoice Overdue',
+      value: loading.value ? '...' : `${overduePerc}%`,
       caption: `${overdueCount} invoice belum lunas > 30 hari`,
-      icon:    'ri-alarm-warning-line',
-      color:   overduePerc > 20 ? 'error' : overduePerc > 10 ? 'warning' : 'success',
+      icon: 'ri-alarm-warning-line',
+      color: overduePerc > 20 ? 'error' : overduePerc > 10 ? 'warning' : 'success',
     },
     {
-      title:   'Belum Direkonsiliasi',
-      value:   loadingPayments.value ? '...' : `${belumRekon} transaksi`,
+      title: 'Belum Direkonsiliasi',
+      value: loadingPayments.value ? '...' : `${belumRekon} transaksi`,
       caption: belumRekon > 0 ? 'Perlu ditindaklanjuti' : 'Semua sudah diproses',
-      icon:    'ri-bank-line',
-      color:   belumRekon > 0 ? 'warning' : 'success',
+      icon: 'ri-bank-line',
+      color: belumRekon > 0 ? 'warning' : 'success',
     },
   ]
 })
 
 const agingChartSeries = computed(() => {
   const s = kpi.value.agingSummary
+  
   return [{
     name: 'Sisa Piutang',
     data: [
@@ -820,6 +899,7 @@ async function loadRecentPayments() {
   loadingPayments.value = true
   try {
     const { data } = await api.get('/finance/jurnal-pic', { params: { per_page: 5, page: 1 } })
+
     recentPayments.value = data.data ?? []
     if (data.summary) Object.assign(rekonSummary.value, data.summary)
   } catch {
@@ -841,15 +921,15 @@ function createEmptyKpi() {
 
 function normalizeKpi(payload = {}) {
   return {
-    dso:               Number(payload.dso ?? 0),
-    collectionRate:    Number(payload.collection_rate ?? 0),
-    overdueCount:      Number(payload.overdue_count ?? 0),
+    dso: Number(payload.dso ?? 0),
+    collectionRate: Number(payload.collection_rate ?? 0),
+    overdueCount: Number(payload.overdue_count ?? 0),
     overduePercentage: Number(payload.overdue_percentage ?? 0),
-    agingSummary:      {
-      current:      Number(payload.aging_summary?.current ?? 0),
-      hari_1_30:    Number(payload.aging_summary?.hari_1_30 ?? 0),
-      hari_31_60:   Number(payload.aging_summary?.hari_31_60 ?? 0),
-      hari_61_90:   Number(payload.aging_summary?.hari_61_90 ?? 0),
+    agingSummary: {
+      current: Number(payload.aging_summary?.current ?? 0),
+      hari_1_30: Number(payload.aging_summary?.hari_1_30 ?? 0),
+      hari_31_60: Number(payload.aging_summary?.hari_31_60 ?? 0),
+      hari_61_90: Number(payload.aging_summary?.hari_61_90 ?? 0),
       hari_91_plus: Number(payload.aging_summary?.hari_91_plus ?? 0),
     },
   }

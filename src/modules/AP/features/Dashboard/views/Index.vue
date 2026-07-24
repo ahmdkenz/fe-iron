@@ -9,24 +9,53 @@
       ]"
     />
 
-    <VAlert v-if="error" type="error" variant="tonal" class="mb-4">{{ error }}</VAlert>
+    <VAlert
+      v-if="error"
+      type="error"
+      variant="tonal"
+      class="mb-4"
+    >
+      {{ error }}
+    </VAlert>
 
     <!-- Stat Cards -->
     <VRow class="mb-4">
-      <VCol v-for="card in statCards" :key="card.title" cols="12" sm="6" lg="4">
-        <VCard elevation="2" class="rounded-xl stat-card">
+      <VCol
+        v-for="card in statCards"
+        :key="card.title"
+        cols="12"
+        sm="6"
+        lg="4"
+      >
+        <VCard
+          elevation="2"
+          class="rounded-xl stat-card"
+        >
           <VCardText class="d-flex align-center justify-space-between fill-height bg-surface gap-2">
             <div class="min-width-0">
               <div class="text-caption text-medium-emphasis text-uppercase font-weight-medium mb-1">
                 {{ card.title }}
               </div>
-              <div class="text-h5 font-weight-bold text-truncate" :class="`text-${card.color}`">
+              <div
+                class="text-h5 font-weight-bold text-truncate"
+                :class="`text-${card.color}`"
+              >
                 {{ loading ? '...' : card.value }}
               </div>
-              <div class="text-caption mt-1 text-medium-emphasis">{{ card.caption }}</div>
+              <div class="text-caption mt-1 text-medium-emphasis">
+                {{ card.caption }}
+              </div>
             </div>
-            <VAvatar :color="card.color" variant="tonal" size="48" class="rounded-lg flex-shrink-0">
-              <VIcon :icon="card.icon" size="24" />
+            <VAvatar
+              :color="card.color"
+              variant="tonal"
+              size="48"
+              class="rounded-lg flex-shrink-0"
+            >
+              <VIcon
+                :icon="card.icon"
+                size="24"
+              />
             </VAvatar>
           </VCardText>
         </VCard>
@@ -35,19 +64,37 @@
 
     <VRow class="mb-4">
       <!-- Aging Hutang -->
-      <VCol cols="12" md="4">
-        <VCard elevation="2" class="rounded-xl h-100">
+      <VCol
+        cols="12"
+        md="4"
+      >
+        <VCard
+          elevation="2"
+          class="rounded-xl h-100"
+        >
           <VCardItem>
             <VCardTitle class="d-flex align-center text-h6 font-weight-bold">
-              <VIcon icon="ri-time-line" class="me-2 text-warning" />
+              <VIcon
+                icon="ri-time-line"
+                class="me-2 text-warning"
+              />
               Aging Hutang
             </VCardTitle>
             <VCardSubtitle>Outstanding berdasarkan umur jatuh tempo</VCardSubtitle>
           </VCardItem>
           <VCardText>
-            <div v-if="loading" class="text-center text-medium-emphasis py-8">Memuat...</div>
+            <div
+              v-if="loading"
+              class="text-center text-medium-emphasis py-8"
+            >
+              Memuat...
+            </div>
             <template v-else>
-              <div v-for="bucket in agingRows" :key="bucket.key" class="aging-row mb-3">
+              <div
+                v-for="bucket in agingRows"
+                :key="bucket.key"
+                class="aging-row mb-3"
+              >
                 <div class="d-flex justify-space-between align-center mb-1">
                   <span class="text-body-2">{{ bucket.label }}</span>
                   <span class="text-body-2 font-weight-medium">{{ formatCurrency(bucket.value) }}</span>
@@ -59,7 +106,9 @@
                   rounded
                   bg-color="rgba(var(--v-theme-on-surface), 0.08)"
                 />
-                <div class="text-caption text-medium-emphasis mt-1 text-right">{{ bucket.pct }}% dari total</div>
+                <div class="text-caption text-medium-emphasis mt-1 text-right">
+                  {{ bucket.pct }}% dari total
+                </div>
               </div>
               <VDivider class="my-2" />
               <div class="d-flex justify-space-between align-center">
@@ -72,11 +121,20 @@
       </VCol>
 
       <!-- Trend Pembayaran -->
-      <VCol cols="12" md="5">
-        <VCard elevation="2" class="rounded-xl h-100 chart-card">
+      <VCol
+        cols="12"
+        md="5"
+      >
+        <VCard
+          elevation="2"
+          class="rounded-xl h-100 chart-card"
+        >
           <VCardItem>
             <VCardTitle class="d-flex align-center text-h6 font-weight-bold">
-              <VIcon icon="ri-bar-chart-grouped-line" class="me-2 text-primary" />
+              <VIcon
+                icon="ri-bar-chart-grouped-line"
+                class="me-2 text-primary"
+              />
               Trend Pembayaran
             </VCardTitle>
             <VCardSubtitle>6 bulan terakhir</VCardSubtitle>
@@ -93,10 +151,18 @@
       </VCol>
 
       <!-- Status Pembayaran Donut -->
-      <VCol cols="12" md="3">
-        <VCard elevation="2" class="rounded-xl h-100 chart-card">
+      <VCol
+        cols="12"
+        md="3"
+      >
+        <VCard
+          elevation="2"
+          class="rounded-xl h-100 chart-card"
+        >
           <VCardItem>
-            <VCardTitle class="text-h6 font-weight-bold">Status Pembayaran</VCardTitle>
+            <VCardTitle class="text-h6 font-weight-bold">
+              Status Pembayaran
+            </VCardTitle>
             <VCardSubtitle>Tagihan disetujui</VCardSubtitle>
           </VCardItem>
           <VCardText class="d-flex align-center justify-center pt-2">
@@ -109,7 +175,12 @@
               :options="statusChartOptions"
               :series="statusChartSeries"
             />
-            <div v-else class="text-center text-medium-emphasis py-16">Belum ada data.</div>
+            <div
+              v-else
+              class="text-center text-medium-emphasis py-16"
+            >
+              Belum ada data.
+            </div>
           </VCardText>
         </VCard>
       </VCol>
@@ -117,11 +188,20 @@
 
     <VRow class="mb-4">
       <!-- Top 5 Vendor -->
-      <VCol cols="12" md="6">
-        <VCard elevation="2" class="rounded-xl h-100">
+      <VCol
+        cols="12"
+        md="6"
+      >
+        <VCard
+          elevation="2"
+          class="rounded-xl h-100"
+        >
           <VCardItem>
             <VCardTitle class="d-flex align-center text-h6 font-weight-bold">
-              <VIcon icon="ri-store-2-line" class="me-2 text-info" />
+              <VIcon
+                icon="ri-store-2-line"
+                class="me-2 text-info"
+              />
               Top 5 Vendor by Outstanding
             </VCardTitle>
           </VCardItem>
@@ -131,26 +211,48 @@
                 <tr>
                   <th>#</th>
                   <th>Vendor</th>
-                  <th class="text-right">Outstanding</th>
+                  <th class="text-right">
+                    Outstanding
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-if="!summary.top_vendors?.length">
-                  <td colspan="3" class="text-center text-medium-emphasis py-6">Tidak ada data.</td>
+                  <td
+                    colspan="3"
+                    class="text-center text-medium-emphasis py-6"
+                  >
+                    Tidak ada data.
+                  </td>
                 </tr>
-                <tr v-for="(v, idx) in summary.top_vendors" :key="v.vendor_ap_id">
+                <tr
+                  v-for="(v, idx) in summary.top_vendors"
+                  :key="v.vendor_ap_id"
+                >
                   <td>{{ idx + 1 }}</td>
-                  <td class="text-truncate" style="max-width: 160px">{{ v.nama_vendor }}</td>
+                  <td
+                    class="text-truncate"
+                    style="max-width: 160px"
+                  >
+                    {{ v.nama_vendor }}
+                  </td>
                   <td class="text-right">
                     <div>{{ formatCurrency(v.total_outstanding) }}</div>
-                    <div class="text-caption text-medium-emphasis">{{ v.percentage }}%</div>
+                    <div class="text-caption text-medium-emphasis">
+                      {{ v.percentage }}%
+                    </div>
                   </td>
                 </tr>
               </tbody>
             </VTable>
           </VCardText>
           <VCardActions class="px-4">
-            <VBtn variant="text" size="small" color="primary" :to="{ name: 'ap-vendor-index' }">
+            <VBtn
+              variant="text"
+              size="small"
+              color="primary"
+              :to="{ name: 'ap-vendor-index' }"
+            >
               Lihat semua vendor
             </VBtn>
           </VCardActions>
@@ -158,11 +260,20 @@
       </VCol>
 
       <!-- Jatuh Tempo Terdekat -->
-      <VCol cols="12" md="6">
-        <VCard elevation="2" class="rounded-xl h-100">
+      <VCol
+        cols="12"
+        md="6"
+      >
+        <VCard
+          elevation="2"
+          class="rounded-xl h-100"
+        >
           <VCardItem>
             <VCardTitle class="d-flex align-center text-h6 font-weight-bold">
-              <VIcon icon="ri-alarm-warning-line" class="me-2 text-error" />
+              <VIcon
+                icon="ri-alarm-warning-line"
+                class="me-2 text-error"
+              />
               Tagihan Jatuh Tempo Terdekat
             </VCardTitle>
           </VCardItem>
@@ -172,26 +283,51 @@
                 <tr>
                   <th>Tagihan</th>
                   <th>Jatuh Tempo</th>
-                  <th class="text-right">Sisa</th>
+                  <th class="text-right">
+                    Sisa
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-if="!summary.due_soon?.length">
-                  <td colspan="3" class="text-center text-medium-emphasis py-6">Tidak ada tagihan jatuh tempo.</td>
+                  <td
+                    colspan="3"
+                    class="text-center text-medium-emphasis py-6"
+                  >
+                    Tidak ada tagihan jatuh tempo.
+                  </td>
                 </tr>
-                <tr v-for="t in summary.due_soon" :key="t.id">
+                <tr
+                  v-for="t in summary.due_soon"
+                  :key="t.id"
+                >
                   <td>
-                    <RouterLink :to="{ name: 'ap-tagihan-show', params: { id: t.id } }" class="text-primary font-weight-medium">
+                    <RouterLink
+                      :to="{ name: 'ap-tagihan-show', params: { id: t.id } }"
+                      class="text-primary font-weight-medium"
+                    >
                       {{ t.no_tagihan }}
                     </RouterLink>
-                    <div class="text-caption text-medium-emphasis text-truncate" style="max-width: 140px">{{ t.nama_vendor }}</div>
+                    <div
+                      class="text-caption text-medium-emphasis text-truncate"
+                      style="max-width: 140px"
+                    >
+                      {{ t.nama_vendor }}
+                    </div>
                   </td>
                   <td>
-                    <VChip :color="dueChipColor(t.hari_lagi)" size="x-small" variant="tonal" label>
+                    <VChip
+                      :color="dueChipColor(t.hari_lagi)"
+                      size="x-small"
+                      variant="tonal"
+                      label
+                    >
                       {{ dueChipLabel(t.hari_lagi) }}
                     </VChip>
                   </td>
-                  <td class="text-right">{{ formatCurrency(t.sisa_tagihan) }}</td>
+                  <td class="text-right">
+                    {{ formatCurrency(t.sisa_tagihan) }}
+                  </td>
                 </tr>
               </tbody>
             </VTable>
@@ -201,9 +337,14 @@
     </VRow>
 
     <!-- Quick Actions -->
-    <VCard elevation="2" class="rounded-xl">
+    <VCard
+      elevation="2"
+      class="rounded-xl"
+    >
       <VCardText>
-        <div class="text-subtitle-2 font-weight-bold text-medium-emphasis mb-3">Quick Actions</div>
+        <div class="text-subtitle-2 font-weight-bold text-medium-emphasis mb-3">
+          Quick Actions
+        </div>
         <VRow>
           <VCol
             v-for="action in quickActions.filter(a => !a.roles || authStore.hasAnyRole(a.roles))"
@@ -219,7 +360,11 @@
               :to="action.to"
             >
               <div class="d-flex flex-column align-center py-2">
-                <VIcon :icon="action.icon" size="22" class="mb-1" />
+                <VIcon
+                  :icon="action.icon"
+                  size="22"
+                  class="mb-1"
+                />
                 <span class="text-caption font-weight-medium">{{ action.title }}</span>
               </div>
             </VBtn>
@@ -275,6 +420,7 @@ const summary = reactive(emptySummary())
 function trendCaption(pct) {
   if (!pct) return 'vs bulan lalu'
   const arrow = pct >= 0 ? '↑' : '↓'
+  
   return `vs bulan lalu ${pct >= 0 ? '+' : ''}${pct}% ${arrow}`
 }
 
@@ -303,6 +449,7 @@ const statCards = computed(() => [
 const agingRows = computed(() => {
   const b = summary.overdue_buckets
   const p = summary.overdue_buckets_pct
+  
   return [
     { key: 'current', label: 'Belum Jatuh Tempo', value: b.current, pct: p.current, color: 'success' },
     { key: '1-30',    label: '1 - 30 Hari',        value: b['1-30'], pct: p['1-30'], color: 'info' },
@@ -320,6 +467,7 @@ const trendChartSeries = computed(() => [
 
 const trendChartOptions = computed(() => {
   const c = theme.current.value.colors
+  
   return {
     chart: { type: 'line', fontFamily: 'inherit', toolbar: { show: false } },
     stroke: { width: [0, 3], curve: 'smooth' },
@@ -357,10 +505,12 @@ const statusChartSeries = computed(() => [
   summary.status_breakdown.sebagian,
   summary.status_breakdown.belum_lunas,
 ])
+
 const statusHasData = computed(() => statusChartSeries.value.some(v => v > 0))
 
 const statusChartOptions = computed(() => {
   const c = theme.current.value.colors
+  
   return {
     chart: { type: 'donut', fontFamily: 'inherit' },
     labels: ['Lunas', 'Sebagian', 'Belum Lunas'],
@@ -391,12 +541,14 @@ const statusChartOptions = computed(() => {
 function dueChipColor(hariLagi) {
   if (hariLagi < 0) return 'error'
   if (hariLagi <= 3) return 'warning'
+  
   return 'info'
 }
 
 function dueChipLabel(hariLagi) {
   if (hariLagi < 0) return `Telat ${Math.abs(hariLagi)} hari`
   if (hariLagi === 0) return 'Hari ini'
+  
   return `${hariLagi} hari`
 }
 
@@ -413,6 +565,7 @@ onMounted(async () => {
   error.value = ''
   try {
     const { data } = await api.get('/ap/dashboard/summary')
+
     Object.assign(summary, emptySummary(), data.data)
   } catch (err) {
     error.value = err.response?.data?.message ?? 'Gagal memuat dashboard'

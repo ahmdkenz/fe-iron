@@ -342,7 +342,9 @@
             size="20"
           />
           <div>
-            <div class="text-body-2 font-weight-medium">Status Resto</div>
+            <div class="text-body-2 font-weight-medium">
+              Status Resto
+            </div>
             <div class="text-caption text-medium-emphasis">
               {{ form.status ? 'Aktif — resto beroperasi' : 'Nonaktif — resto tidak aktif' }}
             </div>

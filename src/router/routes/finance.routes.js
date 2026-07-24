@@ -73,6 +73,7 @@ export default [
     meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'] },
   },
   { path: '/finance/ending-balance/koreksi/approval', redirect: { name: 'finance-ending-balance' } },
+
   // Halaman konsolidasi laporan
   {
     path: '/finance/laporan',
@@ -80,6 +81,7 @@ export default [
     component: () => import('@/modules/Finance/features/Laporan/views/Index.vue'),
     meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'] },
   },
+
   // Route dedicated per laporan
   {
     path: '/finance/laporan/jurnal-pic',
@@ -91,6 +93,7 @@ export default [
     path: '/finance/laporan/rekening-koran',
     name: 'finance-laporan-rekening-koran',
     component: () => import('@/modules/Finance/features/Laporan/views/RekeningKoran.vue'),
+
     // Laporan global lintas PIC — bukan untuk PIC AR murni.
     meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR'] },
   },
@@ -128,6 +131,7 @@ export default [
     path: '/finance/laporan/kinerja-ar',
     name: 'finance-laporan-kinerja-ar',
     component: () => import('@/modules/Finance/features/Laporan/views/KinerjaAr.vue'),
+
     // Laporan komparatif lintas PIC — bukan untuk PIC AR murni.
     meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR'] },
   },
@@ -135,9 +139,11 @@ export default [
     path: '/finance/laporan/pdm',
     name: 'finance-laporan-pdm',
     component: () => import('@/modules/Finance/features/Laporan/views/PendapatanDiMuka.vue'),
+
     // Laporan global lintas PIC — bukan untuk PIC AR murni.
     meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR'] },
   },
+
   // Redirect URL lama ke route dedicated masing-masing
   { path: '/finance/aging-report',     redirect: { name: 'finance-laporan-aging' } },
   { path: '/finance/rekap-klien',      redirect: { name: 'finance-laporan-rekap-klien' } },

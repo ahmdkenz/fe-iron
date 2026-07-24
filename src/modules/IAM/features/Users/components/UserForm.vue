@@ -182,7 +182,9 @@
             size="20"
           />
           <div>
-            <div class="text-body-2 font-weight-medium">Status Akun</div>
+            <div class="text-body-2 font-weight-medium">
+              Status Akun
+            </div>
             <div class="text-caption text-medium-emphasis">
               {{ form.status ? 'Aktif — pengguna dapat login' : 'Nonaktif — akses diblokir' }}
             </div>

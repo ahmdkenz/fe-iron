@@ -9,39 +9,80 @@
         { title: isEditing ? 'Edit Tagihan' : 'Input Tagihan', disabled: true }
       ]"
     >
-      <VBtn variant="tonal" color="secondary" :to="{ name: 'ap-tagihan-index' }">
-        <VIcon icon="ri-arrow-left-line" class="me-1" />
+      <VBtn
+        variant="tonal"
+        color="secondary"
+        :to="{ name: 'ap-tagihan-index' }"
+      >
+        <VIcon
+          icon="ri-arrow-left-line"
+          class="me-1"
+        />
         Kembali
       </VBtn>
     </PageHeader>
 
-    <div v-if="loadingData" class="text-center py-16">
-      <VProgressCircular indeterminate color="primary" size="48" />
-      <div class="text-body-2 text-medium-emphasis mt-3">Memuat data tagihan...</div>
+    <div
+      v-if="loadingData"
+      class="text-center py-16"
+    >
+      <VProgressCircular
+        indeterminate
+        color="primary"
+        size="48"
+      />
+      <div class="text-body-2 text-medium-emphasis mt-3">
+        Memuat data tagihan...
+      </div>
     </div>
 
-    <VAlert v-else-if="isEditing && !tagihan" type="error" variant="tonal" class="mb-4">
+    <VAlert
+      v-else-if="isEditing && !tagihan"
+      type="error"
+      variant="tonal"
+      class="mb-4"
+    >
       Tagihan tidak ditemukan atau tidak dapat diedit.
     </VAlert>
 
-    <VForm v-else ref="formRef" @submit.prevent>
-      <VAlert v-if="errorMessage" type="error" variant="tonal" closable class="mb-4">
+    <VForm
+      v-else
+      ref="formRef"
+      @submit.prevent
+    >
+      <VAlert
+        v-if="errorMessage"
+        type="error"
+        variant="tonal"
+        closable
+        class="mb-4"
+      >
         {{ errorMessage }}
       </VAlert>
 
       <VRow>
-        <VCol cols="12" lg="8">
+        <VCol
+          cols="12"
+          lg="8"
+        >
           <VCard class="mb-4 section-card">
             <div class="section-header">
               <div class="section-icon bg-primary">
-                <VIcon icon="ri-file-list-3-line" size="16" color="white" />
+                <VIcon
+                  icon="ri-file-list-3-line"
+                  size="16"
+                  color="white"
+                />
               </div>
               <span class="text-subtitle-1 font-weight-semibold">Informasi Tagihan</span>
             </div>
             <VDivider />
             <VCardText class="pt-4">
               <VRow>
-                <VCol cols="12" md="6">
+                <VCol
+                  cols="12"
+                  md="6"
+                >
                   <VAutocomplete
                     v-model="form.vendor_ap_id"
                     label="Vendor"
@@ -58,11 +99,17 @@
                     @update:model-value="onVendorChange"
                   >
                     <template #item="{ props: p, item }">
-                      <VListItem v-bind="p" :title="item.raw.display_label" />
+                      <VListItem
+                        v-bind="p"
+                        :title="item.raw.display_label"
+                      />
                     </template>
                   </VAutocomplete>
                 </VCol>
-                <VCol cols="12" md="6">
+                <VCol
+                  cols="12"
+                  md="6"
+                >
                   <VTextField
                     v-model="form.no_invoice_vendor"
                     label="No. Invoice Vendor"
@@ -71,7 +118,10 @@
                     prepend-inner-icon="ri-hashtag"
                   />
                 </VCol>
-                <VCol cols="12" md="6">
+                <VCol
+                  cols="12"
+                  md="6"
+                >
                   <VTextField
                     v-model="form.tanggal_tagihan"
                     label="Tanggal Tagihan"
@@ -82,7 +132,10 @@
                     :rules="[v => !!v || 'Tanggal wajib diisi']"
                   />
                 </VCol>
-                <VCol cols="12" md="6">
+                <VCol
+                  cols="12"
+                  md="6"
+                >
                   <VTextField
                     v-model="form.tanggal_jatuh_tempo"
                     label="Jatuh Tempo"
@@ -93,7 +146,10 @@
                     clearable
                   />
                 </VCol>
-                <VCol cols="12" md="6">
+                <VCol
+                  cols="12"
+                  md="6"
+                >
                   <VTextField
                     v-model="form.no_po"
                     label="No. PO (Referensi)"
@@ -103,7 +159,10 @@
                     clearable
                   />
                 </VCol>
-                <VCol cols="12" md="6">
+                <VCol
+                  cols="12"
+                  md="6"
+                >
                   <VTextField
                     v-model="form.no_terima_barang"
                     label="No. Terima Barang (Referensi)"
@@ -120,14 +179,21 @@
           <VCard class="mb-4 section-card">
             <div class="section-header">
               <div class="section-icon bg-info">
-                <VIcon icon="ri-percent-line" size="16" color="white" />
+                <VIcon
+                  icon="ri-percent-line"
+                  size="16"
+                  color="white"
+                />
               </div>
               <span class="text-subtitle-1 font-weight-semibold">Pajak (Manual)</span>
             </div>
             <VDivider />
             <VCardText class="pt-4">
               <VRow>
-                <VCol cols="12" md="6">
+                <VCol
+                  cols="12"
+                  md="6"
+                >
                   <VTextField
                     v-model.number="form.ppn_masukan"
                     label="PPN Masukan"
@@ -138,7 +204,10 @@
                     prefix="Rp"
                   />
                 </VCol>
-                <VCol cols="12" md="6">
+                <VCol
+                  cols="12"
+                  md="6"
+                >
                   <VTextField
                     v-model.number="form.pph23"
                     label="PPh 23"
@@ -154,12 +223,19 @@
           </VCard>
         </VCol>
 
-        <VCol cols="12" lg="4">
+        <VCol
+          cols="12"
+          lg="4"
+        >
           <div class="sticky-sidebar">
             <VCard class="mb-4">
               <div class="section-header">
                 <div class="section-icon bg-primary">
-                  <VIcon icon="ri-calculator-line" size="16" color="white" />
+                  <VIcon
+                    icon="ri-calculator-line"
+                    size="16"
+                    color="white"
+                  />
                 </div>
                 <span class="text-subtitle-1 font-weight-semibold">Ringkasan Tagihan</span>
               </div>
@@ -167,16 +243,28 @@
               <VCardText class="pt-4">
                 <table class="summary-table w-100">
                   <tr>
-                    <td class="text-body-2 text-medium-emphasis pb-2">Subtotal Item</td>
-                    <td class="text-body-2 text-right font-weight-medium pb-2">{{ formatCurrency(subtotal) }}</td>
+                    <td class="text-body-2 text-medium-emphasis pb-2">
+                      Subtotal Item
+                    </td>
+                    <td class="text-body-2 text-right font-weight-medium pb-2">
+                      {{ formatCurrency(subtotal) }}
+                    </td>
                   </tr>
                   <tr>
-                    <td class="text-body-2 text-medium-emphasis pb-2">PPN Masukan</td>
-                    <td class="text-body-2 text-right font-weight-medium pb-2">{{ formatCurrency(form.ppn_masukan) }}</td>
+                    <td class="text-body-2 text-medium-emphasis pb-2">
+                      PPN Masukan
+                    </td>
+                    <td class="text-body-2 text-right font-weight-medium pb-2">
+                      {{ formatCurrency(form.ppn_masukan) }}
+                    </td>
                   </tr>
                   <tr>
-                    <td class="text-body-2 text-medium-emphasis pb-2">PPh 23</td>
-                    <td class="text-body-2 text-right font-weight-medium pb-2">- {{ formatCurrency(form.pph23) }}</td>
+                    <td class="text-body-2 text-medium-emphasis pb-2">
+                      PPh 23
+                    </td>
+                    <td class="text-body-2 text-right font-weight-medium pb-2">
+                      - {{ formatCurrency(form.pph23) }}
+                    </td>
                   </tr>
                 </table>
                 <VDivider class="my-3" />
@@ -210,29 +298,61 @@
             <div class="section-header">
               <div class="d-flex align-center gap-3">
                 <div class="section-icon bg-warning">
-                  <VIcon icon="ri-list-check-2" size="16" color="white" />
+                  <VIcon
+                    icon="ri-list-check-2"
+                    size="16"
+                    color="white"
+                  />
                 </div>
                 <span class="text-subtitle-1 font-weight-semibold">Item Tagihan</span>
-                <VChip v-if="form.items.length > 0" size="x-small" color="warning" variant="tonal" class="font-weight-medium">
+                <VChip
+                  v-if="form.items.length > 0"
+                  size="x-small"
+                  color="warning"
+                  variant="tonal"
+                  class="font-weight-medium"
+                >
                   {{ form.items.length }} item
                 </VChip>
               </div>
-              <VBtn color="primary" size="small" prepend-icon="ri-add-line" variant="tonal" @click="addItem">
+              <VBtn
+                color="primary"
+                size="small"
+                prepend-icon="ri-add-line"
+                variant="tonal"
+                @click="addItem"
+              >
                 Tambah Baris
               </VBtn>
             </div>
             <VDivider />
 
             <VCardText>
-              <div v-if="form.items.length === 0" class="items-empty-state">
+              <div
+                v-if="form.items.length === 0"
+                class="items-empty-state"
+              >
                 <div class="items-empty-icon bg-warning">
-                  <VIcon icon="ri-shopping-cart-2-line" size="26" color="white" />
+                  <VIcon
+                    icon="ri-shopping-cart-2-line"
+                    size="26"
+                    color="white"
+                  />
                 </div>
-                <div class="text-body-2 font-weight-medium mt-3">Belum ada item tagihan</div>
+                <div class="text-body-2 font-weight-medium mt-3">
+                  Belum ada item tagihan
+                </div>
                 <div class="text-caption text-medium-emphasis mt-1">
                   Tambahkan barang/jasa yang ditagihkan vendor pada tagihan ini.
                 </div>
-                <VBtn color="primary" size="small" variant="tonal" prepend-icon="ri-add-line" class="mt-4" @click="addItem">
+                <VBtn
+                  color="primary"
+                  size="small"
+                  variant="tonal"
+                  prepend-icon="ri-add-line"
+                  class="mt-4"
+                  @click="addItem"
+                >
                   Tambah Baris Pertama
                 </VBtn>
               </div>
@@ -246,7 +366,13 @@
                 @remove="removeItem(idx)"
               />
 
-              <VAlert v-if="itemsError" type="error" variant="tonal" density="compact" class="mt-1">
+              <VAlert
+                v-if="itemsError"
+                type="error"
+                variant="tonal"
+                density="compact"
+                class="mt-1"
+              >
                 {{ itemsError }}
               </VAlert>
             </VCardText>
@@ -255,10 +381,20 @@
           <VCard class="mb-4">
             <div class="section-header">
               <div class="section-icon bg-secondary">
-                <VIcon icon="ri-sticky-note-line" size="16" color="white" />
+                <VIcon
+                  icon="ri-sticky-note-line"
+                  size="16"
+                  color="white"
+                />
               </div>
               <span class="text-subtitle-1 font-weight-semibold">Keterangan</span>
-              <VChip size="x-small" color="secondary" variant="tonal">Opsional</VChip>
+              <VChip
+                size="x-small"
+                color="secondary"
+                variant="tonal"
+              >
+                Opsional
+              </VChip>
             </div>
             <VDivider />
             <VCardText class="pt-4">
@@ -334,6 +470,7 @@ async function loadPreviewNo() {
     const { data } = await api.get('/ap/tagihan/preview-no', {
       params: { vendor_ap_id: form.vendor_ap_id, tanggal: form.tanggal_tagihan },
     })
+
     form.no_tagihan = data.data?.no_tagihan ?? ''
   } catch {
     // biarkan kosong jika gagal, akan digenerate di backend
@@ -361,6 +498,7 @@ async function handleSubmit() {
 
   if (form.items.length === 0) {
     itemsError.value = 'Minimal 1 item tagihan wajib diisi.'
+    
     return
   }
   itemsError.value = ''
@@ -386,10 +524,12 @@ async function handleSubmit() {
 onMounted(async () => {
   if (!isEditing.value) {
     loadPreviewNo()
+    
     return
   }
 
   const data = await fetchOne(id)
+
   loadingData.value = false
   if (!data || !data.can_edit) return
 

@@ -564,7 +564,9 @@ const expandedRows = ref(new Set())
 let isInternalUpdate = false
 
 watch(() => props.details, val => {
-  if (isInternalUpdate) { isInternalUpdate = false; return }
+  if (isInternalUpdate) { isInternalUpdate = false 
+
+    return }
   rows.value = val.map(d => ({ items: [], ...d }))
   expandedRows.value = new Set()
 })
@@ -583,16 +585,17 @@ function toggleExpand(i) {
 function expand(i) {
   if (expandedRows.value.has(i)) return
   const next = new Set(expandedRows.value)
+
   next.add(i)
   expandedRows.value = next
 }
 
 const totalSisa = computed(() =>
-  rows.value.reduce((sum, r) => sum + (Number(r.sisa_tagihan_asal) || 0), 0)
+  rows.value.reduce((sum, r) => sum + (Number(r.sisa_tagihan_asal) || 0), 0),
 )
 
 const sumMatchesSaldo = computed(() =>
-  rows.value.length === 0 || Math.abs(totalSisa.value - props.saldoAwal) <= 0.01
+  rows.value.length === 0 || Math.abs(totalSisa.value - props.saldoAwal) <= 0.01,
 )
 
 function calcItemsTotal(items) {
@@ -620,6 +623,7 @@ function addItem(detailIndex) {
 
 function updateItem(detailIndex, itemIndex, value) {
   rows.value[detailIndex].items[itemIndex] = value
+
   // Auto-sync jumlah_tagihan_asal when items exist
   rows.value[detailIndex].jumlah_tagihan_asal = calcItemsTotal(rows.value[detailIndex].items)
   emitRows()
@@ -633,24 +637,28 @@ function removeItem(detailIndex, itemIndex) {
 
 function mapInvoiceItems(invItems) {
   if (!invItems?.length) return []
+  
   return invItems.map(item => ({
     ...createItem(),
-    barang_id:    item.barang_id ?? null,
-    kode_barang:  item.kode_barang ?? '',
-    nama_barang:  item.nama_barang ?? '',
-    qty:          item.qty ?? 1,
-    satuan:       item.satuan ?? 'pcs',
+    barang_id: item.barang_id ?? null,
+    kode_barang: item.kode_barang ?? '',
+    nama_barang: item.nama_barang ?? '',
+    qty: item.qty ?? 1,
+    satuan: item.satuan ?? 'pcs',
     harga_satuan: item.harga_satuan ?? 0,
-    subtotal:     item.subtotal ?? 0,
-    keterangan:   item.keterangan ?? '',
+    subtotal: item.subtotal ?? 0,
+    keterangan: item.keterangan ?? '',
   }))
 }
 
 function handleInvoiceSelect(rowIndex, noInvoice) {
   const inv = props.outstandingInvoices.find(i => i.no_invoice === noInvoice)
-  if (!inv) { emitRows(); return }
+  if (!inv) { emitRows() 
+
+    return }
 
   const row = rows.value[rowIndex]
+
   row.no_invoice_asal      = inv.no_invoice
   row.tanggal_invoice_asal = inv.tanggal_invoice ?? ''
   row.jumlah_tagihan_asal  = inv.subtotal
@@ -665,13 +673,13 @@ function loadSelectedOutstanding(selected) {
   if (!selected?.length) return
   rows.value = selected.map(inv => ({
     ...createRow(),
-    no_invoice_asal:      inv.no_invoice,
+    no_invoice_asal: inv.no_invoice,
     tanggal_invoice_asal: inv.tanggal_invoice ?? '',
-    deskripsi:            `Sisa tagihan ${inv.no_invoice}`,
-    jumlah_tagihan_asal:  inv.subtotal,
-    sisa_tagihan_asal:    inv.sisa_tagihan,
-    keterangan:           inv.keterangan ?? '',
-    items:                mapInvoiceItems(inv.items),
+    deskripsi: `Sisa tagihan ${inv.no_invoice}`,
+    jumlah_tagihan_asal: inv.subtotal,
+    sisa_tagihan_asal: inv.sisa_tagihan,
+    keterangan: inv.keterangan ?? '',
+    items: mapInvoiceItems(inv.items),
   }))
   expandedRows.value = new Set()
   emitRows()

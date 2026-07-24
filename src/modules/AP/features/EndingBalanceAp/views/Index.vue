@@ -9,8 +9,7 @@
         { title: 'Dashboard', to: { name: 'dashboard' } },
         { title: 'Ending Balance AP', disabled: true },
       ]"
-    >
-    </PageHeader>
+    />
 
     <!-- ═══════════════════════════════════════════════════════════════════ -->
     <!-- Approver (ADMIN/MANAGER/SUPERVISOR): inbox approval + list          -->
@@ -18,7 +17,14 @@
     <template v-if="authStore.canApproveEndingBalanceAp">
       <div class="mb-4 d-flex align-center gap-3">
         <span class="text-h6 font-weight-semibold">Koreksi Menunggu Persetujuan</span>
-        <VChip v-if="pendingRows.length" size="small" color="error" label>{{ pendingRows.length }} menunggu</VChip>
+        <VChip
+          v-if="pendingRows.length"
+          size="small"
+          color="error"
+          label
+        >
+          {{ pendingRows.length }} menunggu
+        </VChip>
       </div>
 
       <VCard class="mb-6">
@@ -32,7 +38,13 @@
           density="comfortable"
         >
           <template #item.tipe="{ item }">
-            <VChip size="x-small" :color="tipeBadgeColor(item.tipe)" label>{{ tipeLabel(item.tipe) }}</VChip>
+            <VChip
+              size="x-small"
+              :color="tipeBadgeColor(item.tipe)"
+              label
+            >
+              {{ tipeLabel(item.tipe) }}
+            </VChip>
           </template>
           <template #item.no_dokumen="{ item }">
             <span class="text-caption font-weight-medium">{{ item.no_dokumen || '—' }}</span>
@@ -41,7 +53,10 @@
             <span class="font-weight-medium">{{ item.nama_vendor }}</span>
           </template>
           <template #item.nilai_koreksi="{ item }">
-            <span class="font-weight-bold" :class="item.nilai_koreksi >= 0 ? 'text-success' : 'text-error'">
+            <span
+              class="font-weight-bold"
+              :class="item.nilai_koreksi >= 0 ? 'text-success' : 'text-error'"
+            >
               {{ item.nilai_koreksi >= 0 ? '+' : '' }}{{ formatRp(item.nilai_koreksi) }}
             </span>
           </template>
@@ -50,18 +65,50 @@
           </template>
           <template #item.actions="{ item }">
             <div class="d-flex gap-1 justify-center">
-              <VBtn icon size="small" variant="text" color="primary"
-                :to="{ name: 'ap-ending-balance-show', params: { id: item.ending_balance_ap_id } }">
-                <VIcon icon="ri-eye-line" size="18" />
-                <VTooltip activator="parent">Lihat EB</VTooltip>
+              <VBtn
+                icon
+                size="small"
+                variant="text"
+                color="primary"
+                :to="{ name: 'ap-ending-balance-show', params: { id: item.ending_balance_ap_id } }"
+              >
+                <VIcon
+                  icon="ri-eye-line"
+                  size="18"
+                />
+                <VTooltip activator="parent">
+                  Lihat EB
+                </VTooltip>
               </VBtn>
-              <VBtn icon size="small" color="success" variant="tonal" @click="openApprovalActionDialog(item, 'approve')">
-                <VIcon icon="ri-check-line" size="18" />
-                <VTooltip activator="parent">Setujui</VTooltip>
+              <VBtn
+                icon
+                size="small"
+                color="success"
+                variant="tonal"
+                @click="openApprovalActionDialog(item, 'approve')"
+              >
+                <VIcon
+                  icon="ri-check-line"
+                  size="18"
+                />
+                <VTooltip activator="parent">
+                  Setujui
+                </VTooltip>
               </VBtn>
-              <VBtn icon size="small" color="error" variant="tonal" @click="openApprovalActionDialog(item, 'reject')">
-                <VIcon icon="ri-close-line" size="18" />
-                <VTooltip activator="parent">Tolak</VTooltip>
+              <VBtn
+                icon
+                size="small"
+                color="error"
+                variant="tonal"
+                @click="openApprovalActionDialog(item, 'reject')"
+              >
+                <VIcon
+                  icon="ri-close-line"
+                  size="18"
+                />
+                <VTooltip activator="parent">
+                  Tolak
+                </VTooltip>
               </VBtn>
             </div>
           </template>
@@ -103,7 +150,7 @@
           clearable
           style="max-width: 160px"
           :items="[{ title: 'Draft', value: 'DRAFT' }, { title: 'Locked', value: 'LOCKED' }]"
-          @update:model-value="doFetch(1)"
+          @update:model-value="reset(filters)"
         />
         <VBtn
           color="primary"
@@ -116,25 +163,31 @@
         </VBtn>
       </VCardText>
       <BaseTable
+        v-model:expanded="expanded"
         :headers="headers"
         :items="rows"
-        :total="meta.total"
+        :total="total"
         :loading="loading"
-        :per-page="meta.per_page"
-        :page="currentPage"
+        pagination-mode="load-more"
+        :has-more="hasMore"
+        :loading-more="loadingMore"
+        :loaded-count="rows.length"
         item-value="id"
         show-expand
-        v-model:expanded="expanded"
         column-resize-key="ap-ending-balance"
-        @update:options="onTableOptions"
+        @load-more="loadMore"
       >
         <template #item.no="{ index }">
-          <span class="text-medium-emphasis">{{ (currentPage - 1) * meta.per_page + index + 1 }}</span>
+          <span class="text-medium-emphasis">{{ index + 1 }}</span>
         </template>
 
         <template #item.nama_vendor="{ item }">
-          <div class="font-weight-medium text-no-wrap">{{ item.nama_vendor }}</div>
-          <div class="text-caption text-medium-emphasis">{{ item.kode_vendor }}</div>
+          <div class="font-weight-medium text-no-wrap">
+            {{ item.nama_vendor }}
+          </div>
+          <div class="text-caption text-medium-emphasis">
+            {{ item.kode_vendor }}
+          </div>
         </template>
 
         <template #item.perusahaan="{ item }">
@@ -163,7 +216,10 @@
           <div :class="item.saldo_akhir_sistem !== item.saldo_akhir_final ? 'text-warning font-weight-bold' : 'font-weight-bold'">
             {{ formatRp(item.saldo_akhir_final) }}
           </div>
-          <div v-if="item.saldo_akhir_sistem !== item.saldo_akhir_final" class="text-caption text-medium-emphasis">
+          <div
+            v-if="item.saldo_akhir_sistem !== item.saldo_akhir_final"
+            class="text-caption text-medium-emphasis"
+          >
             (sistem: {{ formatRp(item.saldo_akhir_sistem) }})
           </div>
         </template>
@@ -172,14 +228,18 @@
           <div :class="item.outstanding > 0 ? 'font-weight-medium' : 'text-medium-emphasis'">
             {{ formatRp(item.outstanding) }}
           </div>
-          <div class="text-caption text-medium-emphasis">{{ item.outstanding_count }} Tagihan</div>
+          <div class="text-caption text-medium-emphasis">
+            {{ item.outstanding_count }} Tagihan
+          </div>
         </template>
 
         <template #item.overdue="{ item }">
           <div :class="item.overdue > 0 ? 'text-error font-weight-medium' : 'text-medium-emphasis'">
             {{ formatRp(item.overdue) }}
           </div>
-          <div class="text-caption text-medium-emphasis">{{ item.overdue_count }} Tagihan</div>
+          <div class="text-caption text-medium-emphasis">
+            {{ item.overdue_count }} Tagihan
+          </div>
         </template>
 
         <template #item.status="{ item }">
@@ -197,7 +257,10 @@
 
         <template #expanded-row="{ item }">
           <tr>
-            <td :colspan="headers.length + 1" class="pa-0">
+            <td
+              :colspan="headers.length + 1"
+              class="pa-0"
+            >
               <EbTagihanBreakdown :eb-id="item.id" />
             </td>
           </tr>
@@ -213,7 +276,9 @@
               :to="{ name: 'ap-ending-balance-show', params: { id: item.id } }"
             >
               <VIcon icon="ri-eye-line" />
-              <VTooltip activator="parent">Detail</VTooltip>
+              <VTooltip activator="parent">
+                Detail
+              </VTooltip>
             </VBtn>
             <VBtn
               v-if="item.status === 'DRAFT' && authStore.canLockEndingBalanceAp"
@@ -225,7 +290,9 @@
               @click="confirmLock(item)"
             >
               <VIcon icon="ri-lock-line" />
-              <VTooltip activator="parent">Kunci Periode</VTooltip>
+              <VTooltip activator="parent">
+                Kunci Periode
+              </VTooltip>
             </VBtn>
             <VBtn
               v-if="item.status === 'LOCKED' && authStore.canLockEndingBalanceAp"
@@ -237,7 +304,9 @@
               @click="confirmUnlock(item)"
             >
               <VIcon icon="ri-lock-unlock-line" />
-              <VTooltip activator="parent">Buka Periode</VTooltip>
+              <VTooltip activator="parent">
+                Buka Periode
+              </VTooltip>
             </VBtn>
           </div>
         </template>
@@ -245,9 +314,14 @@
     </VCard>
 
     <!-- Dialog Konfirmasi Lock -->
-    <VDialog v-model="showLockDialog" max-width="400">
+    <VDialog
+      v-model="showLockDialog"
+      max-width="400"
+    >
       <VCard>
-        <VCardTitle class="pt-4 px-4">Tutup Periode</VCardTitle>
+        <VCardTitle class="pt-4 px-4">
+          Tutup Periode
+        </VCardTitle>
         <VCardText>
           Kunci ending balance <strong>{{ lockTarget?.nama_vendor }}</strong> untuk periode
           {{ formatDate(lockTarget?.periode_awal) }} – {{ formatDate(lockTarget?.periode_akhir) }}?
@@ -256,27 +330,57 @@
         </VCardText>
         <VCardActions class="px-4 pb-4">
           <VSpacer />
-          <AppActionButton action="batalkan" @click="showLockDialog = false" />
-          <AppActionButton action="custom" color="success" :loading="lockingId !== null" @click="doLock">Kunci</AppActionButton>
+          <AppActionButton
+            action="batalkan"
+            @click="showLockDialog = false"
+          />
+          <AppActionButton
+            action="custom"
+            color="success"
+            :loading="lockingId !== null"
+            @click="doLock"
+          >
+            Kunci
+          </AppActionButton>
         </VCardActions>
       </VCard>
     </VDialog>
 
     <!-- Dialog Konfirmasi Unlock -->
-    <VDialog v-model="showUnlockDialog" max-width="420">
+    <VDialog
+      v-model="showUnlockDialog"
+      max-width="420"
+    >
       <VCard>
-        <VCardTitle class="pt-4 px-4">Buka Kunci Periode</VCardTitle>
+        <VCardTitle class="pt-4 px-4">
+          Buka Kunci Periode
+        </VCardTitle>
         <VCardText>
           Buka kunci ending balance <strong>{{ unlockTarget?.nama_vendor }}</strong> untuk periode
           {{ formatDate(unlockTarget?.periode_awal) }} – {{ formatDate(unlockTarget?.periode_akhir) }}?
-          <VAlert type="warning" variant="tonal" density="compact" class="mt-3">
+          <VAlert
+            type="warning"
+            variant="tonal"
+            density="compact"
+            class="mt-3"
+          >
             Pastikan data yang akan diubah sudah dikonfirmasi sebelum mengunci ulang.
           </VAlert>
         </VCardText>
         <VCardActions class="px-4 pb-4">
           <VSpacer />
-          <AppActionButton action="batalkan" @click="showUnlockDialog = false" />
-          <AppActionButton action="custom" color="warning" :loading="unlockingId !== null" @click="doUnlock">Buka Kunci</AppActionButton>
+          <AppActionButton
+            action="batalkan"
+            @click="showUnlockDialog = false"
+          />
+          <AppActionButton
+            action="custom"
+            color="warning"
+            :loading="unlockingId !== null"
+            @click="doUnlock"
+          >
+            Buka Kunci
+          </AppActionButton>
         </VCardActions>
       </VCard>
     </VDialog>
@@ -297,8 +401,9 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, defineComponent, h } from 'vue'
+import { ref, reactive, onMounted, onBeforeUnmount, defineComponent, h } from 'vue'
 import { useAuthStore } from '@/stores/auth.store'
+import { useLoadMore } from '@/composables/useLoadMore.js'
 import api from '@/utils/axios'
 import EndingBalanceStatusBadge from '@/modules/Finance/shared/components/EndingBalanceStatusBadge.vue'
 import KoreksiApprovalDialog from '../components/KoreksiApprovalDialog.vue'
@@ -318,6 +423,7 @@ const EbTagihanBreakdown = defineComponent({
     onMounted(async () => {
       try {
         const { data } = await api.get(`/ap/ending-balance/${props.ebId}/tagihan`)
+
         rows.value = data.data ?? []
       } catch (e) {
         error.value = e?.response?.data?.message ?? 'Gagal memuat data tagihan.'
@@ -366,7 +472,7 @@ const EbTagihanBreakdown = defineComponent({
                 t.is_opening_balance ? h('VChip', { size: 'x-small', color: 'secondary', label: true, class: 'ml-2', style: 'font-size:10px' }, { default: () => 'OB' }) : null,
               ]),
               h('td', { class: `${tdClass} text-medium-emphasis` }, fmtDate(t.tanggal_tagihan)),
-              h('td', { class: `${tdClass} ${t.tanggal_jatuh_tempo && t.sisa_tagihan > 0 && t.tanggal_jatuh_tempo < new Date().toISOString().slice(0,10) ? 'text-error' : 'text-medium-emphasis'}` }, fmtDate(t.tanggal_jatuh_tempo)),
+              h('td', { class: `${tdClass} ${t.tanggal_jatuh_tempo && t.sisa_tagihan > 0 && t.tanggal_jatuh_tempo < new Date().toISOString().slice(0, 10) ? 'text-error' : 'text-medium-emphasis'}` }, fmtDate(t.tanggal_jatuh_tempo)),
               h('td', { class: `${tdClass} text-end` }, fmt(t.total_tagihan)),
               h('td', { class: `${tdClass} text-end` }, (() => {
                 const hasCN = (t.total_cn ?? 0) > 0
@@ -375,6 +481,7 @@ const EbTagihanBreakdown = defineComponent({
                 const lines = []
                 if (hasDN) lines.push(h('div', { class: 'text-success' }, `+ ${fmt(t.total_dn)}`))
                 if (hasCN) lines.push(h('div', { class: 'text-error'   }, `− ${fmt(t.total_cn)}`))
+                
                 return lines
               })()),
               h('td', { class: `${tdClass} text-end text-success` }, fmt(t.total_pembayaran)),
@@ -392,16 +499,18 @@ const EbTagihanBreakdown = defineComponent({
 
 const authStore = useAuthStore()
 
-const loading     = ref(false)
-const rows        = ref([])
-const meta        = ref({ total: 0, per_page: 15 })
-const currentPage = ref(1)
-const expanded    = ref([])
+const {
+  items: rows, loading, loadingMore, hasMore, total,
+  reset, loadMore, abort,
+} = useLoadMore('/ap/ending-balance', { perPage: 15 })
+
+const expanded = ref([])
 
 function toDateStr(d) {
   const year  = d.getFullYear()
   const month = String(d.getMonth() + 1).padStart(2, '0')
   const day   = String(d.getDate()).padStart(2, '0')
+  
   return `${year}-${month}-${day}`
 }
 const now      = new Date()
@@ -409,13 +518,13 @@ const firstDay = new Date(now.getFullYear(), now.getMonth(), 1)
 const lastDay  = new Date(now.getFullYear(), now.getMonth() + 1, 0)
 
 const filters = reactive({
-  periode_awal:  toDateStr(firstDay),
+  periode_awal: toDateStr(firstDay),
   periode_akhir: toDateStr(lastDay),
   status: null,
 })
 
 const periodeDraft = reactive({
-  periode_awal:  toDateStr(firstDay),
+  periode_awal: toDateStr(firstDay),
   periode_akhir: toDateStr(lastDay),
 })
 
@@ -446,35 +555,22 @@ function formatRp(val) {
 }
 function formatDate(d) {
   if (!d) return '-'
+  
   return new Date(d).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 function formatDatetime(d) {
   if (!d) return '-'
+  
   return new Date(d).toLocaleString('id-ID')
 }
 
-async function doFetch(page = 1) {
-  loading.value = true
-  try {
-    const { data } = await api.get('/ap/ending-balance', {
-      params: { ...filters, page },
-      timeout: 60000,
-    })
-    rows.value = data.data ?? []
-    meta.value = { total: data.meta?.total ?? 0, per_page: data.meta?.per_page ?? 15 }
-  } finally {
-    loading.value = false
-  }
+function refreshList() {
+  reset(filters)
 }
 
 function applyPeriodeFilters() {
   Object.assign(filters, periodeDraft)
-  doFetch(1)
-}
-
-function onTableOptions({ page }) {
-  currentPage.value = page
-  doFetch(page)
+  reset(filters)
 }
 
 function confirmLock(item) {
@@ -488,7 +584,7 @@ async function doLock() {
   try {
     await api.patch(`/ap/ending-balance/${lockTarget.value.id}/lock`)
     showLockDialog.value = false
-    doFetch(currentPage.value)
+    refreshList()
   } catch (e) {
     alert(e?.response?.data?.message ?? 'Gagal mengunci.')
   } finally {
@@ -508,7 +604,7 @@ async function doUnlock() {
   try {
     await api.patch(`/ap/ending-balance/${unlockTarget.value.id}/unlock`)
     showUnlockDialog.value = false
-    doFetch(currentPage.value)
+    refreshList()
   } catch (e) {
     alert(e?.response?.data?.message ?? 'Gagal membuka kunci periode.')
   } finally {
@@ -526,19 +622,19 @@ const pendingHeaders = [
   { title: 'NO DOKUMEN',       key: 'no_dokumen',    sortable: false },
   { title: 'VENDOR',           key: 'nama_vendor',   sortable: false },
   { title: 'NOMINAL',          key: 'nilai_koreksi', sortable: false },
-  { title: 'ALASAN',           key: 'alasan_koreksi',sortable: false },
+  { title: 'ALASAN',           key: 'alasan_koreksi', sortable: false },
   { title: 'DIAJUKAN OLEH',    key: 'submitted_by',  sortable: false },
   { title: 'TANGGAL DIAJUKAN', key: 'submitted_at',  sortable: false },
   { title: 'AKSI',             key: 'actions',       sortable: false, align: 'center' },
 ]
 
 const approvalActionDialog = reactive({
-  open      : false,
-  action    : null,
-  koreksi   : null,
+  open: false,
+  action: null,
+  koreksi: null,
   keterangan: '',
-  error     : '',
-  loading   : false,
+  error: '',
+  loading: false,
 })
 
 function tipeBadgeColor(tipe) {
@@ -553,6 +649,7 @@ async function fetchPending() {
   pendingLoading.value = true
   try {
     const { data } = await api.get('/ap/ending-balance/koreksi/pending')
+
     pendingRows.value = data.data ?? []
   } finally {
     pendingLoading.value = false
@@ -575,6 +672,7 @@ function closeApprovalActionDialog() {
 async function confirmApprovalAction() {
   if (approvalActionDialog.action === 'reject' && !approvalActionDialog.keterangan.trim()) {
     approvalActionDialog.error = 'Keterangan wajib diisi saat menolak koreksi.'
+    
     return
   }
 
@@ -588,7 +686,7 @@ async function confirmApprovalAction() {
     await api.patch(url, { note: approvalActionDialog.keterangan.trim() || null })
     approvalActionDialog.open = false
     fetchPending()
-    doFetch(currentPage.value)
+    refreshList()
   } catch (e) {
     approvalActionDialog.error = e?.response?.data?.message ?? 'Terjadi kesalahan.'
   } finally {
@@ -597,10 +695,14 @@ async function confirmApprovalAction() {
 }
 
 onMounted(() => {
-  doFetch()
+  reset(filters)
   if (authStore.canApproveEndingBalanceAp) {
     fetchPending()
   }
+})
+
+onBeforeUnmount(() => {
+  abort()
 })
 </script>
 

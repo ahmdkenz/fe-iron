@@ -9,10 +9,19 @@
         { title: 'Detail', disabled: true },
       ]"
     >
-      <VBtn variant="text" prepend-icon="ri-arrow-left-line" :to="{ name: 'finance-rekonsiliasi-bank' }">Kembali</VBtn>
+      <VBtn
+        variant="text"
+        prepend-icon="ri-arrow-left-line"
+        :to="{ name: 'finance-rekonsiliasi-bank' }"
+      >
+        Kembali
+      </VBtn>
     </PageHeader>
 
-    <RekonsiliasiBankDetail :report-id="Number(route.params.id)" />
+    <RekonsiliasiBankDetail
+      :key="route.params.id"
+      :report-id="Number(route.params.id)"
+    />
   </div>
 </template>
 

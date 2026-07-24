@@ -14,7 +14,11 @@
             <span class="text-body-2 font-weight-medium text-no-wrap">
               {{ selected.length }} data dipilih
             </span>
-            <VDivider vertical style="height: 20px;" class="d-none d-sm-block" />
+            <VDivider
+              vertical
+              style="height: 20px;"
+              class="d-none d-sm-block"
+            />
             <AppActionButton
               action="hapus"
               size="small"

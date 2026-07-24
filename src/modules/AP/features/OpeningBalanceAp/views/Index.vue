@@ -87,16 +87,18 @@
       <BaseTable
         :headers="headers"
         :items="items"
-        :total="meta.total"
+        :total="total"
         :loading="loading"
-        :per-page="meta.per_page"
-        :page="meta.current_page"
+        pagination-mode="load-more"
+        :has-more="hasMore"
+        :loading-more="loadingMore"
+        :loaded-count="items.length"
         column-resize-key="ap-opening-balance-index"
         class="mt-2"
-        @update:options="onTableOptions"
+        @load-more="loadMore"
       >
         <template #item.no="{ index }">
-          {{ (meta.current_page - 1) * meta.per_page + index + 1 }}
+          {{ index + 1 }}
         </template>
         <template #item.no_tagihan="{ item }">
           <VChip
@@ -114,7 +116,9 @@
             color="warning"
             class="ms-1"
           >
-            <VTooltip activator="parent">Periode opening balance ini sudah dikunci di Ending Balance AP — tidak dapat diedit</VTooltip>
+            <VTooltip activator="parent">
+              Periode opening balance ini sudah dikunci di Ending Balance AP — tidak dapat diedit
+            </VTooltip>
           </VIcon>
         </template>
         <template #item.vendor_ap="{ item }">
@@ -259,10 +263,10 @@
 </template>
 
 <script setup>
-import { computed, reactive, ref } from 'vue'
+import { computed, onBeforeUnmount, reactive, ref } from 'vue'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useAuthStore } from '@/stores/auth.store'
-import { useCrud } from '@/composables/useCrud'
+import { useLoadMore } from '@/composables/useLoadMore.js'
 import { useFormatter } from '@/composables/useFormatter'
 import api from '@/utils/axios'
 import { readBlobError } from '@/utils/readBlobError'
@@ -275,7 +279,9 @@ const authStore = useAuthStore()
 const { showAlert, showSuccess, showError, resolveThemeTokens } = useSweetAlert()
 const { formatCurrency, formatDate } = useFormatter()
 
-const { items, loading, meta, params, fetchList } = useCrud('/ap/opening-balance')
+const {
+  items, loading, loadingMore, hasMore, total, params, reset, loadMore, abort,
+} = useLoadMore('/ap/opening-balance', { perPage: 25 })
 
 const dateDraft = reactive(getCurrentMonthRange())
 
@@ -357,8 +363,7 @@ function debouncedFetch() {
 }
 
 function doFetch() {
-  params.page = 1
-  fetchList()
+  reset()
   loadSummary()
 }
 
@@ -377,12 +382,6 @@ function resetFilters() {
   params.tanggal_dari = dateDraft.tanggal_dari
   params.tanggal_sampai = dateDraft.tanggal_sampai
   doFetch()
-}
-
-function onTableOptions({ page, itemsPerPage }) {
-  params.page = page
-  params.per_page = itemsPerPage
-  fetchList()
 }
 
 function activeFilterParams() {
@@ -451,6 +450,7 @@ async function printOpeningBalance(id) {
   try {
     const res = await api.get(`/ap/tagihan/${id}/print`, { responseType: 'blob', timeout: 300000 })
     const blobUrl = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }))
+
     window.open(blobUrl, '_blank')
     setTimeout(() => URL.revokeObjectURL(blobUrl), 30_000)
   } catch (err) {
@@ -551,4 +551,9 @@ async function confirmResubmit(item) {
 }
 
 doFetch()
+
+onBeforeUnmount(() => {
+  clearTimeout(debounceTimer)
+  abort()
+})
 </script>

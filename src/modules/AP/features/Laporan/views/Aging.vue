@@ -28,13 +28,24 @@
       </VBtn>
     </PageHeader>
 
-    <VCard elevation="0" border rounded="lg" class="mb-6">
+    <VCard
+      elevation="0"
+      border
+      rounded="lg"
+      class="mb-6"
+    >
       <VCardTitle class="px-5 pt-5 pb-0 text-subtitle-2 text-uppercase text-medium-emphasis font-weight-bold">
         Filter Laporan
       </VCardTitle>
       <VCardText class="pa-5">
-        <VRow align="center" dense>
-          <VCol cols="6" sm="auto">
+        <VRow
+          align="center"
+          dense
+        >
+          <VCol
+            cols="6"
+            sm="auto"
+          >
             <VTextField
               v-model="draft.as_of_date"
               label="Per Tanggal"
@@ -45,7 +56,10 @@
               style="min-width: 170px"
             />
           </VCol>
-          <VCol cols="12" sm="auto">
+          <VCol
+            cols="12"
+            sm="auto"
+          >
             <VAutocomplete
               v-model="draft.vendor_ap_id"
               label="Vendor"
@@ -60,10 +74,13 @@
               item-title="display_label"
               item-value="id"
               :loading="vendorLoading"
-              @focus="ensureVendorLoaded()"
+              @focus="ensureVendorLoaded"
             />
           </VCol>
-          <VCol cols="12" sm="auto">
+          <VCol
+            cols="12"
+            sm="auto"
+          >
             <VBtn
               color="primary"
               prepend-icon="ri-filter-3-line"
@@ -95,35 +112,63 @@
           <VCardText class="pa-3">
             <div class="text-caption font-weight-medium mb-1 d-flex align-center justify-space-between">
               <span>{{ bucket.label }}</span>
-              <VIcon v-if="bucketFilter === bucket.key" icon="ri-filter-fill" size="14" />
+              <VIcon
+                v-if="bucketFilter === bucket.key"
+                icon="ri-filter-fill"
+                size="14"
+              />
             </div>
             <div class="text-subtitle-1 font-weight-bold">
-              {{ formatCurrency(report.summary?.[bucket.key] ?? 0) }}
+              {{ formatCurrency(summary?.[bucket.key] ?? 0) }}
             </div>
           </VCardText>
         </VCard>
       </VCol>
     </VRow>
 
-    <div v-if="bucketFilter" class="d-flex align-center gap-2 mb-4">
-      <VChip color="primary" size="small" variant="tonal" prepend-icon="ri-filter-line">
+    <div
+      v-if="bucketFilter"
+      class="d-flex align-center gap-2 mb-4"
+    >
+      <VChip
+        color="primary"
+        size="small"
+        variant="tonal"
+        prepend-icon="ri-filter-line"
+      >
         Bucket: {{ bucketMeta(bucketFilter).label }}
       </VChip>
-      <VBtn size="small" variant="text" prepend-icon="ri-close-line" @click="resetBucket">
+      <VBtn
+        size="small"
+        variant="text"
+        prepend-icon="ri-close-line"
+        @click="resetBucket"
+      >
         Tampilkan semua
       </VBtn>
     </div>
 
-    <VCard elevation="0" border rounded="lg">
+    <VCard
+      elevation="0"
+      border
+      rounded="lg"
+    >
       <div class="d-flex flex-wrap align-center justify-space-between px-5 py-4 bg-var-theme-background">
         <div>
-          <h3 class="text-subtitle-1 font-weight-bold mb-1">Aging per Vendor</h3>
+          <h3 class="text-subtitle-1 font-weight-bold mb-1">
+            Aging per Vendor
+          </h3>
           <div class="text-caption text-medium-emphasis">
-            Per Tanggal: <strong>{{ report.as_of_date ?? '-' }}</strong>
+            Per Tanggal: <strong>{{ asOfDate ?? '-' }}</strong>
           </div>
         </div>
-        <VChip size="small" color="primary" variant="tonal" class="font-weight-medium">
-          Total: {{ report.meta?.total ?? report.rows?.length ?? 0 }} Vendor
+        <VChip
+          size="small"
+          color="primary"
+          variant="tonal"
+          class="font-weight-medium"
+        >
+          Total: {{ total }} Vendor
         </VChip>
       </div>
 
@@ -132,25 +177,31 @@
       <BaseTable
         v-model:expanded="expanded"
         :headers="headers"
-        :items="report.rows"
-        :total="report.meta?.total ?? 0"
+        :items="rows"
+        :total="total"
         :loading="loading"
-        :per-page="perPage"
-        :page="page"
+        pagination-mode="load-more"
+        :has-more="hasMore"
+        :loading-more="loadingMore"
+        :loaded-count="rows.length"
         show-expand
         item-value="vendor_id"
         hover
         wrap-text
-        @update:options="onTableOptions"
+        @load-more="loadMore"
         @click:row="onRowClick"
       >
         <template #item.no="{ index }">
-          <span class="text-medium-emphasis">{{ (page - 1) * perPage + index + 1 }}</span>
+          <span class="text-medium-emphasis">{{ index + 1 }}</span>
         </template>
 
         <template #item.nama_vendor="{ item }">
-          <div class="font-weight-medium text-high-emphasis">{{ item.nama_vendor }}</div>
-          <div class="text-caption text-medium-emphasis mt-1">{{ item.kode_vendor }}</div>
+          <div class="font-weight-medium text-high-emphasis">
+            {{ item.nama_vendor }}
+          </div>
+          <div class="text-caption text-medium-emphasis mt-1">
+            {{ item.kode_vendor }}
+          </div>
         </template>
 
         <template #item.pic_ap="{ item }">
@@ -186,45 +237,72 @@
 
         <template #expanded-row="{ item, columns }">
           <tr class="aging-detail-row">
-            <td :colspan="columns.length" class="pa-0">
+            <td
+              :colspan="columns.length"
+              class="pa-0"
+            >
               <div class="pa-4">
                 <div class="text-caption font-weight-medium mb-2">
                   Detail Tagihan — {{ item.nama_vendor }}
                   <span class="text-medium-emphasis">({{ displayDetails(item).length }} tagihan)</span>
                 </div>
                 <div class="aging-detail-scroll">
-                  <VTable density="compact" class="aging-detail-table">
+                  <VTable
+                    density="compact"
+                    class="aging-detail-table"
+                  >
                     <thead>
                       <tr>
                         <th>No Tagihan</th>
                         <th>Tgl Tagihan</th>
                         <th>Jatuh Tempo</th>
-                        <th class="text-end">Terlambat</th>
+                        <th class="text-end">
+                          Terlambat
+                        </th>
                         <th>Bucket</th>
-                        <th class="text-end">Sisa Tagihan</th>
+                        <th class="text-end">
+                          Sisa Tagihan
+                        </th>
                         <th>Status</th>
                         <th>Entitas</th>
                       </tr>
                     </thead>
                     <tbody>
-                      <tr v-for="d in displayDetails(item)" :key="d.tagihan_id">
-                        <td class="font-weight-medium">{{ d.no_tagihan }}</td>
+                      <tr
+                        v-for="d in displayDetails(item)"
+                        :key="d.tagihan_id"
+                      >
+                        <td class="font-weight-medium">
+                          {{ d.no_tagihan }}
+                        </td>
                         <td>{{ formatDate(d.tanggal_tagihan) ?? '-' }}</td>
                         <td>{{ formatDate(d.tanggal_jatuh_tempo) ?? '-' }}</td>
-                        <td class="text-end" :class="d.hari_terlambat > 0 ? 'text-error font-weight-medium' : ''">
+                        <td
+                          class="text-end"
+                          :class="d.hari_terlambat > 0 ? 'text-error font-weight-medium' : ''"
+                        >
                           {{ d.hari_terlambat }}
                         </td>
                         <td>
-                          <VChip :color="bucketMeta(d.bucket).color" size="x-small" variant="tonal">
+                          <VChip
+                            :color="bucketMeta(d.bucket).color"
+                            size="x-small"
+                            variant="tonal"
+                          >
                             {{ bucketMeta(d.bucket).label }}
                           </VChip>
                         </td>
-                        <td class="text-end font-weight-medium">{{ formatCurrency(d.sisa_tagihan) }}</td>
+                        <td class="text-end font-weight-medium">
+                          {{ formatCurrency(d.sisa_tagihan) }}
+                        </td>
                         <td>{{ d.status }}</td>
                         <td>{{ d.perusahaan ?? '-' }}</td>
                       </tr>
                       <tr v-if="!displayDetails(item).length">
-                        <td colspan="8" class="text-center text-medium-emphasis py-4">
+                        <td
+                          colspan="8"
+                          class="text-center text-medium-emphasis py-4"
+                        >
                           Tidak ada tagihan pada filter bucket ini.
                         </td>
                       </tr>
@@ -241,7 +319,7 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { useCrud } from '@/composables/useCrud'
 import { useLazyFetchAll } from '@/composables/useLazyFetchAll'
 import { useFormatter } from '@/composables/useFormatter'
@@ -251,10 +329,13 @@ const { formatCurrency, formatDate } = useFormatter()
 const { items: vendorList, loading: vendorLoading, fetchAll: fetchVendor } = useCrud('/ap/vendors')
 const { ensureLoaded: ensureVendorLoaded } = useLazyFetchAll(fetchVendor)
 
-const loading   = ref(false)
-const exporting = ref(false)
-const report    = reactive({ as_of_date: null, summary: null, rows: [], meta: null })
-const expanded  = ref([])
+const loading     = ref(false)
+const loadingMore = ref(false)
+const exporting   = ref(false)
+const rows        = ref([])
+const summary     = ref(null)
+const asOfDate    = ref(null)
+const expanded    = ref([])
 const bucketFilter = ref(null)
 
 const draft = reactive({
@@ -262,8 +343,18 @@ const draft = reactive({
   vendor_ap_id: null,
 })
 
-const page    = ref(1)
-const perPage = ref(15)
+// ─── Pagination "load more" (manual, bukan useLoadMore) ───────────────────
+// PENTING: sama seperti AgingReport.vue (AR) — endpoint ini mengembalikan
+// payload { as_of_date, summary, rows, meta } (bukan {data, meta} rata di
+// top-level), jadi useLoadMore generik tidak kompatibel langsung. State
+// load-more ditulis manual meniru API useLoadMore.
+const PER_PAGE = 15
+const page     = ref(1)
+const lastPage = ref(1)
+const total    = ref(0)
+const hasMore  = computed(() => page.value < lastPage.value)
+
+let controller = null
 
 const buckets = [
   { key: 'current',      label: 'Belum Jatuh Tempo', color: 'success' },
@@ -272,6 +363,7 @@ const buckets = [
   { key: 'hari_61_90',   label: '61–90 Hari',        color: 'deep-orange' },
   { key: 'hari_91_plus', label: '>90 Hari',          color: 'error' },
 ]
+
 const bucketByKey = Object.fromEntries(buckets.map(b => [b.key, b]))
 
 function bucketMeta(key) {
@@ -299,12 +391,12 @@ function displayDetails(item) {
 
 function toggleBucket(key) {
   bucketFilter.value = bucketFilter.value === key ? null : key
-  fetchReport({ resetPage: false })
+  doFetch()
 }
 
 function resetBucket() {
   bucketFilter.value = null
-  fetchReport({ resetPage: false })
+  doFetch()
 }
 
 function buildParams() {
@@ -313,12 +405,6 @@ function buildParams() {
   if (draft.vendor_ap_id) params.vendor_ap_id = draft.vendor_ap_id
 
   return params
-}
-
-function onTableOptions({ page: p, itemsPerPage }) {
-  page.value    = p
-  perPage.value = itemsPerPage
-  fetchReport({ resetPage: false })
 }
 
 function onRowClick(_event, { item } = {}) {
@@ -330,21 +416,62 @@ function onRowClick(_event, { item } = {}) {
     : [...expanded.value, key]
 }
 
-async function fetchReport({ resetPage = true } = {}) {
-  if (resetPage) page.value = 1
-  loading.value = true
+async function fetchReport({ append = false } = {}) {
+  controller?.abort()
+
+  const ctrl = new AbortController()
+
+  controller = ctrl
+
+  const nextPage = append ? page.value + 1 : 1
+
+  if (append) loadingMore.value = true
+  else loading.value = true
+
   try {
-    const params = { ...buildParams(), page: page.value, per_page: perPage.value }
-    const { data } = await api.get('/ap/laporan/aging', { params })
-    Object.assign(report, data.data)
-    expanded.value = []
+    const params   = { ...buildParams(), page: nextPage, per_page: PER_PAGE }
+    const { data } = await api.get('/ap/laporan/aging', { params, signal: ctrl.signal })
+    const payload  = data.data ?? {}
+    const newRows  = payload.rows ?? []
+
+    if (append) {
+      const existingKeys = new Set(rows.value.map(r => r.vendor_id))
+
+      rows.value = [...rows.value, ...newRows.filter(r => !existingKeys.has(r.vendor_id))]
+    } else {
+      rows.value     = newRows
+      expanded.value = []
+    }
+
+    summary.value  = payload.summary ?? summary.value
+    asOfDate.value = payload.as_of_date ?? asOfDate.value
+    page.value     = payload.meta?.current_page ?? nextPage
+    lastPage.value = payload.meta?.last_page ?? 1
+    total.value    = payload.meta?.total ?? newRows.length
+  } catch (err) {
+    if (err.code === 'ERR_CANCELED') return
+
+    if (!append) rows.value = []
   } finally {
-    loading.value = false
+    if (controller === ctrl) controller = null
+    if (append) loadingMore.value = false
+    else loading.value = false
   }
 }
 
 function doFetch() {
-  fetchReport({ resetPage: true })
+  return fetchReport({ append: false })
+}
+
+function loadMore() {
+  if (!hasMore.value || loading.value || loadingMore.value) return
+
+  return fetchReport({ append: true })
+}
+
+function abort() {
+  controller?.abort()
+  controller = null
 }
 
 async function doExport() {
@@ -354,12 +481,15 @@ async function doExport() {
       params: buildParams(),
       responseType: 'blob',
     })
+
     const url  = URL.createObjectURL(new Blob([response.data], {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     }))
+
     const link = document.createElement('a')
+
     link.href     = url
-    link.download = `aging-hutang-${report.as_of_date ?? draft.as_of_date}.xlsx`
+    link.download = `aging-hutang-${asOfDate.value ?? draft.as_of_date}.xlsx`
     link.click()
     URL.revokeObjectURL(url)
   } finally {
@@ -367,7 +497,11 @@ async function doExport() {
   }
 }
 
-onMounted(() => fetchReport())
+onMounted(doFetch)
+
+onBeforeUnmount(() => {
+  abort()
+})
 </script>
 
 <style scoped>

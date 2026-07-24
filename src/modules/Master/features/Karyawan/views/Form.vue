@@ -88,7 +88,7 @@
                 :error-messages="errors.perusahaan_id"
                 :loading="entitasLoading"
                 clearable
-                @focus="ensureEntitasLoaded()"
+                @focus="ensureEntitasLoaded"
               >
                 <template #item="{ props: p, item }">
                   <VListItem

@@ -1,29 +1,55 @@
 <template>
   <div>
     <!-- Info Header -->
-    <VCard class="mb-4" v-if="report.id">
+    <VCard
+      v-if="report.id"
+      class="mb-4"
+    >
       <VCardText>
         <div class="d-flex flex-wrap gap-4 align-center">
-          <VChip v-if="report.bank_type && report.bank_type !== 'GENERAL'" :color="bankColor(report.bank_type)" variant="tonal" label>
+          <VChip
+            v-if="report.bank_type && report.bank_type !== 'GENERAL'"
+            :color="bankColor(report.bank_type)"
+            variant="tonal"
+            label
+          >
             {{ report.bank_type }}
           </VChip>
           <div>
-            <div class="text-caption text-medium-emphasis">Periode</div>
-            <div class="text-body-2 font-weight-medium">{{ report.periode_awal }} — {{ report.periode_akhir }}</div>
+            <div class="text-caption text-medium-emphasis">
+              Periode
+            </div>
+            <div class="text-body-2 font-weight-medium">
+              {{ report.periode_awal }} — {{ report.periode_akhir }}
+            </div>
           </div>
           <div>
-            <div class="text-caption text-medium-emphasis">File</div>
-            <div class="text-body-2">{{ report.nama_file }}</div>
+            <div class="text-caption text-medium-emphasis">
+              File
+            </div>
+            <div class="text-body-2">
+              {{ report.nama_file }}
+            </div>
           </div>
           <div>
-            <div class="text-caption text-medium-emphasis">Diupload oleh</div>
-            <div class="text-body-2">{{ report.uploaded_by }}</div>
+            <div class="text-caption text-medium-emphasis">
+              Diupload oleh
+            </div>
+            <div class="text-body-2">
+              {{ report.uploaded_by }}
+            </div>
           </div>
           <VSpacer />
           <div class="text-caption text-medium-emphasis text-right">
             {{ formatDateTime(report.created_at) }}
           </div>
-          <VBtn variant="text" color="secondary" size="small" prepend-icon="ri-close-line" @click="$emit('close')">
+          <VBtn
+            variant="text"
+            color="secondary"
+            size="small"
+            prepend-icon="ri-close-line"
+            @click="$emit('close')"
+          >
             Tutup Detail
           </VBtn>
         </div>
@@ -32,35 +58,63 @@
 
     <!-- Summary Cards -->
     <VRow class="mb-4">
-      <VCol cols="6" sm="3">
+      <VCol
+        cols="6"
+        sm="3"
+      >
         <VCard>
           <VCardText class="text-center">
-            <div class="text-caption text-medium-emphasis">Total Transaksi</div>
-            <div class="text-h5 font-weight-bold">{{ report.total_transaksi ?? 0 }}</div>
+            <div class="text-caption text-medium-emphasis">
+              Total Transaksi
+            </div>
+            <div class="text-h5 font-weight-bold">
+              {{ report.total_transaksi ?? 0 }}
+            </div>
           </VCardText>
         </VCard>
       </VCol>
-      <VCol cols="6" sm="3">
+      <VCol
+        cols="6"
+        sm="3"
+      >
         <VCard>
           <VCardText class="text-center">
-            <div class="text-caption text-medium-emphasis">MATCHED</div>
-            <div class="text-h5 font-weight-bold text-success">{{ report.jumlah_matched ?? 0 }}</div>
+            <div class="text-caption text-medium-emphasis">
+              MATCHED
+            </div>
+            <div class="text-h5 font-weight-bold text-success">
+              {{ report.jumlah_matched ?? 0 }}
+            </div>
           </VCardText>
         </VCard>
       </VCol>
-      <VCol cols="6" sm="3">
+      <VCol
+        cols="6"
+        sm="3"
+      >
         <VCard>
           <VCardText class="text-center">
-            <div class="text-caption text-medium-emphasis">UNMATCHED</div>
-            <div class="text-h5 font-weight-bold text-error">{{ report.jumlah_unmatched ?? 0 }}</div>
+            <div class="text-caption text-medium-emphasis">
+              UNMATCHED
+            </div>
+            <div class="text-h5 font-weight-bold text-error">
+              {{ report.jumlah_unmatched ?? 0 }}
+            </div>
           </VCardText>
         </VCard>
       </VCol>
-      <VCol cols="6" sm="3">
+      <VCol
+        cols="6"
+        sm="3"
+      >
         <VCard>
           <VCardText class="text-center">
-            <div class="text-caption text-medium-emphasis">Total Kredit</div>
-            <div class="text-h5 font-weight-bold text-primary">{{ formatCurrency(report.total_kredit ?? 0) }}</div>
+            <div class="text-caption text-medium-emphasis">
+              Total Kredit
+            </div>
+            <div class="text-h5 font-weight-bold text-primary">
+              {{ formatCurrency(report.total_kredit ?? 0) }}
+            </div>
           </VCardText>
         </VCard>
       </VCol>
@@ -69,106 +123,234 @@
     <!-- Filter Tabs + Table -->
     <VCard>
       <VCardText class="pb-0">
-        <VBtnToggle :model-value="filterStatus" @update:model-value="onFilterChange" variant="outlined" mandatory divided density="compact">
-          <VBtn value="SEMUA"     size="small" style="min-width: 80px">Semua</VBtn>
-          <VBtn value="MATCHED"   size="small" style="min-width: 90px"><span class="text-success">MATCHED</span></VBtn>
-          <VBtn value="UNMATCHED" size="small" style="min-width: 105px"><span class="text-error">UNMATCHED</span></VBtn>
+        <VBtnToggle
+          :model-value="filterStatus"
+          variant="outlined"
+          mandatory
+          divided
+          density="compact"
+          @update:model-value="onFilterChange"
+        >
+          <VBtn
+            value="SEMUA"
+            size="small"
+            style="min-width: 80px"
+          >
+            Semua
+          </VBtn>
+          <VBtn
+            value="MATCHED"
+            size="small"
+            style="min-width: 90px"
+          >
+            <span class="text-success">MATCHED</span>
+          </VBtn>
+          <VBtn
+            value="UNMATCHED"
+            size="small"
+            style="min-width: 105px"
+          >
+            <span class="text-error">UNMATCHED</span>
+          </VBtn>
         </VBtnToggle>
       </VCardText>
       <VDivider class="mt-3" />
       <BaseTable
         :headers="headers"
         :items="rows"
-        :total="meta.total"
+        :total="total"
         :loading="loading"
-        :per-page="perPage"
-        :page="page"
-        @update:options="onTableOptions"
+        pagination-mode="load-more"
+        :has-more="hasMore"
+        :loading-more="loadingMore"
+        :loaded-count="rows.length"
+        item-value="id"
+        @load-more="loadMore"
       >
         <template #item.no="{ index }">
-          {{ (page - 1) * perPage + index + 1 }}
+          {{ index + 1 }}
         </template>
         <template #item.debit="{ item }">
-          <span v-if="item.debit > 0" class="text-warning font-weight-medium">{{ formatCurrency(item.debit) }}</span>
-          <span v-else class="text-disabled">-</span>
+          <span
+            v-if="item.debit > 0"
+            class="text-warning font-weight-medium"
+          >{{ formatCurrency(item.debit) }}</span>
+          <span
+            v-else
+            class="text-disabled"
+          >-</span>
         </template>
         <template #item.kredit="{ item }">
-          <span v-if="item.kredit > 0" class="text-success font-weight-medium">{{ formatCurrency(item.kredit) }}</span>
-          <span v-else class="text-disabled">-</span>
+          <span
+            v-if="item.kredit > 0"
+            class="text-success font-weight-medium"
+          >{{ formatCurrency(item.kredit) }}</span>
+          <span
+            v-else
+            class="text-disabled"
+          >-</span>
         </template>
         <template #item.saldo="{ item }">
           {{ formatCurrency(item.saldo) }}
         </template>
         <template #item.status_cocok="{ item }">
-          <VChip :color="statusColor(item.status_cocok)" size="x-small" variant="tonal" label>
+          <VChip
+            :color="statusColor(item.status_cocok)"
+            size="x-small"
+            variant="tonal"
+            label
+          >
             {{ item.status_cocok }}
           </VChip>
         </template>
         <template #item.no_referensi="{ item }">
-          <span v-if="item.no_referensi" class="text-caption font-weight-medium text-primary">
+          <span
+            v-if="item.no_referensi"
+            class="text-caption font-weight-medium text-primary"
+          >
             {{ item.no_referensi }}
           </span>
-          <span v-else class="text-disabled">-</span>
+          <span
+            v-else
+            class="text-disabled"
+          >-</span>
         </template>
 
         <template #item.pembayaran="{ item }">
-          <div v-if="item.pembayaran" class="text-caption">
-            <div class="font-weight-medium">{{ item.pembayaran.no_referensi || '-' }}</div>
-            <div class="text-medium-emphasis">{{ formatDate(item.pembayaran.tanggal_pembayaran) }}</div>
-            <div class="text-medium-emphasis">{{ item.pembayaran.klien ?? item.pembayaran.vendor }}</div>
-            <div v-if="item.pembayaran.jumlah_tagihan > 1" class="text-medium-emphasis">
+          <div
+            v-if="item.pembayaran"
+            class="text-caption"
+          >
+            <div class="font-weight-medium">
+              {{ item.pembayaran.no_referensi || '-' }}
+            </div>
+            <div class="text-medium-emphasis">
+              {{ formatDate(item.pembayaran.tanggal_pembayaran) }}
+            </div>
+            <div class="text-medium-emphasis">
+              {{ item.pembayaran.klien ?? item.pembayaran.vendor }}
+            </div>
+            <div
+              v-if="item.pembayaran.jumlah_tagihan > 1"
+              class="text-medium-emphasis"
+            >
               {{ item.pembayaran.jumlah_tagihan }} tagihan
             </div>
           </div>
-          <span v-else class="text-disabled">-</span>
+          <span
+            v-else
+            class="text-disabled"
+          >-</span>
         </template>
 
         <template #item.selisih_bank="{ item }">
           <template v-if="item.selisih_bank !== null && item.selisih_bank !== undefined">
-            <VChip v-if="item.selisih_bank === 0" color="success" size="x-small" variant="tonal">
+            <VChip
+              v-if="item.selisih_bank === 0"
+              color="success"
+              size="x-small"
+              variant="tonal"
+            >
               Rp 0
             </VChip>
-            <span v-else :class="item.selisih_bank > 0 ? 'text-error font-weight-medium' : 'text-warning font-weight-medium'">
+            <span
+              v-else
+              :class="item.selisih_bank > 0 ? 'text-error font-weight-medium' : 'text-warning font-weight-medium'"
+            >
               {{ item.selisih_bank > 0 ? '+' : '-' }}{{ formatCurrency(Math.abs(item.selisih_bank)) }}
             </span>
           </template>
-          <span v-else class="text-disabled">-</span>
+          <span
+            v-else
+            class="text-disabled"
+          >-</span>
         </template>
 
         <template #item.matched_by="{ item }">
-          <span v-if="item.matched_by" class="text-caption font-weight-medium">{{ item.matched_by }}</span>
-          <span v-else-if="item.status_cocok === 'MATCHED'" class="text-caption font-weight-medium">{{ report.uploaded_by }}</span>
-          <span v-else class="text-disabled">-</span>
+          <span
+            v-if="item.matched_by"
+            class="text-caption font-weight-medium"
+          >{{ item.matched_by }}</span>
+          <span
+            v-else-if="item.status_cocok === 'MATCHED'"
+            class="text-caption font-weight-medium"
+          >{{ report.uploaded_by }}</span>
+          <span
+            v-else
+            class="text-disabled"
+          >-</span>
         </template>
 
         <template #item.kelebihan="{ item }">
-          <div v-if="item.kelebihan_bayar?.sisa > 0" class="d-flex flex-column align-start gap-1">
+          <div
+            v-if="item.kelebihan_bayar?.sisa > 0"
+            class="d-flex flex-column align-start gap-1"
+          >
             <span class="text-caption text-error font-weight-medium">
               {{ formatCurrency(item.kelebihan_bayar.sisa) }}
             </span>
-            <AppActionButton v-if="item.can_manage_match" action="gunakan" label="Alokasikan / PDM" size="x-small" @click="openKelebihanDialog(item)" />
+            <AppActionButton
+              v-if="item.can_manage_match"
+              action="gunakan"
+              label="Alokasikan / PDM"
+              size="x-small"
+              @click="openKelebihanDialog(item)"
+            />
           </div>
-          <div v-else-if="item.kelebihan_bayar?.total > 0" class="d-flex flex-column align-start gap-1">
-            <VChip v-if="item.kelebihan_bayar?.pdm?.status === 'AKTIF'" size="x-small" color="deep-purple" variant="tonal">
+          <div
+            v-else-if="item.kelebihan_bayar?.total > 0"
+            class="d-flex flex-column align-start gap-1"
+          >
+            <VChip
+              v-if="item.kelebihan_bayar?.pdm?.status === 'AKTIF'"
+              size="x-small"
+              color="deep-purple"
+              variant="tonal"
+            >
               PDM
             </VChip>
-            <VChip v-else size="x-small" color="success" variant="tonal">
+            <VChip
+              v-else
+              size="x-small"
+              color="success"
+              variant="tonal"
+            >
               Teralokasi
             </VChip>
           </div>
-          <span v-else class="text-disabled">-</span>
+          <span
+            v-else
+            class="text-disabled"
+          >-</span>
         </template>
 
         <template #item.aksi="{ item }">
           <div class="d-flex gap-1 align-center flex-wrap">
             <template v-if="(item.status_cocok === 'UNMATCHED' || item.status_cocok === 'POSSIBLE') && canProcessRow(item)">
-              <AppActionButton action="cocokkan" size="x-small" @click="openMatchDialog(item)" />
-              <VBtn size="x-small" variant="text" color="grey" :loading="abaikanLoading === item.id" @click="doAbaikan(item)">
+              <AppActionButton
+                action="cocokkan"
+                size="x-small"
+                @click="openMatchDialog(item)"
+              />
+              <VBtn
+                size="x-small"
+                variant="text"
+                color="grey"
+                :loading="abaikanLoading === item.id"
+                @click="doAbaikan(item)"
+              >
                 Abaikan
               </VBtn>
             </template>
             <template v-else-if="item.status_cocok === 'MATCHED'">
-              <AppActionButton v-if="item.can_manage_match" action="batalkan" icon="ri-link-unlink" size="x-small" :loading="unmatchLoading === item.id" @click="openUnmatchDialog(item)" />
+              <AppActionButton
+                v-if="item.can_manage_match"
+                action="batalkan"
+                icon="ri-link-unlink"
+                size="x-small"
+                :loading="unmatchLoading === item.id"
+                @click="openUnmatchDialog(item)"
+              />
               <AppActionButton
                 v-if="item.can_manage_match && item.status_posting_2 !== 'POSTED'"
                 action="custom"
@@ -180,11 +362,25 @@
               >
                 Posting
               </AppActionButton>
-              <VChip v-else-if="item.status_posting_2 === 'POSTED'" color="success" size="x-small" variant="tonal" label>
-                <VIcon start size="12">ri-check-line</VIcon>Sudah Posting
+              <VChip
+                v-else-if="item.status_posting_2 === 'POSTED'"
+                color="success"
+                size="x-small"
+                variant="tonal"
+                label
+              >
+                <VIcon
+                  start
+                  size="12"
+                >
+                  ri-check-line
+                </VIcon>Sudah Posting
               </VChip>
             </template>
-            <span v-else class="text-disabled">-</span>
+            <span
+              v-else
+              class="text-disabled"
+            >-</span>
           </div>
         </template>
       </BaseTable>
@@ -192,9 +388,15 @@
 
 
     <!-- ── Dialog: Konfirmasi Batalkan Cocok ── -->
-    <VDialog v-model="unmatchDialog" max-width="400" persistent>
+    <VDialog
+      v-model="unmatchDialog"
+      max-width="400"
+      persistent
+    >
       <VCard>
-        <VCardTitle class="pa-4 pb-2"><span class="text-h6">Batalkan Cocok Transaksi</span></VCardTitle>
+        <VCardTitle class="pa-4 pb-2">
+          <span class="text-h6">Batalkan Cocok Transaksi</span>
+        </VCardTitle>
         <VDivider />
         <VCardText class="pa-4">
           <p class="text-body-2 mb-0">
@@ -205,26 +407,57 @@
         <VDivider />
         <VCardActions class="pa-4">
           <VSpacer />
-          <AppActionButton action="batalkan" @click="unmatchDialog = false" />
-          <AppActionButton action="custom" color="error" :loading="unmatchSaving" @click="doUnmatch">Ya, Batalkan</AppActionButton>
+          <AppActionButton
+            action="batalkan"
+            @click="unmatchDialog = false"
+          />
+          <AppActionButton
+            action="custom"
+            color="error"
+            :loading="unmatchSaving"
+            @click="doUnmatch"
+          >
+            Ya, Batalkan
+          </AppActionButton>
         </VCardActions>
       </VCard>
     </VDialog>
 
     <!-- ── Dialog: Konfirmasi Posting Jurnal ── -->
-    <VDialog v-model="postingDialog" max-width="420" persistent>
+    <VDialog
+      v-model="postingDialog"
+      max-width="420"
+      persistent
+    >
       <VCard>
-        <VCardTitle class="pa-4 pb-2"><span class="text-h6">Konfirmasi Posting</span></VCardTitle>
+        <VCardTitle class="pa-4 pb-2">
+          <span class="text-h6">Konfirmasi Posting</span>
+        </VCardTitle>
         <VDivider />
         <VCardText class="pa-4">
-          <p class="text-body-2 mb-1">Posting transaksi berikut ke jurnal Rekening Koran?</p>
-          <p class="text-body-2 font-weight-bold mb-0">{{ postingTarget?.no_referensi ?? '-' }}</p>
+          <p class="text-body-2 mb-1">
+            Posting transaksi berikut ke jurnal Rekening Koran?
+          </p>
+          <p class="text-body-2 font-weight-bold mb-0">
+            {{ postingTarget?.no_referensi ?? '-' }}
+          </p>
         </VCardText>
         <VDivider />
         <VCardActions class="pa-4">
           <VSpacer />
-          <AppActionButton action="batalkan" @click="postingDialog = false" />
-          <AppActionButton action="custom" color="success" icon="ri-checkbox-circle-line" :loading="postingSaving" @click="doPosting">Ya, Posting</AppActionButton>
+          <AppActionButton
+            action="batalkan"
+            @click="postingDialog = false"
+          />
+          <AppActionButton
+            action="custom"
+            color="success"
+            icon="ri-checkbox-circle-line"
+            :loading="postingSaving"
+            @click="doPosting"
+          >
+            Ya, Posting
+          </AppActionButton>
         </VCardActions>
       </VCard>
     </VDialog>
@@ -250,33 +483,31 @@
       :item="kelebihanItem"
       @changed="onKelebihanChanged"
     />
-
   </div>
 </template>
 
 <script setup>
-import { defineAsyncComponent, reactive, ref, watch } from 'vue'
+import { defineAsyncComponent, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
+import { useLoadMore } from '@/composables/useLoadMore.js'
 import { useFormatter } from '@/composables/useFormatter'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useAuthStore } from '@/stores/auth.store'
 import api from '@/utils/axios'
-
-const MatchDialog     = defineAsyncComponent(() => import('../components/MatchDialog.vue'))
-const ApMatchDialog   = defineAsyncComponent(() => import('../components/ApMatchDialog.vue'))
-const KelebihanDialog = defineAsyncComponent(() => import('../components/KelebihanDialog.vue'))
-
-const authStore = useAuthStore()
 
 const props = defineProps({
   reportId: { type: [Number, String], required: true },
 })
 
 const emit = defineEmits(['close'])
+const MatchDialog     = defineAsyncComponent(() => import('../components/MatchDialog.vue'))
+const ApMatchDialog   = defineAsyncComponent(() => import('../components/ApMatchDialog.vue'))
+const KelebihanDialog = defineAsyncComponent(() => import('../components/KelebihanDialog.vue'))
+
+const authStore = useAuthStore()
 
 const { formatCurrency, formatDate, formatDateTime } = useFormatter()
 const { showSuccess, showError } = useSweetAlert()
 
-const loading = ref(false)
 const report  = reactive({
   id: null, bank_type: null, nama_file: null,
   periode_awal: null, periode_akhir: null,
@@ -285,15 +516,22 @@ const report  = reactive({
   uploaded_by: null, created_at: null,
 })
 
-const rows = ref([])
-const meta = reactive({ current_page: 1, per_page: 25, total: 0, last_page: 1 })
+const filterStatus = ref('SEMUA')
 
-const filterStatus    = ref('SEMUA')
-const page            = ref(1)
-const perPage         = ref(25)
+// Baris transaksi bank (load-more, append per halaman). Endpoint diikat ke
+// reportId saat setup — parent (Index.vue/Show.vue) wajib me-render komponen
+// ini dengan `:key="reportId"` supaya berpindah laporan memaksa remount alih-
+// alih reactive prop update (useLoadMore menutup endpoint sebagai string statis).
+const {
+  items: rows, loading, loadingMore, hasMore, total,
+  reset, loadMore, abort,
+} = useLoadMore(`/finance/rekonsiliasi-bank/${props.reportId}/details`, {
+  perPage: 15,
+  params: { status: 'SEMUA' },
+})
+
 const abaikanLoading  = ref(null)
 const unmatchLoading  = ref(null)
-let fetchRowsAbort    = null
 
 // ── Match dialog — komponen async MatchDialog (AR) / ApMatchDialog (AP) ──
 const matchDialog   = ref(false)
@@ -317,18 +555,11 @@ const postingSaving    = ref(false)
 
 function onFilterChange(status) {
   filterStatus.value = status
-  page.value = 1
-  fetchRows()
+  reset({ status })
 }
 
-function onTableOptions({ page: p, itemsPerPage }) {
-  page.value    = p
-  perPage.value = itemsPerPage
-  fetchRows()
-}
-
-const bankColor   = (t) => ({ BCA: 'info', MANDIRI: 'warning', BNI: 'error', BRI: 'primary', CIMB: 'deep-purple', BSI: 'green' }[t] ?? 'secondary')
-const statusColor = (s) => ({ MATCHED: 'success', POSSIBLE: 'warning', UNMATCHED: 'error', DIABAIKAN: 'grey' }[s] ?? 'grey')
+const bankColor   = t => ({ BCA: 'info', MANDIRI: 'warning', BNI: 'error', BRI: 'primary', CIMB: 'deep-purple', BSI: 'green' }[t] ?? 'secondary')
+const statusColor = s => ({ MATCHED: 'success', POSSIBLE: 'warning', UNMATCHED: 'error', DIABAIKAN: 'grey' }[s] ?? 'grey')
 
 const headers = [
   { title: 'No',             key: 'no',            sortable: false, width: '50px' },
@@ -341,42 +572,27 @@ const headers = [
   { title: 'Status',         key: 'status_cocok',  sortable: false, width: '110px' },
   { title: 'Cocok Dengan',   key: 'pembayaran',    sortable: false },
   { title: 'Selisih',        key: 'selisih_bank',  sortable: false, width: '90px', align: 'center' },
-  { title: 'Dicocokkan Oleh',key: 'matched_by',    sortable: false, width: '130px' },
+  { title: 'Dicocokkan Oleh', key: 'matched_by',    sortable: false, width: '130px' },
   { title: 'Kelebihan',      key: 'kelebihan',     sortable: false, width: '120px' },
   { title: 'Aksi',           key: 'aksi',          sortable: false, width: '160px' },
 ]
 
-async function fetchRows() {
-  fetchRowsAbort?.abort()
-  const controller = new AbortController()
-  fetchRowsAbort = controller
-  loading.value = true
-  try {
-    const { data } = await api.get(`/finance/rekonsiliasi-bank/${props.reportId}/details`, {
-      params: { status: filterStatus.value, page: page.value, per_page: perPage.value },
-      signal: controller.signal,
-    })
-    Object.assign(report, data.data.header)
-    rows.value = data.data.rows
-    Object.assign(meta, data.data.meta)
-  } catch (err) {
-    if (err?.code === 'ERR_CANCELED' || err?.name === 'CanceledError') return
-    throw err
-  } finally {
-    if (fetchRowsAbort === controller) {
-      loading.value    = false
-      fetchRowsAbort = null
-    }
-  }
+// Info ringkasan laporan (header) dimuat terpisah dari daftar baris ber-
+// paginasi — endpoint /details sekarang hanya mengembalikan {data, meta}
+// murni supaya kompatibel dengan kontrak useLoadMore.
+async function fetchHeader() {
+  const { data } = await api.get(`/finance/rekonsiliasi-bank/${props.reportId}/header`)
+
+  Object.assign(report, data.data)
 }
 
-function loadReport() {
-  filterStatus.value = 'SEMUA'
-  page.value = 1
-  fetchRows()
+// Refresh setelah aksi yang mengubah status baris (match/unmatch/abaikan/
+// posting/kelebihan): reset() memuat ulang dari halaman 1 dengan filter
+// status yang sedang aktif dipertahankan; header ikut disegarkan karena
+// jumlah_matched/jumlah_unmatched pada ringkasan bisa berubah.
+function refreshAfterRowChange() {
+  return Promise.all([reset({ status: filterStatus.value }), fetchHeader()])
 }
-
-watch(() => props.reportId, loadReport, { immediate: true })
 
 // PIC AR murni cuma boleh proses baris kredit (invoice/PDM AR), PIC AP murni
 // cuma boleh proses baris debit (Payment Voucher AP). Admin/Manager/Supervisor
@@ -394,7 +610,7 @@ async function doAbaikan(item) {
   abaikanLoading.value = item.id
   try {
     await api.patch(`/finance/rekonsiliasi-bank/detail/${item.id}/abaikan`)
-    await fetchRows()
+    await refreshAfterRowChange()
   } finally {
     abaikanLoading.value = null
   }
@@ -414,11 +630,11 @@ function openMatchDialog(item) {
 
 async function onMatched() {
   showSuccess('Pembayaran berhasil dicatat.')
-  await fetchRows()
+  await refreshAfterRowChange()
 }
 
 async function onMatchConnectionError(message) {
-  await fetchRows()
+  await refreshAfterRowChange()
   showError(message)
 }
 
@@ -437,14 +653,14 @@ async function doUnmatch() {
     unmatchDialog.value  = false
     unmatchItem.value    = null
     showSuccess('Pencocokan berhasil dibatalkan.')
-    await fetchRows()
+    await refreshAfterRowChange()
   } catch (err) {
     unmatchDialog.value = false
     unmatchItem.value   = null
     if (!err?.response || err?.code === 'ECONNABORTED') {
       // Koneksi terputus/timeout: server mungkin sudah memproses. Muat ulang data
       // otoritatif agar status baris sesuai kondisi sebenarnya.
-      await fetchRows()
+      await refreshAfterRowChange()
       showError('Koneksi terputus. Data telah dimuat ulang — silakan periksa status transaksi.')
     } else {
       showError(err?.response?.data?.message ?? 'Gagal membatalkan pencocokan, coba lagi.')
@@ -469,7 +685,7 @@ async function doPosting() {
       status_posting_2: 'POSTED',
     })
     postingDialog.value = false
-    await fetchRows()
+    await refreshAfterRowChange()
   } finally {
     postingSaving.value    = false
     postingLoadingId.value = null
@@ -483,8 +699,18 @@ function openKelebihanDialog(item) {
 }
 
 async function onKelebihanChanged(itemId) {
-  await fetchRows()
+  await refreshAfterRowChange()
+
   const updatedItem = rows.value.find(d => d.id === itemId)
   if (updatedItem) kelebihanItem.value = updatedItem
 }
+
+onMounted(() => {
+  fetchHeader()
+  reset({ status: filterStatus.value })
+})
+
+onBeforeUnmount(() => {
+  abort()
+})
 </script>

@@ -6,7 +6,10 @@
   >
     <VCard class="overflow-hidden">
       <!-- Gradient band -->
-      <div :class="['action-band', action === 'approve' ? 'action-band--success' : 'action-band--error']">
+      <div
+        class="action-band"
+        :class="[action === 'approve' ? 'action-band--success' : 'action-band--error']"
+      >
         <VBtn
           icon
           variant="text"
@@ -14,7 +17,11 @@
           class="action-band-close"
           @click="$emit('close')"
         >
-          <VIcon icon="ri-close-line" size="20" color="white" />
+          <VIcon
+            icon="ri-close-line"
+            size="20"
+            color="white"
+          />
         </VBtn>
       </div>
 
@@ -48,21 +55,33 @@
         <div class="info-box rounded-lg pa-4 mb-4">
           <div class="d-flex justify-space-between align-center mb-3">
             <span class="info-label d-flex align-center gap-1">
-              <VIcon icon="ri-building-line" size="15" />
+              <VIcon
+                icon="ri-building-line"
+                size="15"
+              />
               Klien
             </span>
             <span class="text-body-2 font-weight-semibold">{{ koreksi?.nama_klien }}</span>
           </div>
-          <div v-if="koreksi?.no_invoice" class="d-flex justify-space-between align-center mb-3">
+          <div
+            v-if="koreksi?.no_invoice"
+            class="d-flex justify-space-between align-center mb-3"
+          >
             <span class="info-label d-flex align-center gap-1">
-              <VIcon icon="ri-file-list-3-line" size="15" />
+              <VIcon
+                icon="ri-file-list-3-line"
+                size="15"
+              />
               Invoice Tertaut
             </span>
             <span class="text-body-2 font-weight-semibold">{{ koreksi?.no_invoice }}</span>
           </div>
           <div class="d-flex justify-space-between align-center mb-3">
             <span class="info-label d-flex align-center gap-1">
-              <VIcon icon="ri-money-dollar-circle-line" size="15" />
+              <VIcon
+                icon="ri-money-dollar-circle-line"
+                size="15"
+              />
               Nilai Koreksi
             </span>
             <span
@@ -74,21 +93,39 @@
           </div>
           <div class="d-flex justify-space-between align-center mb-3">
             <span class="info-label d-flex align-center gap-1">
-              <VIcon icon="ri-price-tag-3-line" size="15" />
+              <VIcon
+                icon="ri-price-tag-3-line"
+                size="15"
+              />
               Tipe
             </span>
-            <VChip size="x-small" :color="tipeBadgeColor(koreksi?.tipe)" label>{{ tipeLabel(koreksi?.tipe) }}</VChip>
+            <VChip
+              size="x-small"
+              :color="tipeBadgeColor(koreksi?.tipe)"
+              label
+            >
+              {{ tipeLabel(koreksi?.tipe) }}
+            </VChip>
           </div>
-          <div v-if="koreksi?.no_dokumen" class="d-flex justify-space-between align-center mb-3">
+          <div
+            v-if="koreksi?.no_dokumen"
+            class="d-flex justify-space-between align-center mb-3"
+          >
             <span class="info-label d-flex align-center gap-1">
-              <VIcon icon="ri-file-text-line" size="15" />
+              <VIcon
+                icon="ri-file-text-line"
+                size="15"
+              />
               No Dokumen
             </span>
             <span class="text-body-2 font-weight-semibold">{{ koreksi?.no_dokumen }}</span>
           </div>
           <div class="d-flex justify-space-between align-start gap-4">
             <span class="info-label d-flex align-center gap-1 flex-shrink-0">
-              <VIcon icon="ri-chat-1-line" size="15" />
+              <VIcon
+                icon="ri-chat-1-line"
+                size="15"
+              />
               Alasan
             </span>
             <span class="text-body-2 text-right">{{ koreksi?.alasan_koreksi ?? '-' }}</span>
@@ -114,7 +151,10 @@
 
       <VDivider />
       <VCardActions class="pa-4 justify-end gap-2">
-        <AppActionButton action="batalkan" @click="$emit('close')" />
+        <AppActionButton
+          action="batalkan"
+          @click="$emit('close')"
+        />
         <AppActionButton
           action="custom"
           :color="action === 'approve' ? 'success' : 'error'"

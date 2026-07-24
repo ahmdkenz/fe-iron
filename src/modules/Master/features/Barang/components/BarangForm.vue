@@ -92,9 +92,17 @@
           >
             <template #item="{ props: p, item }">
               <VListItem v-bind="p">
-                <template #title>{{ item.raw.nama_barang }}</template>
+                <template #title>
+                  {{ item.raw.nama_barang }}
+                </template>
                 <template #subtitle>
-                  <VChip size="x-small" color="primary" variant="tonal" label class="mr-1">
+                  <VChip
+                    size="x-small"
+                    color="primary"
+                    variant="tonal"
+                    label
+                    class="mr-1"
+                  >
                     {{ item.raw.kode_barang }}
                   </VChip>
                   <span class="text-caption text-medium-emphasis">{{ item.raw.kategori }}</span>
@@ -138,7 +146,9 @@
             size="20"
           />
           <div>
-            <div class="text-body-2 font-weight-medium">Status Barang</div>
+            <div class="text-body-2 font-weight-medium">
+              Status Barang
+            </div>
             <div class="text-caption text-medium-emphasis">
               {{ form.status ? 'Aktif — barang dapat digunakan' : 'Nonaktif — barang tidak tersedia' }}
             </div>
@@ -195,6 +205,7 @@ async function fetchExternalCatalog() {
   catalogLoading.value = true
   try {
     const res = await api.get('/master/barang/external-catalog')
+
     externalCatalog.value = res.data?.data ?? []
   } catch {
     externalCatalog.value = []
@@ -240,8 +251,8 @@ watch([() => props.modelValue, () => props.barangData], async ([open]) => {
       kode_barang: props.barangData.kode_barang ?? '',
       nama_barang: props.barangData.nama_barang ?? '',
       spesifikasi: props.barangData.spesifikasi ?? '',
-      keterangan:  props.barangData.keterangan  ?? '',
-      status:      normalizeBooleanStatus(props.barangData.status),
+      keterangan: props.barangData.keterangan  ?? '',
+      status: normalizeBooleanStatus(props.barangData.status),
     })
     namaBarangModel.value = props.barangData.nama_barang ?? ''
   } else {

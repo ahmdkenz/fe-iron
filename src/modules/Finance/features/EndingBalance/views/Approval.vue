@@ -8,14 +8,15 @@
         { title: 'Ending Balance', to: { name: 'finance-ending-balance' } },
         { title: 'Approval Koreksi', disabled: true },
       ]"
-    >
-      
-    </PageHeader>
+    />
 
     <!-- B2B Table -->
     <VCard class="mb-6">
       <VCardTitle class="d-flex align-center gap-2 pa-4 pb-2">
-        <VIcon icon="ri-building-line" size="20" />
+        <VIcon
+          icon="ri-building-line"
+          size="20"
+        />
         Ending Balance B2B
       </VCardTitle>
 
@@ -29,7 +30,13 @@
         density="comfortable"
       >
         <template #item.tipe="{ item }">
-          <VChip size="x-small" :color="tipeBadgeColor(item.tipe)" label>{{ tipeLabel(item.tipe) }}</VChip>
+          <VChip
+            size="x-small"
+            :color="tipeBadgeColor(item.tipe)"
+            label
+          >
+            {{ tipeLabel(item.tipe) }}
+          </VChip>
         </template>
         <template #item.no_dokumen="{ item }">
           <span class="text-caption font-weight-medium">{{ item.no_dokumen || '—' }}</span>
@@ -38,7 +45,10 @@
           <span class="font-weight-medium">{{ item.nama_klien }}</span>
         </template>
         <template #item.nilai_koreksi="{ item }">
-          <span class="font-weight-bold" :class="item.nilai_koreksi >= 0 ? 'text-success' : 'text-error'">
+          <span
+            class="font-weight-bold"
+            :class="item.nilai_koreksi >= 0 ? 'text-success' : 'text-error'"
+          >
             {{ item.nilai_koreksi >= 0 ? '+' : '' }}{{ formatRp(item.nilai_koreksi) }}
           </span>
         </template>
@@ -47,18 +57,50 @@
         </template>
         <template #item.actions="{ item }">
           <div class="d-flex gap-1 justify-center">
-            <VBtn icon size="small" variant="text" color="primary"
-              :to="{ name: 'finance-ending-balance-show', params: { id: item.ending_balance_id } }">
-              <VIcon icon="ri-eye-line" size="18" />
-              <VTooltip activator="parent">Lihat EB</VTooltip>
+            <VBtn
+              icon
+              size="small"
+              variant="text"
+              color="primary"
+              :to="{ name: 'finance-ending-balance-show', params: { id: item.ending_balance_id } }"
+            >
+              <VIcon
+                icon="ri-eye-line"
+                size="18"
+              />
+              <VTooltip activator="parent">
+                Lihat EB
+              </VTooltip>
             </VBtn>
-            <VBtn icon size="small" color="success" variant="tonal" @click="openDialog(item, 'approve')">
-              <VIcon icon="ri-check-line" size="18" />
-              <VTooltip activator="parent">Setujui</VTooltip>
+            <VBtn
+              icon
+              size="small"
+              color="success"
+              variant="tonal"
+              @click="openDialog(item, 'approve')"
+            >
+              <VIcon
+                icon="ri-check-line"
+                size="18"
+              />
+              <VTooltip activator="parent">
+                Setujui
+              </VTooltip>
             </VBtn>
-            <VBtn icon size="small" color="error" variant="tonal" @click="openDialog(item, 'reject')">
-              <VIcon icon="ri-close-line" size="18" />
-              <VTooltip activator="parent">Tolak</VTooltip>
+            <VBtn
+              icon
+              size="small"
+              color="error"
+              variant="tonal"
+              @click="openDialog(item, 'reject')"
+            >
+              <VIcon
+                icon="ri-close-line"
+                size="18"
+              />
+              <VTooltip activator="parent">
+                Tolak
+              </VTooltip>
             </VBtn>
           </div>
         </template>
@@ -68,7 +110,10 @@
     <!-- B2C Table -->
     <VCard>
       <VCardTitle class="d-flex align-center gap-2 pa-4 pb-2">
-        <VIcon icon="ri-store-2-line" size="20" />
+        <VIcon
+          icon="ri-store-2-line"
+          size="20"
+        />
         Ending Balance B2C
       </VCardTitle>
 
@@ -82,7 +127,13 @@
         density="comfortable"
       >
         <template #item.tipe="{ item }">
-          <VChip size="x-small" :color="tipeBadgeColor(item.tipe)" label>{{ tipeLabel(item.tipe) }}</VChip>
+          <VChip
+            size="x-small"
+            :color="tipeBadgeColor(item.tipe)"
+            label
+          >
+            {{ tipeLabel(item.tipe) }}
+          </VChip>
         </template>
         <template #item.no_dokumen="{ item }">
           <span class="text-caption font-weight-medium">{{ item.no_dokumen || '—' }}</span>
@@ -91,7 +142,10 @@
           <span class="font-weight-medium">{{ item.nama_klien }}</span>
         </template>
         <template #item.nilai_koreksi="{ item }">
-          <span class="font-weight-bold" :class="item.nilai_koreksi >= 0 ? 'text-success' : 'text-error'">
+          <span
+            class="font-weight-bold"
+            :class="item.nilai_koreksi >= 0 ? 'text-success' : 'text-error'"
+          >
             {{ item.nilai_koreksi >= 0 ? '+' : '' }}{{ formatRp(item.nilai_koreksi) }}
           </span>
         </template>
@@ -100,18 +154,50 @@
         </template>
         <template #item.actions="{ item }">
           <div class="d-flex gap-1 justify-center">
-            <VBtn icon size="small" variant="text" color="primary"
-              :to="{ name: 'finance-ending-balance-show', params: { id: item.ending_balance_id } }">
-              <VIcon icon="ri-eye-line" size="18" />
-              <VTooltip activator="parent">Lihat EB</VTooltip>
+            <VBtn
+              icon
+              size="small"
+              variant="text"
+              color="primary"
+              :to="{ name: 'finance-ending-balance-show', params: { id: item.ending_balance_id } }"
+            >
+              <VIcon
+                icon="ri-eye-line"
+                size="18"
+              />
+              <VTooltip activator="parent">
+                Lihat EB
+              </VTooltip>
             </VBtn>
-            <VBtn icon size="small" color="success" variant="tonal" @click="openDialog(item, 'approve')">
-              <VIcon icon="ri-check-line" size="18" />
-              <VTooltip activator="parent">Setujui</VTooltip>
+            <VBtn
+              icon
+              size="small"
+              color="success"
+              variant="tonal"
+              @click="openDialog(item, 'approve')"
+            >
+              <VIcon
+                icon="ri-check-line"
+                size="18"
+              />
+              <VTooltip activator="parent">
+                Setujui
+              </VTooltip>
             </VBtn>
-            <VBtn icon size="small" color="error" variant="tonal" @click="openDialog(item, 'reject')">
-              <VIcon icon="ri-close-line" size="18" />
-              <VTooltip activator="parent">Tolak</VTooltip>
+            <VBtn
+              icon
+              size="small"
+              color="error"
+              variant="tonal"
+              @click="openDialog(item, 'reject')"
+            >
+              <VIcon
+                icon="ri-close-line"
+                size="18"
+              />
+              <VTooltip activator="parent">
+                Tolak
+              </VTooltip>
             </VBtn>
           </div>
         </template>
@@ -121,7 +207,11 @@
     <!-- B2B Approved -->
     <VCard class="mb-6 mt-6">
       <VCardTitle class="d-flex align-center gap-2 pa-4 pb-2">
-        <VIcon icon="ri-building-line" size="20" color="success" />
+        <VIcon
+          icon="ri-building-line"
+          size="20"
+          color="success"
+        />
         Ending Balance B2B — Sudah Approve
       </VCardTitle>
 
@@ -137,12 +227,22 @@
         @update:options="onApprovedB2BOptions"
       >
         <template #item.status="{ item }">
-          <VChip size="x-small" :color="item.status === 'APPROVED' ? 'success' : 'warning'" label>
+          <VChip
+            size="x-small"
+            :color="item.status === 'APPROVED' ? 'success' : 'warning'"
+            label
+          >
             {{ item.status === 'APPROVED' ? 'Selesai' : 'Menunggu Approval' }}
           </VChip>
         </template>
         <template #item.tipe="{ item }">
-          <VChip size="x-small" :color="tipeBadgeColor(item.tipe)" label>{{ tipeLabel(item.tipe) }}</VChip>
+          <VChip
+            size="x-small"
+            :color="tipeBadgeColor(item.tipe)"
+            label
+          >
+            {{ tipeLabel(item.tipe) }}
+          </VChip>
         </template>
         <template #item.no_dokumen="{ item }">
           <span class="text-caption font-weight-medium">{{ item.no_dokumen || '—' }}</span>
@@ -151,7 +251,10 @@
           <span class="font-weight-medium">{{ item.nama_klien }}</span>
         </template>
         <template #item.nilai_koreksi="{ item }">
-          <span class="font-weight-bold" :class="item.nilai_koreksi >= 0 ? 'text-success' : 'text-error'">
+          <span
+            class="font-weight-bold"
+            :class="item.nilai_koreksi >= 0 ? 'text-success' : 'text-error'"
+          >
             {{ item.nilai_koreksi >= 0 ? '+' : '' }}{{ formatRp(item.nilai_koreksi) }}
           </span>
         </template>
@@ -162,7 +265,10 @@
           <span class="text-body-2 font-weight-semibold">{{ formatRp(item.saldo_sesudah) }}</span>
         </template>
         <template #item.manager="{ item }">
-          <span class="text-caption" :class="item.manager ? 'font-weight-semibold text-success' : 'text-medium-emphasis'">
+          <span
+            class="text-caption"
+            :class="item.manager ? 'font-weight-semibold text-success' : 'text-medium-emphasis'"
+          >
             {{ item.manager || '—' }}
           </span>
         </template>
@@ -170,10 +276,20 @@
           <span class="text-caption">{{ formatDatetime(item.manager_actioned_at) }}</span>
         </template>
         <template #item.actions="{ item }">
-          <VBtn icon size="small" variant="text" color="primary"
-            :to="{ name: 'finance-ending-balance-show', params: { id: item.ending_balance_id } }">
-            <VIcon icon="ri-eye-line" size="18" />
-            <VTooltip activator="parent">Lihat Detail EB</VTooltip>
+          <VBtn
+            icon
+            size="small"
+            variant="text"
+            color="primary"
+            :to="{ name: 'finance-ending-balance-show', params: { id: item.ending_balance_id } }"
+          >
+            <VIcon
+              icon="ri-eye-line"
+              size="18"
+            />
+            <VTooltip activator="parent">
+              Lihat Detail EB
+            </VTooltip>
           </VBtn>
         </template>
       </BaseTable>
@@ -182,7 +298,11 @@
     <!-- B2C Approved -->
     <VCard class="mb-6">
       <VCardTitle class="d-flex align-center gap-2 pa-4 pb-2">
-        <VIcon icon="ri-store-2-line" size="20" color="success" />
+        <VIcon
+          icon="ri-store-2-line"
+          size="20"
+          color="success"
+        />
         Ending Balance B2C — Sudah Approve
       </VCardTitle>
 
@@ -194,16 +314,26 @@
         :per-page="approvedB2CPerPage"
         :page="approvedB2CPage"
         no-data-text="Belum ada koreksi B2C yang disetujui."
-        @update:options="onApprovedB2COptions"
         density="comfortable"
+        @update:options="onApprovedB2COptions"
       >
         <template #item.status="{ item }">
-          <VChip size="x-small" :color="item.status === 'APPROVED' ? 'success' : 'warning'" label>
+          <VChip
+            size="x-small"
+            :color="item.status === 'APPROVED' ? 'success' : 'warning'"
+            label
+          >
             {{ item.status === 'APPROVED' ? 'Selesai' : 'Menunggu Approval' }}
           </VChip>
         </template>
         <template #item.tipe="{ item }">
-          <VChip size="x-small" :color="tipeBadgeColor(item.tipe)" label>{{ tipeLabel(item.tipe) }}</VChip>
+          <VChip
+            size="x-small"
+            :color="tipeBadgeColor(item.tipe)"
+            label
+          >
+            {{ tipeLabel(item.tipe) }}
+          </VChip>
         </template>
         <template #item.no_dokumen="{ item }">
           <span class="text-caption font-weight-medium">{{ item.no_dokumen || '—' }}</span>
@@ -212,7 +342,10 @@
           <span class="font-weight-medium">{{ item.nama_klien }}</span>
         </template>
         <template #item.nilai_koreksi="{ item }">
-          <span class="font-weight-bold" :class="item.nilai_koreksi >= 0 ? 'text-success' : 'text-error'">
+          <span
+            class="font-weight-bold"
+            :class="item.nilai_koreksi >= 0 ? 'text-success' : 'text-error'"
+          >
             {{ item.nilai_koreksi >= 0 ? '+' : '' }}{{ formatRp(item.nilai_koreksi) }}
           </span>
         </template>
@@ -223,7 +356,10 @@
           <span class="text-body-2 font-weight-semibold">{{ formatRp(item.saldo_sesudah) }}</span>
         </template>
         <template #item.manager="{ item }">
-          <span class="text-caption" :class="item.manager ? 'font-weight-semibold text-success' : 'text-medium-emphasis'">
+          <span
+            class="text-caption"
+            :class="item.manager ? 'font-weight-semibold text-success' : 'text-medium-emphasis'"
+          >
             {{ item.manager || '—' }}
           </span>
         </template>
@@ -231,10 +367,20 @@
           <span class="text-caption">{{ formatDatetime(item.manager_actioned_at) }}</span>
         </template>
         <template #item.actions="{ item }">
-          <VBtn icon size="small" variant="text" color="primary"
-            :to="{ name: 'finance-ending-balance-show', params: { id: item.ending_balance_id } }">
-            <VIcon icon="ri-eye-line" size="18" />
-            <VTooltip activator="parent">Lihat Detail EB</VTooltip>
+          <VBtn
+            icon
+            size="small"
+            variant="text"
+            color="primary"
+            :to="{ name: 'finance-ending-balance-show', params: { id: item.ending_balance_id } }"
+          >
+            <VIcon
+              icon="ri-eye-line"
+              size="18"
+            />
+            <VTooltip activator="parent">
+              Lihat Detail EB
+            </VTooltip>
           </VBtn>
         </template>
       </BaseTable>
@@ -267,7 +413,7 @@ const headers = [
   { title: 'NO DOKUMEN',       key: 'no_dokumen',    sortable: false },
   { title: 'CLIENT',           key: 'nama_klien',    sortable: false },
   { title: 'NOMINAL',          key: 'nilai_koreksi', sortable: false },
-  { title: 'ALASAN',           key: 'alasan_koreksi',sortable: false },
+  { title: 'ALASAN',           key: 'alasan_koreksi', sortable: false },
   { title: 'DIAJUKAN OLEH',    key: 'submitted_by',  sortable: false },
   { title: 'TANGGAL DIAJUKAN', key: 'submitted_at',  sortable: false },
   { title: 'AKSI',             key: 'actions',       sortable: false, align: 'center' },
@@ -287,7 +433,7 @@ const approvedHeaders = [
   { title: 'ALASAN',            key: 'alasan_koreksi',     sortable: false },
   { title: 'DIAJUKAN OLEH',     key: 'submitted_by',       sortable: false },
   { title: 'DISETUJUI OLEH',    key: 'manager',            sortable: false },
-  { title: 'TGL APPROVED',      key: 'manager_actioned_at',sortable: false },
+  { title: 'TGL APPROVED',      key: 'manager_actioned_at', sortable: false },
   { title: 'AKSI',              key: 'actions',            sortable: false, align: 'center' },
 ]
 
@@ -301,12 +447,12 @@ const approvedB2CPage    = ref(1)
 const approvedB2CPerPage = ref(10)
 
 const dialog = reactive({
-  open      : false,
-  action    : null,
-  koreksi   : null,
+  open: false,
+  action: null,
+  koreksi: null,
   keterangan: '',
-  error     : '',
-  loading   : false,
+  error: '',
+  loading: false,
 })
 
 function formatRp(val) {
@@ -315,6 +461,7 @@ function formatRp(val) {
 
 function formatDatetime(d) {
   if (!d) return '-'
+  
   return new Date(d).toLocaleString('id-ID')
 }
 
@@ -330,6 +477,7 @@ async function fetchPending() {
   loading.value = true
   try {
     const { data } = await api.get('/finance/ending-balance/koreksi/pending')
+
     rows.value = data.data ?? []
   } finally {
     loading.value = false
@@ -348,6 +496,7 @@ async function fetchApprovedSegment(segment) {
     const { data } = await api.get('/finance/ending-balance/koreksi/approved', {
       params: { segment, page: page.value, per_page: perPage.value },
     })
+
     state.rows = data.data?.rows ?? []
     state.meta = data.data?.meta ?? null
   } finally {
@@ -387,6 +536,7 @@ function closeDialog() {
 async function confirmAction() {
   if (dialog.action === 'reject' && !dialog.keterangan.trim()) {
     dialog.error = 'Keterangan wajib diisi saat menolak koreksi.'
+    
     return
   }
 

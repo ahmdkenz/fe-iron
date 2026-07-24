@@ -9,23 +9,38 @@
         { title: 'Dashboard', to: { name: 'dashboard' } },
         { title: 'Ending Balance', disabled: true },
       ]"
-    >
-      </PageHeader>
+    />
 
     <!-- ═══════════════════════════════════════════════════════════════════ -->
     <!-- Tampilan non-approver (AR): hanya list Ending Balance biasa          -->
     <!-- ═══════════════════════════════════════════════════════════════════ -->
     <template v-if="!authStore.canApproveEndingBalanceManager">
       <!-- Tab Selector B2B/B2C (hanya untuk ADMIN/MANAGER/SUPERVISOR; AR langsung lihat B2C) -->
-      <VTabs v-if="canSeeAll" :model-value="activeSegmentTab" class="mb-4" @update:model-value="onSegmentTabChange">
-        <VTab value="b2b">Ending Balance B2B</VTab>
-        <VTab value="b2c">Ending Balance B2C</VTab>
+      <VTabs
+        v-if="canSeeAll"
+        :model-value="activeSegmentTab"
+        class="mb-4"
+        @update:model-value="onSegmentTabChange"
+      >
+        <VTab value="b2b">
+          Ending Balance B2B
+        </VTab>
+        <VTab value="b2c">
+          Ending Balance B2C
+        </VTab>
       </VTabs>
 
       <!-- Tabel B2B -->
-      <VCard v-if="canSeeAll && activeSegmentTab === 'b2b'" class="mb-4">
+      <VCard
+        v-if="canSeeAll && activeSegmentTab === 'b2b'"
+        class="mb-4"
+      >
         <VCardTitle class="px-4 pt-4 pb-0 text-body-1 font-weight-bold d-flex align-center gap-2">
-          <VIcon icon="ri-building-line" size="20" color="primary" />
+          <VIcon
+            icon="ri-building-line"
+            size="20"
+            color="primary"
+          />
           Ending Balance B2B
         </VCardTitle>
         <VCardText class="d-flex flex-wrap align-center gap-3 pb-0">
@@ -53,7 +68,7 @@
             clearable
             style="max-width: 160px"
             :items="[{ title: 'Draft', value: 'DRAFT' }, { title: 'Locked', value: 'LOCKED' }]"
-            @update:model-value="doFetchB2B(1)"
+            @update:model-value="resetB2B(filtersB2B)"
           />
           <VBtn
             color="primary"
@@ -66,18 +81,20 @@
           </VBtn>
         </VCardText>
         <BaseTable
+          v-model:expanded="expandedB2B"
           :headers="headersB2B"
           :items="rowsB2B"
-          :total="metaB2B.total"
+          :total="totalB2B"
           :loading="loadingB2B"
-          :per-page="metaB2B.per_page"
-          :page="currentPageB2B"
+          pagination-mode="load-more"
+          :has-more="hasMoreB2B"
+          :loading-more="loadingMoreB2B"
+          :loaded-count="rowsB2B.length"
           item-value="id"
           show-expand
-          v-model:expanded="expandedB2B"
           mobile-cards
           column-resize-key="finance-ending-balance-b2b"
-          @update:options="onTableOptionsB2B"
+          @load-more="loadMoreB2B"
         >
           <template #mobile-card="{ item }">
             <div class="d-flex align-center justify-space-between gap-2 mb-2">
@@ -152,11 +169,13 @@
           </template>
 
           <template #item.no="{ index }">
-            <span class="text-medium-emphasis">{{ (currentPageB2B - 1) * metaB2B.per_page + index + 1 }}</span>
+            <span class="text-medium-emphasis">{{ index + 1 }}</span>
           </template>
 
           <template #item.nama_klien="{ item }">
-            <div class="font-weight-medium text-no-wrap">{{ item.nama_klien }}</div>
+            <div class="font-weight-medium text-no-wrap">
+              {{ item.nama_klien }}
+            </div>
           </template>
 
           <template #item.periode="{ item }">
@@ -181,7 +200,10 @@
             <div :class="item.saldo_akhir_sistem !== item.saldo_akhir_final ? 'text-warning font-weight-bold' : 'font-weight-bold'">
               {{ formatRp(item.saldo_akhir_final) }}
             </div>
-            <div v-if="item.saldo_akhir_sistem !== item.saldo_akhir_final" class="text-caption text-medium-emphasis">
+            <div
+              v-if="item.saldo_akhir_sistem !== item.saldo_akhir_final"
+              class="text-caption text-medium-emphasis"
+            >
               (sistem: {{ formatRp(item.saldo_akhir_sistem) }})
             </div>
           </template>
@@ -190,14 +212,18 @@
             <div :class="item.outstanding > 0 ? 'font-weight-medium' : 'text-medium-emphasis'">
               {{ formatRp(item.outstanding) }}
             </div>
-            <div class="text-caption text-medium-emphasis">{{ item.outstanding_count }} Invoice</div>
+            <div class="text-caption text-medium-emphasis">
+              {{ item.outstanding_count }} Invoice
+            </div>
           </template>
 
           <template #item.overdue="{ item }">
             <div :class="item.overdue > 0 ? 'text-error font-weight-medium' : 'text-medium-emphasis'">
               {{ formatRp(item.overdue) }}
             </div>
-            <div class="text-caption text-medium-emphasis">{{ item.overdue_count }} Invoice</div>
+            <div class="text-caption text-medium-emphasis">
+              {{ item.overdue_count }} Invoice
+            </div>
           </template>
 
           <template #item.status="{ item }">
@@ -215,7 +241,10 @@
 
           <template #expanded-row="{ item }">
             <tr>
-              <td :colspan="headersB2B.length + 1" class="pa-0">
+              <td
+                :colspan="headersB2B.length + 1"
+                class="pa-0"
+              >
                 <EbInvoiceBreakdown :eb-id="item.id" />
               </td>
             </tr>
@@ -231,7 +260,9 @@
                 :to="{ name: 'finance-ending-balance-show', params: { id: item.id } }"
               >
                 <VIcon icon="ri-eye-line" />
-                <VTooltip activator="parent">Detail</VTooltip>
+                <VTooltip activator="parent">
+                  Detail
+                </VTooltip>
               </VBtn>
               <VBtn
                 v-if="item.status === 'DRAFT' && authStore.canLockEndingBalance"
@@ -243,7 +274,9 @@
                 @click="confirmLock(item)"
               >
                 <VIcon icon="ri-lock-line" />
-                <VTooltip activator="parent">Kunci Periode</VTooltip>
+                <VTooltip activator="parent">
+                  Kunci Periode
+                </VTooltip>
               </VBtn>
               <VBtn
                 v-if="item.status === 'LOCKED' && authStore.canLockEndingBalance"
@@ -255,7 +288,9 @@
                 @click="confirmUnlock(item)"
               >
                 <VIcon icon="ri-lock-unlock-line" />
-                <VTooltip activator="parent">Buka Periode</VTooltip>
+                <VTooltip activator="parent">
+                  Buka Periode
+                </VTooltip>
               </VBtn>
             </div>
           </template>
@@ -265,7 +300,11 @@
       <!-- Tabel B2C -->
       <VCard v-if="activeSegmentTab === 'b2c'">
         <VCardTitle class="px-4 pt-4 pb-0 text-body-1 font-weight-bold d-flex align-center gap-2">
-          <VIcon icon="ri-store-line" size="20" color="secondary" />
+          <VIcon
+            icon="ri-store-line"
+            size="20"
+            color="secondary"
+          />
           {{ b2cTableTitle }}
         </VCardTitle>
         <VCardText class="d-flex flex-wrap align-center gap-3 pb-0">
@@ -293,7 +332,7 @@
             clearable
             style="max-width: 160px"
             :items="[{ title: 'Draft', value: 'DRAFT' }, { title: 'Locked', value: 'LOCKED' }]"
-            @update:model-value="doFetch(1)"
+            @update:model-value="reset(filtersB2C)"
           />
           <VBtn
             color="primary"
@@ -306,18 +345,20 @@
           </VBtn>
         </VCardText>
         <BaseTable
+          v-model:expanded="expanded"
           :headers="headers"
           :items="rows"
-          :total="meta.total"
+          :total="total"
           :loading="loading"
-          :per-page="meta.per_page"
-          :page="currentPage"
+          pagination-mode="load-more"
+          :has-more="hasMore"
+          :loading-more="loadingMore"
+          :loaded-count="rows.length"
           item-value="id"
           show-expand
-          v-model:expanded="expanded"
           mobile-cards
           column-resize-key="finance-ending-balance-b2c"
-          @update:options="onTableOptions"
+          @load-more="loadMore"
         >
           <template #mobile-card="{ item }">
             <div class="d-flex align-center justify-space-between gap-2 mb-2">
@@ -392,11 +433,13 @@
           </template>
 
           <template #item.no="{ index }">
-            <span class="text-medium-emphasis">{{ (currentPage - 1) * meta.per_page + index + 1 }}</span>
+            <span class="text-medium-emphasis">{{ index + 1 }}</span>
           </template>
 
           <template #item.nama_klien="{ item }">
-            <div class="font-weight-medium text-no-wrap">{{ item.nama_klien }}</div>
+            <div class="font-weight-medium text-no-wrap">
+              {{ item.nama_klien }}
+            </div>
           </template>
 
           <template #item.outlet="{ item }">
@@ -425,7 +468,10 @@
             <div :class="item.saldo_akhir_sistem !== item.saldo_akhir_final ? 'text-warning font-weight-bold' : 'font-weight-bold'">
               {{ formatRp(item.saldo_akhir_final) }}
             </div>
-            <div v-if="item.saldo_akhir_sistem !== item.saldo_akhir_final" class="text-caption text-medium-emphasis">
+            <div
+              v-if="item.saldo_akhir_sistem !== item.saldo_akhir_final"
+              class="text-caption text-medium-emphasis"
+            >
               (sistem: {{ formatRp(item.saldo_akhir_sistem) }})
             </div>
           </template>
@@ -434,14 +480,18 @@
             <div :class="item.outstanding > 0 ? 'font-weight-medium' : 'text-medium-emphasis'">
               {{ formatRp(item.outstanding) }}
             </div>
-            <div class="text-caption text-medium-emphasis">{{ item.outstanding_count }} Invoice</div>
+            <div class="text-caption text-medium-emphasis">
+              {{ item.outstanding_count }} Invoice
+            </div>
           </template>
 
           <template #item.overdue="{ item }">
             <div :class="item.overdue > 0 ? 'text-error font-weight-medium' : 'text-medium-emphasis'">
               {{ formatRp(item.overdue) }}
             </div>
-            <div class="text-caption text-medium-emphasis">{{ item.overdue_count }} Invoice</div>
+            <div class="text-caption text-medium-emphasis">
+              {{ item.overdue_count }} Invoice
+            </div>
           </template>
 
           <template #item.status="{ item }">
@@ -459,7 +509,10 @@
 
           <template #expanded-row="{ item }">
             <tr>
-              <td :colspan="headers.length + 1" class="pa-0">
+              <td
+                :colspan="headers.length + 1"
+                class="pa-0"
+              >
                 <EbInvoiceBreakdown :eb-id="item.id" />
               </td>
             </tr>
@@ -475,7 +528,9 @@
                 :to="{ name: 'finance-ending-balance-show', params: { id: item.id } }"
               >
                 <VIcon icon="ri-eye-line" />
-                <VTooltip activator="parent">Detail</VTooltip>
+                <VTooltip activator="parent">
+                  Detail
+                </VTooltip>
               </VBtn>
               <VBtn
                 v-if="item.status === 'DRAFT' && authStore.canLockEndingBalance"
@@ -487,7 +542,9 @@
                 @click="confirmLock(item)"
               >
                 <VIcon icon="ri-lock-line" />
-                <VTooltip activator="parent">Kunci Periode</VTooltip>
+                <VTooltip activator="parent">
+                  Kunci Periode
+                </VTooltip>
               </VBtn>
               <VBtn
                 v-if="item.status === 'LOCKED' && authStore.canLockEndingBalance"
@@ -499,7 +556,9 @@
                 @click="confirmUnlock(item)"
               >
                 <VIcon icon="ri-lock-unlock-line" />
-                <VTooltip activator="parent">Buka Periode</VTooltip>
+                <VTooltip activator="parent">
+                  Buka Periode
+                </VTooltip>
               </VBtn>
             </div>
           </template>
@@ -514,7 +573,14 @@
       <!-- Section 1: Menunggu Persetujuan -->
       <div class="mb-4 d-flex align-center gap-3">
         <span class="text-h6 font-weight-semibold">Ending Balance Menunggu Persetujuan</span>
-        <VChip v-if="pendingRows.length" size="small" color="error" label>{{ pendingRows.length }} menunggu</VChip>
+        <VChip
+          v-if="pendingRows.length"
+          size="small"
+          color="error"
+          label
+        >
+          {{ pendingRows.length }} menunggu
+        </VChip>
       </div>
 
       <VCard class="mb-6">
@@ -528,12 +594,22 @@
           density="comfortable"
         >
           <template #item.segment="{ item }">
-            <VChip size="x-small" :color="item.segment === 'B2B' ? 'primary' : 'secondary'" label>
+            <VChip
+              size="x-small"
+              :color="item.segment === 'B2B' ? 'primary' : 'secondary'"
+              label
+            >
               {{ item.segment }}
             </VChip>
           </template>
           <template #item.tipe="{ item }">
-            <VChip size="x-small" :color="tipeBadgeColor(item.tipe)" label>{{ tipeLabel(item.tipe) }}</VChip>
+            <VChip
+              size="x-small"
+              :color="tipeBadgeColor(item.tipe)"
+              label
+            >
+              {{ tipeLabel(item.tipe) }}
+            </VChip>
           </template>
           <template #item.no_dokumen="{ item }">
             <span class="text-caption font-weight-medium">{{ item.no_dokumen || '—' }}</span>
@@ -545,7 +621,10 @@
             <span class="text-caption">{{ item.outlet ?? '-' }}</span>
           </template>
           <template #item.nilai_koreksi="{ item }">
-            <span class="font-weight-bold" :class="item.nilai_koreksi >= 0 ? 'text-success' : 'text-error'">
+            <span
+              class="font-weight-bold"
+              :class="item.nilai_koreksi >= 0 ? 'text-success' : 'text-error'"
+            >
               {{ item.nilai_koreksi >= 0 ? '+' : '' }}{{ formatRp(item.nilai_koreksi) }}
             </span>
           </template>
@@ -554,18 +633,50 @@
           </template>
           <template #item.actions="{ item }">
             <div class="d-flex gap-1 justify-center">
-              <VBtn icon size="small" variant="text" color="primary"
-                :to="{ name: 'finance-ending-balance-show', params: { id: item.ending_balance_id } }">
-                <VIcon icon="ri-eye-line" size="18" />
-                <VTooltip activator="parent">Lihat EB</VTooltip>
+              <VBtn
+                icon
+                size="small"
+                variant="text"
+                color="primary"
+                :to="{ name: 'finance-ending-balance-show', params: { id: item.ending_balance_id } }"
+              >
+                <VIcon
+                  icon="ri-eye-line"
+                  size="18"
+                />
+                <VTooltip activator="parent">
+                  Lihat EB
+                </VTooltip>
               </VBtn>
-              <VBtn icon size="small" color="success" variant="tonal" @click="openApprovalActionDialog(item, 'approve')">
-                <VIcon icon="ri-check-line" size="18" />
-                <VTooltip activator="parent">Setujui</VTooltip>
+              <VBtn
+                icon
+                size="small"
+                color="success"
+                variant="tonal"
+                @click="openApprovalActionDialog(item, 'approve')"
+              >
+                <VIcon
+                  icon="ri-check-line"
+                  size="18"
+                />
+                <VTooltip activator="parent">
+                  Setujui
+                </VTooltip>
               </VBtn>
-              <VBtn icon size="small" color="error" variant="tonal" @click="openApprovalActionDialog(item, 'reject')">
-                <VIcon icon="ri-close-line" size="18" />
-                <VTooltip activator="parent">Tolak</VTooltip>
+              <VBtn
+                icon
+                size="small"
+                color="error"
+                variant="tonal"
+                @click="openApprovalActionDialog(item, 'reject')"
+              >
+                <VIcon
+                  icon="ri-close-line"
+                  size="18"
+                />
+                <VTooltip activator="parent">
+                  Tolak
+                </VTooltip>
               </VBtn>
             </div>
           </template>
@@ -578,15 +689,30 @@
         <VDivider />
       </div>
 
-      <VTabs :model-value="activeSegmentTab" class="mb-4" @update:model-value="onSegmentTabChange">
-        <VTab value="b2b">Ending Balance B2B</VTab>
-        <VTab value="b2c">Ending Balance B2C</VTab>
+      <VTabs
+        :model-value="activeSegmentTab"
+        class="mb-4"
+        @update:model-value="onSegmentTabChange"
+      >
+        <VTab value="b2b">
+          Ending Balance B2B
+        </VTab>
+        <VTab value="b2c">
+          Ending Balance B2C
+        </VTab>
       </VTabs>
 
       <!-- Tabel B2B -->
-      <VCard v-if="activeSegmentTab === 'b2b'" class="mb-4">
+      <VCard
+        v-if="activeSegmentTab === 'b2b'"
+        class="mb-4"
+      >
         <VCardTitle class="px-4 pt-4 pb-0 text-body-1 font-weight-bold d-flex align-center gap-2">
-          <VIcon icon="ri-building-line" size="20" color="primary" />
+          <VIcon
+            icon="ri-building-line"
+            size="20"
+            color="primary"
+          />
           Ending Balance B2B
         </VCardTitle>
         <VCardText class="d-flex flex-wrap align-center gap-3 pb-0">
@@ -614,7 +740,7 @@
             clearable
             style="max-width: 160px"
             :items="[{ title: 'Draft', value: 'DRAFT' }, { title: 'Locked', value: 'LOCKED' }]"
-            @update:model-value="doFetchB2B(1)"
+            @update:model-value="resetB2B(filtersB2B)"
           />
           <VBtn
             color="primary"
@@ -627,18 +753,20 @@
           </VBtn>
         </VCardText>
         <BaseTable
+          v-model:expanded="expandedB2B"
           :headers="headersB2B"
           :items="rowsB2B"
-          :total="metaB2B.total"
+          :total="totalB2B"
           :loading="loadingB2B"
-          :per-page="metaB2B.per_page"
-          :page="currentPageB2B"
+          pagination-mode="load-more"
+          :has-more="hasMoreB2B"
+          :loading-more="loadingMoreB2B"
+          :loaded-count="rowsB2B.length"
           item-value="id"
           show-expand
-          v-model:expanded="expandedB2B"
           mobile-cards
           column-resize-key="finance-ending-balance-b2b"
-          @update:options="onTableOptionsB2B"
+          @load-more="loadMoreB2B"
         >
           <template #mobile-card="{ item }">
             <div class="d-flex align-center justify-space-between gap-2 mb-2">
@@ -713,11 +841,13 @@
           </template>
 
           <template #item.no="{ index }">
-            <span class="text-medium-emphasis">{{ (currentPageB2B - 1) * metaB2B.per_page + index + 1 }}</span>
+            <span class="text-medium-emphasis">{{ index + 1 }}</span>
           </template>
 
           <template #item.nama_klien="{ item }">
-            <div class="font-weight-medium text-no-wrap">{{ item.nama_klien }}</div>
+            <div class="font-weight-medium text-no-wrap">
+              {{ item.nama_klien }}
+            </div>
           </template>
 
           <template #item.periode="{ item }">
@@ -742,7 +872,10 @@
             <div :class="item.saldo_akhir_sistem !== item.saldo_akhir_final ? 'text-warning font-weight-bold' : 'font-weight-bold'">
               {{ formatRp(item.saldo_akhir_final) }}
             </div>
-            <div v-if="item.saldo_akhir_sistem !== item.saldo_akhir_final" class="text-caption text-medium-emphasis">
+            <div
+              v-if="item.saldo_akhir_sistem !== item.saldo_akhir_final"
+              class="text-caption text-medium-emphasis"
+            >
               (sistem: {{ formatRp(item.saldo_akhir_sistem) }})
             </div>
           </template>
@@ -751,14 +884,18 @@
             <div :class="item.outstanding > 0 ? 'font-weight-medium' : 'text-medium-emphasis'">
               {{ formatRp(item.outstanding) }}
             </div>
-            <div class="text-caption text-medium-emphasis">{{ item.outstanding_count }} Invoice</div>
+            <div class="text-caption text-medium-emphasis">
+              {{ item.outstanding_count }} Invoice
+            </div>
           </template>
 
           <template #item.overdue="{ item }">
             <div :class="item.overdue > 0 ? 'text-error font-weight-medium' : 'text-medium-emphasis'">
               {{ formatRp(item.overdue) }}
             </div>
-            <div class="text-caption text-medium-emphasis">{{ item.overdue_count }} Invoice</div>
+            <div class="text-caption text-medium-emphasis">
+              {{ item.overdue_count }} Invoice
+            </div>
           </template>
 
           <template #item.status="{ item }">
@@ -776,7 +913,10 @@
 
           <template #expanded-row="{ item }">
             <tr>
-              <td :colspan="headersB2B.length + 1" class="pa-0">
+              <td
+                :colspan="headersB2B.length + 1"
+                class="pa-0"
+              >
                 <EbInvoiceBreakdown :eb-id="item.id" />
               </td>
             </tr>
@@ -792,7 +932,9 @@
                 :to="{ name: 'finance-ending-balance-show', params: { id: item.id } }"
               >
                 <VIcon icon="ri-eye-line" />
-                <VTooltip activator="parent">Detail</VTooltip>
+                <VTooltip activator="parent">
+                  Detail
+                </VTooltip>
               </VBtn>
               <VBtn
                 v-if="item.status === 'DRAFT' && authStore.canLockEndingBalance"
@@ -804,7 +946,9 @@
                 @click="confirmLock(item)"
               >
                 <VIcon icon="ri-lock-line" />
-                <VTooltip activator="parent">Kunci Periode</VTooltip>
+                <VTooltip activator="parent">
+                  Kunci Periode
+                </VTooltip>
               </VBtn>
               <VBtn
                 v-if="item.status === 'LOCKED' && authStore.canLockEndingBalance"
@@ -816,7 +960,9 @@
                 @click="confirmUnlock(item)"
               >
                 <VIcon icon="ri-lock-unlock-line" />
-                <VTooltip activator="parent">Buka Periode</VTooltip>
+                <VTooltip activator="parent">
+                  Buka Periode
+                </VTooltip>
               </VBtn>
             </div>
           </template>
@@ -826,7 +972,11 @@
       <!-- Tabel B2C -->
       <VCard v-if="activeSegmentTab === 'b2c'">
         <VCardTitle class="px-4 pt-4 pb-0 text-body-1 font-weight-bold d-flex align-center gap-2">
-          <VIcon icon="ri-store-line" size="20" color="secondary" />
+          <VIcon
+            icon="ri-store-line"
+            size="20"
+            color="secondary"
+          />
           Ending Balance B2C
         </VCardTitle>
         <VCardText class="d-flex flex-wrap align-center gap-3 pb-0">
@@ -854,7 +1004,7 @@
             clearable
             style="max-width: 160px"
             :items="[{ title: 'Draft', value: 'DRAFT' }, { title: 'Locked', value: 'LOCKED' }]"
-            @update:model-value="doFetch(1)"
+            @update:model-value="reset(filtersB2C)"
           />
           <VBtn
             color="primary"
@@ -867,18 +1017,20 @@
           </VBtn>
         </VCardText>
         <BaseTable
+          v-model:expanded="expanded"
           :headers="headers"
           :items="rows"
-          :total="meta.total"
+          :total="total"
           :loading="loading"
-          :per-page="meta.per_page"
-          :page="currentPage"
+          pagination-mode="load-more"
+          :has-more="hasMore"
+          :loading-more="loadingMore"
+          :loaded-count="rows.length"
           item-value="id"
           show-expand
-          v-model:expanded="expanded"
           mobile-cards
           column-resize-key="finance-ending-balance-b2c"
-          @update:options="onTableOptions"
+          @load-more="loadMore"
         >
           <template #mobile-card="{ item }">
             <div class="d-flex align-center justify-space-between gap-2 mb-2">
@@ -953,11 +1105,13 @@
           </template>
 
           <template #item.no="{ index }">
-            <span class="text-medium-emphasis">{{ (currentPage - 1) * meta.per_page + index + 1 }}</span>
+            <span class="text-medium-emphasis">{{ index + 1 }}</span>
           </template>
 
           <template #item.nama_klien="{ item }">
-            <div class="font-weight-medium text-no-wrap">{{ item.nama_klien }}</div>
+            <div class="font-weight-medium text-no-wrap">
+              {{ item.nama_klien }}
+            </div>
           </template>
 
           <template #item.outlet="{ item }">
@@ -986,7 +1140,10 @@
             <div :class="item.saldo_akhir_sistem !== item.saldo_akhir_final ? 'text-warning font-weight-bold' : 'font-weight-bold'">
               {{ formatRp(item.saldo_akhir_final) }}
             </div>
-            <div v-if="item.saldo_akhir_sistem !== item.saldo_akhir_final" class="text-caption text-medium-emphasis">
+            <div
+              v-if="item.saldo_akhir_sistem !== item.saldo_akhir_final"
+              class="text-caption text-medium-emphasis"
+            >
               (sistem: {{ formatRp(item.saldo_akhir_sistem) }})
             </div>
           </template>
@@ -995,14 +1152,18 @@
             <div :class="item.outstanding > 0 ? 'font-weight-medium' : 'text-medium-emphasis'">
               {{ formatRp(item.outstanding) }}
             </div>
-            <div class="text-caption text-medium-emphasis">{{ item.outstanding_count }} Invoice</div>
+            <div class="text-caption text-medium-emphasis">
+              {{ item.outstanding_count }} Invoice
+            </div>
           </template>
 
           <template #item.overdue="{ item }">
             <div :class="item.overdue > 0 ? 'text-error font-weight-medium' : 'text-medium-emphasis'">
               {{ formatRp(item.overdue) }}
             </div>
-            <div class="text-caption text-medium-emphasis">{{ item.overdue_count }} Invoice</div>
+            <div class="text-caption text-medium-emphasis">
+              {{ item.overdue_count }} Invoice
+            </div>
           </template>
 
           <template #item.status="{ item }">
@@ -1020,7 +1181,10 @@
 
           <template #expanded-row="{ item }">
             <tr>
-              <td :colspan="headers.length + 1" class="pa-0">
+              <td
+                :colspan="headers.length + 1"
+                class="pa-0"
+              >
                 <EbInvoiceBreakdown :eb-id="item.id" />
               </td>
             </tr>
@@ -1036,7 +1200,9 @@
                 :to="{ name: 'finance-ending-balance-show', params: { id: item.id } }"
               >
                 <VIcon icon="ri-eye-line" />
-                <VTooltip activator="parent">Detail</VTooltip>
+                <VTooltip activator="parent">
+                  Detail
+                </VTooltip>
               </VBtn>
               <VBtn
                 v-if="item.status === 'DRAFT' && authStore.canLockEndingBalance"
@@ -1048,7 +1214,9 @@
                 @click="confirmLock(item)"
               >
                 <VIcon icon="ri-lock-line" />
-                <VTooltip activator="parent">Kunci Periode</VTooltip>
+                <VTooltip activator="parent">
+                  Kunci Periode
+                </VTooltip>
               </VBtn>
               <VBtn
                 v-if="item.status === 'LOCKED' && authStore.canLockEndingBalance"
@@ -1060,7 +1228,9 @@
                 @click="confirmUnlock(item)"
               >
                 <VIcon icon="ri-lock-unlock-line" />
-                <VTooltip activator="parent">Buka Periode</VTooltip>
+                <VTooltip activator="parent">
+                  Buka Periode
+                </VTooltip>
               </VBtn>
             </div>
           </template>
@@ -1069,9 +1239,14 @@
     </template>
 
     <!-- Dialog Konfirmasi Lock -->
-    <VDialog v-model="showLockDialog" max-width="400">
+    <VDialog
+      v-model="showLockDialog"
+      max-width="400"
+    >
       <VCard>
-        <VCardTitle class="pt-4 px-4">Tutup Periode</VCardTitle>
+        <VCardTitle class="pt-4 px-4">
+          Tutup Periode
+        </VCardTitle>
         <VCardText>
           Kunci ending balance <strong>{{ lockTarget?.nama_klien }}</strong> untuk periode
           {{ formatDate(lockTarget?.periode_awal) }} – {{ formatDate(lockTarget?.periode_akhir) }}?
@@ -1080,29 +1255,59 @@
         </VCardText>
         <VCardActions class="px-4 pb-4">
           <VSpacer />
-          <AppActionButton action="batalkan" @click="showLockDialog = false" />
-          <AppActionButton action="custom" color="success" :loading="lockingId !== null" @click="doLock">Kunci</AppActionButton>
+          <AppActionButton
+            action="batalkan"
+            @click="showLockDialog = false"
+          />
+          <AppActionButton
+            action="custom"
+            color="success"
+            :loading="lockingId !== null"
+            @click="doLock"
+          >
+            Kunci
+          </AppActionButton>
         </VCardActions>
       </VCard>
     </VDialog>
 
     <!-- Dialog Konfirmasi Unlock -->
-    <VDialog v-model="showUnlockDialog" max-width="420">
+    <VDialog
+      v-model="showUnlockDialog"
+      max-width="420"
+    >
       <VCard>
-        <VCardTitle class="pt-4 px-4">Buka Kunci Periode</VCardTitle>
+        <VCardTitle class="pt-4 px-4">
+          Buka Kunci Periode
+        </VCardTitle>
         <VCardText>
           Buka kunci ending balance <strong>{{ unlockTarget?.nama_klien }}</strong> untuk periode
           {{ formatDate(unlockTarget?.periode_awal) }} – {{ formatDate(unlockTarget?.periode_akhir) }}?
           <br><br>
           Setelah dibuka, invoice dalam periode ini dapat diubah kembali via import.
-          <VAlert type="warning" variant="tonal" density="compact" class="mt-3">
+          <VAlert
+            type="warning"
+            variant="tonal"
+            density="compact"
+            class="mt-3"
+          >
             Pastikan data yang akan diubah sudah dikonfirmasi sebelum mengunci ulang.
           </VAlert>
         </VCardText>
         <VCardActions class="px-4 pb-4">
           <VSpacer />
-          <AppActionButton action="batalkan" @click="showUnlockDialog = false" />
-          <AppActionButton action="custom" color="warning" :loading="unlockingId !== null" @click="doUnlock">Buka Kunci</AppActionButton>
+          <AppActionButton
+            action="batalkan"
+            @click="showUnlockDialog = false"
+          />
+          <AppActionButton
+            action="custom"
+            color="warning"
+            :loading="unlockingId !== null"
+            @click="doUnlock"
+          >
+            Buka Kunci
+          </AppActionButton>
         </VCardActions>
       </VCard>
     </VDialog>
@@ -1123,9 +1328,10 @@
 </template>
 
 <script setup>
-import { computed, ref, reactive, onMounted, defineComponent, h } from 'vue'
+import { computed, ref, reactive, onMounted, onBeforeUnmount, defineComponent, h } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.store'
+import { useLoadMore } from '@/composables/useLoadMore.js'
 import api from '@/utils/axios'
 import EndingBalanceStatusBadge from '@/modules/Finance/shared/components/EndingBalanceStatusBadge.vue'
 import MobileCardActions from '@/components/shared/MobileCardActions.vue'
@@ -1147,6 +1353,7 @@ const EbInvoiceBreakdown = defineComponent({
     onMounted(async () => {
       try {
         const { data } = await api.get(`/finance/ending-balance/${props.ebId}/invoices`)
+
         rows.value = data.data ?? []
       } catch (e) {
         error.value = e?.response?.data?.message ?? 'Gagal memuat data invoice.'
@@ -1190,6 +1397,7 @@ const EbInvoiceBreakdown = defineComponent({
           ]),
           h('tbody', {}, rows.value.map(inv => {
             const sisaSubtotal = Math.max(0, (inv.subtotal ?? 0) - (inv.total_pembayaran ?? 0) - (inv.total_penyesuaian ?? 0))
+            
             return h('tr', { key: inv.id, class: 'eb-table__row' }, [
               h('td', { class: `${tdClass} font-weight-medium` }, [
                 h('span', {}, inv.no_invoice),
@@ -1197,7 +1405,7 @@ const EbInvoiceBreakdown = defineComponent({
                 Number(inv.total_penyesuaian) > 0 ? h('VChip', { size: 'x-small', color: 'info', label: true, class: 'ml-2', style: 'font-size:10px' }, { default: () => `Disesuaikan −${fmt(inv.total_penyesuaian)}` }) : null,
               ]),
               h('td', { class: `${tdClass} text-medium-emphasis` }, fmtDate(inv.tanggal_invoice)),
-              h('td', { class: `${tdClass} ${inv.tanggal_jatuh_tempo && inv.sisa_tagihan > 0 && inv.tanggal_jatuh_tempo < new Date().toISOString().slice(0,10) ? 'text-error' : 'text-medium-emphasis'}` }, fmtDate(inv.tanggal_jatuh_tempo)),
+              h('td', { class: `${tdClass} ${inv.tanggal_jatuh_tempo && inv.sisa_tagihan > 0 && inv.tanggal_jatuh_tempo < new Date().toISOString().slice(0, 10) ? 'text-error' : 'text-medium-emphasis'}` }, fmtDate(inv.tanggal_jatuh_tempo)),
               h('td', { class: `${tdClass} text-end` }, fmt(inv.subtotal)),
               h('td', { class: `${tdClass} text-end` }, (() => {
                 const hasCN = (inv.total_cn ?? 0) > 0
@@ -1206,6 +1414,7 @@ const EbInvoiceBreakdown = defineComponent({
                 const lines = []
                 if (hasDN) lines.push(h('div', { class: 'text-success' }, `+ ${fmt(inv.total_dn)}`))
                 if (hasCN) lines.push(h('div', { class: 'text-error'   }, `− ${fmt(inv.total_cn)}`))
+                
                 return lines
               })()),
               h('td', { class: `${tdClass} text-end text-success` }, fmt(inv.total_pembayaran)),
@@ -1218,7 +1427,7 @@ const EbInvoiceBreakdown = defineComponent({
         ]),
       ])
     }
-  }
+  },
 })
 
 const authStore = useAuthStore()
@@ -1226,47 +1435,51 @@ const canSeeAll = authStore.hasAnyRole(['ADMIN', 'MANAGER', 'SUPERVISOR'])
 const b2cTableTitle = computed(() => authStore.isArOnly ? 'Table Ending Balance' : 'Ending Balance B2C')
 
 // ─── State B2C ────────────────────────────────────────────────────────────────
-const loading     = ref(false)
-const rows        = ref([])
-const meta        = ref({ total: 0, per_page: 15 })
-const currentPage = ref(1)
+const {
+  items: rows, loading, loadingMore, hasMore, total,
+  reset, loadMore, abort,
+} = useLoadMore('/finance/ending-balance', { perPage: 15, params: { segment: 'B2C' } })
+
 const expanded    = ref([])
 
 // ─── State B2B ────────────────────────────────────────────────────────────────
-const loadingB2B     = ref(false)
-const rowsB2B        = ref([])
-const metaB2B        = ref({ total: 0, per_page: 15 })
-const currentPageB2B = ref(1)
+const {
+  items: rowsB2B, loading: loadingB2B, loadingMore: loadingMoreB2B, hasMore: hasMoreB2B, total: totalB2B,
+  reset: resetB2B, loadMore: loadMoreB2B, abort: abortB2B,
+} = useLoadMore('/finance/ending-balance', { perPage: 15, params: { segment: 'B2B' } })
+
 const expandedB2B    = ref([])
 
 function toDateStr(d) {
   const year  = d.getFullYear()
   const month = String(d.getMonth() + 1).padStart(2, '0')
   const day   = String(d.getDate()).padStart(2, '0')
+  
   return `${year}-${month}-${day}`
 }
 const now      = new Date()
 const firstDay = new Date(now.getFullYear(), now.getMonth(), 1)
 const lastDay  = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+
 const filtersB2B = reactive({
-  periode_awal:  toDateStr(firstDay),
+  periode_awal: toDateStr(firstDay),
   periode_akhir: toDateStr(lastDay),
   status: null,
 })
 
 const filtersB2C = reactive({
-  periode_awal:  toDateStr(firstDay),
+  periode_awal: toDateStr(firstDay),
   periode_akhir: toDateStr(lastDay),
   status: null,
 })
 
 const periodeDraftB2B = reactive({
-  periode_awal:  toDateStr(firstDay),
+  periode_awal: toDateStr(firstDay),
   periode_akhir: toDateStr(lastDay),
 })
 
 const periodeDraftB2C = reactive({
-  periode_awal:  toDateStr(firstDay),
+  periode_awal: toDateStr(firstDay),
   periode_akhir: toDateStr(lastDay),
 })
 
@@ -1302,72 +1515,36 @@ function formatRp(val) {
 }
 function formatDate(d) {
   if (!d) return '-'
+  
   return new Date(d).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 function formatDatetime(d) {
   if (!d) return '-'
+  
   return new Date(d).toLocaleString('id-ID')
-}
-
-async function doFetch(page = 1) {
-  loading.value = true
-  try {
-    const { data } = await api.get('/finance/ending-balance', {
-      params: { ...filtersB2C, segment: 'B2C', page },
-      timeout: 60000,
-    })
-    rows.value = data.data ?? []
-    meta.value = { total: data.meta?.total ?? 0, per_page: data.meta?.per_page ?? 15 }
-  } finally {
-    loading.value = false
-  }
-}
-
-async function doFetchB2B(page = 1) {
-  loadingB2B.value = true
-  try {
-    const { data } = await api.get('/finance/ending-balance', {
-      params: { ...filtersB2B, segment: 'B2B', page },
-      timeout: 60000,
-    })
-    rowsB2B.value = data.data ?? []
-    metaB2B.value = { total: data.meta?.total ?? 0, per_page: data.meta?.per_page ?? 15 }
-  } finally {
-    loadingB2B.value = false
-  }
 }
 
 function applyPeriodeFiltersB2C() {
   Object.assign(filtersB2C, periodeDraftB2C)
-  doFetch(1)
+  reset(filtersB2C)
 }
 
 function applyPeriodeFiltersB2B() {
   Object.assign(filtersB2B, periodeDraftB2B)
-  doFetchB2B(1)
+  resetB2B(filtersB2B)
 }
 
 function onSegmentTabChange(tab) {
   activeSegmentTab.value = tab
   if (tab === 'b2b' && !b2bLoaded) {
     b2bLoaded = true
-    doFetchB2B(currentPageB2B.value)
+    resetB2B(filtersB2B)
   }
 }
 
 function refreshLists() {
-  doFetch(currentPage.value)
-  if (b2bLoaded) doFetchB2B(currentPageB2B.value)
-}
-
-function onTableOptions({ page }) {
-  currentPage.value = page
-  doFetch(page)
-}
-
-function onTableOptionsB2B({ page }) {
-  currentPageB2B.value = page
-  doFetchB2B(page)
+  reset(filtersB2C)
+  if (b2bLoaded) resetB2B(filtersB2B)
 }
 
 function confirmLock(item) {
@@ -1421,19 +1598,19 @@ const pendingHeaders = [
   { title: 'CLIENT',           key: 'nama_klien',    sortable: false },
   { title: 'OUTLET',           key: 'outlet',        sortable: false },
   { title: 'NOMINAL',          key: 'nilai_koreksi', sortable: false },
-  { title: 'ALASAN',           key: 'alasan_koreksi',sortable: false },
+  { title: 'ALASAN',           key: 'alasan_koreksi', sortable: false },
   { title: 'DIAJUKAN OLEH',    key: 'submitted_by',  sortable: false },
   { title: 'TANGGAL DIAJUKAN', key: 'submitted_at',  sortable: false },
   { title: 'AKSI',             key: 'actions',       sortable: false, align: 'center' },
 ]
 
 const approvalActionDialog = reactive({
-  open      : false,
-  action    : null,
-  koreksi   : null,
+  open: false,
+  action: null,
+  koreksi: null,
   keterangan: '',
-  error     : '',
-  loading   : false,
+  error: '',
+  loading: false,
 })
 
 function tipeBadgeColor(tipe) {
@@ -1448,6 +1625,7 @@ async function fetchPending() {
   pendingLoading.value = true
   try {
     const { data } = await api.get('/finance/ending-balance/koreksi/pending')
+
     pendingRows.value = data.data ?? []
   } finally {
     pendingLoading.value = false
@@ -1470,6 +1648,7 @@ function closeApprovalActionDialog() {
 async function confirmApprovalAction() {
   if (approvalActionDialog.action === 'reject' && !approvalActionDialog.keterangan.trim()) {
     approvalActionDialog.error = 'Keterangan wajib diisi saat menolak koreksi.'
+    
     return
   }
 
@@ -1496,16 +1675,21 @@ async function confirmApprovalAction() {
 onMounted(() => {
   if (authStore.canApproveEndingBalanceManager) {
     fetchPending()
-    doFetch()
+    reset(filtersB2C)
     b2bLoaded = true
-    doFetchB2B()
+    resetB2B(filtersB2B)
   } else {
-    doFetch()
+    reset(filtersB2C)
     if (canSeeAll) {
       b2bLoaded = true
-      doFetchB2B()
+      resetB2B(filtersB2B)
     }
   }
+})
+
+onBeforeUnmount(() => {
+  abort()
+  abortB2B()
 })
 </script>
 
@@ -1570,5 +1754,4 @@ onMounted(() => {
 :deep(.eb-table__row:hover) {
   background: rgba(var(--v-theme-on-surface), 0.08) !important;
 }
-
 </style>

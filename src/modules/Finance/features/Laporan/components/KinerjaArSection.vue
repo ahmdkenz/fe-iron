@@ -11,9 +11,27 @@
           density="compact"
           @update:model-value="doFetch"
         >
-          <VBtn value="ALL" size="small" style="min-width: 80px">Semua</VBtn>
-          <VBtn value="B2C" size="small" style="min-width: 70px">B2C</VBtn>
-          <VBtn value="B2B" size="small" style="min-width: 70px">B2B</VBtn>
+          <VBtn
+            value="ALL"
+            size="small"
+            style="min-width: 80px"
+          >
+            Semua
+          </VBtn>
+          <VBtn
+            value="B2C"
+            size="small"
+            style="min-width: 70px"
+          >
+            B2C
+          </VBtn>
+          <VBtn
+            value="B2B"
+            size="small"
+            style="min-width: 70px"
+          >
+            B2B
+          </VBtn>
         </VBtnToggle>
         <VTextField
           v-model="filters.periode_awal"
@@ -48,56 +66,103 @@
 
     <!-- Summary Cards -->
     <VRow class="mb-4">
-      <VCol cols="12" sm="6" md="3">
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
         <VCard>
           <VCardText>
             <div class="d-flex align-center gap-3">
-              <VAvatar color="primary" variant="tonal" size="44">
+              <VAvatar
+                color="primary"
+                variant="tonal"
+                size="44"
+              >
                 <VIcon icon="ri-user-star-line" />
               </VAvatar>
               <div>
-                <div class="text-caption text-medium-emphasis">Jumlah AR Officer</div>
-                <div class="text-h6 font-weight-bold">{{ report.rows?.length ?? 0 }}</div>
+                <div class="text-caption text-medium-emphasis">
+                  Jumlah AR Officer
+                </div>
+                <div class="text-h6 font-weight-bold">
+                  {{ report.rows?.length ?? 0 }}
+                </div>
               </div>
             </div>
           </VCardText>
         </VCard>
       </VCol>
-      <VCol cols="12" sm="6" md="3">
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
         <VCard>
           <VCardText>
             <div class="d-flex align-center gap-3">
-              <VAvatar color="warning" variant="tonal" size="44">
+              <VAvatar
+                color="warning"
+                variant="tonal"
+                size="44"
+              >
                 <VIcon icon="ri-bill-line" />
               </VAvatar>
               <div>
-                <div class="text-caption text-medium-emphasis">Total Tagihan</div>
-                <div class="text-h6 font-weight-bold">{{ formatCurrency(report.summary?.total_tagihan ?? 0) }}</div>
+                <div class="text-caption text-medium-emphasis">
+                  Total Tagihan
+                </div>
+                <div class="text-h6 font-weight-bold">
+                  {{ formatCurrency(report.summary?.total_tagihan ?? 0) }}
+                </div>
               </div>
             </div>
           </VCardText>
         </VCard>
       </VCol>
-      <VCol cols="12" sm="6" md="3">
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
         <VCard>
           <VCardText>
             <div class="d-flex align-center gap-3">
-              <VAvatar color="success" variant="tonal" size="44">
+              <VAvatar
+                color="success"
+                variant="tonal"
+                size="44"
+              >
                 <VIcon icon="ri-money-cny-circle-line" />
               </VAvatar>
               <div>
-                <div class="text-caption text-medium-emphasis">Total Terkumpul</div>
-                <div class="text-h6 font-weight-bold">{{ formatCurrency(report.summary?.total_terkumpul ?? 0) }}</div>
+                <div class="text-caption text-medium-emphasis">
+                  Total Terkumpul
+                </div>
+                <div class="text-h6 font-weight-bold">
+                  {{ formatCurrency(report.summary?.total_terkumpul ?? 0) }}
+                </div>
               </div>
             </div>
           </VCardText>
         </VCard>
       </VCol>
-      <VCol cols="12" sm="6" md="3">
-        <VCard :color="collectionRateColor(report.summary?.collection_rate ?? 0)" variant="tonal">
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
+        <VCard
+          :color="collectionRateColor(report.summary?.collection_rate ?? 0)"
+          variant="tonal"
+        >
           <VCardText class="pa-3">
-            <div class="text-caption font-weight-medium mb-1">Collection Rate Keseluruhan</div>
-            <div class="text-subtitle-1 font-weight-bold">{{ report.summary?.collection_rate ?? 0 }}%</div>
+            <div class="text-caption font-weight-medium mb-1">
+              Collection Rate Keseluruhan
+            </div>
+            <div class="text-subtitle-1 font-weight-bold">
+              {{ report.summary?.collection_rate ?? 0 }}%
+            </div>
           </VCardText>
         </VCard>
       </VCol>
@@ -131,7 +196,12 @@
           >
             {{ item.nama_karyawan }}
           </RouterLink>
-          <div v-if="item.perusahaan" class="text-caption text-medium-emphasis">{{ item.perusahaan }}</div>
+          <div
+            v-if="item.perusahaan"
+            class="text-caption text-medium-emphasis"
+          >
+            {{ item.perusahaan }}
+          </div>
         </template>
         <template #item.total_tagihan="{ item }">
           {{ formatCurrency(item.total_tagihan) }}
@@ -153,7 +223,10 @@
               rounded
               style="max-width: 80px"
             />
-            <span class="text-caption font-weight-bold" :class="`text-${collectionRateColor(item.collection_rate)}`">
+            <span
+              class="text-caption font-weight-bold"
+              :class="`text-${collectionRateColor(item.collection_rate)}`"
+            >
               {{ item.collection_rate }}%
             </span>
           </div>
@@ -182,7 +255,7 @@ const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().sl
 const lastDay  = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10)
 
 const filters = reactive({
-  periode_awal:  firstDay,
+  periode_awal: firstDay,
   periode_akhir: lastDay,
 })
 
@@ -190,7 +263,7 @@ const page    = ref(1)
 const perPage = ref(15)
 
 const paginatedRows = computed(() =>
-  report.rows.slice((page.value - 1) * perPage.value, page.value * perPage.value)
+  report.rows.slice((page.value - 1) * perPage.value, page.value * perPage.value),
 )
 
 function onTableOptions({ page: p, itemsPerPage }) {
@@ -206,12 +279,13 @@ const headers = [
   { title: 'Total Tagihan',  key: 'total_tagihan',    sortable: false, align: 'end' },
   { title: 'Terkumpul',      key: 'total_terkumpul',  sortable: false, align: 'end' },
   { title: 'Sisa',           key: 'total_sisa',       sortable: false, align: 'end' },
-  { title: 'Collection Rate',key: 'collection_rate',  sortable: false, align: 'center' },
+  { title: 'Collection Rate', key: 'collection_rate',  sortable: false, align: 'center' },
 ]
 
 function collectionRateColor(rate) {
   if (rate >= 90) return 'success'
   if (rate >= 70) return 'warning'
+  
   return 'error'
 }
 
@@ -220,6 +294,7 @@ function buildParams() {
   if (filters.periode_awal)    p.periode_awal  = filters.periode_awal
   if (filters.periode_akhir)   p.periode_akhir = filters.periode_akhir
   if (segment.value !== 'ALL') p.segment       = segment.value
+  
   return p
 }
 
@@ -228,9 +303,11 @@ async function doFetch() {
   loading.value = true
   try {
     const { data } = await api.get('/finance/kinerja-ar', { params: buildParams() })
+
     Object.assign(report, data.data)
   } catch (err) {
     const msg = err.response?.data?.message ?? 'Gagal memuat laporan kinerja AR. Coba lagi.'
+
     showError({ text: msg })
   } finally {
     loading.value = false
@@ -241,13 +318,16 @@ async function doExport() {
   exporting.value = true
   try {
     const response = await api.get('/finance/kinerja-ar/export-excel', {
-      params:       buildParams(),
+      params: buildParams(),
       responseType: 'blob',
     })
+
     const url  = URL.createObjectURL(new Blob([response.data], {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     }))
+
     const link    = document.createElement('a')
+
     link.href     = url
     link.download = `KINERJA AR - SEMUA - ${buildTimestamp()}.xlsx`
     link.click()
@@ -259,6 +339,7 @@ async function doExport() {
 
 function buildTimestamp() {
   const n = new Date()
+  
   return (
     String(n.getDate()).padStart(2, '0') +
     String(n.getMonth() + 1).padStart(2, '0') +

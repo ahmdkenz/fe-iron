@@ -41,16 +41,29 @@ async function doLogout() {
   <!-- ── Logout overlay ── -->
   <Teleport to="body">
     <Transition name="lov-fade">
-      <div v-if="showLogoutOverlay" class="lov-root d-flex flex-column align-center justify-center">
+      <div
+        v-if="showLogoutOverlay"
+        class="lov-root d-flex flex-column align-center justify-center"
+      >
         <div class="lov-wrap mb-6">
           <div class="lov-ring" />
           <div class="lov-box d-flex align-center justify-center">
-            <VIcon icon="ri-logout-box-r-line" size="36" class="lov-icon" />
+            <VIcon
+              icon="ri-logout-box-r-line"
+              size="36"
+              class="lov-icon"
+            />
           </div>
         </div>
-        <h2 class="lov-title">Keluar dari Sistem</h2>
-        <p class="lov-name">Sampai jumpa, {{ namaLengkap }}</p>
-        <p class="lov-status loading-dots">{{ logoutStep }}</p>
+        <h2 class="lov-title">
+          Keluar dari Sistem
+        </h2>
+        <p class="lov-name">
+          Sampai jumpa, {{ namaLengkap }}
+        </p>
+        <p class="lov-status loading-dots">
+          {{ logoutStep }}
+        </p>
         <div class="lov-prog mt-6">
           <div class="lov-bar" />
         </div>

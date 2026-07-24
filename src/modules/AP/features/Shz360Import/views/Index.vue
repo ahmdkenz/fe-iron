@@ -10,32 +10,75 @@
     />
 
     <!-- Sync Health -->
-    <VCard class="mb-4" variant="outlined" rounded="lg">
+    <VCard
+      class="mb-4"
+      variant="outlined"
+      rounded="lg"
+    >
       <VCardText class="d-flex flex-wrap align-center gap-4 py-3">
         <div class="d-flex align-center gap-2">
-          <VIcon :icon="syncStatusMeta.icon" :color="syncStatusMeta.color" size="20" />
+          <VIcon
+            :icon="syncStatusMeta.icon"
+            :color="syncStatusMeta.color"
+            size="20"
+          />
           <div>
-            <div class="text-caption text-medium-emphasis">Sync Terakhir</div>
-            <div class="font-weight-medium" :class="`text-${syncStatusMeta.color}`">{{ syncStatusMeta.label }}</div>
+            <div class="text-caption text-medium-emphasis">
+              Sync Terakhir
+            </div>
+            <div
+              class="font-weight-medium"
+              :class="`text-${syncStatusMeta.color}`"
+            >
+              {{ syncStatusMeta.label }}
+            </div>
           </div>
         </div>
         <template v-if="lastRun">
-          <VDivider vertical inset length="32" />
+          <VDivider
+            vertical
+            inset
+            length="32"
+          />
           <div>
-            <div class="text-caption text-medium-emphasis">Waktu</div>
-            <div class="text-body-2">{{ formatDateTime(lastRun.started_at) }} → {{ formatDateTime(lastRun.finished_at) }}</div>
+            <div class="text-caption text-medium-emphasis">
+              Waktu
+            </div>
+            <div class="text-body-2">
+              {{ formatDateTime(lastRun.started_at) }} → {{ formatDateTime(lastRun.finished_at) }}
+            </div>
           </div>
-          <VDivider vertical inset length="32" />
+          <VDivider
+            vertical
+            inset
+            length="32"
+          />
           <div>
-            <div class="text-caption text-medium-emphasis">PO</div>
-            <div class="text-body-2">{{ lastRun.po_upserted }}/{{ lastRun.po_fetched }} upserted</div>
+            <div class="text-caption text-medium-emphasis">
+              PO
+            </div>
+            <div class="text-body-2">
+              {{ lastRun.po_upserted }}/{{ lastRun.po_fetched }} upserted
+            </div>
           </div>
-          <VDivider vertical inset length="32" />
+          <VDivider
+            vertical
+            inset
+            length="32"
+          />
           <div>
-            <div class="text-caption text-medium-emphasis">Terima PO</div>
-            <div class="text-body-2">{{ lastRun.receipt_upserted }}/{{ lastRun.receipt_fetched }} upserted</div>
+            <div class="text-caption text-medium-emphasis">
+              Terima PO
+            </div>
+            <div class="text-body-2">
+              {{ lastRun.receipt_upserted }}/{{ lastRun.receipt_fetched }} upserted
+            </div>
           </div>
-          <VDivider vertical inset length="32" />
+          <VDivider
+            vertical
+            inset
+            length="32"
+          />
           <VBtn
             v-if="lastRun.error_count > 0"
             size="small"
@@ -46,7 +89,14 @@
           >
             {{ lastRun.error_count }} Error
           </VBtn>
-          <VChip v-else size="small" variant="tonal" color="success">Tidak ada error</VChip>
+          <VChip
+            v-else
+            size="small"
+            variant="tonal"
+            color="success"
+          >
+            Tidak ada error
+          </VChip>
         </template>
         <VSpacer />
         <VBtn
@@ -72,23 +122,60 @@
           Sync Sekarang
         </VBtn>
       </VCardText>
-      <VAlert v-if="!lastRun" type="info" variant="tonal" density="compact" class="ma-0" tile>
+      <VAlert
+        v-if="!lastRun"
+        type="info"
+        variant="tonal"
+        density="compact"
+        class="ma-0"
+        tile
+      >
         Belum pernah ada sync yang berjalan. Klik "Sync Sekarang" untuk memulai.
       </VAlert>
-      <VAlert v-else-if="lastRun.status === 'failed'" type="error" variant="tonal" density="compact" class="ma-0" tile>
+      <VAlert
+        v-else-if="lastRun.status === 'failed'"
+        type="error"
+        variant="tonal"
+        density="compact"
+        class="ma-0"
+        tile
+      >
         Sync gagal total (transport ke SHZ360 bermasalah, bukan error per baris): {{ lastRun.message }}
       </VAlert>
-      <VAlert v-else-if="lastRun.status === 'partial_success'" type="warning" variant="tonal" density="compact" class="ma-0" tile>
+      <VAlert
+        v-else-if="lastRun.status === 'partial_success'"
+        type="warning"
+        variant="tonal"
+        density="compact"
+        class="ma-0"
+        tile
+      >
         Sync selesai, tapi {{ lastRun.error_count }} baris data gagal diproses (sync tidak diulang otomatis untuk baris ini sampai berhasil).
       </VAlert>
-      <VAlert v-else-if="lastRun.message" type="warning" variant="tonal" density="compact" class="ma-0" tile>
+      <VAlert
+        v-else-if="lastRun.message"
+        type="warning"
+        variant="tonal"
+        density="compact"
+        class="ma-0"
+        tile
+      >
         {{ lastRun.message }}
       </VAlert>
     </VCard>
 
     <!-- KPI Cards -->
-    <VRow class="mb-2" dense>
-      <VCol v-for="card in kpiCards" :key="card.title" cols="6" sm="4" lg="2">
+    <VRow
+      class="mb-2"
+      dense
+    >
+      <VCol
+        v-for="card in kpiCards"
+        :key="card.title"
+        cols="6"
+        sm="4"
+        lg="2"
+      >
         <VCard
           :variant="card.filterKey !== undefined && activeFilterKey === card.filterKey ? 'tonal' : 'outlined'"
           :color="card.filterKey !== undefined && activeFilterKey === card.filterKey ? card.color : undefined"
@@ -99,10 +186,21 @@
           <VCardText class="py-3 px-3">
             <div class="d-flex align-center justify-space-between mb-1">
               <span class="text-caption text-medium-emphasis text-truncate">{{ card.title }}</span>
-              <VIcon :icon="card.icon" size="16" :color="card.color" />
+              <VIcon
+                :icon="card.icon"
+                size="16"
+                :color="card.color"
+              />
             </div>
-            <div class="text-h6 font-weight-bold text-truncate" :class="`text-${card.color}`">{{ card.value }}</div>
-            <div class="text-caption text-medium-emphasis text-truncate">{{ card.caption }}</div>
+            <div
+              class="text-h6 font-weight-bold text-truncate"
+              :class="`text-${card.color}`"
+            >
+              {{ card.value }}
+            </div>
+            <div class="text-caption text-medium-emphasis text-truncate">
+              {{ card.caption }}
+            </div>
           </VCardText>
         </VCard>
       </VCol>
@@ -121,7 +219,12 @@
         @click="setStatusFilter(s.key)"
       >
         {{ s.label }}
-        <VChip size="x-small" class="ms-2" :color="activeFilterKey === s.key ? 'white' : s.color" variant="flat">
+        <VChip
+          size="x-small"
+          class="ms-2"
+          :color="activeFilterKey === s.key ? 'white' : s.color"
+          variant="flat"
+        >
           {{ s.count }}
         </VChip>
       </VBtn>
@@ -167,7 +270,7 @@
           hide-details
           density="compact"
           :true-value="1"
-          :false-value="''"
+          false-value=""
           @update:model-value="doFetch"
         />
       </VCardText>
@@ -187,7 +290,14 @@
           {{ (meta.current_page - 1) * meta.per_page + index + 1 }}
         </template>
         <template #item.kode_receipt="{ item }">
-          <VChip color="primary" size="small" variant="tonal" label>{{ item.kode_receipt }}</VChip>
+          <VChip
+            color="primary"
+            size="small"
+            variant="tonal"
+            label
+          >
+            {{ item.kode_receipt }}
+          </VChip>
         </template>
         <template #item.tanggal_receipt="{ item }">
           {{ formatDate(item.tanggal_receipt) }}
@@ -200,28 +310,57 @@
         </template>
         <template #item.vendor_nama="{ item }">
           <span v-if="item.vendor_nama">{{ item.vendor_nama }}</span>
-          <VChip v-else-if="item.need_mapping" color="warning" size="small" variant="tonal">Perlu dipetakan</VChip>
+          <VChip
+            v-else-if="item.need_mapping"
+            color="warning"
+            size="small"
+            variant="tonal"
+          >
+            Perlu dipetakan
+          </VChip>
           <span v-else>-</span>
         </template>
         <template #item.total_diterima="{ item }">
           {{ formatCurrency(item.total_diterima) }}
         </template>
         <template #item.has_reject_items="{ item }">
-          <VTooltip v-if="item.has_reject_items" text="Ada barang ditolak">
+          <VTooltip
+            v-if="item.has_reject_items"
+            text="Ada barang ditolak"
+          >
             <template #activator="{ props: p }">
-              <VIcon v-bind="p" icon="ri-error-warning-line" color="error" size="20" />
+              <VIcon
+                v-bind="p"
+                icon="ri-error-warning-line"
+                color="error"
+                size="20"
+              />
             </template>
           </VTooltip>
-          <span v-else class="text-medium-emphasis">-</span>
+          <span
+            v-else
+            class="text-medium-emphasis"
+          >-</span>
         </template>
         <template #item.import_status="{ item }">
           <Shz360ImportStatusBadge :status="item.import_status" />
         </template>
         <template #item.actions="{ item }">
           <div class="d-flex gap-1">
-            <VBtn icon size="small" variant="text" color="info" @click="openDetail(item)">
-              <VIcon icon="ri-eye-line" size="18" />
-              <VTooltip activator="parent">Detail</VTooltip>
+            <VBtn
+              icon
+              size="small"
+              variant="text"
+              color="info"
+              @click="openDetail(item)"
+            >
+              <VIcon
+                icon="ri-eye-line"
+                size="18"
+              />
+              <VTooltip activator="parent">
+                Detail
+              </VTooltip>
             </VBtn>
             <VBtn
               v-if="item.need_mapping && authStore.canOperateApShz360Import"
@@ -231,8 +370,13 @@
               color="warning"
               @click="openMapVendor(item)"
             >
-              <VIcon icon="ri-link-m" size="18" />
-              <VTooltip activator="parent">Petakan Vendor</VTooltip>
+              <VIcon
+                icon="ri-link-m"
+                size="18"
+              />
+              <VTooltip activator="parent">
+                Petakan Vendor
+              </VTooltip>
             </VBtn>
             <VBtn
               v-if="!item.need_mapping && item.import_status !== 'CONVERTED' && item.import_status !== 'IGNORED' && authStore.canOperateApShz360Import"
@@ -242,8 +386,13 @@
               color="primary"
               @click="openConvert(item)"
             >
-              <VIcon icon="ri-file-add-line" size="18" />
-              <VTooltip activator="parent">Buat Tagihan</VTooltip>
+              <VIcon
+                icon="ri-file-add-line"
+                size="18"
+              />
+              <VTooltip activator="parent">
+                Buat Tagihan
+              </VTooltip>
             </VBtn>
             <VBtn
               v-if="item.import_status === 'CONVERTED' && item.tagihan_ap_id"
@@ -253,8 +402,13 @@
               color="success"
               :to="{ name: 'ap-tagihan-show', params: { id: item.tagihan_ap_id } }"
             >
-              <VIcon icon="ri-bill-line" size="18" />
-              <VTooltip activator="parent">Lihat Tagihan</VTooltip>
+              <VIcon
+                icon="ri-bill-line"
+                size="18"
+              />
+              <VTooltip activator="parent">
+                Lihat Tagihan
+              </VTooltip>
             </VBtn>
             <VBtn
               v-if="!['CONVERTED', 'IGNORED'].includes(item.import_status) && authStore.canOperateApShz360Import"
@@ -264,8 +418,13 @@
               color="error"
               @click="confirmIgnore(item)"
             >
-              <VIcon icon="ri-close-circle-line" size="18" />
-              <VTooltip activator="parent">Abaikan</VTooltip>
+              <VIcon
+                icon="ri-close-circle-line"
+                size="18"
+              />
+              <VTooltip activator="parent">
+                Abaikan
+              </VTooltip>
             </VBtn>
           </div>
         </template>
@@ -273,68 +432,167 @@
     </VCard>
 
     <!-- Detail -->
-    <BaseModal v-model="showDetail" title="Detail Staging SHZ360" width="1120">
-      <div v-if="detailLoading" class="text-center pa-6">
-        <VProgressCircular indeterminate color="primary" />
+    <BaseModal
+      v-model="showDetail"
+      title="Detail Staging SHZ360"
+      width="1120"
+    >
+      <div
+        v-if="detailLoading"
+        class="text-center pa-6"
+      >
+        <VProgressCircular
+          indeterminate
+          color="primary"
+        />
       </div>
       <div v-else-if="detailItem">
         <VRow class="mb-2">
-          <VCol cols="12" md="6">
-            <VCard variant="outlined" rounded="lg">
-              <VCardTitle class="text-body-1 font-weight-bold py-3">Informasi Terima PO</VCardTitle>
+          <VCol
+            cols="12"
+            md="6"
+          >
+            <VCard
+              variant="outlined"
+              rounded="lg"
+            >
+              <VCardTitle class="text-body-1 font-weight-bold py-3">
+                Informasi Terima PO
+              </VCardTitle>
               <VDivider />
-              <DetailRow label="Kode Terima PO" :value="detailItem.kode_receipt" label-width="150px" />
-              <DetailRow label="Tanggal Terima" :value="formatDate(detailItem.tanggal_receipt)" label-width="150px" />
-              <DetailRow label="No. Invoice" :value="detailItem.no_invoice" label-width="150px" />
-              <DetailRow label="No. Surat Jalan" :value="detailItem.no_surat_jalan" label-width="150px" />
-              <DetailRow label="No. Faktur Pajak" :value="detailItem.no_faktur_pajak" label-width="150px" />
+              <DetailRow
+                label="Kode Terima PO"
+                :value="detailItem.kode_receipt"
+                label-width="150px"
+              />
+              <DetailRow
+                label="Tanggal Terima"
+                :value="formatDate(detailItem.tanggal_receipt)"
+                label-width="150px"
+              />
+              <DetailRow
+                label="No. Invoice"
+                :value="detailItem.no_invoice"
+                label-width="150px"
+              />
+              <DetailRow
+                label="No. Surat Jalan"
+                :value="detailItem.no_surat_jalan"
+                label-width="150px"
+              />
+              <DetailRow
+                label="No. Faktur Pajak"
+                :value="detailItem.no_faktur_pajak"
+                label-width="150px"
+              />
               <div class="px-4 px-sm-5 py-3">
                 <Shz360ImportStatusBadge :status="detailItem.import_status" />
               </div>
             </VCard>
           </VCol>
-          <VCol cols="12" md="6">
-            <VCard variant="outlined" rounded="lg">
-              <VCardTitle class="text-body-1 font-weight-bold py-3">Informasi PO</VCardTitle>
+          <VCol
+            cols="12"
+            md="6"
+          >
+            <VCard
+              variant="outlined"
+              rounded="lg"
+            >
+              <VCardTitle class="text-body-1 font-weight-bold py-3">
+                Informasi PO
+              </VCardTitle>
               <VDivider />
-              <DetailRow label="Kode PO" :value="detailItem.kode_po" label-width="150px" />
-              <DetailRow label="Tanggal PO" :value="formatDate(detailItem.tanggal_po)" label-width="150px" />
-              <DetailRow label="Supplier SHZ360" label-width="150px">
+              <DetailRow
+                label="Kode PO"
+                :value="detailItem.kode_po"
+                label-width="150px"
+              />
+              <DetailRow
+                label="Tanggal PO"
+                :value="formatDate(detailItem.tanggal_po)"
+                label-width="150px"
+              />
+              <DetailRow
+                label="Supplier SHZ360"
+                label-width="150px"
+              >
                 {{ supplierLabel(detailItem.source_supplier) }}
               </DetailRow>
-              <DetailRow label="Vendor AP" label-width="150px">
+              <DetailRow
+                label="Vendor AP"
+                label-width="150px"
+              >
                 <span v-if="detailItem.vendor_nama">{{ detailItem.vendor_nama }}</span>
-                <VChip v-else color="warning" size="small" variant="tonal">Belum dipetakan</VChip>
+                <VChip
+                  v-else
+                  color="warning"
+                  size="small"
+                  variant="tonal"
+                >
+                  Belum dipetakan
+                </VChip>
               </DetailRow>
-              <DetailRow label="Status PO" :value="detailItem.status_po" label-width="150px" />
-              <DetailRow label="Total PO" :value="formatCurrency(detailItem.po_grand_total)" label-width="150px" />
+              <DetailRow
+                label="Status PO"
+                :value="detailItem.status_po"
+                label-width="150px"
+              />
+              <DetailRow
+                label="Total PO"
+                :value="formatCurrency(detailItem.po_grand_total)"
+                label-width="150px"
+              />
             </VCard>
           </VCol>
         </VRow>
-        <p class="text-subtitle-2 mb-2 mt-2">Item Diterima</p>
+        <p class="text-subtitle-2 mb-2 mt-2">
+          Item Diterima
+        </p>
         <div class="overflow-x-auto mb-4">
           <VTable density="compact">
             <thead>
               <tr>
                 <th>Barang</th>
-                <th class="text-right">Qty PO</th>
-                <th class="text-right">Qty Diterima</th>
+                <th class="text-right">
+                  Qty PO
+                </th>
+                <th class="text-right">
+                  Qty Diterima
+                </th>
                 <th>Satuan</th>
                 <th>Status</th>
-                <th class="text-right">Harga</th>
-                <th class="text-right">PPN</th>
-                <th class="text-right">Subtotal</th>
+                <th class="text-right">
+                  Harga
+                </th>
+                <th class="text-right">
+                  PPN
+                </th>
+                <th class="text-right">
+                  Subtotal
+                </th>
               </tr>
             </thead>
             <tbody>
-              <template v-for="(it, idx) in detailItem.items" :key="idx">
+              <template
+                v-for="(it, idx) in detailItem.items"
+                :key="idx"
+              >
                 <tr>
                   <td>
                     {{ it.nama_barang }}
-                    <div v-if="it.kode_barang" class="text-caption text-medium-emphasis">{{ it.kode_barang }}</div>
+                    <div
+                      v-if="it.kode_barang"
+                      class="text-caption text-medium-emphasis"
+                    >
+                      {{ it.kode_barang }}
+                    </div>
                   </td>
-                  <td class="text-right">{{ it.qty_po ?? '-' }}</td>
-                  <td class="text-right">{{ it.qty_diterima }}</td>
+                  <td class="text-right">
+                    {{ it.qty_po ?? '-' }}
+                  </td>
+                  <td class="text-right">
+                    {{ it.qty_diterima }}
+                  </td>
                   <td>{{ it.satuan }}</td>
                   <td>
                     <VChip
@@ -348,14 +606,26 @@
                     </VChip>
                     <span v-else>-</span>
                   </td>
-                  <td class="text-right">{{ formatCurrency(it.harga) }}</td>
-                  <td class="text-right">{{ it.ppn !== null ? `${it.ppn}%` : '-' }}</td>
-                  <td class="text-right">{{ formatCurrency(it.subtotal) }}</td>
+                  <td class="text-right">
+                    {{ formatCurrency(it.harga) }}
+                  </td>
+                  <td class="text-right">
+                    {{ it.ppn !== null ? `${it.ppn}%` : '-' }}
+                  </td>
+                  <td class="text-right">
+                    {{ formatCurrency(it.subtotal) }}
+                  </td>
                 </tr>
                 <tr v-if="it.qty_tolak > 0">
-                  <td colspan="8" class="text-caption text-warning py-1">
+                  <td
+                    colspan="8"
+                    class="text-caption text-warning py-1"
+                  >
                     <span class="d-inline-flex align-center gap-1">
-                      <VIcon icon="ri-error-warning-line" size="14" />
+                      <VIcon
+                        icon="ri-error-warning-line"
+                        size="14"
+                      />
                       <span>Ditolak {{ it.qty_tolak }} {{ it.satuan }}<span v-if="it.keterangan_tolak"> — {{ it.keterangan_tolak }}</span></span>
                     </span>
                   </td>
@@ -366,7 +636,11 @@
         </div>
       </div>
       <template #actions>
-        <AppActionButton action="batalkan" label="Tutup" @click="showDetail = false" />
+        <AppActionButton
+          action="batalkan"
+          label="Tutup"
+          @click="showDetail = false"
+        />
       </template>
     </BaseModal>
 
@@ -383,16 +657,40 @@
       :disabled="!canSubmitMapVendor"
       @confirm="doMapVendor"
     >
-      <VCard variant="tonal" color="primary" rounded="lg" class="mb-4">
+      <VCard
+        variant="tonal"
+        color="primary"
+        rounded="lg"
+        class="mb-4"
+      >
         <VCardText class="d-flex align-center gap-3 pa-3">
-          <VAvatar size="40" color="primary" variant="flat" rounded="lg">
-            <VIcon icon="ri-truck-line" size="20" />
+          <VAvatar
+            size="40"
+            color="primary"
+            variant="flat"
+            rounded="lg"
+          >
+            <VIcon
+              icon="ri-truck-line"
+              size="20"
+            />
           </VAvatar>
           <div class="flex-grow-1 min-w-0">
-            <div class="text-caption text-medium-emphasis">Supplier dari SHZ360</div>
-            <div class="font-weight-bold text-truncate">{{ selectedItem?.source_supplier_name ?? '-' }}</div>
+            <div class="text-caption text-medium-emphasis">
+              Supplier dari SHZ360
+            </div>
+            <div class="font-weight-bold text-truncate">
+              {{ selectedItem?.source_supplier_name ?? '-' }}
+            </div>
           </div>
-          <VChip size="small" variant="flat" color="primary" label>PO {{ selectedItem?.kode_po ?? '-' }}</VChip>
+          <VChip
+            size="small"
+            variant="flat"
+            color="primary"
+            label
+          >
+            PO {{ selectedItem?.kode_po ?? '-' }}
+          </VChip>
         </VCardText>
       </VCard>
 
@@ -412,12 +710,38 @@
         </div>
       </VAlert>
 
-      <VBtnToggle v-model="mapVendorMode" mandatory color="primary" variant="outlined" density="compact" divided class="mb-4">
-        <VBtn value="existing" size="small" style="min-width: 180px">
-          <VIcon start size="16">ri-store-2-line</VIcon>Vendor Terdaftar
+      <VBtnToggle
+        v-model="mapVendorMode"
+        mandatory
+        color="primary"
+        variant="outlined"
+        density="compact"
+        divided
+        class="mb-4"
+      >
+        <VBtn
+          value="existing"
+          size="small"
+          style="min-width: 180px"
+        >
+          <VIcon
+            start
+            size="16"
+          >
+            ri-store-2-line
+          </VIcon>Vendor Terdaftar
         </VBtn>
-        <VBtn value="new" size="small" style="min-width: 150px">
-          <VIcon start size="16">ri-add-circle-line</VIcon>Vendor Baru
+        <VBtn
+          value="new"
+          size="small"
+          style="min-width: 150px"
+        >
+          <VIcon
+            start
+            size="16"
+          >
+            ri-add-circle-line
+          </VIcon>Vendor Baru
         </VBtn>
       </VBtnToggle>
 
@@ -435,22 +759,55 @@
           clearable
         >
           <template #item="{ props: p, item }">
-            <VListItem v-bind="p" :title="item.raw.display_label" />
+            <VListItem
+              v-bind="p"
+              :title="item.raw.display_label"
+            />
           </template>
         </VAutocomplete>
       </template>
 
       <template v-else>
-        <VAlert type="info" variant="tonal" density="compact" class="mb-4" icon="ri-information-line">
+        <VAlert
+          type="info"
+          variant="tonal"
+          density="compact"
+          class="mb-4"
+          icon="ri-information-line"
+        >
           Nama, NPWP, dan info bank otomatis terisi dari data SHZ360.
         </VAlert>
 
-        <VCard variant="outlined" rounded="lg" class="mb-4">
-          <DetailRow label="Nama Vendor" :value="selectedItem?.source_supplier?.nama_supplier" label-width="120px" />
-          <DetailRow label="NPWP" :value="selectedItem?.source_supplier?.npwp" label-width="120px" />
-          <DetailRow label="Bank" :value="selectedItem?.source_supplier?.bank_nama" label-width="120px" />
-          <DetailRow label="No. Rekening" :value="selectedItem?.source_supplier?.bank_no_rekening" label-width="120px" />
-          <DetailRow label="Atas Nama" :value="selectedItem?.source_supplier?.bank_atas_nama" label-width="120px" />
+        <VCard
+          variant="outlined"
+          rounded="lg"
+          class="mb-4"
+        >
+          <DetailRow
+            label="Nama Vendor"
+            :value="selectedItem?.source_supplier?.nama_supplier"
+            label-width="120px"
+          />
+          <DetailRow
+            label="NPWP"
+            :value="selectedItem?.source_supplier?.npwp"
+            label-width="120px"
+          />
+          <DetailRow
+            label="Bank"
+            :value="selectedItem?.source_supplier?.bank_nama"
+            label-width="120px"
+          />
+          <DetailRow
+            label="No. Rekening"
+            :value="selectedItem?.source_supplier?.bank_no_rekening"
+            label-width="120px"
+          />
+          <DetailRow
+            label="Atas Nama"
+            :value="selectedItem?.source_supplier?.bank_atas_nama"
+            label-width="120px"
+          />
         </VCard>
 
         <VTextField
@@ -491,7 +848,11 @@
           @focus="ensureKaryawanLoaded({ params: { role: 'AP' } })"
         >
           <template #item="{ props: p, item }">
-            <VListItem v-bind="p" :title="item.raw.nama_karyawan" :subtitle="item.raw.nik" />
+            <VListItem
+              v-bind="p"
+              :title="item.raw.nama_karyawan"
+              :subtitle="item.raw.nik"
+            />
           </template>
         </VAutocomplete>
       </template>
@@ -513,35 +874,100 @@
         (PO {{ selectedItem?.kode_po }}, vendor {{ selectedItem?.vendor_nama }}).
       </p>
       <VRow>
-        <VCol cols="12" md="6">
-          <VTextField v-model="convertForm.no_invoice_vendor" label="No. Invoice Vendor" density="compact" />
+        <VCol
+          cols="12"
+          md="6"
+        >
+          <VTextField
+            v-model="convertForm.no_invoice_vendor"
+            label="No. Invoice Vendor"
+            density="compact"
+          />
         </VCol>
-        <VCol cols="12" md="6">
-          <VTextField v-model="convertForm.tanggal_tagihan" label="Tanggal Tagihan" type="date" density="compact" />
+        <VCol
+          cols="12"
+          md="6"
+        >
+          <VTextField
+            v-model="convertForm.tanggal_tagihan"
+            label="Tanggal Tagihan"
+            type="date"
+            density="compact"
+          />
         </VCol>
-        <VCol cols="12" md="6">
-          <VTextField v-model="convertForm.tanggal_jatuh_tempo" label="Tanggal Jatuh Tempo" type="date" density="compact" />
+        <VCol
+          cols="12"
+          md="6"
+        >
+          <VTextField
+            v-model="convertForm.tanggal_jatuh_tempo"
+            label="Tanggal Jatuh Tempo"
+            type="date"
+            density="compact"
+          />
         </VCol>
-        <VCol cols="12" md="6">
-          <VTextField v-model.number="convertForm.ppn_masukan" label="PPN Masukan" type="number" density="compact" />
+        <VCol
+          cols="12"
+          md="6"
+        >
+          <VTextField
+            v-model.number="convertForm.ppn_masukan"
+            label="PPN Masukan"
+            type="number"
+            density="compact"
+          />
         </VCol>
-        <VCol cols="12" md="6">
-          <VTextField v-model.number="convertForm.pph23" label="PPh 23" type="number" density="compact" />
+        <VCol
+          cols="12"
+          md="6"
+        >
+          <VTextField
+            v-model.number="convertForm.pph23"
+            label="PPh 23"
+            type="number"
+            density="compact"
+          />
         </VCol>
       </VRow>
-      <VAlert v-if="convertError" type="error" variant="tonal" class="mt-2">{{ convertError }}</VAlert>
+      <VAlert
+        v-if="convertError"
+        type="error"
+        variant="tonal"
+        class="mt-2"
+      >
+        {{ convertError }}
+      </VAlert>
     </BaseModal>
 
     <!-- Sync Errors -->
-    <BaseModal v-model="showSyncErrors" title="Error Sync Terbaru" width="720">
-      <div v-if="syncErrorsLoading" class="text-center pa-6">
-        <VProgressCircular indeterminate color="primary" />
+    <BaseModal
+      v-model="showSyncErrors"
+      title="Error Sync Terbaru"
+      width="720"
+    >
+      <div
+        v-if="syncErrorsLoading"
+        class="text-center pa-6"
+      >
+        <VProgressCircular
+          indeterminate
+          color="primary"
+        />
       </div>
-      <div v-else-if="syncErrorList.length === 0" class="text-center text-medium-emphasis py-6">
+      <div
+        v-else-if="syncErrorList.length === 0"
+        class="text-center text-medium-emphasis py-6"
+      >
         Tidak ada error sync.
       </div>
       <div v-else>
-        <VAlert type="info" variant="tonal" density="compact" class="mb-3" icon="ri-information-line">
+        <VAlert
+          type="info"
+          variant="tonal"
+          density="compact"
+          class="mb-3"
+          icon="ri-information-line"
+        >
           Daftar ini adalah baris data yang gagal diproses saat sync (sync run tetap selesai sebagai "Selesai Sebagian"),
           berbeda dengan sync yang gagal total karena transport/koneksi ke SHZ360.
         </VAlert>
@@ -556,18 +982,41 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="err in syncErrorList" :key="err.id">
-              <td class="text-caption">#{{ err.sync_run_id }}</td>
-              <td class="text-caption">{{ formatDateTime(err.run_started_at) }}</td>
-              <td><VChip size="x-small" variant="tonal" label>{{ err.source_type }}</VChip></td>
-              <td class="text-caption">{{ err.source_id ?? '-' }}</td>
-              <td class="text-caption text-error">{{ err.message }}</td>
+            <tr
+              v-for="err in syncErrorList"
+              :key="err.id"
+            >
+              <td class="text-caption">
+                #{{ err.sync_run_id }}
+              </td>
+              <td class="text-caption">
+                {{ formatDateTime(err.run_started_at) }}
+              </td>
+              <td>
+                <VChip
+                  size="x-small"
+                  variant="tonal"
+                  label
+                >
+                  {{ err.source_type }}
+                </VChip>
+              </td>
+              <td class="text-caption">
+                {{ err.source_id ?? '-' }}
+              </td>
+              <td class="text-caption text-error">
+                {{ err.message }}
+              </td>
             </tr>
           </tbody>
         </VTable>
       </div>
       <template #actions>
-        <AppActionButton action="batalkan" label="Tutup" @click="showSyncErrors = false" />
+        <AppActionButton
+          action="batalkan"
+          label="Tutup"
+          @click="showSyncErrors = false"
+        />
       </template>
     </BaseModal>
 
@@ -651,11 +1100,13 @@ function onTableOptions({ page, itemsPerPage }) {
 
 function formatDateTime(value) {
   if (!value) return '-'
+  
   return new Date(value).toLocaleString('id-ID')
 }
 
 function supplierLabel(supplier) {
   if (!supplier?.nama_supplier) return '-'
+  
   return supplier.kode_supplier ? `${supplier.kode_supplier} - ${supplier.nama_supplier}` : supplier.nama_supplier
 }
 
@@ -669,14 +1120,17 @@ const syncStatusMetaMap = {
   failed: { color: 'error', icon: 'ri-close-circle-line', label: 'Gagal' },
   running: { color: 'info', icon: 'ri-loader-4-line', label: 'Berjalan' },
 }
+
 const syncStatusMeta = computed(() => {
   if (!lastRun.value) return { color: 'secondary', icon: 'ri-question-line', label: 'Belum pernah sync' }
+  
   return syncStatusMetaMap[lastRun.value.status] ?? { color: 'secondary', icon: 'ri-question-line', label: lastRun.value.status }
 })
 
 async function loadLastRun() {
   try {
     const { data } = await api.get('/ap/shz360/sync/last-run')
+
     lastRun.value = data.data
   } catch {
     // belum pernah sync, biarkan kosong
@@ -691,6 +1145,7 @@ function sleep(ms) {
 // yang menampilkan tahapan (PO → Terima PO) secara live.
 const showSyncDialog = ref(false)
 const syncDialogMode = ref('retry')
+
 const syncProgress = reactive({
   status: 'sending',
   po_fetched: 0,
@@ -725,6 +1180,7 @@ async function pollSyncRun(previousId) {
     let run = null
     try {
       const { data } = await api.get('/ap/shz360/sync/last-run')
+
       run = data.data
     } catch {
       continue // belum pernah ada run sama sekali, atau blip jaringan — coba lagi
@@ -743,7 +1199,9 @@ async function pollSyncRun(previousId) {
 
 async function executeSync(endpoint, mode) {
   retrying.value = true
+
   const previousId = lastRun.value?.id ?? null
+
   syncDialogMode.value = mode
   resetSyncProgress()
   showSyncDialog.value = true
@@ -752,6 +1210,7 @@ async function executeSync(endpoint, mode) {
     syncProgress.status = 'running'
 
     const run = await pollSyncRun(previousId)
+
     lastRun.value = run
     applyRunToProgress(run)
     await sleep(600) // biarkan step tracker sempat tampil "Selesai" sebelum ditutup
@@ -795,6 +1254,7 @@ async function doFullResync() {
     text: 'Ini akan menarik ULANG SEMUA PO & Terima PO berstatus approved_direktur yang ada saat ini, mengabaikan histori sync sebelumnya. Proses bisa memakan waktu beberapa menit untuk data besar.',
     confirmButtonText: 'Ya, full resync',
   })
+
   if (!isConfirmed) return
 
   return executeSync('/ap/shz360/sync/full-resync', 'full-resync')
@@ -810,6 +1270,7 @@ async function openSyncErrors() {
   syncErrorsLoading.value = true
   try {
     const { data } = await api.get('/ap/shz360/sync/errors', { params: { limit: 10 } })
+
     syncErrorList.value = data.data ?? []
   } catch (err) {
     await showError(err.response?.data?.message ?? 'Gagal memuat error sync')
@@ -824,6 +1285,7 @@ const summary = ref(null)
 async function loadSummary() {
   try {
     const { data } = await api.get('/ap/shz360/imports/summary')
+
     summary.value = data.data
   } catch {
     // non-critical, KPI tetap tampil dengan nilai default
@@ -832,6 +1294,7 @@ async function loadSummary() {
 
 const kpiCards = computed(() => {
   const s = summary.value ?? {}
+  
   return [
     {
       title: 'Total Staging', value: s.total_receipts ?? 0,
@@ -868,6 +1331,7 @@ const kpiCards = computed(() => {
 
 const shortcuts = computed(() => {
   const s = summary.value ?? {}
+  
   return [
     { key: 'need_mapping', label: 'Perlu Mapping', icon: 'ri-link-m', color: 'warning', count: s.need_mapping_count ?? 0 },
     { key: 'READY_FOR_AP', label: 'Siap Convert', icon: 'ri-checkbox-circle-line', color: 'info', count: s.ready_count ?? 0 },
@@ -879,16 +1343,19 @@ const shortcuts = computed(() => {
 const activeFilterKey = computed(() => {
   if (params.need_mapping) return 'need_mapping'
   if (params.import_status) return params.import_status
+  
   return 'all'
 })
 
 function setStatusFilter(key) {
   if (key === 'error_sync') {
     openSyncErrors()
+    
     return
   }
   if (key === 'need_mapping') {
     const isActive = activeFilterKey.value === 'need_mapping'
+
     params.need_mapping = isActive ? '' : 1
     params.import_status = ''
   } else if (key === 'all') {
@@ -896,6 +1363,7 @@ function setStatusFilter(key) {
     params.import_status = ''
   } else {
     const isActive = activeFilterKey.value === key
+
     params.import_status = isActive ? '' : key
     params.need_mapping = ''
   }
@@ -964,6 +1432,7 @@ async function doMapVendor() {
 const showConvert = ref(false)
 const converting = ref(false)
 const convertError = ref('')
+
 const convertForm = reactive({
   no_invoice_vendor: '',
   tanggal_tagihan: new Date().toISOString().slice(0, 10),
@@ -988,6 +1457,7 @@ async function doConvert() {
   converting.value = true
   try {
     const { data } = await api.post(`/ap/shz360/imports/${selectedItem.value.id}/convert-to-tagihan`, convertForm)
+
     showConvert.value = false
     fetchList()
     loadSummary()
@@ -1007,6 +1477,7 @@ async function confirmIgnore(item) {
     text: `Penerimaan ${item.kode_receipt} tidak akan dikonversi jadi tagihan.`,
     confirmButtonText: 'Ya, abaikan',
   })
+
   if (!isConfirmed) return
 
   try {

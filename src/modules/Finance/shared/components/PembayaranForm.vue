@@ -77,7 +77,10 @@
         </VCol>
 
         <!-- No Referensi -->
-        <VCol cols="12" md="6">
+        <VCol
+          cols="12"
+          md="6"
+        >
           <VTextField
             v-model="form.no_referensi"
             label="No. Referensi"
@@ -90,8 +93,15 @@
         </VCol>
 
         <!-- Warning duplikat referensi -->
-        <VCol v-if="duplikatInfo" cols="12">
-          <VAlert type="warning" variant="tonal" density="compact">
+        <VCol
+          v-if="duplikatInfo"
+          cols="12"
+        >
+          <VAlert
+            type="warning"
+            variant="tonal"
+            density="compact"
+          >
             <strong>Peringatan:</strong> Nomor referensi ini sudah digunakan oleh
             <strong>{{ duplikatInfo.pic ?? 'PIC tidak diketahui' }}</strong>
             pada <strong>{{ duplikatInfo.tanggal_pembayaran }}</strong>
@@ -150,7 +160,10 @@
             Tidak ada invoice reguler yang bisa dilunaskan otomatis untuk OB ini.
           </VAlert>
           <template v-else>
-            <div class="border rounded pa-1" style="max-height: 220px; overflow-y: auto;">
+            <div
+              class="border rounded pa-1"
+              style="max-height: 220px; overflow-y: auto;"
+            >
               <VCheckbox
                 v-for="row in settleRows"
                 :key="row.id"
@@ -163,7 +176,12 @@
                   <div class="d-flex flex-column">
                     <div class="d-flex align-center gap-2">
                       <span class="text-body-2">{{ row.no_invoice }}</span>
-                      <VChip v-if="row.selected && row.predictedStatus" :color="statusSettleColor(row.predictedStatus)" size="x-small" variant="tonal">
+                      <VChip
+                        v-if="row.selected && row.predictedStatus"
+                        :color="statusSettleColor(row.predictedStatus)"
+                        size="x-small"
+                        variant="tonal"
+                      >
                         {{ statusSettleLabel(row.predictedStatus) }}
                       </VChip>
                     </div>
@@ -196,12 +214,21 @@
             >
               <div class="text-body-2 mb-2">
                 Estimasi dana tidak cukup untuk seluruh invoice terpilih:
-                {{ settleSummary.fullCount }} invoice akan LUNAS<template v-if="settleSummary.partialCount">,
-                1 invoice akan SEBAGIAN sebesar {{ formatCurrency(settleSummary.partialAmount) }}</template><template v-if="settleSummary.unpaidCount">,
-                {{ settleSummary.unpaidCount }} invoice tidak akan terbayar</template>.
+                {{ settleSummary.fullCount }} invoice akan LUNAS<template v-if="settleSummary.partialCount">
+                  ,
+                  1 invoice akan SEBAGIAN sebesar {{ formatCurrency(settleSummary.partialAmount) }}
+                </template><template v-if="settleSummary.unpaidCount">
+                  ,
+                  {{ settleSummary.unpaidCount }} invoice tidak akan terbayar
+                </template>.
                 Sisanya tetap pada status saat ini.
               </div>
-              <VCheckbox v-model="settleShortfallAck" density="compact" hide-details color="warning">
+              <VCheckbox
+                v-model="settleShortfallAck"
+                density="compact"
+                hide-details
+                color="warning"
+              >
                 <template #label>
                   <span class="text-caption">Saya paham dana diperkirakan tidak mencukupi seluruh invoice terpilih dan tetap ingin melanjutkan pembayaran sebagian.</span>
                 </template>
@@ -249,9 +276,6 @@ import { useFormatter } from '@/composables/useFormatter.js'
 import { useSettleWaterfall } from '@/composables/useSettleWaterfall'
 import api from '@/utils/axios.js'
 
-const checkingRef  = ref(false)
-const duplikatInfo = ref(null)
-
 const props = defineProps({
   modelValue: Boolean,
   invoiceId: { type: [Number, String], default: null },
@@ -260,6 +284,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:modelValue', 'saved'])
+const checkingRef  = ref(false)
+const duplikatInfo = ref(null)
 
 const { formatCurrency } = useFormatter()
 
@@ -335,8 +361,10 @@ async function loadSettleableOriginals() {
   settleableLoading.value = true
   try {
     const res = await api.get(`/finance/invoices/${props.invoiceId}/settleable-originals`)
+
     settleableInvoices.value = res.data?.data?.invoices ?? []
     settleAvailable.value    = Number(res.data?.data?.available ?? 0)
+
     // default: semua tercentang (pembayaran penuh = lunaskan semua)
     selectedSettleIds.value = settleableInvoices.value.map(inv => inv.id)
   } catch {
@@ -371,12 +399,14 @@ function handleJumlahInput(val) {
 
 async function cekDuplikatReferensi() {
   const noRef = form.no_referensi?.trim()
+
   duplikatInfo.value = null
   if (!noRef) return
 
   checkingRef.value = true
   try {
     const res = await api.get('/finance/pembayaran/cek-referensi', { params: { no_referensi: noRef } })
+
     duplikatInfo.value = res.data?.data ?? null
   } catch {
     // abaikan error cek referensi — validasi tetap dilakukan saat submit
@@ -401,6 +431,7 @@ async function handleSubmit() {
 
   try {
     const payload = new FormData()
+
     payload.append('tanggal_pembayaran', form.tanggal_pembayaran)
     payload.append('jumlah_pembayaran', form.jumlah_pembayaran)
     payload.append('metode_pembayaran', form.metode_pembayaran)

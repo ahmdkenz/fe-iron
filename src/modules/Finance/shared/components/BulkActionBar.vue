@@ -101,6 +101,7 @@ const { xs } = useDisplay()
 const canShare = computed(() => {
   if (!props.selected.length) return false
   const ids = props.selected.map(inv => inv.klien_ar_id ?? inv.klien_ar?.id)
+  
   return new Set(ids).size === 1
 })
 

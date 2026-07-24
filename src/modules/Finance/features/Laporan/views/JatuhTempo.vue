@@ -21,9 +21,27 @@
             density="compact"
             @update:model-value="doFetch"
           >
-            <VBtn value="ALL" size="small" style="min-width: 80px">Semua</VBtn>
-            <VBtn value="B2C" size="small" style="min-width: 70px">B2C</VBtn>
-            <VBtn value="B2B" size="small" style="min-width: 70px">B2B</VBtn>
+            <VBtn
+              value="ALL"
+              size="small"
+              style="min-width: 80px"
+            >
+              Semua
+            </VBtn>
+            <VBtn
+              value="B2C"
+              size="small"
+              style="min-width: 70px"
+            >
+              B2C
+            </VBtn>
+            <VBtn
+              value="B2B"
+              size="small"
+              style="min-width: 70px"
+            >
+              B2B
+            </VBtn>
           </VBtnToggle>
 
           <VBtnToggle
@@ -33,9 +51,27 @@
             divided
             @update:model-value="doFetch"
           >
-            <VBtn value="upcoming" size="small" style="min-width: 130px">Akan Jatuh Tempo</VBtn>
-            <VBtn value="overdue"  size="small" style="min-width: 110px">Sudah Lewat</VBtn>
-            <VBtn value="all"      size="small" style="min-width: 80px">Semua</VBtn>
+            <VBtn
+              value="upcoming"
+              size="small"
+              style="min-width: 130px"
+            >
+              Akan Jatuh Tempo
+            </VBtn>
+            <VBtn
+              value="overdue"
+              size="small"
+              style="min-width: 110px"
+            >
+              Sudah Lewat
+            </VBtn>
+            <VBtn
+              value="all"
+              size="small"
+              style="min-width: 80px"
+            >
+              Semua
+            </VBtn>
           </VBtnToggle>
 
           <Transition name="fade">
@@ -64,7 +100,7 @@
             item-title="display_label"
             item-value="id"
             :loading="klienLoading"
-            @focus="ensureKlienLoaded()"
+            @focus="ensureKlienLoaded"
             @update:model-value="doFetch"
           />
         </div>
@@ -73,35 +109,79 @@
 
     <!-- Summary Cards -->
     <VRow class="mb-4">
-      <VCol cols="12" sm="6" md="3">
-        <VCard :color="report.summary?.sudah_lewat > 0 ? 'error' : undefined" variant="tonal">
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
+        <VCard
+          :color="report.summary?.sudah_lewat > 0 ? 'error' : undefined"
+          variant="tonal"
+        >
           <VCardText class="pa-3">
-            <div class="text-caption font-weight-medium mb-1">Sudah Lewat Jatuh Tempo</div>
-            <div class="text-subtitle-1 font-weight-bold">{{ report.summary?.sudah_lewat ?? 0 }} invoice</div>
+            <div class="text-caption font-weight-medium mb-1">
+              Sudah Lewat Jatuh Tempo
+            </div>
+            <div class="text-subtitle-1 font-weight-bold">
+              {{ report.summary?.sudah_lewat ?? 0 }} invoice
+            </div>
           </VCardText>
         </VCard>
       </VCol>
-      <VCol cols="12" sm="6" md="3">
-        <VCard color="warning" variant="tonal">
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
+        <VCard
+          color="warning"
+          variant="tonal"
+        >
           <VCardText class="pa-3">
-            <div class="text-caption font-weight-medium mb-1">Jatuh Tempo Hari Ini</div>
-            <div class="text-subtitle-1 font-weight-bold">{{ report.summary?.jatuh_tempo_hari_ini ?? 0 }} invoice</div>
+            <div class="text-caption font-weight-medium mb-1">
+              Jatuh Tempo Hari Ini
+            </div>
+            <div class="text-subtitle-1 font-weight-bold">
+              {{ report.summary?.jatuh_tempo_hari_ini ?? 0 }} invoice
+            </div>
           </VCardText>
         </VCard>
       </VCol>
-      <VCol cols="12" sm="6" md="3">
-        <VCard color="info" variant="tonal">
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
+        <VCard
+          color="info"
+          variant="tonal"
+        >
           <VCardText class="pa-3">
-            <div class="text-caption font-weight-medium mb-1">Total Invoice</div>
-            <div class="text-subtitle-1 font-weight-bold">{{ report.summary?.total_invoice ?? 0 }} invoice</div>
+            <div class="text-caption font-weight-medium mb-1">
+              Total Invoice
+            </div>
+            <div class="text-subtitle-1 font-weight-bold">
+              {{ report.summary?.total_invoice ?? 0 }} invoice
+            </div>
           </VCardText>
         </VCard>
       </VCol>
-      <VCol cols="12" sm="6" md="3">
-        <VCard color="error" variant="tonal">
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
+        <VCard
+          color="error"
+          variant="tonal"
+        >
           <VCardText class="pa-3">
-            <div class="text-caption font-weight-medium mb-1">Total Sisa Tagihan</div>
-            <div class="text-subtitle-1 font-weight-bold">{{ formatCurrency(report.summary?.total_sisa ?? 0) }}</div>
+            <div class="text-caption font-weight-medium mb-1">
+              Total Sisa Tagihan
+            </div>
+            <div class="text-subtitle-1 font-weight-bold">
+              {{ formatCurrency(report.summary?.total_sisa ?? 0) }}
+            </div>
           </VCardText>
         </VCard>
       </VCol>
@@ -136,13 +216,23 @@
           </RouterLink>
         </template>
         <template #item.nama_klien="{ item }">
-          <div class="font-weight-medium">{{ item.nama_klien }}</div>
+          <div class="font-weight-medium">
+            {{ item.nama_klien }}
+          </div>
           <div class="text-caption text-medium-emphasis">
-            {{ item.kode_klien }}<template v-if="item.nama_resto"> · {{ item.nama_resto }}</template>
+            {{ item.kode_klien }}<template v-if="item.nama_resto">
+              · {{ item.nama_resto }}
+            </template>
           </div>
         </template>
         <template #item.perusahaan="{ item }">
-          <VChip v-if="item.perusahaan" color="secondary" size="small" variant="tonal" label>
+          <VChip
+            v-if="item.perusahaan"
+            color="secondary"
+            size="small"
+            variant="tonal"
+            label
+          >
             {{ item.perusahaan }}
           </VChip>
           <span v-else>-</span>
@@ -151,12 +241,21 @@
           {{ item.tanggal_jatuh_tempo ? formatDate(item.tanggal_jatuh_tempo) : '-' }}
         </template>
         <template #item.selisih_hari="{ item }">
-          <VChip :color="selisihColor(item.selisih_hari)" size="small" label>
+          <VChip
+            :color="selisihColor(item.selisih_hari)"
+            size="small"
+            label
+          >
             {{ selisihLabel(item.selisih_hari) }}
           </VChip>
         </template>
         <template #item.status="{ item }">
-          <VChip :color="statusColor(item.status)" size="small" label variant="tonal">
+          <VChip
+            :color="statusColor(item.status)"
+            size="small"
+            label
+            variant="tonal"
+          >
             {{ item.status }}
           </VChip>
         </template>
@@ -165,11 +264,19 @@
         </template>
         <template #item.actions="{ item }">
           <VBtn
-            icon size="small" variant="text" color="info"
+            icon
+            size="small"
+            variant="text"
+            color="info"
             :to="{ name: 'finance-invoice-show', params: { id: item.invoice_id } }"
           >
-            <VIcon icon="ri-eye-line" size="18" />
-            <VTooltip activator="parent">Lihat Invoice</VTooltip>
+            <VIcon
+              icon="ri-eye-line"
+              size="18"
+            />
+            <VTooltip activator="parent">
+              Lihat Invoice
+            </VTooltip>
           </VBtn>
         </template>
       </BaseTable>
@@ -195,9 +302,9 @@ const report  = reactive({ as_of_date: null, summary: null, rows: [], meta: null
 const segment = ref('ALL')
 
 const filters = reactive({
-  filter_type:    'upcoming',
-  days:           30,
-  klien_ar_id:    null,
+  filter_type: 'upcoming',
+  days: 30,
+  klien_ar_id: null,
   karyawan_ar_id: null,
 })
 
@@ -227,7 +334,7 @@ const headers = [
   { title: 'Jatuh Tempo', key: 'tanggal_jatuh_tempo',   sortable: false, align: 'center' },
   { title: 'Status Hari', key: 'selisih_hari',          sortable: false, align: 'center' },
   { title: 'Status',      key: 'status',                sortable: false, align: 'center' },
-  { title: 'Sisa Tagihan',key: 'sisa_tagihan',          sortable: false, align: 'end' },
+  { title: 'Sisa Tagihan', key: 'sisa_tagihan',          sortable: false, align: 'end' },
   { title: 'Aksi',        key: 'actions',               sortable: false, align: 'center', width: '70px' },
 ]
 
@@ -237,6 +344,7 @@ function selisihColor(hari) {
   if (hari === 0) return 'warning'
   if (hari <= 7) return 'deep-orange'
   if (hari <= 14) return 'warning'
+  
   return 'info'
 }
 
@@ -244,6 +352,7 @@ function selisihLabel(hari) {
   if (hari === null) return 'Tdk Ada JT'
   if (hari < 0) return `${Math.abs(hari)} hari lewat`
   if (hari === 0) return 'Hari ini'
+  
   return `${hari} hari lagi`
 }
 
@@ -262,6 +371,7 @@ async function doFetch({ resetPage = true } = {}) {
     if (segment.value !== 'ALL') params.segment         = segment.value
 
     const { data } = await api.get('/finance/jatuh-tempo', { params })
+
     Object.assign(report, data.data)
   } finally {
     loading.value = false

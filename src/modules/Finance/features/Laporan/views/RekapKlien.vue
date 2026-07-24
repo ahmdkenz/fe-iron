@@ -9,7 +9,13 @@
         { title: 'Rekap per Klien', disabled: true },
       ]"
     >
-      <VBtn variant="text" prepend-icon="ri-arrow-left-line" :to="{ name: 'finance-laporan' }">Kembali</VBtn>
+      <VBtn
+        variant="text"
+        prepend-icon="ri-arrow-left-line"
+        :to="{ name: 'finance-laporan' }"
+      >
+        Kembali
+      </VBtn>
     </PageHeader>
 
     <!-- Filter -->
@@ -23,9 +29,27 @@
           density="compact"
           @update:model-value="doFetch"
         >
-          <VBtn value="ALL" size="small" style="min-width: 80px">Semua</VBtn>
-          <VBtn value="B2C" size="small" style="min-width: 70px">B2C</VBtn>
-          <VBtn value="B2B" size="small" style="min-width: 70px">B2B</VBtn>
+          <VBtn
+            value="ALL"
+            size="small"
+            style="min-width: 80px"
+          >
+            Semua
+          </VBtn>
+          <VBtn
+            value="B2C"
+            size="small"
+            style="min-width: 70px"
+          >
+            B2C
+          </VBtn>
+          <VBtn
+            value="B2B"
+            size="small"
+            style="min-width: 70px"
+          >
+            B2B
+          </VBtn>
         </VBtnToggle>
         <VSelect
           v-model="filters.periode_bulan"
@@ -62,57 +86,101 @@
         <VCard>
           <VCardText>
             <div class="d-flex align-center gap-3">
-              <VAvatar color="primary" variant="tonal" size="44">
+              <VAvatar
+                color="primary"
+                variant="tonal"
+                size="44"
+              >
                 <VIcon icon="ri-building-4-line" />
               </VAvatar>
               <div>
-                <div class="text-caption text-medium-emphasis">Total Klien</div>
-                <div class="text-h6 font-weight-bold">{{ report.meta?.total ?? report.summary?.total_klien ?? 0 }}</div>
+                <div class="text-caption text-medium-emphasis">
+                  Total Klien
+                </div>
+                <div class="text-h6 font-weight-bold">
+                  {{ report.meta?.total ?? report.summary?.total_klien ?? 0 }}
+                </div>
               </div>
             </div>
           </VCardText>
         </VCard>
       </VCol>
-      <VCol cols="12" sm="6" md="3">
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
         <VCard>
           <VCardText>
             <div class="d-flex align-center gap-3">
-              <VAvatar color="warning" variant="tonal" size="44">
+              <VAvatar
+                color="warning"
+                variant="tonal"
+                size="44"
+              >
                 <VIcon icon="ri-bill-line" />
               </VAvatar>
               <div>
-                <div class="text-caption text-medium-emphasis">Total Tagihan</div>
-                <div class="text-h6 font-weight-bold">{{ formatCurrency(report.summary?.total_tagihan ?? 0) }}</div>
+                <div class="text-caption text-medium-emphasis">
+                  Total Tagihan
+                </div>
+                <div class="text-h6 font-weight-bold">
+                  {{ formatCurrency(report.summary?.total_tagihan ?? 0) }}
+                </div>
               </div>
             </div>
           </VCardText>
         </VCard>
       </VCol>
-      <VCol cols="12" sm="6" md="3">
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
         <VCard>
           <VCardText>
             <div class="d-flex align-center gap-3">
-              <VAvatar color="success" variant="tonal" size="44">
+              <VAvatar
+                color="success"
+                variant="tonal"
+                size="44"
+              >
                 <VIcon icon="ri-money-cny-circle-line" />
               </VAvatar>
               <div>
-                <div class="text-caption text-medium-emphasis">Total Terbayar</div>
-                <div class="text-h6 font-weight-bold">{{ formatCurrency(report.summary?.total_pembayaran ?? 0) }}</div>
+                <div class="text-caption text-medium-emphasis">
+                  Total Terbayar
+                </div>
+                <div class="text-h6 font-weight-bold">
+                  {{ formatCurrency(report.summary?.total_pembayaran ?? 0) }}
+                </div>
               </div>
             </div>
           </VCardText>
         </VCard>
       </VCol>
-      <VCol cols="12" sm="6" md="3">
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
         <VCard>
           <VCardText>
             <div class="d-flex align-center gap-3">
-              <VAvatar color="error" variant="tonal" size="44">
+              <VAvatar
+                color="error"
+                variant="tonal"
+                size="44"
+              >
                 <VIcon icon="ri-error-warning-line" />
               </VAvatar>
               <div>
-                <div class="text-caption text-medium-emphasis">Sisa Piutang</div>
-                <div class="text-h6 font-weight-bold">{{ formatCurrency(report.summary?.total_sisa ?? 0) }}</div>
+                <div class="text-caption text-medium-emphasis">
+                  Sisa Piutang
+                </div>
+                <div class="text-h6 font-weight-bold">
+                  {{ formatCurrency(report.summary?.total_sisa ?? 0) }}
+                </div>
               </div>
             </div>
           </VCardText>
@@ -142,16 +210,22 @@
         </template>
         <template #item.nama_klien="{ item }">
           <div>
-            <div class="font-weight-medium">{{ item.nama_klien }}</div>
+            <div class="font-weight-medium">
+              {{ item.nama_klien }}
+            </div>
             <div class="text-caption text-medium-emphasis">
-              {{ item.kode_klien }}<template v-if="item.nama_resto"> · {{ item.nama_resto }}</template>
+              {{ item.kode_klien }}<template v-if="item.nama_resto">
+                · {{ item.nama_resto }}
+              </template>
             </div>
           </div>
         </template>
         <template #item.pic_ar="{ item }">
           <div>
             <div>{{ item.pic_ar ?? '-' }}</div>
-            <div class="text-caption text-medium-emphasis">{{ item.perusahaan ?? '-' }}</div>
+            <div class="text-caption text-medium-emphasis">
+              {{ item.perusahaan ?? '-' }}
+            </div>
           </div>
         </template>
         <template #item.total_tagihan="{ item }">
@@ -170,7 +244,9 @@
             <div :class="item.overdue_amount > 0 ? 'text-error font-weight-medium' : 'text-medium-emphasis'">
               {{ item.overdue_amount > 0 ? formatCurrency(item.overdue_amount) : '-' }}
             </div>
-            <div class="text-caption text-medium-emphasis">{{ item.overdue_invoice ?? 0 }} invoice</div>
+            <div class="text-caption text-medium-emphasis">
+              {{ item.overdue_invoice ?? 0 }} invoice
+            </div>
           </div>
         </template>
         <template #item.collection_rate="{ item }">
@@ -193,26 +269,68 @@
         </template>
         <template #item.status_breakdown="{ item }">
           <div class="d-flex gap-1 flex-wrap">
-            <VChip v-if="item.draft"    color="default"  size="x-small" label>D: {{ item.draft }}</VChip>
-            <VChip v-if="item.terkirim" color="info"     size="x-small" label>T: {{ item.terkirim }}</VChip>
-            <VChip v-if="item.sebagian" color="warning"  size="x-small" label>S: {{ item.sebagian }}</VChip>
-            <VChip v-if="item.lunas"    color="success"  size="x-small" label>L: {{ item.lunas }}</VChip>
+            <VChip
+              v-if="item.draft"
+              color="default"
+              size="x-small"
+              label
+            >
+              D: {{ item.draft }}
+            </VChip>
+            <VChip
+              v-if="item.terkirim"
+              color="info"
+              size="x-small"
+              label
+            >
+              T: {{ item.terkirim }}
+            </VChip>
+            <VChip
+              v-if="item.sebagian"
+              color="warning"
+              size="x-small"
+              label
+            >
+              S: {{ item.sebagian }}
+            </VChip>
+            <VChip
+              v-if="item.lunas"
+              color="success"
+              size="x-small"
+              label
+            >
+              L: {{ item.lunas }}
+            </VChip>
           </div>
         </template>
         <template #item.actions="{ item }">
           <VBtn
-            icon size="small" variant="text" color="info"
+            icon
+            size="small"
+            variant="text"
+            color="info"
             :to="{ name: 'finance-invoice-index', query: { klien_ar_id: item.klien_id } }"
           >
-            <VIcon icon="ri-eye-line" size="18" />
-            <VTooltip activator="parent">Lihat Invoice</VTooltip>
+            <VIcon
+              icon="ri-eye-line"
+              size="18"
+            />
+            <VTooltip activator="parent">
+              Lihat Invoice
+            </VTooltip>
           </VBtn>
         </template>
         <template #expanded-row="{ item, columns }">
           <tr class="rekap-detail-row">
-            <td :colspan="columns.length" class="pa-0">
+            <td
+              :colspan="columns.length"
+              class="pa-0"
+            >
               <div class="pa-4">
-                <VTable density="compact" class="rekap-detail-table">
+                <VTable
+                  density="compact"
+                  class="rekap-detail-table"
+                >
                   <tbody>
                     <tr>
                       <th>Outstanding</th>
@@ -274,10 +392,10 @@ const perPage = ref(15)
 const headers = [
   { title: 'No',         key: 'no',               sortable: false, width: '50px' },
   { title: 'Klien',      key: 'nama_klien',        sortable: false },
-  { title: 'PIC/Entitas',key: 'pic_ar',            sortable: false },
-  { title: 'Jml Invoice',key: 'total_invoice',     sortable: false, align: 'center' },
+  { title: 'PIC/Entitas', key: 'pic_ar',            sortable: false },
+  { title: 'Jml Invoice', key: 'total_invoice',     sortable: false, align: 'center' },
   { title: 'Total Tagihan',   key: 'total_tagihan',   sortable: false },
-  { title: 'Total Terbayar',  key: 'total_pembayaran',sortable: false },
+  { title: 'Total Terbayar',  key: 'total_pembayaran', sortable: false },
   { title: 'Sisa Piutang',    key: 'sisa_tagihan',    sortable: false },
   { title: 'Overdue',         key: 'overdue_amount',  sortable: false, align: 'end' },
   { title: 'Collection',      key: 'collection_rate', sortable: false, align: 'center' },
@@ -287,10 +405,18 @@ const headers = [
 ]
 
 const bulanOptions = [
-  { label: 'Januari', value: 1 }, { label: 'Februari', value: 2 }, { label: 'Maret', value: 3 },
-  { label: 'April', value: 4 },   { label: 'Mei', value: 5 },      { label: 'Juni', value: 6 },
-  { label: 'Juli', value: 7 },    { label: 'Agustus', value: 8 },  { label: 'September', value: 9 },
-  { label: 'Oktober', value: 10 },{ label: 'November', value: 11 },{ label: 'Desember', value: 12 },
+  { label: 'Januari', value: 1 },
+  { label: 'Februari', value: 2 },
+  { label: 'Maret', value: 3 },
+  { label: 'April', value: 4 },
+  { label: 'Mei', value: 5 },
+  { label: 'Juni', value: 6 },
+  { label: 'Juli', value: 7 },
+  { label: 'Agustus', value: 8 },
+  { label: 'September', value: 9 },
+  { label: 'Oktober', value: 10 },
+  { label: 'November', value: 11 },
+  { label: 'Desember', value: 12 },
 ]
 
 function onTableOptions({ page: p, itemsPerPage }) {
@@ -314,6 +440,7 @@ function collectionColor(value) {
   const n = Number(value ?? 0)
   if (n >= 100) return 'success'
   if (n >= 50) return 'warning'
+  
   return 'error'
 }
 
@@ -340,6 +467,7 @@ async function doFetch({ resetPage = true } = {}) {
     if (segment.value !== 'ALL') params.segment       = segment.value
 
     const { data } = await api.get('/finance/invoices/rekap-klien', { params })
+
     Object.assign(report, data.data)
     expanded.value = []
   } finally {

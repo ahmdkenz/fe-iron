@@ -175,13 +175,25 @@
     </VRow>
 
     <!-- Tab Selector B2B/B2C (hanya untuk admin/manager/supervisor) -->
-    <VTabs v-if="canSeeAll" :model-value="activeSegmentTab" class="mb-4" @update:model-value="onSegmentTabChange">
-      <VTab value="b2b">Invoice B2B</VTab>
-      <VTab value="b2c">Invoice B2C</VTab>
+    <VTabs
+      v-if="canSeeAll"
+      :model-value="activeSegmentTab"
+      class="mb-4"
+      @update:model-value="onSegmentTabChange"
+    >
+      <VTab value="b2b">
+        Invoice B2B
+      </VTab>
+      <VTab value="b2c">
+        Invoice B2C
+      </VTab>
     </VTabs>
 
     <!-- B2B Table (hanya untuk admin/manager/supervisor) -->
-    <VCard v-if="canSeeAll && activeSegmentTab === 'b2b'" class="mb-4">
+    <VCard
+      v-if="canSeeAll && activeSegmentTab === 'b2b'"
+      class="mb-4"
+    >
       <div class="d-flex align-center justify-space-between px-4 py-3">
         <div class="d-flex align-center gap-2">
           <VAvatar
@@ -209,7 +221,9 @@
       <VDivider />
       <div class="d-flex flex-wrap align-center gap-4 px-4 py-3">
         <div style="min-width: 200px; flex: 1; max-width: 280px;">
-          <div class="text-caption text-medium-emphasis mb-2">Pencarian</div>
+          <div class="text-caption text-medium-emphasis mb-2">
+            Pencarian
+          </div>
           <VTextField
             v-model="filtersB2B.search"
             placeholder="Cari no. invoice / klien..."
@@ -220,9 +234,15 @@
             @update:model-value="debouncedFetchB2B"
           />
         </div>
-        <VDivider vertical style="height: 40px; align-self: flex-end;" class="d-none d-sm-block" />
+        <VDivider
+          vertical
+          style="height: 40px; align-self: flex-end;"
+          class="d-none d-sm-block"
+        />
         <div>
-          <div class="text-caption text-medium-emphasis mb-2">Dari</div>
+          <div class="text-caption text-medium-emphasis mb-2">
+            Dari
+          </div>
           <VTextField
             v-model="dateFiltersB2B.tanggal_dari"
             type="date"
@@ -232,7 +252,9 @@
           />
         </div>
         <div>
-          <div class="text-caption text-medium-emphasis mb-2">Sampai</div>
+          <div class="text-caption text-medium-emphasis mb-2">
+            Sampai
+          </div>
           <VTextField
             v-model="dateFiltersB2B.tanggal_sampai"
             type="date"
@@ -254,18 +276,20 @@
       </div>
       <VDivider />
       <BaseTable
+        v-model:selected="selectedInvoices"
         :headers="headersB2B"
         :items="itemsB2B"
-        :total="metaB2B.total"
+        :total="totalB2B"
         :loading="loadingB2B"
-        :per-page="metaB2B.per_page"
-        :page="metaB2B.current_page"
+        pagination-mode="load-more"
+        :has-more="hasMoreB2B"
+        :loading-more="loadingMoreB2B"
+        :loaded-count="itemsB2B.length"
         show-select
-        v-model:selected="selectedInvoices"
         mobile-cards
         mobile-menu-select
         column-resize-key="finance-invoice-b2b"
-        @update:options="onTableOptionsB2B"
+        @load-more="loadMoreB2B"
       >
         <template #mobile-card="{ item, selected, toggle }">
           <div class="d-flex align-center justify-space-between gap-2 mb-2">
@@ -344,7 +368,7 @@
         </template>
 
         <template #item.no="{ index }">
-          {{ (metaB2B.current_page - 1) * metaB2B.per_page + index + 1 }}
+          {{ index + 1 }}
         </template>
         <template #item.no_invoice="{ item }">
           <div class="d-flex align-center gap-1">
@@ -362,7 +386,9 @@
               size="14"
               color="warning"
             >
-              <VTooltip activator="parent">Periode invoice ini sudah dikunci di Ending Balance â€” tidak dapat diedit/dihapus</VTooltip>
+              <VTooltip activator="parent">
+                Periode invoice ini sudah dikunci di Ending Balance â€” tidak dapat diedit/dihapus
+              </VTooltip>
             </VIcon>
           </div>
         </template>
@@ -393,8 +419,13 @@
               color="success"
               @click="openCatatBayar(item)"
             >
-              <VIcon icon="ri-money-cny-circle-line" size="18" />
-              <VTooltip activator="parent">Catat Bayar</VTooltip>
+              <VIcon
+                icon="ri-money-cny-circle-line"
+                size="18"
+              />
+              <VTooltip activator="parent">
+                Catat Bayar
+              </VTooltip>
             </VBtn>
             <VBtn
               v-if="item.can_print"
@@ -404,8 +435,13 @@
               color="success"
               @click="openShareDialog([item])"
             >
-              <VIcon icon="ri-whatsapp-line" size="18" />
-              <VTooltip activator="parent">Kirim via WhatsApp</VTooltip>
+              <VIcon
+                icon="ri-whatsapp-line"
+                size="18"
+              />
+              <VTooltip activator="parent">
+                Kirim via WhatsApp
+              </VTooltip>
             </VBtn>
             <VBtn
               icon
@@ -414,8 +450,13 @@
               color="info"
               :to="{ name: 'finance-invoice-show', params: { id: item.id } }"
             >
-              <VIcon icon="ri-eye-line" size="18" />
-              <VTooltip activator="parent">Detail</VTooltip>
+              <VIcon
+                icon="ri-eye-line"
+                size="18"
+              />
+              <VTooltip activator="parent">
+                Detail
+              </VTooltip>
             </VBtn>
             <VBtn
               v-if="item.status === 'DRAFT' && !item.is_eb_locked"
@@ -425,8 +466,13 @@
               color="primary"
               :to="{ name: 'finance-invoice-edit', params: { id: item.id } }"
             >
-              <VIcon icon="ri-pencil-line" size="18" />
-              <VTooltip activator="parent">Edit</VTooltip>
+              <VIcon
+                icon="ri-pencil-line"
+                size="18"
+              />
+              <VTooltip activator="parent">
+                Edit
+              </VTooltip>
             </VBtn>
             <VBtn
               v-if="item.can_print"
@@ -437,8 +483,13 @@
               :loading="printingId === item.id"
               @click="printInvoice(item)"
             >
-              <VIcon icon="ri-printer-line" size="18" />
-              <VTooltip activator="parent">Cetak Invoice</VTooltip>
+              <VIcon
+                icon="ri-printer-line"
+                size="18"
+              />
+              <VTooltip activator="parent">
+                Cetak Invoice
+              </VTooltip>
             </VBtn>
             <VBtn
               v-if="item.status === 'DRAFT' && !item.is_eb_locked"
@@ -448,8 +499,13 @@
               color="error"
               @click="confirmDelete(item)"
             >
-              <VIcon icon="ri-delete-bin-line" size="18" />
-              <VTooltip activator="parent">Hapus</VTooltip>
+              <VIcon
+                icon="ri-delete-bin-line"
+                size="18"
+              />
+              <VTooltip activator="parent">
+                Hapus
+              </VTooltip>
             </VBtn>
           </div>
         </template>
@@ -485,7 +541,9 @@
       <VDivider />
       <div class="d-flex flex-wrap align-center gap-4 px-4 py-3">
         <div style="min-width: 200px; flex: 1; max-width: 280px;">
-          <div class="text-caption text-medium-emphasis mb-2">Pencarian</div>
+          <div class="text-caption text-medium-emphasis mb-2">
+            Pencarian
+          </div>
           <VTextField
             v-model="filtersB2C.search"
             placeholder="Cari no. invoice / klien..."
@@ -496,9 +554,15 @@
             @update:model-value="debouncedFetchB2C"
           />
         </div>
-        <VDivider vertical style="height: 40px; align-self: flex-end;" class="d-none d-sm-block" />
+        <VDivider
+          vertical
+          style="height: 40px; align-self: flex-end;"
+          class="d-none d-sm-block"
+        />
         <div>
-          <div class="text-caption text-medium-emphasis mb-2">Dari</div>
+          <div class="text-caption text-medium-emphasis mb-2">
+            Dari
+          </div>
           <VTextField
             v-model="dateFiltersB2C.tanggal_dari"
             type="date"
@@ -508,7 +572,9 @@
           />
         </div>
         <div>
-          <div class="text-caption text-medium-emphasis mb-2">Sampai</div>
+          <div class="text-caption text-medium-emphasis mb-2">
+            Sampai
+          </div>
           <VTextField
             v-model="dateFiltersB2C.tanggal_sampai"
             type="date"
@@ -530,18 +596,20 @@
       </div>
       <VDivider />
       <BaseTable
+        v-model:selected="selectedInvoices"
         :headers="headers"
         :items="itemsB2C"
-        :total="metaB2C.total"
+        :total="totalB2C"
         :loading="loadingB2C"
-        :per-page="metaB2C.per_page"
-        :page="metaB2C.current_page"
+        pagination-mode="load-more"
+        :has-more="hasMoreB2C"
+        :loading-more="loadingMoreB2C"
+        :loaded-count="itemsB2C.length"
         show-select
-        v-model:selected="selectedInvoices"
         mobile-cards
         mobile-menu-select
         column-resize-key="finance-invoice-b2c"
-        @update:options="onTableOptionsB2C"
+        @load-more="loadMoreB2C"
       >
         <template #mobile-card="{ item, selected, toggle }">
           <div class="d-flex align-center justify-space-between gap-2 mb-2">
@@ -626,7 +694,7 @@
         </template>
 
         <template #item.no="{ index }">
-          {{ (metaB2C.current_page - 1) * metaB2C.per_page + index + 1 }}
+          {{ index + 1 }}
         </template>
         <template #item.no_invoice="{ item }">
           <div class="d-flex align-center gap-1">
@@ -644,7 +712,9 @@
               size="14"
               color="warning"
             >
-              <VTooltip activator="parent">Periode invoice ini sudah dikunci di Ending Balance â€” tidak dapat diedit/dihapus</VTooltip>
+              <VTooltip activator="parent">
+                Periode invoice ini sudah dikunci di Ending Balance â€” tidak dapat diedit/dihapus
+              </VTooltip>
             </VIcon>
           </div>
         </template>
@@ -678,8 +748,13 @@
               color="success"
               @click="openCatatBayar(item)"
             >
-              <VIcon icon="ri-money-cny-circle-line" size="18" />
-              <VTooltip activator="parent">Catat Bayar</VTooltip>
+              <VIcon
+                icon="ri-money-cny-circle-line"
+                size="18"
+              />
+              <VTooltip activator="parent">
+                Catat Bayar
+              </VTooltip>
             </VBtn>
             <VBtn
               v-if="item.can_print"
@@ -689,8 +764,13 @@
               color="success"
               @click="openShareDialog([item])"
             >
-              <VIcon icon="ri-whatsapp-line" size="18" />
-              <VTooltip activator="parent">Kirim via WhatsApp</VTooltip>
+              <VIcon
+                icon="ri-whatsapp-line"
+                size="18"
+              />
+              <VTooltip activator="parent">
+                Kirim via WhatsApp
+              </VTooltip>
             </VBtn>
             <VBtn
               icon
@@ -699,8 +779,13 @@
               color="info"
               :to="{ name: 'finance-invoice-show', params: { id: item.id } }"
             >
-              <VIcon icon="ri-eye-line" size="18" />
-              <VTooltip activator="parent">Detail</VTooltip>
+              <VIcon
+                icon="ri-eye-line"
+                size="18"
+              />
+              <VTooltip activator="parent">
+                Detail
+              </VTooltip>
             </VBtn>
             <VBtn
               v-if="item.status === 'DRAFT' && !item.is_eb_locked"
@@ -710,8 +795,13 @@
               color="primary"
               :to="{ name: 'finance-invoice-edit', params: { id: item.id } }"
             >
-              <VIcon icon="ri-pencil-line" size="18" />
-              <VTooltip activator="parent">Edit</VTooltip>
+              <VIcon
+                icon="ri-pencil-line"
+                size="18"
+              />
+              <VTooltip activator="parent">
+                Edit
+              </VTooltip>
             </VBtn>
             <VBtn
               v-if="item.can_print"
@@ -722,8 +812,13 @@
               :loading="printingId === item.id"
               @click="printInvoice(item)"
             >
-              <VIcon icon="ri-printer-line" size="18" />
-              <VTooltip activator="parent">Cetak Invoice</VTooltip>
+              <VIcon
+                icon="ri-printer-line"
+                size="18"
+              />
+              <VTooltip activator="parent">
+                Cetak Invoice
+              </VTooltip>
             </VBtn>
             <VBtn
               v-if="item.status === 'DRAFT' && !item.is_eb_locked"
@@ -733,8 +828,13 @@
               color="error"
               @click="confirmDelete(item)"
             >
-              <VIcon icon="ri-delete-bin-line" size="18" />
-              <VTooltip activator="parent">Hapus</VTooltip>
+              <VIcon
+                icon="ri-delete-bin-line"
+                size="18"
+              />
+              <VTooltip activator="parent">
+                Hapus
+              </VTooltip>
             </VBtn>
           </div>
         </template>
@@ -814,13 +914,15 @@ function getDefaultMonthRange() {
   const year = now.getFullYear()
   const month = String(now.getMonth() + 1).padStart(2, '0')
   const lastDay = new Date(year, now.getMonth() + 1, 0).getDate()
+  
   return {
-    tanggal_dari:   `${year}-${month}-01`,
+    tanggal_dari: `${year}-${month}-01`,
     tanggal_sampai: `${year}-${month}-${String(lastDay).padStart(2, '0')}`,
   }
 }
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useCrud } from '@/composables/useCrud.js'
+import { useLoadMore } from '@/composables/useLoadMore.js'
 import { useFormatter } from '@/composables/useFormatter.js'
 import { useAuthStore } from '@/stores/auth.store'
 import api from '@/utils/axios.js'
@@ -839,8 +941,18 @@ const { xs } = useDisplay()
 const router = useRouter()
 const { showSuccess, showError, showLoading, closeAlert, confirmDelete: confirmDeleteSwal } = useSweetAlert()
 const authStore = useAuthStore()
-const { items: itemsB2C, loading: loadingB2C, meta: metaB2C, params: paramsB2C, fetchList: fetchListB2C, remove } = useCrud('/finance/invoices')
-const { items: itemsB2B, loading: loadingB2B, meta: metaB2B, params: paramsB2B, fetchList: fetchListB2B } = useCrud('/finance/invoices')
+const { remove } = useCrud('/finance/invoices')
+
+const {
+  items: itemsB2C, loading: loadingB2C, loadingMore: loadingMoreB2C, hasMore: hasMoreB2C,
+  total: totalB2C, params: paramsB2C, reset: resetB2C, loadMore: loadMoreB2C, abort: abortB2C,
+} = useLoadMore('/finance/invoices', { perPage: 25 })
+
+const {
+  items: itemsB2B, loading: loadingB2B, loadingMore: loadingMoreB2B, hasMore: hasMoreB2B,
+  total: totalB2B, params: paramsB2B, reset: resetB2B, loadMore: loadMoreB2B, abort: abortB2B,
+} = useLoadMore('/finance/invoices', { perPage: 25 })
+
 const { formatCurrency, formatDate } = useFormatter()
 
 const canSeeAll = authStore.hasAnyRole(['ADMIN', 'MANAGER', 'SUPERVISOR'])
@@ -857,8 +969,8 @@ if (canSeeAll) {
   paramsB2B.segment = 'B2B'
 }
 
-Object.assign(paramsB2C, { tanggal_dari: defaultDari, tanggal_sampai: defaultSampai, per_page: 25 })
-Object.assign(paramsB2B, { tanggal_dari: defaultDari, tanggal_sampai: defaultSampai, per_page: 25 })
+Object.assign(paramsB2C, { tanggal_dari: defaultDari, tanggal_sampai: defaultSampai })
+Object.assign(paramsB2B, { tanggal_dari: defaultDari, tanggal_sampai: defaultSampai })
 
 const summary          = reactive({ total_invoice: null, total_tagihan: null, total_pembayaran: null, total_sisa: null })
 const showDelete       = ref(false)
@@ -899,43 +1011,15 @@ const headersB2B = [
   { title: 'Aksi',             key: 'actions',              sortable: false, align: 'center', width: '160px' },
 ]
 
-let listControllerB2C = null
-let listControllerB2B = null
 let summaryController = null
 let debounceTimerB2B  = null
 let debounceTimerB2C  = null
 
-function abortPendingRequests() {
-  listControllerB2C?.abort()
-  listControllerB2B?.abort()
-  summaryController?.abort()
-  listControllerB2C = null
-  listControllerB2B = null
-  summaryController = null
-}
-
-async function loadListB2C() {
-  listControllerB2C?.abort()
-  const controller = new AbortController()
-  listControllerB2C = controller
-  await fetchListB2C({}, { signal: controller.signal })
-  if (listControllerB2C === controller)
-    listControllerB2C = null
-}
-
-async function loadListB2B() {
-  if (!canSeeAll) return
-  listControllerB2B?.abort()
-  const controller = new AbortController()
-  listControllerB2B = controller
-  await fetchListB2B({}, { signal: controller.signal })
-  if (listControllerB2B === controller)
-    listControllerB2B = null
-}
-
 async function loadSummary() {
   summaryController?.abort()
+
   const controller = new AbortController()
+
   summaryController = controller
   try {
     const { data } = await api.get('/finance/invoices/summary', {
@@ -944,6 +1028,7 @@ async function loadSummary() {
       },
       signal: controller.signal,
     })
+
     if (controller.signal.aborted) return
     Object.assign(summary, data.data)
   } catch (err) {
@@ -955,15 +1040,11 @@ async function loadSummary() {
 }
 
 function doFetchB2B() {
-  Object.assign(paramsB2B, filtersB2B)
-  paramsB2B.page = 1
-  loadListB2B()
+  resetB2B(filtersB2B)
 }
 
 function doFetchB2C() {
-  Object.assign(paramsB2C, filtersB2C)
-  paramsB2C.page = 1
-  loadListB2C()
+  resetB2C(filtersB2C)
 }
 
 function debouncedFetchB2B() {
@@ -977,66 +1058,49 @@ function debouncedFetchB2C() {
 }
 
 function applyDateFiltersB2B() {
-  Object.assign(paramsB2B, dateFiltersB2B)
-  paramsB2B.page = 1
-  loadListB2B()
+  resetB2B(dateFiltersB2B)
 }
 
 function applyDateFiltersB2C() {
-  Object.assign(paramsB2C, dateFiltersB2C)
-  paramsB2C.page = 1
-  loadListB2C()
+  resetB2C(dateFiltersB2C)
 }
 
 function resetFiltersB2B() {
   const { tanggal_dari, tanggal_sampai } = getDefaultMonthRange()
+
   Object.assign(filtersB2B, { search: '' })
   Object.assign(dateFiltersB2B, { tanggal_dari, tanggal_sampai })
-  Object.assign(paramsB2B, filtersB2B, dateFiltersB2B)
-  paramsB2B.page = 1
-  loadListB2B()
+  resetB2B({ ...filtersB2B, ...dateFiltersB2B })
 }
 
 function resetFiltersB2C() {
   const { tanggal_dari, tanggal_sampai } = getDefaultMonthRange()
+
   Object.assign(filtersB2C, { search: '' })
   Object.assign(dateFiltersB2C, { tanggal_dari, tanggal_sampai })
-  Object.assign(paramsB2C, filtersB2C, dateFiltersB2C)
-  paramsB2C.page = 1
-  loadListB2C()
+  resetB2C({ ...filtersB2C, ...dateFiltersB2C })
 }
 
 function onSegmentTabChange(tab) {
   activeSegmentTab.value = tab
   if (tab === 'b2b' && !b2bLoaded) {
     b2bLoaded = true
-    loadListB2B()
+    resetB2B()
   }
 }
 
 function refreshLists() {
-  loadListB2C()
-  if (canSeeAll && b2bLoaded) loadListB2B()
+  resetB2C()
+  if (canSeeAll && b2bLoaded) resetB2B()
   loadSummary()
-}
-
-function onTableOptionsB2C({ page, itemsPerPage }) {
-  paramsB2C.page = page
-  paramsB2C.per_page = itemsPerPage
-  loadListB2C()
-}
-
-function onTableOptionsB2B({ page, itemsPerPage }) {
-  paramsB2B.page = page
-  paramsB2B.per_page = itemsPerPage
-  loadListB2B()
 }
 
 function monthToRange(ym) {
   const [year, month] = ym.split('-').map(Number)
   const lastDay = new Date(year, month, 0).getDate()
+  
   return {
-    tanggal_dari:   `${ym}-01`,
+    tanggal_dari: `${ym}-01`,
     tanggal_sampai: `${ym}-${String(lastDay).padStart(2, '0')}`,
   }
 }
@@ -1050,6 +1114,7 @@ async function exportExcel() {
     const isB2B = canSeeAll && activeSegmentTab.value === 'b2b'
 
     const query = new URLSearchParams()
+
     query.set('tanggal_dari', tanggal_dari)
     query.set('tanggal_sampai', tanggal_sampai)
     query.set('segment', isB2B ? 'B2B' : 'B2C')
@@ -1057,6 +1122,7 @@ async function exportExcel() {
     const res = await api.get(`/finance/invoices/export-excel?${query}`, { responseType: 'blob', timeout: 300000 })
     const url  = URL.createObjectURL(res.data)
     const a    = document.createElement('a')
+
     a.href     = url
     a.download = `Data Tagihan Invoice-${new Date().toISOString().slice(0, 10)}.xlsx`
     a.click()
@@ -1089,6 +1155,7 @@ async function printInvoice(item) {
   }
 
   printingId.value = item.id
+
   const printWindow = openLoadingPrintTab()
   try {
     const res = await api.get(`/finance/invoices/${item.id}/print`, { responseType: 'blob', timeout: 300000 })
@@ -1122,6 +1189,7 @@ async function doBulkDelete() {
 
   if (!draftItems.length) {
     await showError('Tidak ada invoice berstatus DRAFT yang bisa dihapus.')
+    
     return
   }
 
@@ -1137,7 +1205,9 @@ async function doBulkDelete() {
     const res = await api.delete('/finance/invoices/bulk', {
       data: { ids: draftItems.map(inv => inv.id) },
     })
+
     const deleted = res.data?.data?.deleted ?? draftItems.length
+
     selectedInvoices.value = []
     refreshLists()
     await showSuccess(`${deleted} invoice berhasil dihapus.`)
@@ -1168,10 +1238,10 @@ async function doDelete() {
 }
 
 onMounted(() => {
-  loadListB2C()
+  resetB2C()
   if (canSeeAll) {
     b2bLoaded = true
-    loadListB2B()
+    resetB2B()
   }
   loadSummary()
 })
@@ -1179,7 +1249,9 @@ onMounted(() => {
 onBeforeUnmount(() => {
   clearTimeout(debounceTimerB2B)
   clearTimeout(debounceTimerB2C)
-  abortPendingRequests()
+  abortB2C()
+  abortB2B()
+  summaryController?.abort()
 })
 </script>
 

@@ -28,13 +28,24 @@
       </VBtn>
     </PageHeader>
 
-    <VCard elevation="0" border rounded="lg" class="mb-6">
+    <VCard
+      elevation="0"
+      border
+      rounded="lg"
+      class="mb-6"
+    >
       <VCardTitle class="px-5 pt-5 pb-0 text-subtitle-2 text-uppercase text-medium-emphasis font-weight-bold">
         Filter Laporan
       </VCardTitle>
       <VCardText class="pa-5">
-        <VRow align="center" dense>
-          <VCol cols="6" sm="auto">
+        <VRow
+          align="center"
+          dense
+        >
+          <VCol
+            cols="6"
+            sm="auto"
+          >
             <VTextField
               v-model="draft.tanggal_dari"
               label="Dari Tanggal"
@@ -45,7 +56,10 @@
               style="min-width: 160px"
             />
           </VCol>
-          <VCol cols="6" sm="auto">
+          <VCol
+            cols="6"
+            sm="auto"
+          >
             <VTextField
               v-model="draft.tanggal_sampai"
               label="Sampai Tanggal"
@@ -56,7 +70,10 @@
               style="min-width: 160px"
             />
           </VCol>
-          <VCol cols="12" sm="auto">
+          <VCol
+            cols="12"
+            sm="auto"
+          >
             <VAutocomplete
               v-model="draft.vendor_ap_id"
               label="Vendor"
@@ -71,10 +88,13 @@
               item-title="display_label"
               item-value="id"
               :loading="vendorLoading"
-              @focus="ensureVendorLoaded()"
+              @focus="ensureVendorLoaded"
             />
           </VCol>
-          <VCol cols="6" sm="auto">
+          <VCol
+            cols="6"
+            sm="auto"
+          >
             <VSelect
               v-model="draft.metode_pembayaran"
               label="Metode"
@@ -91,7 +111,10 @@
               ]"
             />
           </VCol>
-          <VCol cols="6" sm="auto">
+          <VCol
+            cols="6"
+            sm="auto"
+          >
             <VSelect
               v-model="draft.kategori_voucher"
               label="Kategori"
@@ -107,7 +130,10 @@
               ]"
             />
           </VCol>
-          <VCol cols="12" sm="auto">
+          <VCol
+            cols="12"
+            sm="auto"
+          >
             <VBtn
               color="primary"
               prepend-icon="ri-filter-3-line"
@@ -122,69 +148,160 @@
     </VCard>
 
     <VRow class="mb-6">
-      <VCol cols="12" sm="6" md="3">
-        <VCard elevation="0" border rounded="lg">
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
+        <VCard
+          elevation="0"
+          border
+          rounded="lg"
+        >
           <VCardText class="d-flex align-center gap-4 pa-5">
-            <VAvatar color="primary" variant="tonal" size="54" rounded>
-              <VIcon icon="ri-exchange-funds-line" size="28" />
+            <VAvatar
+              color="primary"
+              variant="tonal"
+              size="54"
+              rounded
+            >
+              <VIcon
+                icon="ri-exchange-funds-line"
+                size="28"
+              />
             </VAvatar>
             <div>
-              <div class="text-caption text-medium-emphasis font-weight-medium text-uppercase mb-1">Total</div>
-              <div class="text-h6 font-weight-bold text-high-emphasis">{{ formatCurrency(report.summary?.total ?? 0) }}</div>
+              <div class="text-caption text-medium-emphasis font-weight-medium text-uppercase mb-1">
+                Total
+              </div>
+              <div class="text-h6 font-weight-bold text-high-emphasis">
+                {{ formatCurrency(report.summary?.total ?? 0) }}
+              </div>
             </div>
           </VCardText>
         </VCard>
       </VCol>
-      <VCol cols="12" sm="6" md="3">
-        <VCard elevation="0" border rounded="lg">
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
+        <VCard
+          elevation="0"
+          border
+          rounded="lg"
+        >
           <VCardText class="d-flex align-center gap-4 pa-5">
-            <VAvatar color="info" variant="tonal" size="54" rounded>
-              <VIcon icon="ri-bank-line" size="28" />
+            <VAvatar
+              color="info"
+              variant="tonal"
+              size="54"
+              rounded
+            >
+              <VIcon
+                icon="ri-bank-line"
+                size="28"
+              />
             </VAvatar>
             <div>
-              <div class="text-caption text-medium-emphasis font-weight-medium text-uppercase mb-1">Transfer</div>
-              <div class="text-h6 font-weight-bold text-high-emphasis">{{ formatCurrency(report.summary?.transfer ?? 0) }}</div>
+              <div class="text-caption text-medium-emphasis font-weight-medium text-uppercase mb-1">
+                Transfer
+              </div>
+              <div class="text-h6 font-weight-bold text-high-emphasis">
+                {{ formatCurrency(report.summary?.transfer ?? 0) }}
+              </div>
             </div>
           </VCardText>
         </VCard>
       </VCol>
-      <VCol cols="12" sm="6" md="3">
-        <VCard elevation="0" border rounded="lg">
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
+        <VCard
+          elevation="0"
+          border
+          rounded="lg"
+        >
           <VCardText class="d-flex align-center gap-4 pa-5">
-            <VAvatar color="success" variant="tonal" size="54" rounded>
-              <VIcon icon="ri-money-cny-circle-line" size="28" />
+            <VAvatar
+              color="success"
+              variant="tonal"
+              size="54"
+              rounded
+            >
+              <VIcon
+                icon="ri-money-cny-circle-line"
+                size="28"
+              />
             </VAvatar>
             <div>
-              <div class="text-caption text-medium-emphasis font-weight-medium text-uppercase mb-1">Cash</div>
-              <div class="text-h6 font-weight-bold text-high-emphasis">{{ formatCurrency(report.summary?.cash ?? 0) }}</div>
+              <div class="text-caption text-medium-emphasis font-weight-medium text-uppercase mb-1">
+                Cash
+              </div>
+              <div class="text-h6 font-weight-bold text-high-emphasis">
+                {{ formatCurrency(report.summary?.cash ?? 0) }}
+              </div>
             </div>
           </VCardText>
         </VCard>
       </VCol>
-      <VCol cols="12" sm="6" md="3">
-        <VCard elevation="0" border rounded="lg">
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
+        <VCard
+          elevation="0"
+          border
+          rounded="lg"
+        >
           <VCardText class="d-flex align-center gap-4 pa-5">
-            <VAvatar color="secondary" variant="tonal" size="54" rounded>
-              <VIcon icon="ri-file-list-3-line" size="28" />
+            <VAvatar
+              color="secondary"
+              variant="tonal"
+              size="54"
+              rounded
+            >
+              <VIcon
+                icon="ri-file-list-3-line"
+                size="28"
+              />
             </VAvatar>
             <div>
-              <div class="text-caption text-medium-emphasis font-weight-medium text-uppercase mb-1">Giro</div>
-              <div class="text-h6 font-weight-bold text-high-emphasis">{{ formatCurrency(report.summary?.giro ?? 0) }}</div>
+              <div class="text-caption text-medium-emphasis font-weight-medium text-uppercase mb-1">
+                Giro
+              </div>
+              <div class="text-h6 font-weight-bold text-high-emphasis">
+                {{ formatCurrency(report.summary?.giro ?? 0) }}
+              </div>
             </div>
           </VCardText>
         </VCard>
       </VCol>
     </VRow>
 
-    <VCard elevation="0" border rounded="lg">
+    <VCard
+      elevation="0"
+      border
+      rounded="lg"
+    >
       <div class="d-flex flex-wrap align-center justify-space-between px-5 py-4 bg-var-theme-background">
         <div>
-          <h3 class="text-subtitle-1 font-weight-bold mb-1">Daftar Histori Pembayaran</h3>
+          <h3 class="text-subtitle-1 font-weight-bold mb-1">
+            Daftar Histori Pembayaran
+          </h3>
           <div class="text-caption text-medium-emphasis">
             Periode: <strong>{{ report.tanggal_dari ?? '-' }}</strong> s/d <strong>{{ report.tanggal_sampai ?? '-' }}</strong>
           </div>
         </div>
-        <VChip size="small" color="primary" variant="tonal" class="font-weight-medium">
+        <VChip
+          size="small"
+          color="primary"
+          variant="tonal"
+          class="font-weight-medium"
+        >
           {{ report.summary?.jumlah_transaksi ?? 0 }} Transaksi
         </VChip>
       </div>
@@ -211,26 +328,45 @@
         </template>
 
         <template #item.nama_vendor="{ item }">
-          <div class="font-weight-medium text-high-emphasis">{{ item.nama_vendor }}</div>
-          <div class="text-caption text-medium-emphasis mt-1">{{ item.kode_vendor }}</div>
+          <div class="font-weight-medium text-high-emphasis">
+            {{ item.nama_vendor }}
+          </div>
+          <div class="text-caption text-medium-emphasis mt-1">
+            {{ item.kode_vendor }}
+          </div>
         </template>
 
         <template #item.no_tagihan="{ item }">
           <div>{{ item.no_tagihan }}</div>
-          <div class="text-caption text-medium-emphasis mt-1">{{ item.no_referensi }}</div>
+          <div class="text-caption text-medium-emphasis mt-1">
+            {{ item.no_referensi }}
+          </div>
         </template>
 
         <template #item.pic_ap="{ item }">
-          <div class="font-weight-medium">{{ item.pic_ap ?? '-' }}</div>
-          <div class="text-caption text-medium-emphasis mt-1">{{ item.perusahaan ?? '-' }}</div>
+          <div class="font-weight-medium">
+            {{ item.pic_ap ?? '-' }}
+          </div>
+          <div class="text-caption text-medium-emphasis mt-1">
+            {{ item.perusahaan ?? '-' }}
+          </div>
         </template>
 
         <template #item.metode_pembayaran="{ item }">
-          <VChip size="x-small" variant="tonal">{{ item.metode_pembayaran }}</VChip>
+          <VChip
+            size="x-small"
+            variant="tonal"
+          >
+            {{ item.metode_pembayaran }}
+          </VChip>
         </template>
 
         <template #item.kategori_voucher="{ item }">
-          <VChip size="x-small" variant="tonal" :color="item.kategori_voucher === 'BB' ? 'warning' : 'info'">
+          <VChip
+            size="x-small"
+            variant="tonal"
+            :color="item.kategori_voucher === 'BB' ? 'warning' : 'info'"
+          >
             {{ item.kategori_voucher === 'BB' ? 'Bahan Baku' : 'Non Bahan Baku' }}
           </VChip>
         </template>
@@ -303,6 +439,7 @@ async function fetchReport({ resetPage = true } = {}) {
   try {
     const params = { ...buildParams(), page: page.value, per_page: perPage.value }
     const { data } = await api.get('/ap/laporan/histori-pembayaran', { params })
+
     Object.assign(report, data.data)
   } finally {
     loading.value = false
@@ -320,10 +457,13 @@ async function doExport() {
       params: buildParams(),
       responseType: 'blob',
     })
+
     const url  = URL.createObjectURL(new Blob([response.data], {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     }))
+
     const link = document.createElement('a')
+
     link.href     = url
     link.download = 'histori-pembayaran-ap.xlsx'
     link.click()

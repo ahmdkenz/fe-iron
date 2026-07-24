@@ -201,7 +201,9 @@
                   color="warning"
                   class="ms-2"
                 >
-                  <VTooltip activator="parent">Periode invoice ini sudah dikunci di Ending Balance — tidak dapat diedit/dihapus</VTooltip>
+                  <VTooltip activator="parent">
+                    Periode invoice ini sudah dikunci di Ending Balance — tidak dapat diedit/dihapus
+                  </VTooltip>
                 </VIcon>
               </VCardTitle>
               <VDivider />
@@ -1339,7 +1341,6 @@
       v-model="showShareDialog"
       :pre-selected="invoice ? [invoice] : []"
     />
-
   </div>
 </template>
 
@@ -1425,9 +1426,11 @@ const obDetailsLoaded = ref(false)
 const openPanels = ref([])
 
 const canPrintKoreksi = computed(() => authStore.canOperateEndingBalance)
+
 const sisaTagihan = computed(() => {
   const inv = invoice.value
   if (!inv) return 0
+  
   return Math.max(0, inv.subtotal - inv.total_pembayaran - (inv.total_penyesuaian ?? 0))
 })
 
@@ -1447,6 +1450,7 @@ async function openKoreksiPrint(k) {
   try {
     const res = await api.get(`/finance/ending-balance/koreksi/${k.id}/print`, { responseType: 'blob' })
     const blobUrl = URL.createObjectURL(res.data)
+
     window.open(blobUrl, '_blank')
     setTimeout(() => URL.revokeObjectURL(blobUrl), 30_000)
   } catch {
@@ -1461,19 +1465,23 @@ const statusTransitions = {
 
 const isOpeningBalance = computed(() => invoice.value?.is_opening_balance === true)
 const isB2B = computed(() => invoice.value?.klien_ar?.tipe_klien === 'PT')
+
 const entitasPenagihName = computed(() =>
   invoice.value?.entitas_penagih?.nama_perusahaan
   ?? invoice.value?.karyawan?.perusahaan?.nama_perusahaan
   ?? invoice.value?.perusahaan?.nama_perusahaan
   ?? null,
 )
+
 const showNoInvoiceResto = computed(() =>
   isB2B.value || invoiceItems.value.some(it => it.no_invoice_resto),
 )
+
 const documentLabel = computed(() => isOpeningBalance.value ? 'Opening Balance' : 'Invoice')
 
 const isOverdue = computed(() => {
   if (!invoice.value?.tanggal_jatuh_tempo) return false
+  
   return new Date(invoice.value.tanggal_jatuh_tempo) < new Date()
 })
 
@@ -1504,6 +1512,7 @@ const pageTitle = computed(() => {
 
 const pageSubtitle = computed(() => {
   if (isOpeningBalance.value) return 'Detail saldo awal piutang klien dan proses persetujuannya'
+  
   return isB2B.value
     ? 'Invoice B2B — Tagihan langsung ke perusahaan/PT'
     : 'Invoice B2C — Tagihan ke pengelola outlet'
@@ -1653,6 +1662,7 @@ async function fetchItems(page = 1) {
     const { data } = await api.get(`/finance/invoices/${id.value}/items`, {
       params: { page, per_page: itemsPerPage.value },
     })
+
     invoiceItems.value = data.data ?? []
     itemsPage.value = data.meta?.current_page ?? page
     itemsTotal.value = data.meta?.total ?? invoiceItems.value.length
@@ -1673,6 +1683,7 @@ async function fetchPembayaran() {
   pembayaranError.value = ''
   try {
     const { data } = await api.get(`/finance/invoices/${id.value}/pembayaran`)
+
     pembayaranList.value = data.data ?? []
   } catch (err) {
     pembayaranError.value = err.response?.data?.message ?? 'Gagal memuat riwayat pembayaran'
@@ -1688,6 +1699,7 @@ async function ensureApprovalLogsLoaded() {
   approvalLogsError.value = ''
   try {
     const { data } = await api.get(`/finance/invoices/${id.value}/approval-logs`)
+
     approvalLogs.value = data.data ?? []
     approvalLogsLoaded.value = true
   } catch (err) {
@@ -1704,6 +1716,7 @@ async function ensureKoreksiLoaded() {
   koreksiError.value = ''
   try {
     const { data } = await api.get(`/finance/invoices/${id.value}/koreksi`)
+
     koreksiList.value = data.data ?? []
     koreksiLoaded.value = true
   } catch (err) {
@@ -1720,6 +1733,7 @@ async function ensureObDetailsLoaded() {
   obDetailsError.value = ''
   try {
     const { data } = await api.get(`/finance/opening-balance/${id.value}/details`)
+
     obDetailsData.value = data.data ?? []
     obDetailsLoaded.value = true
   } catch (err) {

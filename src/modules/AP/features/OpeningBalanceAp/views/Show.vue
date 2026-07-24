@@ -10,8 +10,15 @@
       ]"
     >
       <div class="d-flex flex-wrap gap-2">
-        <VBtn variant="tonal" color="secondary" :to="{ name: 'ap-opening-balance-index' }">
-          <VIcon icon="ri-arrow-left-line" class="me-1" />
+        <VBtn
+          variant="tonal"
+          color="secondary"
+          :to="{ name: 'ap-opening-balance-index' }"
+        >
+          <VIcon
+            icon="ri-arrow-left-line"
+            class="me-1"
+          />
           Kembali
         </VBtn>
         <VBtn
@@ -19,7 +26,10 @@
           color="primary"
           :to="{ name: 'ap-opening-balance-edit', params: { id } }"
         >
-          <VIcon icon="ri-pencil-line" class="me-1" />
+          <VIcon
+            icon="ri-pencil-line"
+            class="me-1"
+          />
           Edit
         </VBtn>
         <VBtn
@@ -29,19 +39,32 @@
           class="font-weight-bold text-white elevation-2"
           @click="printOpeningBalance"
         >
-          <VIcon icon="ri-printer-line" class="me-1" />
+          <VIcon
+            icon="ri-printer-line"
+            class="me-1"
+          />
           Cetak
         </VBtn>
       </div>
     </PageHeader>
 
-    <div v-if="loading" class="text-center py-16">
-      <VProgressCircular indeterminate color="primary" size="48" />
+    <div
+      v-if="loading"
+      class="text-center py-16"
+    >
+      <VProgressCircular
+        indeterminate
+        color="primary"
+        size="48"
+      />
     </div>
 
     <template v-else-if="tagihan">
       <VRow>
-        <VCol cols="12" lg="8">
+        <VCol
+          cols="12"
+          lg="8"
+        >
           <VCard>
             <VCardTitle class="pa-4 pb-2 d-flex align-center justify-space-between">
               <span class="text-subtitle-1 font-weight-semibold">Informasi Opening Balance</span>
@@ -52,7 +75,9 @@
                   size="18"
                   color="warning"
                 >
-                  <VTooltip activator="parent">Periode opening balance ini sudah dikunci di Ending Balance AP — tidak dapat diedit</VTooltip>
+                  <VTooltip activator="parent">
+                    Periode opening balance ini sudah dikunci di Ending Balance AP — tidak dapat diedit
+                  </VTooltip>
                 </VIcon>
                 <TagihanApStatusBadge :status="tagihan.status" />
                 <ApprovalStatusBadge :status="tagihan.approval_status" />
@@ -61,18 +86,66 @@
             <VDivider />
             <VCardText class="pt-4">
               <VRow>
-                <VCol cols="12" md="6"><DetailRow label="Vendor" :value="tagihan.vendor_ap?.nama_vendor" /></VCol>
-                <VCol cols="12" md="6"><DetailRow label="Kode Vendor" :value="tagihan.vendor_ap?.kode_vendor" /></VCol>
-                <VCol cols="12" md="6"><DetailRow label="Tanggal" :value="formatDate(tagihan.tanggal_tagihan)" /></VCol>
-                <VCol cols="12" md="6"><DetailRow label="Jatuh Tempo" :value="formatDate(tagihan.tanggal_jatuh_tempo)" /></VCol>
-                <VCol cols="12" md="6"><DetailRow label="PIC" :value="tagihan.karyawan?.nama_karyawan" /></VCol>
-                <VCol cols="12"><DetailRow label="Keterangan" :value="tagihan.keterangan" /></VCol>
+                <VCol
+                  cols="12"
+                  md="6"
+                >
+                  <DetailRow
+                    label="Vendor"
+                    :value="tagihan.vendor_ap?.nama_vendor"
+                  />
+                </VCol>
+                <VCol
+                  cols="12"
+                  md="6"
+                >
+                  <DetailRow
+                    label="Kode Vendor"
+                    :value="tagihan.vendor_ap?.kode_vendor"
+                  />
+                </VCol>
+                <VCol
+                  cols="12"
+                  md="6"
+                >
+                  <DetailRow
+                    label="Tanggal"
+                    :value="formatDate(tagihan.tanggal_tagihan)"
+                  />
+                </VCol>
+                <VCol
+                  cols="12"
+                  md="6"
+                >
+                  <DetailRow
+                    label="Jatuh Tempo"
+                    :value="formatDate(tagihan.tanggal_jatuh_tempo)"
+                  />
+                </VCol>
+                <VCol
+                  cols="12"
+                  md="6"
+                >
+                  <DetailRow
+                    label="PIC"
+                    :value="tagihan.karyawan?.nama_karyawan"
+                  />
+                </VCol>
+                <VCol cols="12">
+                  <DetailRow
+                    label="Keterangan"
+                    :value="tagihan.keterangan"
+                  />
+                </VCol>
               </VRow>
             </VCardText>
           </VCard>
         </VCol>
 
-        <VCol cols="12" lg="4">
+        <VCol
+          cols="12"
+          lg="4"
+        >
           <VCard>
             <VCardTitle class="pa-4 pb-2">
               <span class="text-subtitle-1 font-weight-semibold">Ringkasan</span>
@@ -89,7 +162,10 @@
               </div>
               <div class="d-flex justify-space-between align-center">
                 <span class="text-body-2">Sisa Tagihan</span>
-                <span class="text-body-2 font-weight-bold" :class="tagihan.sisa_tagihan > 0 ? 'text-error' : 'text-success'">
+                <span
+                  class="text-body-2 font-weight-bold"
+                  :class="tagihan.sisa_tagihan > 0 ? 'text-error' : 'text-success'"
+                >
                   {{ formatCurrency(tagihan.sisa_tagihan) }}
                 </span>
               </div>
@@ -114,18 +190,28 @@
         <VExpansionPanels variant="accordion">
           <VExpansionPanel title="Riwayat Approval">
             <template #text>
-              <VTimeline density="compact" side="end">
+              <VTimeline
+                density="compact"
+                side="end"
+              >
                 <VTimelineItem
                   v-for="log in approvalLogs"
                   :key="log.id"
                   :dot-color="approvalLogColor(log.action)"
                   size="small"
                 >
-                  <div class="text-body-2 font-weight-medium">{{ approvalLogLabel(log.action) }}</div>
+                  <div class="text-body-2 font-weight-medium">
+                    {{ approvalLogLabel(log.action) }}
+                  </div>
                   <div class="text-caption text-medium-emphasis">
                     {{ log.actor_name ?? '-' }} · {{ formatDateTime(log.created_at) }}
                   </div>
-                  <div v-if="log.note" class="text-caption mt-1">{{ log.note }}</div>
+                  <div
+                    v-if="log.note"
+                    class="text-caption mt-1"
+                  >
+                    {{ log.note }}
+                  </div>
                 </VTimelineItem>
               </VTimeline>
             </template>
@@ -180,6 +266,7 @@ function approvalLogColor(action) {
 
 async function loadApprovalLogs() {
   const { data } = await api.get(`/ap/tagihan/${id}/approval-logs`)
+
   approvalLogs.value = data.data ?? []
 }
 

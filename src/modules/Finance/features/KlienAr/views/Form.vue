@@ -100,18 +100,44 @@
                   class="tipe-toggle"
                   @update:model-value="selectTipeKlien"
                 >
-                  <VBtn value="RESTO" class="tipe-btn">
-                    <VIcon icon="ri-store-line" size="16" class="me-2" />
+                  <VBtn
+                    value="RESTO"
+                    class="tipe-btn"
+                  >
+                    <VIcon
+                      icon="ri-store-line"
+                      size="16"
+                      class="me-2"
+                    />
                     <span>
-                      <span class="d-block font-weight-medium" style="line-height:1.2">RESTO</span>
-                      <span class="d-block text-caption text-medium-emphasis" style="line-height:1.2">B2C</span>
+                      <span
+                        class="d-block font-weight-medium"
+                        style="line-height:1.2"
+                      >RESTO</span>
+                      <span
+                        class="d-block text-caption text-medium-emphasis"
+                        style="line-height:1.2"
+                      >B2C</span>
                     </span>
                   </VBtn>
-                  <VBtn value="PT" class="tipe-btn">
-                    <VIcon icon="ri-building-4-line" size="16" class="me-2" />
+                  <VBtn
+                    value="PT"
+                    class="tipe-btn"
+                  >
+                    <VIcon
+                      icon="ri-building-4-line"
+                      size="16"
+                      class="me-2"
+                    />
                     <span>
-                      <span class="d-block font-weight-medium" style="line-height:1.2">PT</span>
-                      <span class="d-block text-caption text-medium-emphasis" style="line-height:1.2">B2B</span>
+                      <span
+                        class="d-block font-weight-medium"
+                        style="line-height:1.2"
+                      >PT</span>
+                      <span
+                        class="d-block text-caption text-medium-emphasis"
+                        style="line-height:1.2"
+                      >B2B</span>
                     </span>
                   </VBtn>
                 </VBtnToggle>
@@ -133,7 +159,10 @@
               </div>
             </VCol>
 
-            <VCol cols="12" md="3">
+            <VCol
+              cols="12"
+              md="3"
+            >
               <VTextField
                 v-model="form.kode_klien"
                 label="Kode Klien"
@@ -146,7 +175,10 @@
                 persistent-hint
               />
             </VCol>
-            <VCol cols="12" md="6">
+            <VCol
+              cols="12"
+              md="6"
+            >
               <VTextField
                 v-model="form.nama_klien"
                 :label="namaKlienLabel"
@@ -159,7 +191,10 @@
                 persistent-hint
               />
             </VCol>
-            <VCol cols="12" md="3">
+            <VCol
+              cols="12"
+              md="3"
+            >
               <VSelect
                 v-model="form.status"
                 label="Status"
@@ -172,7 +207,10 @@
               />
             </VCol>
 
-            <VCol cols="12" md="9">
+            <VCol
+              cols="12"
+              md="9"
+            >
               <VTextField
                 v-if="isB2B"
                 v-model="form.no_npwp"
@@ -197,7 +235,10 @@
                 :prepend-inner-icon="selectedRestoInvestor?.npwp ? 'ri-shield-check-line' : 'ri-information-line'"
               />
             </VCol>
-            <VCol cols="12" md="6">
+            <VCol
+              cols="12"
+              md="6"
+            >
               <VTextField
                 v-model="form.no_wa"
                 :label="isB2B ? 'No. WhatsApp Kontak Keuangan PT' : 'No. WhatsApp (Fallback AR)'"
@@ -232,7 +273,7 @@
                 :readonly="isArEditMode"
                 hint="Pilih entitas yang memiliki Resto-resto yang akan ditagihkan ke PT ini"
                 persistent-hint
-                @focus="ensurePerusahaanLoaded()"
+                @focus="ensurePerusahaanLoaded"
               >
                 <template #item="{ props: p, item }">
                   <VListItem
@@ -279,7 +320,7 @@
                 :readonly="isArEditMode"
                 :hint="!form.resto_id && !isEditing ? 'Pilih Resto — nama pengelola terisi otomatis' : ''"
                 :persistent-hint="!form.resto_id && !isEditing"
-                @focus="ensureRestoLoaded()"
+                @focus="ensureRestoLoaded"
                 @update:model-value="onRestoChange"
               >
                 <template #item="{ props: p, item }">
@@ -326,7 +367,10 @@
               </div>
             </VCol>
 
-            <VCol cols="12" md="6">
+            <VCol
+              cols="12"
+              md="6"
+            >
               <VTextField
                 v-if="isArRole"
                 :model-value="displayKaryawan"
@@ -363,7 +407,7 @@
                 :rules="[v => !!v || 'PIC AR wajib dipilih']"
                 :error-messages="errors.karyawan_ar_id"
                 :loading="karyawanLoading"
-                @focus="ensureKaryawanLoaded()"
+                @focus="ensureKaryawanLoaded"
               >
                 <template #item="{ props: p, item }">
                   <VListItem
@@ -400,7 +444,10 @@
           :disabled="saving"
           @click="handleSubmit"
         >
-          <VIcon icon="ri-save-line" class="me-1" />
+          <VIcon
+            icon="ri-save-line"
+            class="me-1"
+          />
           Simpan
         </VBtn>
       </div>
@@ -415,10 +462,19 @@
       <VCard>
         <VCardTitle class="pa-4 pb-2 d-flex align-center justify-space-between">
           <div class="d-flex align-center gap-2">
-            <VIcon icon="ri-book-2-line" size="18" color="primary" />
+            <VIcon
+              icon="ri-book-2-line"
+              size="18"
+              color="primary"
+            />
             <span class="text-subtitle-1 font-weight-semibold">Panduan Pengisian Client</span>
           </div>
-          <VBtn icon size="small" variant="text" @click="showPanduan = false">
+          <VBtn
+            icon
+            size="small"
+            variant="text"
+            @click="showPanduan = false"
+          >
             <VIcon icon="ri-close-line" />
           </VBtn>
         </VCardTitle>
@@ -431,89 +487,138 @@
             class="pt-1"
           >
             <VTab value="b2c">
-              <VIcon icon="ri-store-line" size="16" class="me-1" />
+              <VIcon
+                icon="ri-store-line"
+                size="16"
+                class="me-1"
+              />
               B2C — RESTO
             </VTab>
             <VTab value="b2b">
-              <VIcon icon="ri-building-4-line" size="16" class="me-1" />
+              <VIcon
+                icon="ri-building-4-line"
+                size="16"
+                class="me-1"
+              />
               B2B — PT
             </VTab>
           </VTabs>
           <VDivider />
-          <VTabsWindow v-model="panduanTab" class="pa-4">
+          <VTabsWindow
+            v-model="panduanTab"
+            class="pa-4"
+          >
             <VTabsWindowItem value="b2c">
-              <VTable density="compact" class="rounded border">
+              <VTable
+                density="compact"
+                class="rounded border"
+              >
                 <thead>
                   <tr>
-                    <th style="width:36%">Field</th>
+                    <th style="width:36%">
+                      Field
+                    </th>
                     <th>Cara Mengisi</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td class="font-weight-medium">Tipe Klien</td>
+                    <td class="font-weight-medium">
+                      Tipe Klien
+                    </td>
                     <td>Pilih <strong>RESTO</strong> — penagihan ke pengelola outlet langsung</td>
                   </tr>
                   <tr>
-                    <td class="font-weight-medium">Resto <span class="text-error">*</span></td>
+                    <td class="font-weight-medium">
+                      Resto <span class="text-error">*</span>
+                    </td>
                     <td>Pilih outlet — info investor &amp; pengelola otomatis muncul</td>
                   </tr>
                   <tr>
-                    <td class="font-weight-medium">Nama Investor (Billing)</td>
+                    <td class="font-weight-medium">
+                      Nama Investor (Billing)
+                    </td>
                     <td>Otomatis dari investor; ubah jika berbeda</td>
                   </tr>
                   <tr>
-                    <td class="font-weight-medium">No. NPWP</td>
+                    <td class="font-weight-medium">
+                      No. NPWP
+                    </td>
                     <td>Otomatis dari data Investor — untuk mengubah, edit di Master Investor</td>
                   </tr>
                   <tr>
-                    <td class="font-weight-medium">No. WhatsApp</td>
+                    <td class="font-weight-medium">
+                      No. WhatsApp
+                    </td>
                     <td>Opsional — fallback jika No. HP Investor belum diisi (format: 08xx atau 62xx)</td>
                   </tr>
                   <tr>
-                    <td class="font-weight-medium">PIC AR</td>
+                    <td class="font-weight-medium">
+                      PIC AR
+                    </td>
                     <td>Staff AR yang menagih klien ini</td>
                   </tr>
                 </tbody>
               </VTable>
             </VTabsWindowItem>
             <VTabsWindowItem value="b2b">
-              <VTable density="compact" class="rounded border">
+              <VTable
+                density="compact"
+                class="rounded border"
+              >
                 <thead>
                   <tr>
-                    <th style="width:36%">Field</th>
+                    <th style="width:36%">
+                      Field
+                    </th>
                     <th>Cara Mengisi</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td class="font-weight-medium">Tipe Klien</td>
+                    <td class="font-weight-medium">
+                      Tipe Klien
+                    </td>
                     <td>Pilih <strong>PT</strong> — penagihan ke perusahaan/badan usaha</td>
                   </tr>
                   <tr>
-                    <td class="font-weight-medium">Entitas Perusahaan <span class="text-error">*</span></td>
+                    <td class="font-weight-medium">
+                      Entitas Perusahaan <span class="text-error">*</span>
+                    </td>
                     <td>Pilih entitas PT — wajib agar Resto bisa dipilih saat buat Invoice B2B</td>
                   </tr>
                   <tr>
-                    <td class="font-weight-medium">Nama Kontak (Billing)</td>
+                    <td class="font-weight-medium">
+                      Nama Kontak (Billing)
+                    </td>
                     <td>Isi manual — nama kontak keuangan/billing di PT</td>
                   </tr>
                   <tr>
-                    <td class="font-weight-medium">No. NPWP <span class="text-error">*</span></td>
+                    <td class="font-weight-medium">
+                      No. NPWP <span class="text-error">*</span>
+                    </td>
                     <td>NPWP perusahaan — penting untuk faktur pajak</td>
                   </tr>
                   <tr>
-                    <td class="font-weight-medium">No. WhatsApp</td>
+                    <td class="font-weight-medium">
+                      No. WhatsApp
+                    </td>
                     <td>Nomor WA kontak keuangan/billing PT</td>
                   </tr>
                   <tr>
-                    <td class="font-weight-medium">PIC AR</td>
+                    <td class="font-weight-medium">
+                      PIC AR
+                    </td>
                     <td>Staff AR yang menagih ke PT ini</td>
                   </tr>
                 </tbody>
               </VTable>
               <p class="text-caption text-medium-emphasis mt-3 mb-0">
-                <VIcon icon="ri-information-line" size="13" class="me-1" />
+                <VIcon
+                  icon="ri-information-line"
+                  size="13"
+                  class="me-1"
+                />
                 1 PT = 1 Client. Beberapa Resto bisa dimiliki satu PT — semua ditagih ke Client ini.
               </p>
             </VTabsWindowItem>
@@ -521,7 +626,13 @@
         </VCardText>
         <VDivider />
         <VCardActions class="pa-3 justify-end">
-          <VBtn color="primary" variant="tonal" @click="showPanduan = false">Mengerti</VBtn>
+          <VBtn
+            color="primary"
+            variant="tonal"
+            @click="showPanduan = false"
+          >
+            Mengerti
+          </VBtn>
         </VCardActions>
       </VCard>
     </VDialog>
@@ -550,18 +661,22 @@ const isArEditMode = computed(() => isArRole.value && isEditing.value)
 const isB2B        = computed(() => form.tipe_klien === 'PT')
 
 const namaKlienLabel = computed(() =>
-  isB2B.value ? 'Nama Kontak Keuangan PT (Billing)' : 'Nama Investor (Billing)'
+  isB2B.value ? 'Nama Kontak Keuangan PT (Billing)' : 'Nama Investor (Billing)',
 )
+
 const namaKlienHint = computed(() => {
   if (isB2B.value) return 'Isi nama kontak keuangan/billing di PT'
   if (!isEditing.value && selectedRestoInvestor.value) return 'Otomatis dari data investor'
+  
   return ''
 })
+
 const npwpLabel = computed(() =>
-  isB2B.value ? 'No. NPWP Perusahaan (Wajib)' : 'No. NPWP Investor (Opsional)'
+  isB2B.value ? 'No. NPWP Perusahaan (Wajib)' : 'No. NPWP Investor (Opsional)',
 )
+
 const npwpRules = computed(() =>
-  isB2B.value ? [v => !!v || 'NPWP Perusahaan wajib diisi untuk klien B2B'] : []
+  isB2B.value ? [v => !!v || 'NPWP Perusahaan wajib diisi untuk klien B2B'] : [],
 )
 
 const filteredRestoList = computed(() => {
@@ -569,11 +684,13 @@ const filteredRestoList = computed(() => {
     const myKaryawanId = authStore.user?.karyawan?.id
     if (!myKaryawanId) return restoList.value
     const assigned = restoList.value?.filter(r => r.karyawan_id === myKaryawanId) ?? []
+    
     return assigned.length > 0 ? assigned : restoList.value
   }
 
   if (form.karyawan_ar_id) {
     const assigned = restoList.value?.filter(r => r.karyawan_id === form.karyawan_ar_id) ?? []
+    
     return assigned.length > 0 ? assigned : restoList.value
   }
 
@@ -657,10 +774,12 @@ function onRestoChange(restoId) {
   if (!restoId) {
     selectedRestoInvestor.value = null
     if (!isArRole.value) form.karyawan_ar_id = null
+    
     return
   }
 
   const resto = restoList.value?.find(r => r.id === restoId)
+
   selectedRestoInvestor.value = resto?.investor ?? null
 
   if (selectedRestoInvestor.value?.nama_investor && !form.nama_klien) {
@@ -685,9 +804,11 @@ async function handleSubmit() {
       router.push({ name: 'finance-klien-ar' })
     } catch (e) {
       const msg = e.response?.data?.message ?? 'Terjadi kesalahan'
+
       errorMessage.value = msg
       await showError(msg)
     }
+    
     return
   }
 
@@ -721,11 +842,13 @@ onMounted(async () => {
 
   if (!isEditing.value) {
     kodeLoading.value = true
+
     const [, , previewRes] = await Promise.allSettled([
       ensureRestoLoaded(restoLoadOpts),
       ensurePerusahaanLoaded(),
       api.get('/finance/klien-ar/preview-kode'),
     ])
+
     if (previewRes.status === 'fulfilled') {
       form.kode_klien = previewRes.value?.data?.data?.kode_klien ?? ''
     }
@@ -745,15 +868,15 @@ onMounted(async () => {
 
   if (data) {
     Object.assign(form, {
-      kode_klien:     data.kode_klien ?? '',
-      nama_klien:     data.nama_klien ?? '',
-      tipe_klien:     data.tipe_klien ?? 'MITRA',
-      no_npwp:        data.no_npwp ?? '',
-      no_wa:          data.no_wa ?? '',
-      perusahaan_id:  data.perusahaan_id ?? null,
+      kode_klien: data.kode_klien ?? '',
+      nama_klien: data.nama_klien ?? '',
+      tipe_klien: data.tipe_klien ?? 'MITRA',
+      no_npwp: data.no_npwp ?? '',
+      no_wa: data.no_wa ?? '',
+      perusahaan_id: data.perusahaan_id ?? null,
       karyawan_ar_id: data.karyawan_ar_id ?? null,
-      resto_id:       data.resto_id ?? null,
-      status:         normalizeBooleanStatus(data.status),
+      resto_id: data.resto_id ?? null,
+      status: normalizeBooleanStatus(data.status),
     })
 
     if (data.resto?.investor) {

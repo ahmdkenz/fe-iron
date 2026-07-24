@@ -11,9 +11,27 @@
           density="compact"
           @update:model-value="doFetch"
         >
-          <VBtn value="ALL" size="small" style="min-width: 80px">Semua</VBtn>
-          <VBtn value="B2C" size="small" style="min-width: 70px">B2C</VBtn>
-          <VBtn value="B2B" size="small" style="min-width: 70px">B2B</VBtn>
+          <VBtn
+            value="ALL"
+            size="small"
+            style="min-width: 80px"
+          >
+            Semua
+          </VBtn>
+          <VBtn
+            value="B2C"
+            size="small"
+            style="min-width: 70px"
+          >
+            B2C
+          </VBtn>
+          <VBtn
+            value="B2B"
+            size="small"
+            style="min-width: 70px"
+          >
+            B2B
+          </VBtn>
         </VBtnToggle>
         <VTextField
           v-model="filters.periode_awal"
@@ -44,7 +62,7 @@
           item-title="display_label"
           item-value="id"
           :loading="klienLoading"
-          @focus="ensureKlienLoaded()"
+          @focus="ensureKlienLoaded"
           @update:model-value="doFetch"
         />
         <VSpacer />
@@ -62,61 +80,109 @@
 
     <!-- Summary Cards -->
     <VRow class="mb-4">
-      <VCol cols="12" sm="6" md="3">
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
         <VCard>
           <VCardText>
             <div class="d-flex align-center gap-3">
-              <VAvatar color="secondary" variant="tonal" size="44">
+              <VAvatar
+                color="secondary"
+                variant="tonal"
+                size="44"
+              >
                 <VIcon icon="ri-wallet-3-line" />
               </VAvatar>
               <div>
-                <div class="text-caption text-medium-emphasis">Saldo Awal</div>
-                <div class="text-h6 font-weight-bold">{{ formatCurrency(report.summary?.saldo_awal ?? 0) }}</div>
+                <div class="text-caption text-medium-emphasis">
+                  Saldo Awal
+                </div>
+                <div class="text-h6 font-weight-bold">
+                  {{ formatCurrency(report.summary?.saldo_awal ?? 0) }}
+                </div>
               </div>
             </div>
           </VCardText>
         </VCard>
       </VCol>
-      <VCol cols="12" sm="6" md="3">
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
         <VCard>
           <VCardText>
             <div class="d-flex align-center gap-3">
-              <VAvatar color="warning" variant="tonal" size="44">
+              <VAvatar
+                color="warning"
+                variant="tonal"
+                size="44"
+              >
                 <VIcon icon="ri-bill-line" />
               </VAvatar>
               <div>
-                <div class="text-caption text-medium-emphasis">Invoice Masuk</div>
-                <div class="text-h6 font-weight-bold">{{ formatCurrency(report.summary?.invoice_masuk ?? 0) }}</div>
+                <div class="text-caption text-medium-emphasis">
+                  Invoice Masuk
+                </div>
+                <div class="text-h6 font-weight-bold">
+                  {{ formatCurrency(report.summary?.invoice_masuk ?? 0) }}
+                </div>
               </div>
             </div>
           </VCardText>
         </VCard>
       </VCol>
-      <VCol cols="12" sm="6" md="3">
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
         <VCard>
           <VCardText>
             <div class="d-flex align-center gap-3">
-              <VAvatar color="success" variant="tonal" size="44">
+              <VAvatar
+                color="success"
+                variant="tonal"
+                size="44"
+              >
                 <VIcon icon="ri-money-cny-circle-line" />
               </VAvatar>
               <div>
-                <div class="text-caption text-medium-emphasis">Pembayaran</div>
-                <div class="text-h6 font-weight-bold">{{ formatCurrency(report.summary?.pembayaran ?? 0) }}</div>
+                <div class="text-caption text-medium-emphasis">
+                  Pembayaran
+                </div>
+                <div class="text-h6 font-weight-bold">
+                  {{ formatCurrency(report.summary?.pembayaran ?? 0) }}
+                </div>
               </div>
             </div>
           </VCardText>
         </VCard>
       </VCol>
-      <VCol cols="12" sm="6" md="3">
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
         <VCard>
           <VCardText>
             <div class="d-flex align-center gap-3">
-              <VAvatar color="error" variant="tonal" size="44">
+              <VAvatar
+                color="error"
+                variant="tonal"
+                size="44"
+              >
                 <VIcon icon="ri-error-warning-line" />
               </VAvatar>
               <div>
-                <div class="text-caption text-medium-emphasis">Saldo Akhir</div>
-                <div class="text-h6 font-weight-bold">{{ formatCurrency(report.summary?.saldo_akhir ?? 0) }}</div>
+                <div class="text-caption text-medium-emphasis">
+                  Saldo Akhir
+                </div>
+                <div class="text-h6 font-weight-bold">
+                  {{ formatCurrency(report.summary?.saldo_akhir ?? 0) }}
+                </div>
               </div>
             </div>
           </VCardText>
@@ -147,9 +213,13 @@
           {{ (page - 1) * perPage + index + 1 }}
         </template>
         <template #item.nama_klien="{ item }">
-          <div class="font-weight-medium">{{ item.nama_klien }}</div>
+          <div class="font-weight-medium">
+            {{ item.nama_klien }}
+          </div>
           <div class="text-caption text-medium-emphasis">
-            {{ item.kode_klien }}<template v-if="item.nama_resto"> · {{ item.nama_resto }}</template>
+            {{ item.kode_klien }}<template v-if="item.nama_resto">
+              · {{ item.nama_resto }}
+            </template>
           </div>
         </template>
         <template #item.saldo_awal="{ item }">
@@ -166,7 +236,10 @@
           </span>
         </template>
         <template #item.saldo_akhir="{ item }">
-          <span class="font-weight-bold" :class="item.saldo_akhir > 0 ? 'text-error' : 'text-success'">
+          <span
+            class="font-weight-bold"
+            :class="item.saldo_akhir > 0 ? 'text-error' : 'text-success'"
+          >
             {{ formatCurrency(item.saldo_akhir) }}
           </span>
         </template>
@@ -198,16 +271,16 @@ const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().sl
 const lastDay  = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10)
 
 const filters = reactive({
-  periode_awal:  firstDay,
+  periode_awal: firstDay,
   periode_akhir: lastDay,
-  klien_ar_id:   null,
+  klien_ar_id: null,
 })
 
 const page    = ref(1)
 const perPage = ref(15)
 
 const paginatedRows = computed(() =>
-  report.rows.slice((page.value - 1) * perPage.value, page.value * perPage.value)
+  report.rows.slice((page.value - 1) * perPage.value, page.value * perPage.value),
 )
 
 function onTableOptions({ page: p, itemsPerPage }) {
@@ -219,7 +292,7 @@ const headers = [
   { title: 'No',           key: 'no',            sortable: false, width: '50px' },
   { title: 'Klien',        key: 'nama_klien',    sortable: false },
   { title: 'Saldo Awal',   key: 'saldo_awal',    sortable: false, align: 'end' },
-  { title: 'Invoice Masuk',key: 'invoice_masuk', sortable: false, align: 'end' },
+  { title: 'Invoice Masuk', key: 'invoice_masuk', sortable: false, align: 'end' },
   { title: 'Pembayaran',   key: 'pembayaran',    sortable: false, align: 'end' },
   { title: 'Saldo Akhir',  key: 'saldo_akhir',   sortable: false, align: 'end' },
 ]
@@ -230,6 +303,7 @@ function buildParams() {
   if (filters.periode_akhir)   p.periode_akhir = filters.periode_akhir
   if (filters.klien_ar_id)     p.klien_ar_id   = filters.klien_ar_id
   if (segment.value !== 'ALL') p.segment       = segment.value
+  
   return p
 }
 
@@ -238,6 +312,7 @@ async function doFetch() {
   loading.value = true
   try {
     const { data } = await api.get('/finance/mutasi-piutang', { params: buildParams() })
+
     Object.assign(report, data.data)
   } finally {
     loading.value = false
@@ -248,13 +323,16 @@ async function doExport() {
   exporting.value = true
   try {
     const response = await api.get('/finance/mutasi-piutang/export-excel', {
-      params:       buildParams(),
+      params: buildParams(),
       responseType: 'blob',
     })
+
     const url  = URL.createObjectURL(new Blob([response.data], {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     }))
+
     const link    = document.createElement('a')
+
     link.href     = url
     link.download = `MUTASI PIUTANG - ${authStore.user?.karyawan?.nama_karyawan ?? 'SEMUA'} - ${buildTimestamp()}.xlsx`
     link.click()
@@ -266,6 +344,7 @@ async function doExport() {
 
 function buildTimestamp() {
   const n = new Date()
+  
   return (
     String(n.getDate()).padStart(2, '0') +
     String(n.getMonth() + 1).padStart(2, '0') +

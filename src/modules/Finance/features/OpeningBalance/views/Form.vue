@@ -363,7 +363,6 @@
                   <span class="summary-list__label">Tanggal</span>
                   <strong class="summary-list__value">{{ formattedTanggal }}</strong>
                 </div>
-
               </div>
             </VCardText>
           </VCard>
@@ -551,12 +550,15 @@ const outstandingInvoices = ref([])
 const loadingOutstanding  = ref(false)
 
 async function fetchOutstandingInvoices(klienArId) {
-  if (!klienArId) { outstandingInvoices.value = []; return }
+  if (!klienArId) { outstandingInvoices.value = [] 
+
+    return }
   loadingOutstanding.value = true
   try {
     const { data } = await api.get('/finance/invoices/outstanding', {
       params: { klien_ar_id: klienArId, tanggal: form.tanggal },
     })
+
     outstandingInvoices.value = data.data ?? []
   } catch {
     outstandingInvoices.value = []
@@ -651,7 +653,7 @@ function generateObNoInvoice() {
   return `OB-${singkatan}-${dd}${mm}${yyyy}${hh}${min}${ss}${ms}`
 }
 
-watch(() => form.klien_ar_id, (newVal) => {
+watch(() => form.klien_ar_id, newVal => {
   if (newVal && !isEditing.value)
     form.no_invoice = generateObNoInvoice()
   fetchOutstandingInvoices(newVal)
@@ -725,6 +727,7 @@ async function handleSubmit() {
     const sum = form.details.reduce((acc, d) => acc + (Number(d.sisa_tagihan_asal) || 0), 0)
     if (Math.abs(sum - Number(form.saldo_awal)) > 0.01) {
       errors.details = [`Jumlah sisa tagihan rincian (${sum.toFixed(2)}) harus sama dengan saldo awal (${Number(form.saldo_awal).toFixed(2)})`]
+      
       return
     }
   }

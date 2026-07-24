@@ -1,6 +1,8 @@
 <template>
   <div>
     <ManagementIndexShell
+      v-model:search="params.search"
+      v-model:status="statusFilter"
       tone="amber"
       icon="ri-shield-user-line"
       title="Manajemen Role"
@@ -13,8 +15,6 @@
       :stats-loading="loading && !items.length"
       search-placeholder="Cari role..."
       compact-actions
-      v-model:search="params.search"
-      v-model:status="statusFilter"
       @update:search="debouncedFetch"
       @update:status="onStatusChange"
     >
@@ -46,6 +46,7 @@
       </template>
 
       <BaseTable
+        v-model:selected="selectedItems"
         :headers="headers"
         :items="items"
         :total="meta.total"
@@ -55,14 +56,21 @@
         show-select
         mobile-cards
         mobile-menu-select
-        v-model:selected="selectedItems"
         @update:options="onTableOptions"
       >
         <template #mobile-card="{ item, selected, toggle }">
           <div class="d-flex align-center justify-space-between gap-2 mb-2">
             <div class="min-width-0">
-              <div class="font-weight-medium text-truncate">{{ item.nama_role }}</div>
-              <VChip color="primary" size="small" variant="tonal" label class="mt-1">
+              <div class="font-weight-medium text-truncate">
+                {{ item.nama_role }}
+              </div>
+              <VChip
+                color="primary"
+                size="small"
+                variant="tonal"
+                label
+                class="mt-1"
+              >
                 {{ item.name }}
               </VChip>
             </div>
@@ -329,7 +337,7 @@ function minimizeForm() {
 }
 function onFormSaved() { minimizeStore.remove(FORM_WIDGET_ID); showForm.value = false; fetchList() }
 
-watch(showForm, (val) => {
+watch(showForm, val => {
   if (!val) {
     const w = minimizeStore.widgets[FORM_WIDGET_ID]
     if (w && !w.minimized) minimizeStore.remove(FORM_WIDGET_ID)
@@ -339,11 +347,13 @@ watch(showForm, (val) => {
 onActivated(async () => {
   if (minimizeStore.widgets[FORM_WIDGET_ID]?.pendingRestore) {
     const widget = minimizeStore.widgets[FORM_WIDGET_ID]
+
     minimizeStore.clearPendingRestore(FORM_WIDGET_ID)
     minimizeStore.setMinimizedFalse(FORM_WIDGET_ID)
     if (widget.mode === 'edit' && widget.recordId && widget.endpoint) {
       try {
         const res = await api.get(`${widget.endpoint}/${widget.recordId}`)
+
         selectedForm.value = res.data?.data ?? null
       } catch {
         selectedForm.value = null
@@ -404,6 +414,7 @@ async function doBulkDelete() {
   try {
     const res = await api.delete('/iam/roles/bulk', { data: { ids: selectedItems.value.map(i => i.id) } })
     const deleted = res.data?.data?.deleted ?? selectedItems.value.length
+
     selectedItems.value = []
     fetchList()
     await showSuccess(`${deleted} role berhasil dihapus.`)

@@ -9,6 +9,7 @@ import '@core/scss/template/index.scss'
 import '@styles/styles.scss'
 
 const app = createApp(App)
+
 registerPlugins(app)
 
 // Cleanup sekali: marker sesi lama di localStorage sudah digantikan endpoint

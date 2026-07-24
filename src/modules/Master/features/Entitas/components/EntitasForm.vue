@@ -212,7 +212,9 @@
             size="20"
           />
           <div>
-            <div class="text-body-2 font-weight-medium">Status Entitas</div>
+            <div class="text-body-2 font-weight-medium">
+              Status Entitas
+            </div>
             <div class="text-caption text-medium-emphasis">
               {{ form.status ? 'Aktif — entitas dapat digunakan' : 'Nonaktif — entitas dinonaktifkan' }}
             </div>

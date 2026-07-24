@@ -11,9 +11,27 @@
           density="compact"
           @update:model-value="onSegmentChange"
         >
-          <VBtn value="ALL" size="small" style="min-width: 80px">Semua</VBtn>
-          <VBtn value="B2C" size="small" style="min-width: 70px">B2C</VBtn>
-          <VBtn value="B2B" size="small" style="min-width: 70px">B2B</VBtn>
+          <VBtn
+            value="ALL"
+            size="small"
+            style="min-width: 80px"
+          >
+            Semua
+          </VBtn>
+          <VBtn
+            value="B2C"
+            size="small"
+            style="min-width: 70px"
+          >
+            B2C
+          </VBtn>
+          <VBtn
+            value="B2B"
+            size="small"
+            style="min-width: 70px"
+          >
+            B2B
+          </VBtn>
         </VBtnToggle>
         <VAutocomplete
           v-model="params.klien_ar_id"
@@ -26,7 +44,7 @@
           item-title="display_label"
           item-value="id"
           :loading="klienLoading"
-          @focus="ensureKlienLoaded()"
+          @focus="ensureKlienLoaded"
           @update:model-value="doFetch"
         />
         <VSelect
@@ -100,7 +118,12 @@
           </span>
         </template>
         <template #item.metode_pembayaran="{ item }">
-          <VChip :color="metodeColor(item.metode_pembayaran)" size="small" variant="tonal" label>
+          <VChip
+            :color="metodeColor(item.metode_pembayaran)"
+            size="small"
+            variant="tonal"
+            label
+          >
             {{ item.metode_pembayaran }}
           </VChip>
         </template>
@@ -135,7 +158,7 @@ const headers = [
   { title: 'No',           key: 'no',                 sortable: false, width: '50px' },
   { title: 'Tanggal',      key: 'tanggal_pembayaran',  sortable: false },
   { title: 'Klien',        key: 'klien',               sortable: false },
-  { title: 'No. Referensi',key: 'no_referensi',        sortable: false },
+  { title: 'No. Referensi', key: 'no_referensi',        sortable: false },
   { title: 'No. Invoice',  key: 'no_invoice',          sortable: false },
   { title: 'Metode',       key: 'metode_pembayaran',   sortable: false },
   { title: 'Jumlah',       key: 'jumlah_pembayaran',   sortable: false },

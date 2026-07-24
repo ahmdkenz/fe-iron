@@ -80,6 +80,7 @@ defineProps({
 defineEmits(['confirm', 'minimize'])
 
 const isOpen = defineModel({ type: Boolean, default: false })
+
 // `xs` (<600px) matches the phone breakpoint used elsewhere (BaseTable's
 // mobileCards), not Vuetify's broader `mobile` flag (true up to 1280px).
 const { xs: mobile } = useDisplay()

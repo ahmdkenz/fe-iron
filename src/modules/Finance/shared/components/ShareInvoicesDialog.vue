@@ -18,8 +18,12 @@
               />
             </div>
             <div>
-              <div class="text-h6 font-weight-bold">Kirim via WhatsApp</div>
-              <div class="text-caption text-medium-emphasis">Pilih invoice yang ingin dikirim</div>
+              <div class="text-h6 font-weight-bold">
+                Kirim via WhatsApp
+              </div>
+              <div class="text-caption text-medium-emphasis">
+                Pilih invoice yang ingin dikirim
+              </div>
             </div>
           </div>
           <VBtn
@@ -29,7 +33,10 @@
             color="default"
             @click="isOpen = false"
           >
-            <VIcon icon="ri-close-line" size="20" />
+            <VIcon
+              icon="ri-close-line"
+              size="20"
+            />
           </VBtn>
         </div>
 
@@ -336,6 +343,7 @@ const firstInvoice = computed(() => props.preSelected[0] ?? null)
 const clientName = computed(() => {
   const inv = firstInvoice.value
   if (!inv) return ''
+  
   return inv.klien_ar?.nama_klien ?? ''
 })
 
@@ -344,18 +352,20 @@ const clientPhone = computed(() => {
   if (!inv) return ''
   const raw = inv.klien_ar?.no_wa ?? ''
   if (!raw) return ''
+  
   return raw.startsWith('0') ? '62' + raw.slice(1) : raw.replace(/^\+/, '')
 })
 
 const grandTotal = computed(() =>
   allInvoices.value
     .filter(inv => checkedIds.value.includes(inv.id))
-    .reduce((sum, inv) => sum + (inv.subtotal ?? 0), 0)
+    .reduce((sum, inv) => sum + (inv.subtotal ?? 0), 0),
 )
 
 const allChecked = computed(() =>
-  allInvoices.value.length > 0 && checkedIds.value.length === allInvoices.value.length
+  allInvoices.value.length > 0 && checkedIds.value.length === allInvoices.value.length,
 )
+
 const someChecked = computed(() => checkedIds.value.length > 0)
 
 function toggleCheck(id) {
@@ -391,6 +401,7 @@ async function fetchRelated() {
     ])
 
     const preSelectedIds = new Set(props.preSelected.map(inv => inv.id))
+
     const combined = [
       ...(resOb.data?.data ?? []),
       ...(resReg.data?.data ?? []),
@@ -409,6 +420,7 @@ async function fetchRelated() {
 
 function formatInvoiceItem(inv) {
   const t = new Intl.NumberFormat('id-ID').format(inv.subtotal)
+  
   return `- ${inv.no_invoice} | Rp ${t}\n  ${inv.share_url}`
 }
 
@@ -422,6 +434,7 @@ function buildMessage(selected) {
     const inv = selected[0]
     const t = new Intl.NumberFormat('id-ID').format(inv.subtotal)
     const label = inv.is_opening_balance ? 'Opening Balance' : 'Invoice'
+    
     return (
       `Yth. Bapak/Ibu *${klien}*,\n\n` +
       `Bersama ini kami sampaikan ${label} *${inv.no_invoice}* dengan rincian sebagai berikut:\n\n` +
@@ -446,6 +459,7 @@ function buildMessage(selected) {
   }
 
   const grandStr = new Intl.NumberFormat('id-ID').format(total)
+
   msg += `\n*Total Keseluruhan: Rp ${grandStr}*\n\nMohon kesediaannya untuk melakukan pembayaran sesuai dengan total tagihan di atas. Atas perhatian dan kerja samanya, kami ucapkan terima kasih.`
 
   return msg
@@ -454,6 +468,7 @@ function buildMessage(selected) {
 async function doSend() {
   if (!clientPhone.value) {
     await showError('Nomor WhatsApp klien belum diisi. Silakan lengkapi data No. WhatsApp pada form Client.')
+    
     return
   }
 
@@ -461,6 +476,7 @@ async function doSend() {
   if (!selected.length) return
 
   const msg = buildMessage(selected)
+
   window.open(`https://wa.me/${clientPhone.value}?text=${encodeURIComponent(msg)}`, '_blank')
   isOpen.value = false
 }

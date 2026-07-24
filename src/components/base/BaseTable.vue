@@ -4,7 +4,7 @@
     class="base-table-wrapper"
   >
     <VDataTableServer
-      v-if="!isMobileCardView"
+      v-if="!isMobileCardView && paginationMode === 'pages'"
       class="base-table"
       :class="{ 'base-table--wrap-text': wrapText, 'base-table--layout-locked': layoutLocked }"
       v-bind="$attrs"
@@ -34,6 +34,34 @@
       </template>
     </VDataTableServer>
 
+    <VDataTableVirtual
+      v-else-if="!isMobileCardView"
+      class="base-table"
+      :class="{ 'base-table--wrap-text': wrapText, 'base-table--layout-locked': layoutLocked }"
+      v-bind="$attrs"
+      :headers="resizedHeaders"
+      :items="items"
+      :loading="loading"
+      loading-text=""
+      :height="desktopVirtualHeight"
+      fixed-header
+      :item-value="itemValue"
+      return-object
+      :model-value="selected"
+      @update:model-value="v => emit('update:selected', v)"
+    >
+      <template #loader />
+      <template
+        v-for="(_, name) in $slots"
+        #[name]="slotProps"
+      >
+        <slot
+          :name="name"
+          v-bind="slotProps ?? {}"
+        />
+      </template>
+    </VDataTableVirtual>
+
     <div
       v-else
       class="base-table-mobile-list"
@@ -57,6 +85,37 @@
       >
         Tidak ada data.
       </div>
+      <VVirtualScroll
+        v-else-if="paginationMode === 'load-more'"
+        :items="items"
+        :item-key="itemValue"
+        :height="mobileVirtualHeight"
+      >
+        <template #default="{ item, index }">
+          <div
+            class="base-table-mobile-card"
+            :class="{ 'base-table-mobile-card--selected': isItemSelected(item) }"
+          >
+            <VCheckbox
+              v-if="showSelect && !mobileMenuSelect"
+              :model-value="isItemSelected(item)"
+              hide-details
+              density="compact"
+              class="base-table-mobile-card__select"
+              @update:model-value="() => toggleItemSelected(item)"
+            />
+            <div class="base-table-mobile-card__body">
+              <slot
+                name="mobile-card"
+                :item="item"
+                :index="index"
+                :selected="isItemSelected(item)"
+                :toggle="() => toggleItemSelected(item)"
+              />
+            </div>
+          </div>
+        </template>
+      </VVirtualScroll>
       <template v-else>
         <div
           v-for="(item, index) in items"
@@ -85,7 +144,23 @@
       </template>
 
       <div
-        v-if="totalPages > 1"
+        v-if="paginationMode === 'load-more' && items.length"
+        class="d-flex align-center justify-space-between mt-2 px-1"
+      >
+        <span class="text-caption text-medium-emphasis">Menampilkan {{ loadedCount ?? items.length }} dari {{ total }}</span>
+        <VBtn
+          v-if="hasMore"
+          size="small"
+          variant="tonal"
+          color="primary"
+          :loading="loadingMore"
+          @click="emit('load-more')"
+        >
+          Muat lagi
+        </VBtn>
+      </div>
+      <div
+        v-else-if="totalPages > 1"
         class="base-table-mobile-pagination"
       >
         <VPagination
@@ -98,6 +173,23 @@
           @update:model-value="p => handleOptionsUpdate({ page: p, itemsPerPage: perPage })"
         />
       </div>
+    </div>
+
+    <div
+      v-if="!isMobileCardView && paginationMode === 'load-more'"
+      class="d-flex align-center justify-space-between mt-2 px-1"
+    >
+      <span class="text-caption text-medium-emphasis">Menampilkan {{ loadedCount ?? items.length }} dari {{ total }}</span>
+      <VBtn
+        v-if="hasMore"
+        size="small"
+        variant="tonal"
+        color="primary"
+        :loading="loadingMore"
+        @click="emit('load-more')"
+      >
+        Muat lagi
+      </VBtn>
     </div>
 
     <div
@@ -136,9 +228,14 @@ const props = defineProps({
   mobileMenuSelect: { type: Boolean, default: false },
   itemValue: { type: String, default: 'id' },
   selected: { type: Array, default: () => [] },
+  paginationMode: { type: String, default: 'pages' },
+  hasMore: { type: Boolean, default: false },
+  loadingMore: { type: Boolean, default: false },
+  loadedCount: { type: Number, default: null },
+  virtualHeight: { type: [Number, String], default: 600 },
 })
 
-const emit = defineEmits(['update:options', 'update:selected'])
+const emit = defineEmits(['update:options', 'update:selected', 'load-more'])
 
 defineOptions({ inheritAttrs: false })
 
@@ -147,6 +244,25 @@ const display = useDisplay()
 
 const isMobileCardView = computed(() => props.mobileCards && display.xs.value)
 const totalPages = computed(() => Math.max(1, Math.ceil(props.total / (props.perPage || 1))))
+
+const mobileVirtualHeight = computed(() => {
+  const height = typeof props.virtualHeight === 'number' ? props.virtualHeight : Number.parseFloat(props.virtualHeight) || 600
+
+  return `min(70vh, ${height}px)`
+})
+
+// Tinggi tetap (virtualHeight) hanya dipakai saat benar-benar ada baris untuk
+// di-scroll. Kosong (belum pernah loading) => natural height (cuma header).
+// Loading pertama kali (belum ada items) => tinggi kecil sekadar muat spinner,
+// bukan ikut virtualHeight penuh yang bikin box kosong raksasa.
+const LOADING_PLACEHOLDER_HEIGHT = 160
+
+const desktopVirtualHeight = computed(() => {
+  if (props.items.length) return props.virtualHeight
+  if (props.loading) return LOADING_PLACEHOLDER_HEIGHT
+
+  return undefined
+})
 
 // ─── Safe pagination defaults ──────────────────────────────────────────────
 // Tabel server-side tidak boleh menawarkan opsi "Semua" secara default agar

@@ -14,7 +14,7 @@
           item-title="display_label"
           item-value="id"
           :loading="klienLoading"
-          @focus="ensureKlienLoaded()"
+          @focus="ensureKlienLoaded"
           @update:model-value="onKlienChange"
         />
         <VTextField
@@ -50,66 +50,127 @@
     </VCard>
 
     <!-- Empty state: belum pilih klien -->
-    <VCard v-if="!filters.klien_ar_id" class="d-flex align-center justify-center" style="min-height: 300px;">
+    <VCard
+      v-if="!filters.klien_ar_id"
+      class="d-flex align-center justify-center"
+      style="min-height: 300px;"
+    >
       <VCardText class="text-center text-medium-emphasis">
-        <VIcon icon="ri-file-paper-2-line" size="64" class="mb-4 text-disabled" />
-        <div class="text-h6 mb-1">Pilih Klien Terlebih Dahulu</div>
-        <div class="text-body-2">Rekening koran akan ditampilkan setelah klien dipilih</div>
+        <VIcon
+          icon="ri-file-paper-2-line"
+          size="64"
+          class="mb-4 text-disabled"
+        />
+        <div class="text-h6 mb-1">
+          Pilih Klien Terlebih Dahulu
+        </div>
+        <div class="text-body-2">
+          Rekening koran akan ditampilkan setelah klien dipilih
+        </div>
       </VCardText>
     </VCard>
 
     <template v-else>
       <!-- Summary Cards -->
       <VRow class="mb-4">
-        <VCol cols="12" sm="6" md="3">
+        <VCol
+          cols="12"
+          sm="6"
+          md="3"
+        >
           <VCard class="stat-card">
             <VCardText class="pa-4">
               <div class="d-flex align-center justify-space-between mb-3">
                 <span class="text-overline text-medium-emphasis font-weight-bold">Saldo Awal</span>
-                <VAvatar color="secondary" size="40" rounded="lg">
-                  <VIcon icon="ri-wallet-3-line" size="20" class="text-white" />
+                <VAvatar
+                  color="secondary"
+                  size="40"
+                  rounded="lg"
+                >
+                  <VIcon
+                    icon="ri-wallet-3-line"
+                    size="20"
+                    class="text-white"
+                  />
                 </VAvatar>
               </div>
               <div class="text-h5 font-weight-bold mb-1">
                 {{ formatCurrency(report.saldo_awal ?? 0) }}
               </div>
-              <div class="stat-bar" style="background: rgb(var(--v-theme-secondary));" />
+              <div
+                class="stat-bar"
+                style="background: rgb(var(--v-theme-secondary));"
+              />
             </VCardText>
           </VCard>
         </VCol>
-        <VCol cols="12" sm="6" md="3">
+        <VCol
+          cols="12"
+          sm="6"
+          md="3"
+        >
           <VCard class="stat-card">
             <VCardText class="pa-4">
               <div class="d-flex align-center justify-space-between mb-3">
                 <span class="text-overline text-medium-emphasis font-weight-bold">Total Debit</span>
-                <VAvatar color="warning" size="40" rounded="lg">
-                  <VIcon icon="ri-bill-line" size="20" class="text-white" />
+                <VAvatar
+                  color="warning"
+                  size="40"
+                  rounded="lg"
+                >
+                  <VIcon
+                    icon="ri-bill-line"
+                    size="20"
+                    class="text-white"
+                  />
                 </VAvatar>
               </div>
               <div class="text-h5 font-weight-bold text-warning mb-1">
                 {{ formatCurrency(report.total_debit ?? 0) }}
               </div>
-              <div class="stat-bar" style="background: rgb(var(--v-theme-warning));" />
+              <div
+                class="stat-bar"
+                style="background: rgb(var(--v-theme-warning));"
+              />
             </VCardText>
           </VCard>
         </VCol>
-        <VCol cols="12" sm="6" md="3">
+        <VCol
+          cols="12"
+          sm="6"
+          md="3"
+        >
           <VCard class="stat-card">
             <VCardText class="pa-4">
               <div class="d-flex align-center justify-space-between mb-3">
                 <span class="text-overline text-medium-emphasis font-weight-bold">Total Kredit</span>
-                <VAvatar color="success" size="40" rounded="lg">
-                  <VIcon icon="ri-money-cny-circle-line" size="20" class="text-white" />
+                <VAvatar
+                  color="success"
+                  size="40"
+                  rounded="lg"
+                >
+                  <VIcon
+                    icon="ri-money-cny-circle-line"
+                    size="20"
+                    class="text-white"
+                  />
                 </VAvatar>
               </div>
               <div class="text-h5 font-weight-bold text-success mb-1">
                 {{ formatCurrency(report.total_kredit ?? 0) }}
               </div>
-              <div class="stat-bar" style="background: rgb(var(--v-theme-success));" />
+              <div
+                class="stat-bar"
+                style="background: rgb(var(--v-theme-success));"
+              />
             </VCardText>
           </VCard>
         </VCol>
-        <VCol cols="12" sm="6" md="3">
+        <VCol
+          cols="12"
+          sm="6"
+          md="3"
+        >
           <VCard class="stat-card">
             <VCardText class="pa-4">
               <div class="d-flex align-center justify-space-between mb-3">
@@ -179,19 +240,34 @@
             </VChip>
           </template>
           <template #item.debit="{ item }">
-            <span v-if="item.debit > 0" class="text-warning font-weight-medium">
+            <span
+              v-if="item.debit > 0"
+              class="text-warning font-weight-medium"
+            >
               {{ formatCurrency(item.debit) }}
             </span>
-            <span v-else class="text-disabled">-</span>
+            <span
+              v-else
+              class="text-disabled"
+            >-</span>
           </template>
           <template #item.kredit="{ item }">
-            <span v-if="item.kredit > 0" class="text-success font-weight-medium">
+            <span
+              v-if="item.kredit > 0"
+              class="text-success font-weight-medium"
+            >
               {{ formatCurrency(item.kredit) }}
             </span>
-            <span v-else class="text-disabled">-</span>
+            <span
+              v-else
+              class="text-disabled"
+            >-</span>
           </template>
           <template #item.saldo="{ item }">
-            <span class="font-weight-bold" :class="item.saldo > 0 ? 'text-error' : 'text-success'">
+            <span
+              class="font-weight-bold"
+              :class="item.saldo > 0 ? 'text-error' : 'text-success'"
+            >
               {{ formatCurrency(item.saldo) }}
             </span>
           </template>
@@ -216,6 +292,7 @@ const { ensureLoaded: ensureKlienLoaded } = useLazyFetchAll(fetchKlien)
 
 const loading  = ref(false)
 const exporting = ref(false)
+
 const report   = reactive({
   klien: null,
   periode_awal: null,
@@ -232,8 +309,8 @@ const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().sl
 const lastDay  = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10)
 
 const filters = reactive({
-  klien_ar_id:   null,
-  periode_awal:  firstDay,
+  klien_ar_id: null,
+  periode_awal: firstDay,
   periode_akhir: lastDay,
 })
 
@@ -241,7 +318,7 @@ const page    = ref(1)
 const perPage = ref(25)
 
 const paginatedRows = computed(() =>
-  report.rows.slice((page.value - 1) * perPage.value, page.value * perPage.value)
+  report.rows.slice((page.value - 1) * perPage.value, page.value * perPage.value),
 )
 
 function onTableOptions({ page: p, itemsPerPage }) {
@@ -272,6 +349,7 @@ function buildParams() {
   if (filters.klien_ar_id)   params.klien_ar_id   = filters.klien_ar_id
   if (filters.periode_awal)  params.periode_awal  = filters.periode_awal
   if (filters.periode_akhir) params.periode_akhir = filters.periode_akhir
+  
   return params
 }
 
@@ -281,9 +359,11 @@ async function doFetch() {
   loading.value = true
   try {
     const { data } = await api.get('/finance/rekening-koran', { params: buildParams() })
+
     Object.assign(report, data.data)
   } catch (err) {
     const msg = err.response?.data?.message ?? 'Gagal memuat rekening koran. Coba lagi.'
+
     showError({ text: msg })
   } finally {
     loading.value = false
@@ -292,6 +372,7 @@ async function doFetch() {
 
 function buildTimestamp() {
   const n = new Date()
+  
   return (
     String(n.getDate()).padStart(2, '0') +
     String(n.getMonth() + 1).padStart(2, '0') +
@@ -307,6 +388,7 @@ function getKlienLabel() {
     const found = klienList.value.find(k => k.id === filters.klien_ar_id)
     if (found) return found.nama_klien
   }
+  
   return 'SEMUA'
 }
 
@@ -314,19 +396,23 @@ async function doExport() {
   exporting.value = true
   try {
     const response = await api.get('/finance/rekening-koran/export-excel', {
-      params:       buildParams(),
+      params: buildParams(),
       responseType: 'blob',
     })
+
     const url  = URL.createObjectURL(new Blob([response.data], {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     }))
+
     const link = document.createElement('a')
+
     link.href  = url
     link.download = `REK KORAN - ${getKlienLabel()} - ${buildTimestamp()}.xlsx`
     link.click()
     setTimeout(() => URL.revokeObjectURL(url), 10_000)
   } catch (err) {
     const msg = err.response?.data?.message ?? 'Gagal mengekspor data. Coba lagi.'
+
     showError({ text: msg })
   } finally {
     exporting.value = false

@@ -39,8 +39,8 @@ export const useMasterDataImportStore = defineStore('master-data-import', {
       if (this.importing) return
 
       useMinimizeWidgetStore().register(WIDGET_ID, {
-        title:     'Import Master Data',
-        type:      'import',
+        title: 'Import Master Data',
+        type: 'import',
         routeName: 'master-unified-import',
         minimized: false,
       })
@@ -52,7 +52,9 @@ export const useMasterDataImportStore = defineStore('master-data-import', {
 
       try {
         const form = new FormData()
+
         form.append('file', file)
+
         const res     = await api.post('/master/master-data/import', form)
         const batchId = res.data?.data?.batch_id
         if (batchId) {
@@ -62,9 +64,9 @@ export const useMasterDataImportStore = defineStore('master-data-import', {
         }
       } catch (err) {
         this.finish({
-          status:  'failed',
+          status: 'failed',
           message: err.response?.data?.message ?? 'Gagal mengunggah file.',
-          errors:  [],
+          errors: [],
         })
       }
     },
@@ -82,6 +84,7 @@ export const useMasterDataImportStore = defineStore('master-data-import', {
 
           if (data?.status === 'completed' || data?.status === 'failed') {
             this.finish(data)
+            
             return
           }
 

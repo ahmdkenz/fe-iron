@@ -94,6 +94,7 @@ export function useCrud(endpoint, options = {}) {
 
     loading.value = true
     error.value = null
+
     const requestPromise = (async () => {
       const { data } = await api.get(listEndpoint, {
         params: { all: true, ...extraParams },

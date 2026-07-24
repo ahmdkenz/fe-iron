@@ -9,7 +9,13 @@
         { title: 'Riwayat Pembayaran', disabled: true },
       ]"
     >
-      <VBtn variant="text" prepend-icon="ri-arrow-left-line" :to="{ name: 'finance-laporan' }">Kembali</VBtn>
+      <VBtn
+        variant="text"
+        prepend-icon="ri-arrow-left-line"
+        :to="{ name: 'finance-laporan' }"
+      >
+        Kembali
+      </VBtn>
     </PageHeader>
 
     <!-- Summary Card -->
@@ -24,9 +30,27 @@
           density="compact"
           @update:model-value="onSegmentChange"
         >
-          <VBtn value="ALL" size="small" style="min-width: 80px">Semua</VBtn>
-          <VBtn value="B2C" size="small" style="min-width: 70px">B2C</VBtn>
-          <VBtn value="B2B" size="small" style="min-width: 70px">B2B</VBtn>
+          <VBtn
+            value="ALL"
+            size="small"
+            style="min-width: 80px"
+          >
+            Semua
+          </VBtn>
+          <VBtn
+            value="B2C"
+            size="small"
+            style="min-width: 70px"
+          >
+            B2C
+          </VBtn>
+          <VBtn
+            value="B2B"
+            size="small"
+            style="min-width: 70px"
+          >
+            B2B
+          </VBtn>
         </VBtnToggle>
         <VAutocomplete
           v-model="params.klien_ar_id"
@@ -39,7 +63,7 @@
           item-title="display_label"
           item-value="id"
           :loading="klienLoading"
-          @focus="ensureKlienLoaded()"
+          @focus="ensureKlienLoaded"
           @update:model-value="doFetch"
         />
         <VSelect
@@ -119,7 +143,12 @@
           </span>
         </template>
         <template #item.metode_pembayaran="{ item }">
-          <VChip :color="metodeColor(item.metode_pembayaran)" size="small" variant="tonal" label>
+          <VChip
+            :color="metodeColor(item.metode_pembayaran)"
+            size="small"
+            variant="tonal"
+            label
+          >
             {{ item.metode_pembayaran }}
           </VChip>
         </template>
@@ -134,9 +163,26 @@
           </VChip>
         </template>
         <template #item.jenis="{ item }">
-          <VChip v-if="item.jenis === 'ALO'" size="x-small" color="info" label>ALO</VChip>
-          <VChip v-else-if="item.jenis === 'PDM'" size="x-small" color="secondary" label>PDM</VChip>
-          <span v-else class="text-caption text-medium-emphasis">REG</span>
+          <VChip
+            v-if="item.jenis === 'ALO'"
+            size="x-small"
+            color="info"
+            label
+          >
+            ALO
+          </VChip>
+          <VChip
+            v-else-if="item.jenis === 'PDM'"
+            size="x-small"
+            color="secondary"
+            label
+          >
+            PDM
+          </VChip>
+          <span
+            v-else
+            class="text-caption text-medium-emphasis"
+          >REG</span>
         </template>
         <template #item.bukti_url="{ item }">
           <VBtn
@@ -149,16 +195,30 @@
             target="_blank"
             rel="noopener"
           >
-            <VIcon icon="ri-attachment-2" size="18" />
-            <VTooltip activator="parent">Bukti bayar</VTooltip>
+            <VIcon
+              icon="ri-attachment-2"
+              size="18"
+            />
+            <VTooltip activator="parent">
+              Bukti bayar
+            </VTooltip>
           </VBtn>
-          <span v-else class="text-medium-emphasis">-</span>
+          <span
+            v-else
+            class="text-medium-emphasis"
+          >-</span>
         </template>
         <template #expanded-row="{ item, columns }">
           <tr class="payment-detail-row">
-            <td :colspan="columns.length" class="pa-0">
+            <td
+              :colspan="columns.length"
+              class="pa-0"
+            >
               <div class="pa-4">
-                <VTable density="compact" class="payment-detail-table">
+                <VTable
+                  density="compact"
+                  class="payment-detail-table"
+                >
                   <tbody>
                     <tr>
                       <th>Invoice</th>
@@ -194,7 +254,9 @@
                     </tr>
                     <tr>
                       <th>Keterangan</th>
-                      <td colspan="3">{{ item.keterangan ?? '-' }}</td>
+                      <td colspan="3">
+                        {{ item.keterangan ?? '-' }}
+                      </td>
                       <th>Dicatat</th>
                       <td>{{ item.created_by_name ?? '-' }} / {{ item.created_at ?? '-' }}</td>
                     </tr>
@@ -239,11 +301,11 @@ const headers = [
   { title: 'Klien',       key: 'klien',              sortable: false },
   { title: 'Jumlah',      key: 'jumlah_pembayaran',  sortable: false },
   { title: 'Metode',      key: 'metode_pembayaran',  sortable: false },
-  { title: 'Rekon',       key: 'status_rekonsiliasi',sortable: false },
-  { title: 'No Referensi',key: 'no_referensi',       sortable: false },
+  { title: 'Rekon',       key: 'status_rekonsiliasi', sortable: false },
+  { title: 'No Referensi', key: 'no_referensi',       sortable: false },
   { title: 'Jenis',       key: 'jenis',              sortable: false },
   { title: 'Bukti',       key: 'bukti_url',   sortable: false, align: 'center', width: '70px' },
-  { title: 'Dicatat oleh',key: 'created_by_name',   sortable: false },
+  { title: 'Dicatat oleh', key: 'created_by_name',   sortable: false },
 ]
 
 const metodeOptions = [

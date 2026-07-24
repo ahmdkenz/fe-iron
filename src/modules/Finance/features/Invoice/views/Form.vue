@@ -265,7 +265,6 @@
                     :persistent-hint="!!currentInvestor.no_hp_pengelola"
                   />
                 </VCol>
-
               </VRow>
             </VCardText>
           </VCard>
@@ -401,7 +400,7 @@
                   prepend-icon="ri-save-line"
                   :disabled="saving"
                   :loading="saving"
-                  @click="submitAs()"
+                  @click="submitAs"
                 >
                   Simpan Perubahan
                 </VBtn>
@@ -568,6 +567,7 @@ const form = reactive({
 
 const isB2B = computed(() => {
   const klien = isEditing.value ? invoice.value?.klien_ar : selectedKlien.value
+  
   return klien?.tipe_klien === 'PT'
 })
 
@@ -581,6 +581,7 @@ async function loadConsolidatedNo() {
     const { data } = await api.get('/finance/invoices/preview-no-konsolidasi', {
       params: { klien_ar_id: form.klien_ar_id },
     })
+
     form.no_invoice = data.data?.no_invoice ?? ''
   } catch {
     // biarkan kosong jika gagal
@@ -593,10 +594,13 @@ const restoList    = ref([])
 const restoLoading = ref(false)
 
 async function loadRestoByPerusahaan(perusahaanId) {
-  if (!perusahaanId) { restoList.value = []; return }
+  if (!perusahaanId) { restoList.value = [] 
+
+    return }
   restoLoading.value = true
   try {
     const { data } = await api.get('/master/resto', { params: { perusahaan_id: perusahaanId, all: true } })
+
     restoList.value = data.data ?? []
   } catch {
     restoList.value = []
@@ -635,6 +639,7 @@ const penerimaTagihanHint = computed(() => {
   if (currentInvestor.value.no_hp) parts.push(`HP: ${currentInvestor.value.no_hp}`)
   const restoNama = currentKlienAr.value?.resto?.nama_resto
   if (restoNama) parts.push(restoNama)
+  
   return parts.join(' · ')
 })
 
@@ -654,7 +659,9 @@ async function onKlienChange(klienId) {
   form.resto_id = null
   noInvoiceResto.value = ''
 
-  if (!klienId) { restoList.value = []; return }
+  if (!klienId) { restoList.value = [] 
+
+    return }
 
   await loadCarryover(klienId)
 
@@ -756,27 +763,27 @@ onMounted(async () => {
   }
 
   Object.assign(form, {
-    no_invoice:                  data.no_invoice,
-    tanggal_invoice:             toISODate(data.tanggal_invoice),
-    tanggal_jatuh_tempo:         toISODate(data.tanggal_jatuh_tempo) ?? '',
-    klien_ar_id:                 data.klien_ar_id,
-    resto_id:                    data.resto_id ?? null,
-    no_surat_jalan:              data.no_surat_jalan ?? '',
-    tagihan_periode_sebelumnya:  data.tagihan_periode_sebelumnya ?? 0,
-    keterangan:                  data.keterangan ?? '',
+    no_invoice: data.no_invoice,
+    tanggal_invoice: toISODate(data.tanggal_invoice),
+    tanggal_jatuh_tempo: toISODate(data.tanggal_jatuh_tempo) ?? '',
+    klien_ar_id: data.klien_ar_id,
+    resto_id: data.resto_id ?? null,
+    no_surat_jalan: data.no_surat_jalan ?? '',
+    tagihan_periode_sebelumnya: data.tagihan_periode_sebelumnya ?? 0,
+    keterangan: data.keterangan ?? '',
     items: (data.items ?? []).map(it => ({
-      id:               it.id,
-      barang_id:        it.barang_id,
-      kode_barang:      it.barang?.kode_barang ?? it.kode_barang ?? '',
-      nama_barang:      it.nama_barang,
-      qty:              it.qty,
-      satuan:           it.satuan,
-      harga_satuan:     it.harga_satuan,
-      subtotal:         it.subtotal,
-      keterangan:       it.keterangan ?? '',
+      id: it.id,
+      barang_id: it.barang_id,
+      kode_barang: it.barang?.kode_barang ?? it.kode_barang ?? '',
+      nama_barang: it.nama_barang,
+      qty: it.qty,
+      satuan: it.satuan,
+      harga_satuan: it.harga_satuan,
+      subtotal: it.subtotal,
+      keterangan: it.keterangan ?? '',
       no_invoice_resto: it.no_invoice_resto ?? '',
-      kode_resto:       it.kode_resto ?? '',
-      nama_resto:       it.nama_resto ?? '',
+      kode_resto: it.kode_resto ?? '',
+      nama_resto: it.nama_resto ?? '',
     })),
   })
 })
@@ -785,15 +792,40 @@ function terbilang(angka) {
   if (!angka || angka === 0) return 'nol rupiah'
 
   const satuan = ['',
-    'satu', 'dua', 'tiga', 'empat', 'lima',
-    'enam', 'tujuh', 'delapan', 'sembilan',
-    'sepuluh', 'sebelas', 'dua belas', 'tiga belas', 'empat belas',
-    'lima belas', 'enam belas', 'tujuh belas', 'delapan belas', 'sembilan belas']
+    'satu',
+    'dua',
+    'tiga',
+    'empat',
+    'lima',
+    'enam',
+    'tujuh',
+    'delapan',
+    'sembilan',
+    'sepuluh',
+    'sebelas',
+    'dua belas',
+    'tiga belas',
+    'empat belas',
+    'lima belas',
+    'enam belas',
+    'tujuh belas',
+    'delapan belas',
+    'sembilan belas']
 
   function ratusan(n) {
     if (n < 20) return satuan[n]
-    const pStr = ['', '', 'dua puluh', 'tiga puluh', 'empat puluh',
-      'lima puluh', 'enam puluh', 'tujuh puluh', 'delapan puluh', 'sembilan puluh']
+
+    const pStr = ['',
+      '',
+      'dua puluh',
+      'tiga puluh',
+      'empat puluh',
+      'lima puluh',
+      'enam puluh',
+      'tujuh puluh',
+      'delapan puluh',
+      'sembilan puluh']
+
     const sisa = n % 10
 
     return (pStr[Math.floor(n / 10)] + (sisa ? ' ' + satuan[sisa] : '')).trim()

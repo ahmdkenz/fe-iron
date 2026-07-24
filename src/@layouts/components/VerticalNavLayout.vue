@@ -76,7 +76,10 @@ const verticalNavAttrs = computed(() => {
         v-bind="{ ...verticalNavAttrs.additionalVerticalNavAttrs }"
       >
         <template #nav-header>
-          <slot name="vertical-nav-header" :toggle-overlay="toggleIsOverlayNavActive" />
+          <slot
+            name="vertical-nav-header"
+            :toggle-overlay="toggleIsOverlayNavActive"
+          />
         </template>
         <template #before-nav-items>
           <slot name="before-vertical-nav-items" />

@@ -123,7 +123,7 @@
               />
             </div>
             <div class="text-subtitle-1 font-weight-bold">
-              {{ formatCurrency(report.summary?.[bucket.key] ?? 0) }}
+              {{ formatCurrency(summary?.[bucket.key] ?? 0) }}
             </div>
           </VCardText>
         </VCard>
@@ -157,8 +157,8 @@
     <VCard>
       <VCardText class="pb-0">
         <div class="text-caption text-medium-emphasis">
-          Per tanggal: <strong>{{ formatDate(report.as_of_date) ?? '-' }}</strong>
-          &nbsp;·&nbsp; {{ report.meta?.total ?? report.rows.length }} klien
+          Per tanggal: <strong>{{ formatDate(asOfDate) ?? '-' }}</strong>
+          &nbsp;·&nbsp; {{ total }} klien
           <span class="text-disabled">&nbsp;·&nbsp; klik baris untuk lihat detail invoice</span>
         </div>
       </VCardText>
@@ -166,26 +166,30 @@
       <BaseTable
         v-model:expanded="expanded"
         :headers="headers"
-        :items="report.rows"
-        :total="report.meta?.total ?? 0"
+        :items="rows"
+        :total="total"
         :loading="loading"
-        :per-page="perPage"
-        :page="page"
+        pagination-mode="load-more"
+        :has-more="hasMore"
+        :loading-more="loadingMore"
+        :loaded-count="rows.length"
         show-expand
         item-value="klien_id"
         hover
-        @update:options="onTableOptions"
+        @load-more="loadMore"
         @click:row="onRowClick"
       >
         <template #item.no="{ index }">
-          {{ (page - 1) * perPage + index + 1 }}
+          {{ index + 1 }}
         </template>
         <template #item.nama_klien="{ item }">
           <div class="font-weight-medium">
             {{ item.nama_klien }}
           </div>
           <div class="text-caption text-medium-emphasis">
-            {{ item.kode_klien }}<template v-if="item.nama_resto"> · {{ item.nama_resto }}</template>
+            {{ item.kode_klien }}<template v-if="item.nama_resto">
+              · {{ item.nama_resto }}
+            </template>
           </div>
         </template>
         <template #item.pic_ar="{ item }">
@@ -227,7 +231,9 @@
             >
               <div class="pa-4">
                 <div class="text-caption font-weight-medium mb-2">
-                  Detail Invoice — {{ item.nama_klien }}<template v-if="item.nama_resto"> ({{ item.nama_resto }})</template>
+                  Detail Invoice — {{ item.nama_klien }}<template v-if="item.nama_resto">
+                    ({{ item.nama_resto }})
+                  </template>
                   <span class="text-medium-emphasis">({{ displayDetails(item).length }} invoice)</span>
                 </div>
                 <div class="aging-detail-scroll">
@@ -323,7 +329,7 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { useCrud } from '@/composables/useCrud'
 import { useLazyFetchAll } from '@/composables/useLazyFetchAll'
 import { useFormatter } from '@/composables/useFormatter'
@@ -333,11 +339,14 @@ const { formatCurrency, formatDate } = useFormatter()
 const { items: klienList, loading: klienLoading, fetchAll: fetchKlien } = useCrud('/finance/klien-ar')
 const { ensureLoaded: ensureKlienLoaded } = useLazyFetchAll(fetchKlien)
 
-const loading   = ref(false)
-const exporting = ref(false)
-const report    = reactive({ as_of_date: null, summary: null, rows: [], meta: null })
-const segment   = ref('ALL')
-const expanded  = ref([])
+const loading     = ref(false)
+const loadingMore = ref(false)
+const exporting   = ref(false)
+const rows        = ref([])
+const summary     = ref(null)
+const asOfDate    = ref(null)
+const segment     = ref('ALL')
+const expanded    = ref([])
 
 const bucketFilter = ref(null)
 
@@ -346,8 +355,21 @@ const filters = reactive({
   klien_ar_id: null,
 })
 
-const page    = ref(1)
-const perPage = ref(15)
+// ─── Pagination "load more" (manual, bukan useLoadMore) ───────────────────
+// PENTING: endpoint ini TIDAK mengembalikan {data, meta} rata di top-level
+// seperti kontrak useLoadMore — payload aslinya { as_of_date, summary, rows,
+// meta } (meta ikut ter-nest di dalam data.data bersama summary/as_of_date).
+// Composable useLoadMore generik akan error runtime kalau dipasang langsung
+// di sini (data.data bukan array). State load-more ditulis manual, meniru
+// API useLoadMore (reset via doFetch/loadMore/abort + dedupe-by-key) sambil
+// meng-unwrap payload bentuk ini.
+const PER_PAGE = 15
+const page     = ref(1)
+const lastPage = ref(1)
+const total    = ref(0)
+const hasMore  = computed(() => page.value < lastPage.value)
+
+let controller = null
 
 const buckets = [
   { key: 'current',      label: 'Belum Jatuh Tempo', color: 'success' },
@@ -392,12 +414,6 @@ function resetBucket() {
   doFetch()
 }
 
-function onTableOptions({ page: p, itemsPerPage }) {
-  page.value    = p
-  perPage.value = itemsPerPage
-  doFetch({ resetPage: false })
-}
-
 // Klik baris untuk toggle expand detail invoice (ikon panah tetap berfungsi sebagai fallback).
 function onRowClick(_event, { item } = {}) {
   const key = item?.klien_id
@@ -417,22 +433,66 @@ function buildParams() {
   return params
 }
 
-async function doFetch({ resetPage = true } = {}) {
-  if (resetPage) page.value = 1
-  loading.value = true
+async function fetchAging({ append = false } = {}) {
+  controller?.abort()
+
+  const ctrl = new AbortController()
+
+  controller = ctrl
+
+  const nextPage = append ? page.value + 1 : 1
+
+  if (append) loadingMore.value = true
+  else loading.value = true
+
   try {
     const params = buildParams()
     if (bucketFilter.value) params.bucket_filter = bucketFilter.value
-    params.page     = page.value
-    params.per_page = perPage.value
+    params.page     = nextPage
+    params.per_page = PER_PAGE
 
-    const { data } = await api.get('/finance/aging-report', { params })
+    const { data } = await api.get('/finance/aging-report', { params, signal: ctrl.signal })
+    const payload  = data.data ?? {}
+    const newRows  = payload.rows ?? []
 
-    Object.assign(report, data.data)
-    expanded.value = []
+    if (append) {
+      const existingKeys = new Set(rows.value.map(r => r.klien_id))
+
+      rows.value = [...rows.value, ...newRows.filter(r => !existingKeys.has(r.klien_id))]
+    } else {
+      rows.value     = newRows
+      expanded.value = []
+    }
+
+    summary.value  = payload.summary ?? summary.value
+    asOfDate.value = payload.as_of_date ?? asOfDate.value
+    page.value     = payload.meta?.current_page ?? nextPage
+    lastPage.value = payload.meta?.last_page ?? 1
+    total.value    = payload.meta?.total ?? newRows.length
+  } catch (err) {
+    if (err.code === 'ERR_CANCELED') return
+
+    if (!append) rows.value = []
   } finally {
-    loading.value = false
+    if (controller === ctrl) controller = null
+    if (append) loadingMore.value = false
+    else loading.value = false
   }
+}
+
+function doFetch() {
+  return fetchAging({ append: false })
+}
+
+function loadMore() {
+  if (!hasMore.value || loading.value || loadingMore.value) return
+
+  return fetchAging({ append: true })
+}
+
+function abort() {
+  controller?.abort()
+  controller = null
 }
 
 async function doExport() {
@@ -450,7 +510,7 @@ async function doExport() {
     const link    = document.createElement('a')
 
     link.href     = url
-    link.download = `aging-report-${report.as_of_date ?? filters.as_of_date}.xlsx`
+    link.download = `aging-report-${asOfDate.value ?? filters.as_of_date}.xlsx`
     link.click()
     URL.revokeObjectURL(url)
   } finally {
@@ -459,6 +519,10 @@ async function doExport() {
 }
 
 onMounted(doFetch)
+
+onBeforeUnmount(() => {
+  abort()
+})
 </script>
 
 <style scoped>

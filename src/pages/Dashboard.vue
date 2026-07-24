@@ -91,7 +91,9 @@
               density="compact"
               :loading="trendLoading && trendPeriod === p.value"
               @click="selectTrendPeriod(p.value)"
-            >{{ p.label }}</VBtn>
+            >
+              {{ p.label }}
+            </VBtn>
           </div>
           <VCardText class="pt-2">
             <DeferredApexChart
@@ -160,19 +162,39 @@
               <VTable class="text-no-wrap">
                 <thead>
                   <tr>
-                    <th class="text-uppercase font-weight-bold text-caption">No. Invoice</th>
-                    <th class="text-uppercase font-weight-bold text-caption">Klien</th>
-                    <th class="text-uppercase font-weight-bold text-caption">Tanggal</th>
-                    <th class="text-uppercase font-weight-bold text-caption text-right">Total Tagihan</th>
-                    <th class="text-uppercase font-weight-bold text-caption text-center">Status</th>
+                    <th class="text-uppercase font-weight-bold text-caption">
+                      No. Invoice
+                    </th>
+                    <th class="text-uppercase font-weight-bold text-caption">
+                      Klien
+                    </th>
+                    <th class="text-uppercase font-weight-bold text-caption">
+                      Tanggal
+                    </th>
+                    <th class="text-uppercase font-weight-bold text-caption text-right">
+                      Total Tagihan
+                    </th>
+                    <th class="text-uppercase font-weight-bold text-caption text-center">
+                      Status
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr v-if="loading">
-                    <td colspan="5" class="text-center py-8 text-medium-emphasis">Memuat data...</td>
+                    <td
+                      colspan="5"
+                      class="text-center py-8 text-medium-emphasis"
+                    >
+                      Memuat data...
+                    </td>
                   </tr>
                   <tr v-else-if="recentInvoices.length === 0">
-                    <td colspan="5" class="text-center py-8 text-medium-emphasis">Belum ada data invoice.</td>
+                    <td
+                      colspan="5"
+                      class="text-center py-8 text-medium-emphasis"
+                    >
+                      Belum ada data invoice.
+                    </td>
                   </tr>
                   <tr
                     v-for="invoice in recentInvoices"
@@ -180,10 +202,16 @@
                     :key="invoice.id"
                     class="table-row-hover"
                   >
-                    <td class="font-weight-medium text-primary">{{ invoice.noInvoice }}</td>
+                    <td class="font-weight-medium text-primary">
+                      {{ invoice.noInvoice }}
+                    </td>
                     <td>{{ invoice.klien }}</td>
-                    <td class="text-body-2">{{ invoice.tanggalInvoice }}</td>
-                    <td class="text-right font-weight-medium">{{ formatCurrency(invoice.totalTagihan) }}</td>
+                    <td class="text-body-2">
+                      {{ invoice.tanggalInvoice }}
+                    </td>
+                    <td class="text-right font-weight-medium">
+                      {{ formatCurrency(invoice.totalTagihan) }}
+                    </td>
                     <td class="text-center">
                       <InvoiceStatusBadge :status="invoice.status" />
                     </td>
@@ -193,23 +221,44 @@
             </div>
 
             <div class="d-sm-none px-4">
-              <div v-if="loading" class="text-center py-8 text-medium-emphasis">Memuat data...</div>
-              <div v-else-if="recentInvoices.length === 0" class="text-center py-8 text-medium-emphasis">Belum ada data invoice.</div>
+              <div
+                v-if="loading"
+                class="text-center py-8 text-medium-emphasis"
+              >
+                Memuat data...
+              </div>
+              <div
+                v-else-if="recentInvoices.length === 0"
+                class="text-center py-8 text-medium-emphasis"
+              >
+                Belum ada data invoice.
+              </div>
               <div
                 v-for="invoice in recentInvoices"
                 v-else
                 :key="invoice.id"
                 class="mobile-list-row"
               >
-                <div class="text-caption font-weight-medium text-primary mobile-list-row__no">{{ invoice.noInvoice }}</div>
+                <div class="text-caption font-weight-medium text-primary mobile-list-row__no">
+                  {{ invoice.noInvoice }}
+                </div>
                 <div class="d-flex justify-space-between align-center gap-2 mt-1">
                   <div class="min-width-0">
-                    <div class="text-caption text-medium-emphasis text-truncate">{{ invoice.klien }}</div>
-                    <div class="mobile-list-row__date text-medium-emphasis">{{ invoice.tanggalInvoice }}</div>
+                    <div class="text-caption text-medium-emphasis text-truncate">
+                      {{ invoice.klien }}
+                    </div>
+                    <div class="mobile-list-row__date text-medium-emphasis">
+                      {{ invoice.tanggalInvoice }}
+                    </div>
                   </div>
                   <div class="text-end flex-shrink-0 mobile-badge">
-                    <div class="text-caption font-weight-medium">{{ formatCurrency(invoice.totalTagihan) }}</div>
-                    <InvoiceStatusBadge :status="invoice.status" class="mt-1" />
+                    <div class="text-caption font-weight-medium">
+                      {{ formatCurrency(invoice.totalTagihan) }}
+                    </div>
+                    <InvoiceStatusBadge
+                      :status="invoice.status"
+                      class="mt-1"
+                    />
                   </div>
                 </div>
               </div>
@@ -270,15 +319,15 @@ const trendPeriods = [
 ]
 
 const trendPeriodDescriptions = {
-  '1D':  'Hari ini (semua PIC)',
-  '1W':  '7 hari terakhir (semua PIC)',
-  '1M':  '30 hari terakhir (semua PIC)',
-  '3M':  '3 bulan terakhir (semua PIC)',
-  '6M':  '6 bulan terakhir (semua PIC)',
+  '1D': 'Hari ini (semua PIC)',
+  '1W': '7 hari terakhir (semua PIC)',
+  '1M': '30 hari terakhir (semua PIC)',
+  '3M': '3 bulan terakhir (semua PIC)',
+  '6M': '6 bulan terakhir (semua PIC)',
   'YTD': 'Tahun berjalan (semua PIC)',
-  '1Y':  '12 bulan terakhir (semua PIC)',
-  '3Y':  '3 tahun terakhir (semua PIC)',
-  '5Y':  '5 tahun terakhir (semua PIC)',
+  '1Y': '12 bulan terakhir (semua PIC)',
+  '3Y': '3 tahun terakhir (semua PIC)',
+  '5Y': '5 tahun terakhir (semua PIC)',
 }
 
 const loading      = ref(false)
@@ -292,6 +341,7 @@ const trendPeriodLabel = computed(() => trendPeriodDescriptions[trendPeriod.valu
 
 const summaryCards = computed(() => {
   const s = dashboard.value.summary
+  
   return [
     { title: 'Total Klien', value: loading.value ? '...' : (s.totalKlien ?? 0), icon: 'ri-building-4-line', color: 'primary', textClass: 'text-primary' },
     { title: 'Total Invoice', value: loading.value ? '...' : (s.totalInvoice ?? 0), icon: 'ri-file-list-3-line', color: 'info', textClass: 'text-info' },
@@ -309,6 +359,7 @@ const revenueChartSeries = computed(() => [
 
 const revenueChartOptions = computed(() => {
   const c = theme.current.value.colors
+  
   return {
     chart: { type: 'area', fontFamily: 'inherit', toolbar: { show: false } },
     colors: [c.primary, c.success],
@@ -334,6 +385,7 @@ const statusChartHasData = computed(() => donutChartSeries.value.some(v => v > 0
 
 const donutChartOptions = computed(() => {
   const c = theme.current.value.colors
+  
   return {
     chart: { type: 'donut', fontFamily: 'inherit' },
     labels: statusBreakdown.value.map(i => i.label),
@@ -351,8 +403,9 @@ async function loadTrend(period) {
   try {
     const { data } = await api.get('/finance/dashboard/global', { params: { period } })
     const t = data.data?.monthly_trend ?? {}
+
     trendData.value = {
-      labels:        t.labels ?? [],
+      labels: t.labels ?? [],
       invoiceTotals: (t.invoice_totals ?? []).map(Number),
       paymentTotals: (t.payment_totals ?? []).map(Number),
     }
@@ -374,13 +427,14 @@ async function loadDashboard() {
   try {
     const { data } = await api.get('/finance/dashboard/global')
     const p = data.data
+
     dashboard.value = {
       summary: {
-        totalKlien:      Number(p.summary?.total_klien ?? 0),
-        totalInvoice:    Number(p.summary?.total_invoice ?? 0),
-        totalTagihan:    Number(p.summary?.total_tagihan ?? 0),
+        totalKlien: Number(p.summary?.total_klien ?? 0),
+        totalInvoice: Number(p.summary?.total_invoice ?? 0),
+        totalTagihan: Number(p.summary?.total_tagihan ?? 0),
         totalPembayaran: Number(p.summary?.total_pembayaran ?? 0),
-        totalSisa:       Number(p.summary?.total_sisa ?? 0),
+        totalSisa: Number(p.summary?.total_sisa ?? 0),
       },
       statusBreakdown: (p.status_breakdown ?? []).map(i => ({
         status: i.status, label: i.label,
@@ -392,7 +446,7 @@ async function loadDashboard() {
       })),
     }
     trendData.value = {
-      labels:        p.monthly_trend?.labels ?? [],
+      labels: p.monthly_trend?.labels ?? [],
       invoiceTotals: (p.monthly_trend?.invoice_totals ?? []).map(Number),
       paymentTotals: (p.monthly_trend?.payment_totals ?? []).map(Number),
     }

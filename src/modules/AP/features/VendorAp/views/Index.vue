@@ -45,6 +45,7 @@
       </VCardText>
 
       <BaseTable
+        v-model:selected="selected"
         :headers="headers"
         :items="items"
         :total="meta.total"
@@ -53,7 +54,6 @@
         :page="meta.current_page"
         class="mt-2"
         show-select
-        v-model:selected="selected"
         column-resize-key="ap-vendor-index"
         @update:options="onTableOptions"
       >
@@ -61,7 +61,12 @@
           {{ (meta.current_page - 1) * meta.per_page + index + 1 }}
         </template>
         <template #item.kode_vendor="{ item }">
-          <VChip color="primary" size="small" variant="tonal" label>
+          <VChip
+            color="primary"
+            size="small"
+            variant="tonal"
+            label
+          >
             {{ item.kode_vendor }}
           </VChip>
         </template>
@@ -73,9 +78,20 @@
         </template>
         <template #item.actions="{ item }">
           <div class="d-flex gap-1">
-            <VBtn icon size="small" variant="text" color="info" @click="openDetail(item)">
-              <VIcon icon="ri-eye-line" size="18" />
-              <VTooltip activator="parent">Detail</VTooltip>
+            <VBtn
+              icon
+              size="small"
+              variant="text"
+              color="info"
+              @click="openDetail(item)"
+            >
+              <VIcon
+                icon="ri-eye-line"
+                size="18"
+              />
+              <VTooltip activator="parent">
+                Detail
+              </VTooltip>
             </VBtn>
             <VBtn
               v-if="authStore.canOperateVendorAp"
@@ -85,8 +101,13 @@
               color="primary"
               @click="openEdit(item)"
             >
-              <VIcon icon="ri-pencil-line" size="18" />
-              <VTooltip activator="parent">Edit</VTooltip>
+              <VIcon
+                icon="ri-pencil-line"
+                size="18"
+              />
+              <VTooltip activator="parent">
+                Edit
+              </VTooltip>
             </VBtn>
             <VBtn
               v-if="authStore.canOperateVendorAp"
@@ -96,8 +117,13 @@
               color="error"
               @click="confirmDeleteItem(item)"
             >
-              <VIcon icon="ri-delete-bin-line" size="18" />
-              <VTooltip activator="parent">Hapus</VTooltip>
+              <VIcon
+                icon="ri-delete-bin-line"
+                size="18"
+              />
+              <VTooltip activator="parent">
+                Hapus
+              </VTooltip>
             </VBtn>
           </div>
         </template>
@@ -114,27 +140,62 @@
     >
       <div class="d-flex align-center justify-space-between pa-4">
         <span class="text-h6 font-weight-semibold">Detail Vendor</span>
-        <VBtn icon size="small" variant="text" @click="showDetail = false">
+        <VBtn
+          icon
+          size="small"
+          variant="text"
+          @click="showDetail = false"
+        >
           <VIcon icon="ri-close-line" />
         </VBtn>
       </div>
       <VDivider />
-      <div v-if="selectedVendor" class="pa-4">
+      <div
+        v-if="selectedVendor"
+        class="pa-4"
+      >
         <div class="mb-4 text-center">
-          <VAvatar size="72" color="primary" class="mb-3">
+          <VAvatar
+            size="72"
+            color="primary"
+            class="mb-3"
+          >
             <span class="text-h5">{{ selectedVendor.nama_vendor?.charAt(0)?.toUpperCase() }}</span>
           </VAvatar>
-          <div class="text-h6 font-weight-bold">{{ selectedVendor.nama_vendor }}</div>
-          <VChip color="primary" size="small" variant="tonal" label class="mt-1">
+          <div class="text-h6 font-weight-bold">
+            {{ selectedVendor.nama_vendor }}
+          </div>
+          <VChip
+            color="primary"
+            size="small"
+            variant="tonal"
+            label
+            class="mt-1"
+          >
             {{ selectedVendor.kode_vendor }}
           </VChip>
         </div>
         <VDivider class="mb-4" />
-        <DetailRow label="NPWP" :value="selectedVendor.no_npwp" />
-        <DetailRow label="Bank" :value="selectedVendor.bank_nama" />
-        <DetailRow label="No. Rekening" :value="selectedVendor.bank_no_rekening" />
-        <DetailRow label="Atas Nama" :value="selectedVendor.bank_atas_nama" />
-        <DetailRow label="PIC AP" :value="selectedVendor.karyawan_ap?.nama_karyawan" />
+        <DetailRow
+          label="NPWP"
+          :value="selectedVendor.no_npwp"
+        />
+        <DetailRow
+          label="Bank"
+          :value="selectedVendor.bank_nama"
+        />
+        <DetailRow
+          label="No. Rekening"
+          :value="selectedVendor.bank_no_rekening"
+        />
+        <DetailRow
+          label="Atas Nama"
+          :value="selectedVendor.bank_atas_nama"
+        />
+        <DetailRow
+          label="PIC AP"
+          :value="selectedVendor.karyawan_ap?.nama_karyawan"
+        />
         <DetailRow label="Status">
           <StatusChip :active="selectedVendor.status" />
         </DetailRow>
@@ -154,10 +215,20 @@
         Apakah Anda yakin ingin menghapus vendor
         <strong>{{ selectedVendor?.nama_vendor }}</strong>?
       </p>
-      <VAlert type="warning" variant="tonal" density="compact" class="mt-3">
+      <VAlert
+        type="warning"
+        variant="tonal"
+        density="compact"
+        class="mt-3"
+      >
         Tindakan ini tidak dapat diurungkan — data akan dihapus permanen dari database.
       </VAlert>
-      <VAlert v-if="deleteError" type="error" variant="tonal" class="mt-3">
+      <VAlert
+        v-if="deleteError"
+        type="error"
+        variant="tonal"
+        class="mt-3"
+      >
         {{ deleteError }}
       </VAlert>
     </BaseModal>
@@ -171,7 +242,11 @@
       @saved="onFormSaved"
     />
 
-    <BulkDeleteBar :selected="selected" @delete="doBulkDelete" @clear="selected = []" />
+    <BulkDeleteBar
+      :selected="selected"
+      @delete="doBulkDelete"
+      @clear="selected = []"
+    />
   </div>
 </template>
 
@@ -249,7 +324,7 @@ function minimizeForm() {
 }
 function onFormSaved() { minimizeStore.remove(FORM_WIDGET_ID); showForm.value = false; fetchList() }
 
-watch(showForm, (val) => {
+watch(showForm, val => {
   if (!val) {
     const w = minimizeStore.widgets[FORM_WIDGET_ID]
     if (w && !w.minimized) minimizeStore.remove(FORM_WIDGET_ID)
@@ -259,11 +334,13 @@ watch(showForm, (val) => {
 onActivated(async () => {
   if (minimizeStore.widgets[FORM_WIDGET_ID]?.pendingRestore) {
     const widget = minimizeStore.widgets[FORM_WIDGET_ID]
+
     minimizeStore.clearPendingRestore(FORM_WIDGET_ID)
     minimizeStore.setMinimizedFalse(FORM_WIDGET_ID)
     if (widget.mode === 'edit' && widget.recordId && widget.endpoint) {
       try {
         const res = await api.get(`${widget.endpoint}/${widget.recordId}`)
+
         selectedForm.value = res.data?.data ?? null
       } catch {
         selectedForm.value = null
@@ -289,6 +366,7 @@ onDeactivated(() => {
 
 async function doDelete() {
   deleteError.value = ''
+
   const deleteId = selectedVendor.value?.id
   if (!deleteId) return
 
@@ -313,6 +391,7 @@ async function doBulkDelete() {
   try {
     const res = await api.delete('/ap/vendors/bulk', { data: { ids: selected.value.map(i => i.id) } })
     const deleted = res.data?.data?.deleted ?? selected.value.length
+
     selected.value = []
     fetchList()
     await showSuccess(`${deleted} vendor berhasil dihapus.`)

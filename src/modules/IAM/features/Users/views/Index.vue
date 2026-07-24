@@ -1,6 +1,8 @@
 <template>
   <div>
     <ManagementIndexShell
+      v-model:search="params.search"
+      v-model:status="statusFilter"
       tone="blue"
       icon="ri-user-3-line"
       title="Manajemen User"
@@ -13,8 +15,6 @@
       :stats-loading="loading && !items.length"
       search-placeholder="Cari username / email..."
       compact-actions
-      v-model:search="params.search"
-      v-model:status="statusFilter"
       @update:search="debouncedFetch"
       @update:status="onStatusChange"
     >
@@ -46,6 +46,7 @@
       </template>
 
       <BaseTable
+        v-model:selected="selectedItems"
         :headers="headers"
         :items="items"
         :total="meta.total"
@@ -56,27 +57,42 @@
         show-select
         mobile-cards
         mobile-menu-select
-        v-model:selected="selectedItems"
         @update:options="onTableOptions"
       >
         <template #mobile-card="{ item, selected, toggle }">
           <div class="d-flex align-center justify-space-between gap-2 mb-2">
             <div class="d-flex align-center gap-2 min-width-0">
-              <VAvatar size="36" color="primary">
+              <VAvatar
+                size="36"
+                color="primary"
+              >
                 <span class="text-body-2 font-weight-bold text-white">{{ item.username?.charAt(0)?.toUpperCase() }}</span>
               </VAvatar>
               <div class="min-width-0">
-                <div class="font-weight-medium text-truncate">{{ item.username }}</div>
-                <div class="text-caption text-medium-emphasis text-truncate">{{ item.email ?? '-' }}</div>
+                <div class="font-weight-medium text-truncate">
+                  {{ item.username }}
+                </div>
+                <div class="text-caption text-medium-emphasis text-truncate">
+                  {{ item.email ?? '-' }}
+                </div>
               </div>
             </div>
             <StatusChip :active="item.status" />
           </div>
           <div class="d-flex align-center justify-space-between gap-2">
-            <VChip v-if="item.role" color="primary" size="small" variant="tonal" label>
+            <VChip
+              v-if="item.role"
+              color="primary"
+              size="small"
+              variant="tonal"
+              label
+            >
               {{ item.role.nama_role }}
             </VChip>
-            <span v-else class="text-caption text-medium-emphasis">Tanpa role</span>
+            <span
+              v-else
+              class="text-caption text-medium-emphasis"
+            >Tanpa role</span>
             <MobileCardActions
               :selected="selected"
               @detail="openDetail(item)"
@@ -344,7 +360,7 @@ function minimizeForm() {
 }
 function onFormSaved() { minimizeStore.remove(FORM_WIDGET_ID); showForm.value = false; fetchList() }
 
-watch(showForm, (val) => {
+watch(showForm, val => {
   if (!val) {
     const w = minimizeStore.widgets[FORM_WIDGET_ID]
     if (w && !w.minimized) minimizeStore.remove(FORM_WIDGET_ID)
@@ -354,11 +370,13 @@ watch(showForm, (val) => {
 onActivated(async () => {
   if (minimizeStore.widgets[FORM_WIDGET_ID]?.pendingRestore) {
     const widget = minimizeStore.widgets[FORM_WIDGET_ID]
+
     minimizeStore.clearPendingRestore(FORM_WIDGET_ID)
     minimizeStore.setMinimizedFalse(FORM_WIDGET_ID)
     if (widget.mode === 'edit' && widget.recordId && widget.endpoint) {
       try {
         const res = await api.get(`${widget.endpoint}/${widget.recordId}`)
+
         selectedForm.value = res.data?.data ?? null
       } catch {
         selectedForm.value = null
@@ -419,6 +437,7 @@ async function doBulkDelete() {
   try {
     const res = await api.delete('/iam/users/bulk', { data: { ids: selectedItems.value.map(i => i.id) } })
     const deleted = res.data?.data?.deleted ?? selectedItems.value.length
+
     selectedItems.value = []
     fetchList()
     await showSuccess(`${deleted} user berhasil dihapus.`)

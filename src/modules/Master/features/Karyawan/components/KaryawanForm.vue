@@ -131,7 +131,9 @@
             size="20"
           />
           <div>
-            <div class="text-body-2 font-weight-medium">Status Karyawan</div>
+            <div class="text-body-2 font-weight-medium">
+              Status Karyawan
+            </div>
             <div class="text-caption text-medium-emphasis">
               {{ form.status ? 'Aktif — karyawan terdaftar' : 'Nonaktif — karyawan dinonaktifkan' }}
             </div>

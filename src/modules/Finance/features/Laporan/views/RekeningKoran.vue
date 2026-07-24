@@ -9,7 +9,13 @@
         { title: 'Rekening Koran', disabled: true },
       ]"
     >
-      <VBtn variant="text" prepend-icon="ri-arrow-left-line" :to="{ name: 'finance-laporan' }">Kembali</VBtn>
+      <VBtn
+        variant="text"
+        prepend-icon="ri-arrow-left-line"
+        :to="{ name: 'finance-laporan' }"
+      >
+        Kembali
+      </VBtn>
     </PageHeader>
 
     <!-- Filter -->
@@ -27,7 +33,7 @@
             item-title="name"
             item-value="id"
             :loading="picArLoading"
-            @focus="ensurePicArLoaded()"
+            @focus="ensurePicArLoaded"
             @update:model-value="doFetch"
           />
           <VSelect
@@ -68,9 +74,27 @@
               color="primary"
               @update:model-value="doFetch"
             >
-              <VBtn value="" size="small" min-width="72">Semua</VBtn>
-              <VBtn value="K" size="small" min-width="72">Kredit</VBtn>
-              <VBtn value="D" size="small" min-width="72">Debit</VBtn>
+              <VBtn
+                value=""
+                size="small"
+                min-width="72"
+              >
+                Semua
+              </VBtn>
+              <VBtn
+                value="K"
+                size="small"
+                min-width="72"
+              >
+                Kredit
+              </VBtn>
+              <VBtn
+                value="D"
+                size="small"
+                min-width="72"
+              >
+                Debit
+              </VBtn>
             </VBtnToggle>
           </div>
           <div class="d-flex align-center gap-2">
@@ -81,9 +105,27 @@
               color="success"
               @update:model-value="doFetch"
             >
-              <VBtn value="" size="small" min-width="72">Semua</VBtn>
-              <VBtn value="POSTED" size="small" min-width="80">Posted</VBtn>
-              <VBtn value="PENDING" size="small" min-width="80">Pending</VBtn>
+              <VBtn
+                value=""
+                size="small"
+                min-width="72"
+              >
+                Semua
+              </VBtn>
+              <VBtn
+                value="POSTED"
+                size="small"
+                min-width="80"
+              >
+                Posted
+              </VBtn>
+              <VBtn
+                value="PENDING"
+                size="small"
+                min-width="80"
+              >
+                Pending
+              </VBtn>
             </VBtnToggle>
           </div>
         </div>
@@ -92,70 +134,130 @@
 
     <!-- Summary Cards -->
     <VRow class="mb-4">
-      <VCol cols="12" sm="6" md="3">
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
         <VCard class="stat-card">
           <VCardText class="pa-4">
             <div class="d-flex align-center justify-space-between mb-3">
               <span class="text-overline text-medium-emphasis font-weight-bold">Total Matched</span>
-              <VAvatar color="secondary" size="40" rounded="lg">
-                <VIcon icon="ri-check-double-line" size="20" class="text-white" />
+              <VAvatar
+                color="secondary"
+                size="40"
+                rounded="lg"
+              >
+                <VIcon
+                  icon="ri-check-double-line"
+                  size="20"
+                  class="text-white"
+                />
               </VAvatar>
             </div>
             <div class="text-h5 font-weight-bold mb-1">
               {{ (summary.total_matched ?? 0).toLocaleString('id-ID') }}
             </div>
-            <div class="stat-bar" style="background: rgb(var(--v-theme-secondary));" />
+            <div
+              class="stat-bar"
+              style="background: rgb(var(--v-theme-secondary));"
+            />
           </VCardText>
         </VCard>
       </VCol>
 
-      <VCol cols="12" sm="6" md="3">
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
         <VCard class="stat-card">
           <VCardText class="pa-4">
             <div class="d-flex align-center justify-space-between mb-3">
               <span class="text-overline text-medium-emphasis font-weight-bold">Total Posted</span>
-              <VAvatar color="success" size="40" rounded="lg">
-                <VIcon icon="ri-checkbox-circle-line" size="20" class="text-white" />
+              <VAvatar
+                color="success"
+                size="40"
+                rounded="lg"
+              >
+                <VIcon
+                  icon="ri-checkbox-circle-line"
+                  size="20"
+                  class="text-white"
+                />
               </VAvatar>
             </div>
             <div class="text-h5 font-weight-bold text-success mb-1">
               {{ (summary.total_posted ?? 0).toLocaleString('id-ID') }}
             </div>
-            <div class="stat-bar" style="background: rgb(var(--v-theme-success));" />
+            <div
+              class="stat-bar"
+              style="background: rgb(var(--v-theme-success));"
+            />
           </VCardText>
         </VCard>
       </VCol>
 
-      <VCol cols="12" sm="6" md="3">
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
         <VCard class="stat-card">
           <VCardText class="pa-4">
             <div class="d-flex align-center justify-space-between mb-3">
               <span class="text-overline text-medium-emphasis font-weight-bold">Total Pending</span>
-              <VAvatar color="warning" size="40" rounded="lg">
-                <VIcon icon="ri-time-line" size="20" class="text-white" />
+              <VAvatar
+                color="warning"
+                size="40"
+                rounded="lg"
+              >
+                <VIcon
+                  icon="ri-time-line"
+                  size="20"
+                  class="text-white"
+                />
               </VAvatar>
             </div>
             <div class="text-h5 font-weight-bold text-warning mb-1">
               {{ (summary.total_pending ?? 0).toLocaleString('id-ID') }}
             </div>
-            <div class="stat-bar" style="background: rgb(var(--v-theme-warning));" />
+            <div
+              class="stat-bar"
+              style="background: rgb(var(--v-theme-warning));"
+            />
           </VCardText>
         </VCard>
       </VCol>
 
-      <VCol cols="12" sm="6" md="3">
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
         <VCard class="stat-card">
           <VCardText class="pa-4">
             <div class="d-flex align-center justify-space-between mb-3">
               <span class="text-overline text-medium-emphasis font-weight-bold">Total Mutasi Masuk</span>
-              <VAvatar color="primary" size="40" rounded="lg">
-                <VIcon icon="ri-money-cny-circle-line" size="20" class="text-white" />
+              <VAvatar
+                color="primary"
+                size="40"
+                rounded="lg"
+              >
+                <VIcon
+                  icon="ri-money-cny-circle-line"
+                  size="20"
+                  class="text-white"
+                />
               </VAvatar>
             </div>
             <div class="text-h5 font-weight-bold text-primary mb-1">
               {{ formatCurrency(summary.total_mutasi_masuk) }}
             </div>
-            <div class="stat-bar" style="background: rgb(var(--v-theme-primary));" />
+            <div
+              class="stat-bar"
+              style="background: rgb(var(--v-theme-primary));"
+            />
           </VCardText>
         </VCard>
       </VCol>
@@ -213,25 +315,43 @@
           <span class="font-weight-bold">{{ formatCurrency(item.saldo) }}</span>
         </template>
         <template #item.status_posting_1="{ item }">
-          <span :class="statusRekonClass(item.status_posting_1)" class="text-caption font-weight-bold">
+          <span
+            :class="statusRekonClass(item.status_posting_1)"
+            class="text-caption font-weight-bold"
+          >
             {{ item.status_posting_1 ?? '-' }}
           </span>
         </template>
         <template #item.selisih="{ item }">
-          <span v-if="item.selisih > 0" class="text-info font-weight-medium">
+          <span
+            v-if="item.selisih > 0"
+            class="text-info font-weight-medium"
+          >
             +{{ formatCurrency(item.selisih) }}
           </span>
-          <span v-else-if="item.selisih < 0" class="text-error font-weight-medium">
+          <span
+            v-else-if="item.selisih < 0"
+            class="text-error font-weight-medium"
+          >
             -{{ formatCurrency(Math.abs(item.selisih)) }}
           </span>
-          <span v-else class="text-disabled">-</span>
+          <span
+            v-else
+            class="text-disabled"
+          >-</span>
         </template>
         <template #item.waktu_transaksi="{ item }">
           <span class="text-mono text-caption">{{ item.waktu_transaksi ?? '-' }}</span>
         </template>
         <template #item.keterangan="{ item }">
-          <span v-if="item.keterangan" class="text-caption">{{ item.keterangan }}</span>
-          <span v-else class="text-disabled">-</span>
+          <span
+            v-if="item.keterangan"
+            class="text-caption"
+          >{{ item.keterangan }}</span>
+          <span
+            v-else
+            class="text-disabled"
+          >-</span>
         </template>
         <template #item.status_posting_2="{ item }">
           <VChip
@@ -276,6 +396,7 @@ async function fetchPicAr() {
   picArLoading.value = true
   try {
     const { data } = await api.get('/finance/rekening-koran/pic-ar-list')
+
     picArList.value = data.data
   } catch {
     // List kosong — user masih bisa lanjut tanpa filter PIC AR
@@ -287,25 +408,27 @@ const { ensureLoaded: ensurePicArLoaded } = useLazyFetchAll(fetchPicAr)
 
 const loading = ref(false)
 const rows    = ref([])
+
 const summary = reactive({
-  total_matched:      0,
-  total_posted:       0,
-  total_pending:      0,
+  total_matched: 0,
+  total_posted: 0,
+  total_pending: 0,
   total_mutasi_masuk: 0,
 })
+
 const meta = reactive({
   current_page: 1,
-  last_page:    1,
-  per_page:     25,
-  total:        0,
+  last_page: 1,
+  per_page: 25,
+  total: 0,
 })
 
 const filters = reactive({
-  pic_ar_id:        null,
-  bank_type:        null,
-  periode_awal:     null,
-  periode_akhir:    null,
-  dk:               '',
+  pic_ar_id: null,
+  bank_type: null,
+  periode_awal: null,
+  periode_akhir: null,
+  dk: '',
   status_posting_1: '',
   status_posting_2: '',
 })
@@ -336,6 +459,7 @@ function buildParams(page = meta.current_page, perPage = meta.per_page) {
   if (filters.dk)               params.dk               = filters.dk
   if (filters.status_posting_1) params.status_posting_1 = filters.status_posting_1
   if (filters.status_posting_2) params.status_posting_2 = filters.status_posting_2
+  
   return params
 }
 
@@ -345,16 +469,18 @@ async function doFetch(resetPage = true) {
   try {
     const { data } = await api.get('/finance/rekening-koran', { params: buildParams() })
     const result = data.data
+
     rows.value = result.rows
     Object.assign(summary, {
-      total_matched:      result.total_matched,
-      total_posted:       result.total_posted,
-      total_pending:      result.total_pending,
+      total_matched: result.total_matched,
+      total_posted: result.total_posted,
+      total_pending: result.total_pending,
       total_mutasi_masuk: result.total_mutasi_masuk,
     })
     Object.assign(meta, result.meta)
   } catch (err) {
     const msg = err.response?.data?.message ?? 'Gagal memuat data rekening koran.'
+
     showError({ text: msg })
   } finally {
     loading.value = false
@@ -371,6 +497,7 @@ function statusRekonClass(status) {
   if (status === 'MATCHED')   return 'text-success'
   if (status === 'UNMATCHED') return 'text-error'
   if (status === 'DIABAIKAN') return 'text-medium-emphasis'
+  
   return 'text-disabled'
 }
 

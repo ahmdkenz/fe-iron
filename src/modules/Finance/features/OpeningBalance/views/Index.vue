@@ -214,7 +214,9 @@
         <VDivider />
         <div class="d-flex flex-wrap align-center gap-4 px-4 py-3">
           <div style="min-width: 200px; flex: 1; max-width: 280px;">
-            <div class="text-caption text-medium-emphasis mb-2">Pencarian</div>
+            <div class="text-caption text-medium-emphasis mb-2">
+              Pencarian
+            </div>
             <VTextField
               v-model="paramsB2B.search"
               placeholder="Cari no. OB / klien..."
@@ -225,9 +227,15 @@
               @update:model-value="debouncedFetchB2B"
             />
           </div>
-          <VDivider vertical style="height: 40px; align-self: flex-end;" class="d-none d-sm-block" />
+          <VDivider
+            vertical
+            style="height: 40px; align-self: flex-end;"
+            class="d-none d-sm-block"
+          />
           <div>
-            <div class="text-caption text-medium-emphasis mb-2">Dari</div>
+            <div class="text-caption text-medium-emphasis mb-2">
+              Dari
+            </div>
             <VTextField
               v-model="dateDraftB2B.tanggal_dari"
               type="date"
@@ -237,7 +245,9 @@
             />
           </div>
           <div>
-            <div class="text-caption text-medium-emphasis mb-2">Sampai</div>
+            <div class="text-caption text-medium-emphasis mb-2">
+              Sampai
+            </div>
             <VTextField
               v-model="dateDraftB2B.tanggal_sampai"
               type="date"
@@ -259,19 +269,21 @@
         </div>
         <VDivider />
         <BaseTable
+          v-model:selected="selectedInvoices"
           :headers="headers"
           :items="itemsB2B"
-          :total="metaB2B.total"
+          :total="totalB2B"
           :loading="loadingB2B"
-          :per-page="metaB2B.per_page"
-          :page="metaB2B.current_page"
+          pagination-mode="load-more"
+          :has-more="hasMoreB2B"
+          :loading-more="loadingMoreB2B"
+          :loaded-count="itemsB2B.length"
           show-select
-          v-model:selected="selectedInvoices"
           class="mt-2"
           mobile-cards
           mobile-menu-select
           column-resize-key="finance-opening-balance-b2b"
-          @update:options="onTableOptionsB2B"
+          @load-more="loadMoreB2B"
         >
           <template #mobile-card="{ item, selected, toggle }">
             <div class="d-flex align-center justify-space-between gap-2 mb-2">
@@ -352,7 +364,7 @@
           </template>
 
           <template #item.no="{ index }">
-            {{ (metaB2B.current_page - 1) * metaB2B.per_page + index + 1 }}
+            {{ index + 1 }}
           </template>
           <template #item.no_invoice="{ item }">
             <VChip
@@ -370,7 +382,9 @@
               color="warning"
               class="ms-1"
             >
-              <VTooltip activator="parent">Periode opening balance ini sudah dikunci di Ending Balance — tidak dapat diedit</VTooltip>
+              <VTooltip activator="parent">
+                Periode opening balance ini sudah dikunci di Ending Balance — tidak dapat diedit
+              </VTooltip>
             </VIcon>
           </template>
           <template #item.klien_ar="{ item }">
@@ -512,7 +526,9 @@
         <VDivider />
         <div class="d-flex flex-wrap align-center gap-4 px-4 py-3">
           <div style="min-width: 200px; flex: 1; max-width: 280px;">
-            <div class="text-caption text-medium-emphasis mb-2">Pencarian</div>
+            <div class="text-caption text-medium-emphasis mb-2">
+              Pencarian
+            </div>
             <VTextField
               v-model="params.search"
               placeholder="Cari no. OB / klien..."
@@ -523,9 +539,15 @@
               @update:model-value="debouncedFetchB2C"
             />
           </div>
-          <VDivider vertical style="height: 40px; align-self: flex-end;" class="d-none d-sm-block" />
+          <VDivider
+            vertical
+            style="height: 40px; align-self: flex-end;"
+            class="d-none d-sm-block"
+          />
           <div>
-            <div class="text-caption text-medium-emphasis mb-2">Dari</div>
+            <div class="text-caption text-medium-emphasis mb-2">
+              Dari
+            </div>
             <VTextField
               v-model="dateDraftB2C.tanggal_dari"
               type="date"
@@ -535,7 +557,9 @@
             />
           </div>
           <div>
-            <div class="text-caption text-medium-emphasis mb-2">Sampai</div>
+            <div class="text-caption text-medium-emphasis mb-2">
+              Sampai
+            </div>
             <VTextField
               v-model="dateDraftB2C.tanggal_sampai"
               type="date"
@@ -557,19 +581,21 @@
         </div>
         <VDivider />
         <BaseTable
+          v-model:selected="selectedInvoices"
           :headers="headers"
           :items="items"
-          :total="meta.total"
+          :total="total"
           :loading="loading"
-          :per-page="meta.per_page"
-          :page="meta.current_page"
+          pagination-mode="load-more"
+          :has-more="hasMore"
+          :loading-more="loadingMore"
+          :loaded-count="items.length"
           show-select
-          v-model:selected="selectedInvoices"
           class="mt-2"
           mobile-cards
           mobile-menu-select
           column-resize-key="finance-opening-balance-b2c"
-          @update:options="onTableOptions"
+          @load-more="loadMore"
         >
           <template #mobile-card="{ item, selected, toggle }">
             <div class="d-flex align-center justify-space-between gap-2 mb-2">
@@ -650,7 +676,7 @@
           </template>
 
           <template #item.no="{ index }">
-            {{ (meta.current_page - 1) * meta.per_page + index + 1 }}
+            {{ index + 1 }}
           </template>
           <template #item.no_invoice="{ item }">
             <VChip
@@ -668,7 +694,9 @@
               color="warning"
               class="ms-1"
             >
-              <VTooltip activator="parent">Periode opening balance ini sudah dikunci di Ending Balance — tidak dapat diedit</VTooltip>
+              <VTooltip activator="parent">
+                Periode opening balance ini sudah dikunci di Ending Balance — tidak dapat diedit
+              </VTooltip>
             </VIcon>
           </template>
           <template #item.klien_ar="{ item }">
@@ -920,7 +948,11 @@
         <VCardText class="pa-0">
           <div class="d-flex align-center justify-space-between px-4 py-3">
             <div class="d-flex align-center gap-2">
-              <VIcon icon="ri-filter-3-line" size="16" color="primary" />
+              <VIcon
+                icon="ri-filter-3-line"
+                size="16"
+                color="primary"
+              />
               <span class="text-body-2 font-weight-semibold">Filter</span>
             </div>
             <VBtn
@@ -936,7 +968,9 @@
           <VDivider />
           <div class="d-flex flex-wrap align-center gap-4 px-4 py-3">
             <div style="min-width: 200px; flex: 1; max-width: 280px;">
-              <div class="text-caption text-medium-emphasis mb-2">Pencarian</div>
+              <div class="text-caption text-medium-emphasis mb-2">
+                Pencarian
+              </div>
               <VTextField
                 v-model="dirApprovalParams.search"
                 placeholder="Cari no. OB / klien..."
@@ -947,9 +981,15 @@
                 @update:model-value="debouncedDirFetch"
               />
             </div>
-            <VDivider vertical style="height: 40px; align-self: flex-end;" class="d-none d-sm-block" />
+            <VDivider
+              vertical
+              style="height: 40px; align-self: flex-end;"
+              class="d-none d-sm-block"
+            />
             <div>
-              <div class="text-caption text-medium-emphasis mb-2">Dari</div>
+              <div class="text-caption text-medium-emphasis mb-2">
+                Dari
+              </div>
               <VTextField
                 v-model="dateDraftDirApproval.tanggal_dari"
                 type="date"
@@ -959,7 +999,9 @@
               />
             </div>
             <div>
-              <div class="text-caption text-medium-emphasis mb-2">Sampai</div>
+              <div class="text-caption text-medium-emphasis mb-2">
+                Sampai
+              </div>
               <VTextField
                 v-model="dateDraftDirApproval.tanggal_sampai"
                 type="date"
@@ -983,8 +1025,10 @@
       </VCard>
 
       <VCard>
-        <!-- Mobile: slot #top BaseTable tidak dirender di mode kartu, jadi tombol
-             "Approve Semua" ditampilkan terpisah khusus HP. -->
+        <!--
+          Mobile: slot #top BaseTable tidak dirender di mode kartu, jadi tombol
+          "Approve Semua" ditampilkan terpisah khusus HP. 
+        -->
         <div
           v-if="xs"
           class="d-flex justify-end pa-3"
@@ -1109,7 +1153,9 @@
               color="warning"
               class="ms-1"
             >
-              <VTooltip activator="parent">Periode opening balance ini sudah dikunci di Ending Balance — tidak dapat diedit</VTooltip>
+              <VTooltip activator="parent">
+                Periode opening balance ini sudah dikunci di Ending Balance — tidak dapat diedit
+              </VTooltip>
             </VIcon>
           </template>
           <template #item.klien_ar="{ item }">
@@ -1389,7 +1435,9 @@
         <VDivider />
         <div class="d-flex flex-wrap align-center gap-4 px-4 py-3">
           <div style="min-width: 200px; flex: 1; max-width: 280px;">
-            <div class="text-caption text-medium-emphasis mb-2">Pencarian</div>
+            <div class="text-caption text-medium-emphasis mb-2">
+              Pencarian
+            </div>
             <VTextField
               v-model="dirObParamsB2B.search"
               placeholder="Cari no. OB / klien..."
@@ -1400,9 +1448,15 @@
               @update:model-value="debouncedDirObFetchB2B"
             />
           </div>
-          <VDivider vertical style="height: 40px; align-self: flex-end;" class="d-none d-sm-block" />
+          <VDivider
+            vertical
+            style="height: 40px; align-self: flex-end;"
+            class="d-none d-sm-block"
+          />
           <div>
-            <div class="text-caption text-medium-emphasis mb-2">Dari</div>
+            <div class="text-caption text-medium-emphasis mb-2">
+              Dari
+            </div>
             <VTextField
               v-model="dateDraftDirObB2B.tanggal_dari"
               type="date"
@@ -1412,7 +1466,9 @@
             />
           </div>
           <div>
-            <div class="text-caption text-medium-emphasis mb-2">Sampai</div>
+            <div class="text-caption text-medium-emphasis mb-2">
+              Sampai
+            </div>
             <VTextField
               v-model="dateDraftDirObB2B.tanggal_sampai"
               type="date"
@@ -1540,7 +1596,9 @@
               color="warning"
               class="ms-1"
             >
-              <VTooltip activator="parent">Periode opening balance ini sudah dikunci di Ending Balance — tidak dapat diedit</VTooltip>
+              <VTooltip activator="parent">
+                Periode opening balance ini sudah dikunci di Ending Balance — tidak dapat diedit
+              </VTooltip>
             </VIcon>
           </template>
           <template #item.klien_ar="{ item }">
@@ -1666,7 +1724,9 @@
         <VDivider />
         <div class="d-flex flex-wrap align-center gap-4 px-4 py-3">
           <div style="min-width: 200px; flex: 1; max-width: 280px;">
-            <div class="text-caption text-medium-emphasis mb-2">Pencarian</div>
+            <div class="text-caption text-medium-emphasis mb-2">
+              Pencarian
+            </div>
             <VTextField
               v-model="dirObParams.search"
               placeholder="Cari no. OB / klien..."
@@ -1677,9 +1737,15 @@
               @update:model-value="debouncedDirObFetch"
             />
           </div>
-          <VDivider vertical style="height: 40px; align-self: flex-end;" class="d-none d-sm-block" />
+          <VDivider
+            vertical
+            style="height: 40px; align-self: flex-end;"
+            class="d-none d-sm-block"
+          />
           <div>
-            <div class="text-caption text-medium-emphasis mb-2">Dari</div>
+            <div class="text-caption text-medium-emphasis mb-2">
+              Dari
+            </div>
             <VTextField
               v-model="dateDraftDirOb.tanggal_dari"
               type="date"
@@ -1689,7 +1755,9 @@
             />
           </div>
           <div>
-            <div class="text-caption text-medium-emphasis mb-2">Sampai</div>
+            <div class="text-caption text-medium-emphasis mb-2">
+              Sampai
+            </div>
             <VTextField
               v-model="dateDraftDirOb.tanggal_sampai"
               type="date"
@@ -1817,7 +1885,9 @@
               color="warning"
               class="ms-1"
             >
-              <VTooltip activator="parent">Periode opening balance ini sudah dikunci di Ending Balance — tidak dapat diedit</VTooltip>
+              <VTooltip activator="parent">
+                Periode opening balance ini sudah dikunci di Ending Balance — tidak dapat diedit
+              </VTooltip>
             </VIcon>
           </template>
           <template #item.klien_ar="{ item }">
@@ -1952,13 +2022,15 @@ function getDefaultMonthRange() {
   const year = now.getFullYear()
   const month = String(now.getMonth() + 1).padStart(2, '0')
   const lastDay = new Date(year, now.getMonth() + 1, 0).getDate()
+  
   return {
-    tanggal_dari:   `${year}-${month}-01`,
+    tanggal_dari: `${year}-${month}-01`,
     tanggal_sampai: `${year}-${month}-${String(lastDay).padStart(2, '0')}`,
   }
 }
 import { useAuthStore } from '@/stores/auth.store'
 import { useCrud } from '@/composables/useCrud'
+import { useLoadMore } from '@/composables/useLoadMore.js'
 import { useFormatter } from '@/composables/useFormatter'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useFinanceNotificationStore } from '@/stores/finance-notification.store'
@@ -1981,8 +2053,16 @@ const { showAlert, showSuccess, showError, showLoading, closeAlert, confirmDelet
 const financeNotificationStore = useFinanceNotificationStore()
 
 // ── Non-director: single table ─────────────────────────────────────────────
-const { items, loading, meta, params, fetchList } = useCrud('/finance/opening-balance')
-const { items: itemsB2B, loading: loadingB2B, meta: metaB2B, params: paramsB2B, fetchList: fetchListB2B } = useCrud('/finance/opening-balance')
+const {
+  items, loading, loadingMore, hasMore, total,
+  params, reset, loadMore, abort,
+} = useLoadMore('/finance/opening-balance', { perPage: 25 })
+
+const {
+  items: itemsB2B, loading: loadingB2B, loadingMore: loadingMoreB2B, hasMore: hasMoreB2B, total: totalB2B,
+  params: paramsB2B, reset: resetB2B, loadMore: loadMoreB2B, abort: abortB2B,
+} = useLoadMore('/finance/opening-balance', { perPage: 25 })
+
 const { formatCurrency, formatDate } = useFormatter()
 
 const canSeeAll = authStore.hasAnyRole(['ADMIN', 'MANAGER', 'SUPERVISOR'])
@@ -2071,6 +2151,7 @@ async function doBulkDelete() {
 
   if (!draftItems.length) {
     await showError('Tidak ada invoice berstatus DRAFT yang bisa dihapus.')
+    
     return
   }
 
@@ -2086,10 +2167,12 @@ async function doBulkDelete() {
     const res = await api.delete('/finance/invoices/bulk', {
       data: { ids: draftItems.map(inv => inv.id) },
     })
+
     const deleted = res.data?.data?.deleted ?? draftItems.length
+
     selectedInvoices.value = []
-    loadList()
-    if (canSeeAll) loadListB2B()
+    reset()
+    if (canSeeAll) resetB2B()
     loadSummary()
     await showSuccess(`${deleted} invoice berhasil dihapus.`)
   } catch (err) {
@@ -2114,8 +2197,8 @@ function onPembayaranSaved() {
     loadDirObListB2B()
     loadDirObSummary()
   } else {
-    loadList()
-    if (canSeeAll) loadListB2B()
+    reset()
+    if (canSeeAll) resetB2B()
     loadSummary()
   }
 }
@@ -2128,8 +2211,9 @@ const exportMonth     = ref(new Date().toISOString().slice(0, 7))
 function monthToRange(ym) {
   const [year, month] = ym.split('-').map(Number)
   const lastDay = new Date(year, month, 0).getDate()
+  
   return {
-    tanggal_dari:   `${ym}-01`,
+    tanggal_dari: `${ym}-01`,
     tanggal_sampai: `${ym}-${String(lastDay).padStart(2, '0')}`,
   }
 }
@@ -2140,17 +2224,20 @@ async function exportExcel() {
   showLoading({ title: 'Mengeksport Data Opening Balance', text: 'Mohon tunggu sebentar...' })
   try {
     const { tanggal_dari, tanggal_sampai } = monthToRange(exportMonth.value)
+
     const res = await api.get('/finance/opening-balance/export', {
       params: {
-        search:          params.search      || undefined,
-        karyawan_id:     params.karyawan_id || undefined,
+        search: params.search      || undefined,
+        karyawan_id: params.karyawan_id || undefined,
         tanggal_dari,
         tanggal_sampai,
       },
       responseType: 'blob',
     })
+
     const url  = URL.createObjectURL(res.data)
     const a    = document.createElement('a')
+
     a.href     = url
     a.download = `Data Opening Balance-${new Date().toISOString().slice(0, 10)}.xlsx`
     a.click()
@@ -2174,16 +2261,18 @@ async function exportDirExcel() {
   try {
     const res = await api.get('/finance/opening-balance/export', {
       params: {
-        search:          dirObParams.search          || undefined,
+        search: dirObParams.search          || undefined,
         approval_status: dirObParams.approval_status || undefined,
-        tanggal_dari:    dirObParams.tanggal_dari    || undefined,
-        tanggal_sampai:  dirObParams.tanggal_sampai  || undefined,
-        segment:         'B2C',
+        tanggal_dari: dirObParams.tanggal_dari    || undefined,
+        tanggal_sampai: dirObParams.tanggal_sampai  || undefined,
+        segment: 'B2C',
       },
       responseType: 'blob',
     })
+
     const url  = URL.createObjectURL(res.data)
     const a    = document.createElement('a')
+
     a.href     = url
     a.download = `Data Opening Balance B2C-${new Date().toISOString().slice(0, 10)}.xlsx`
     a.click()
@@ -2203,16 +2292,18 @@ async function exportDirExcelB2B() {
   try {
     const res = await api.get('/finance/opening-balance/export', {
       params: {
-        search:          dirObParamsB2B.search          || undefined,
+        search: dirObParamsB2B.search          || undefined,
         approval_status: dirObParamsB2B.approval_status || undefined,
-        tanggal_dari:    dirObParamsB2B.tanggal_dari    || undefined,
-        tanggal_sampai:  dirObParamsB2B.tanggal_sampai  || undefined,
-        segment:         'B2B',
+        tanggal_dari: dirObParamsB2B.tanggal_dari    || undefined,
+        tanggal_sampai: dirObParamsB2B.tanggal_sampai  || undefined,
+        segment: 'B2B',
       },
       responseType: 'blob',
     })
+
     const url  = URL.createObjectURL(res.data)
     const a    = document.createElement('a')
+
     a.href     = url
     a.download = `Data Opening Balance B2B-${new Date().toISOString().slice(0, 10)}.xlsx`
     a.click()
@@ -2232,6 +2323,7 @@ async function printInvoice(id) {
   try {
     const res = await api.get(`/finance/invoices/${id}/print`, { responseType: 'blob', timeout: 300000 })
     const blobUrl = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }))
+
     window.open(blobUrl, '_blank')
     setTimeout(() => URL.revokeObjectURL(blobUrl), 30_000)
   } catch (err) {
@@ -2295,8 +2387,6 @@ const dirObHeadersB2B = [
 ]
 
 // ── Abort controllers ──────────────────────────────────────────────────────
-let listController          = null
-let listControllerB2B       = null
 let summaryController       = null
 let dirApprovalController   = null
 let dirApprovalSumCtrl      = null
@@ -2320,16 +2410,14 @@ function clearDirObDebounceTimerB2B() {
 }
 
 function abortPendingRequests() {
-  listController?.abort()
-  listControllerB2B?.abort()
+  abort()
+  abortB2B()
   summaryController?.abort()
   dirApprovalController?.abort()
   dirApprovalSumCtrl?.abort()
   dirObController?.abort()
   dirObB2BController?.abort()
   dirObSumCtrl?.abort()
-  listController        = null
-  listControllerB2B     = null
   summaryController     = null
   dirApprovalController = null
   dirApprovalSumCtrl    = null
@@ -2338,38 +2426,23 @@ function abortPendingRequests() {
   dirObSumCtrl          = null
 }
 
-// ── Loaders: non-director ──────────────────────────────────────────────────
-async function loadList() {
-  listController?.abort()
-  const controller = new AbortController()
-  listController = controller
-  await fetchList({}, { signal: controller.signal })
-  if (listController === controller) listController = null
-}
-
-async function loadListB2B() {
-  if (!canSeeAll) return
-  listControllerB2B?.abort()
-  const controller = new AbortController()
-  listControllerB2B = controller
-  await fetchListB2B({}, { signal: controller.signal })
-  if (listControllerB2B === controller) listControllerB2B = null
-}
-
 async function loadSummary() {
   summaryController?.abort()
+
   const controller = new AbortController()
+
   summaryController = controller
   try {
     const { data } = await api.get('/finance/opening-balance/summary', {
       params: {
-        search:          params.search,
-        karyawan_id:     params.karyawan_id,
-        tanggal_dari:    params.tanggal_dari,
-        tanggal_sampai:  params.tanggal_sampai,
+        search: params.search,
+        karyawan_id: params.karyawan_id,
+        tanggal_dari: params.tanggal_dari,
+        tanggal_sampai: params.tanggal_sampai,
       },
       signal: controller.signal,
     })
+
     if (controller.signal.aborted) return
     Object.assign(summary, data.data)
   } catch (err) {
@@ -2382,7 +2455,9 @@ async function loadSummary() {
 // ── Loaders: director approval table ──────────────────────────────────────
 async function loadDirApprovalList() {
   dirApprovalController?.abort()
+
   const controller = new AbortController()
+
   dirApprovalController = controller
   await fetchDirApprovalList({}, { signal: controller.signal })
   if (dirApprovalController === controller) dirApprovalController = null
@@ -2390,17 +2465,20 @@ async function loadDirApprovalList() {
 
 async function loadDirApprovalSummary() {
   dirApprovalSumCtrl?.abort()
+
   const controller = new AbortController()
+
   dirApprovalSumCtrl = controller
   try {
     const { data } = await api.get('/finance/opening-balance/summary', {
       params: {
-        search:          dirApprovalParams.search,
-        tanggal_dari:    dirApprovalParams.tanggal_dari,
-        tanggal_sampai:  dirApprovalParams.tanggal_sampai,
+        search: dirApprovalParams.search,
+        tanggal_dari: dirApprovalParams.tanggal_dari,
+        tanggal_sampai: dirApprovalParams.tanggal_sampai,
       },
       signal: controller.signal,
     })
+
     if (controller.signal.aborted) return
     Object.assign(dirApprovalSummary, data.data)
   } catch (err) {
@@ -2413,7 +2491,9 @@ async function loadDirApprovalSummary() {
 // ── Loaders: director OB list ──────────────────────────────────────────────
 async function loadDirObList() {
   dirObController?.abort()
+
   const controller = new AbortController()
+
   dirObController = controller
   await fetchDirObList({}, { signal: controller.signal })
   if (dirObController === controller) dirObController = null
@@ -2421,7 +2501,9 @@ async function loadDirObList() {
 
 async function loadDirObListB2B() {
   dirObB2BController?.abort()
+
   const controller = new AbortController()
+
   dirObB2BController = controller
   await fetchDirObListB2B({}, { signal: controller.signal })
   if (dirObB2BController === controller) dirObB2BController = null
@@ -2429,18 +2511,21 @@ async function loadDirObListB2B() {
 
 async function loadDirObSummary() {
   dirObSumCtrl?.abort()
+
   const controller = new AbortController()
+
   dirObSumCtrl = controller
   try {
     const { data } = await api.get('/finance/opening-balance/summary', {
       params: {
-        search:          dirObParams.search,
+        search: dirObParams.search,
         approval_status: dirObParams.approval_status,
-        tanggal_dari:    dirObParams.tanggal_dari,
-        tanggal_sampai:  dirObParams.tanggal_sampai,
+        tanggal_dari: dirObParams.tanggal_dari,
+        tanggal_sampai: dirObParams.tanggal_sampai,
       },
       signal: controller.signal,
     })
+
     if (controller.signal.aborted) return
     Object.assign(dirObSummary, data.data)
   } catch (err) {
@@ -2452,14 +2537,12 @@ async function loadDirObSummary() {
 
 // ── Fetch helpers: non-director ────────────────────────────────────────────
 function doFetchB2C() {
-  params.page = 1
-  loadList()
+  reset()
   loadSummary()
 }
 
 function doFetchB2B() {
-  paramsB2B.page = 1
-  loadListB2B()
+  resetB2B()
 }
 
 let debounceTimerB2C = null
@@ -2475,22 +2558,6 @@ function debouncedFetchB2B() {
   debounceTimerB2B = setTimeout(doFetchB2B, 400)
 }
 
-function onTableOptions({ page, itemsPerPage }) {
-  params.page = page
-  params.per_page = itemsPerPage
-  meta.current_page = page
-  meta.per_page = itemsPerPage
-  loadList()
-}
-
-function onTableOptionsB2B({ page, itemsPerPage }) {
-  paramsB2B.page = page
-  paramsB2B.per_page = itemsPerPage
-  metaB2B.current_page = page
-  metaB2B.per_page = itemsPerPage
-  loadListB2B()
-}
-
 function applyDateFiltersB2C() {
   Object.assign(params, dateDraftB2C)
   doFetchB2C()
@@ -2503,6 +2570,7 @@ function applyDateFiltersB2B() {
 
 function resetFiltersB2C() {
   const { tanggal_dari, tanggal_sampai } = getDefaultMonthRange()
+
   params.search          = ''
   params.tanggal_dari    = tanggal_dari
   params.tanggal_sampai  = tanggal_sampai
@@ -2512,6 +2580,7 @@ function resetFiltersB2C() {
 
 function resetFiltersB2B() {
   const { tanggal_dari, tanggal_sampai } = getDefaultMonthRange()
+
   paramsB2B.search          = ''
   paramsB2B.tanggal_dari    = tanggal_dari
   paramsB2B.tanggal_sampai  = tanggal_sampai
@@ -2521,6 +2590,7 @@ function resetFiltersB2B() {
 
 function resetDirApprovalFilter() {
   const { tanggal_dari, tanggal_sampai } = getDefaultMonthRange()
+
   dirApprovalParams.search          = ''
   dirApprovalParams.tanggal_dari    = tanggal_dari
   dirApprovalParams.tanggal_sampai  = tanggal_sampai
@@ -2606,6 +2676,7 @@ function onDirObTableOptionsB2B({ page, itemsPerPage }) {
 
 function resetDirObFilterB2B() {
   const { tanggal_dari, tanggal_sampai } = getDefaultMonthRange()
+
   dirObParamsB2B.search          = ''
   dirObParamsB2B.approval_status = 'APPROVED'
   dirObParamsB2B.tanggal_dari    = tanggal_dari
@@ -2616,6 +2687,7 @@ function resetDirObFilterB2B() {
 
 function resetDirObFilterB2C() {
   const { tanggal_dari, tanggal_sampai } = getDefaultMonthRange()
+
   dirObParams.search          = ''
   dirObParams.approval_status = 'APPROVED'
   dirObParams.tanggal_dari    = tanggal_dari
@@ -2664,6 +2736,7 @@ async function confirmApprove(item) {
     financeNotificationStore.fetchPendingOpeningBalanceCount()
   } catch (err) {
     const message = err?.response?.data?.message ?? 'Gagal menyetujui Opening Balance.'
+
     showError({ text: message })
   } finally {
     approvingId.value = null
@@ -2698,6 +2771,7 @@ async function confirmReject(item) {
     financeNotificationStore.fetchPendingOpeningBalanceCount()
   } catch (err) {
     const message = err?.response?.data?.message ?? 'Gagal menolak Opening Balance.'
+
     showError({ text: message })
   } finally {
     rejectingId.value = null
@@ -2740,6 +2814,7 @@ async function confirmApproveAll() {
     financeNotificationStore.fetchPendingOpeningBalanceCount()
   } catch (err) {
     const message = err?.response?.data?.message ?? 'Gagal menyetujui sebagian Opening Balance.'
+
     showError({ text: message })
     doDirFetch()
   } finally {
@@ -2760,8 +2835,8 @@ function initLoad() {
     if (!isPrivileged && authStore.user?.karyawan_id) {
       params.karyawan_id = authStore.user.karyawan_id
     }
-    loadList()
-    if (canSeeAll) loadListB2B()
+    reset()
+    if (canSeeAll) resetB2B()
     loadSummary()
   }
 }

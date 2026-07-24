@@ -1,15 +1,34 @@
 <template>
-  <VCard class="tagihan-item-card mb-3" variant="outlined" rounded="lg">
+  <VCard
+    class="tagihan-item-card mb-3"
+    variant="outlined"
+    rounded="lg"
+  >
     <div class="item-card-header">
       <div class="d-flex align-center gap-2">
-        <VIcon icon="ri-list-unordered" size="15" class="text-medium-emphasis" />
+        <VIcon
+          icon="ri-list-unordered"
+          size="15"
+          class="text-medium-emphasis"
+        />
         <span class="text-caption text-medium-emphasis font-weight-semibold text-uppercase">
           Item Tagihan {{ index !== null ? `#${index + 1}` : '' }}
         </span>
       </div>
-      <VBtn icon size="x-small" variant="text" color="error" @click="$emit('remove')">
-        <VIcon icon="ri-delete-bin-line" size="16" />
-        <VTooltip activator="parent">Hapus Baris</VTooltip>
+      <VBtn
+        icon
+        size="x-small"
+        variant="text"
+        color="error"
+        @click="$emit('remove')"
+      >
+        <VIcon
+          icon="ri-delete-bin-line"
+          size="16"
+        />
+        <VTooltip activator="parent">
+          Hapus Baris
+        </VTooltip>
       </VBtn>
     </div>
 
@@ -17,7 +36,10 @@
 
     <VCardText class="pa-3">
       <VRow dense>
-        <VCol cols="12" sm="6">
+        <VCol
+          cols="12"
+          sm="6"
+        >
           <VTextField
             :model-value="localItem.kode_barang"
             label="Kode Barang"
@@ -30,7 +52,10 @@
           />
         </VCol>
 
-        <VCol cols="12" sm="6">
+        <VCol
+          cols="12"
+          sm="6"
+        >
           <VCombobox
             :model-value="localItem.nama_barang"
             label="Nama Barang / Jasa"
@@ -49,12 +74,19 @@
             @update:model-value="onNamaBarangChange"
           >
             <template #item="{ props: p, item }">
-              <VListItem v-bind="p" :title="item.raw.nama_barang" :subtitle="item.raw.kode_barang" />
+              <VListItem
+                v-bind="p"
+                :title="item.raw.nama_barang"
+                :subtitle="item.raw.kode_barang"
+              />
             </template>
           </VCombobox>
         </VCol>
 
-        <VCol cols="6" sm="2">
+        <VCol
+          cols="6"
+          sm="2"
+        >
           <VTextField
             :model-value="localItem.qty"
             label="Qty"
@@ -68,7 +100,10 @@
           />
         </VCol>
 
-        <VCol cols="6" sm="2">
+        <VCol
+          cols="6"
+          sm="2"
+        >
           <VTextField
             :model-value="localItem.satuan"
             label="Satuan"
@@ -79,7 +114,10 @@
           />
         </VCol>
 
-        <VCol cols="12" sm="4">
+        <VCol
+          cols="12"
+          sm="4"
+        >
           <VTextField
             :model-value="localItem.harga_satuan"
             label="Harga Satuan"
@@ -94,7 +132,10 @@
           />
         </VCol>
 
-        <VCol cols="12" sm="4">
+        <VCol
+          cols="12"
+          sm="4"
+        >
           <VTextField
             :model-value="formatNumber(localItem.subtotal)"
             label="Subtotal"
@@ -127,17 +168,6 @@ import { reactive, watch } from 'vue'
 import { useRemoteSearch } from '@/composables/useRemoteSearch'
 import api from '@/utils/axios'
 
-const createDefaultItem = () => ({
-  barang_id: null,
-  kode_barang: '',
-  nama_barang: '',
-  qty: 1,
-  satuan: 'pcs',
-  harga_satuan: 0,
-  subtotal: 0,
-  keterangan: '',
-})
-
 const props = defineProps({
   item: {
     type: Object,
@@ -156,6 +186,18 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:item', 'remove'])
+
+const createDefaultItem = () => ({
+  barang_id: null,
+  kode_barang: '',
+  nama_barang: '',
+  qty: 1,
+  satuan: 'pcs',
+  harga_satuan: 0,
+  subtotal: 0,
+  keterangan: '',
+})
+
 const numberFormatter = new Intl.NumberFormat('id-ID')
 const localItem = reactive(createDefaultItem())
 
@@ -220,11 +262,13 @@ function recalculate() {
 
 function normalizeNumber(value) {
   const parsedValue = Number(value)
+  
   return Number.isFinite(parsedValue) ? parsedValue : 0
 }
 
 function formatNumber(value) {
   if (!value) return '0'
+  
   return numberFormatter.format(value)
 }
 </script>

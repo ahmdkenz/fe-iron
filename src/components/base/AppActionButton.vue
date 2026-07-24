@@ -28,6 +28,23 @@
 </template>
 
 <script setup>
+const props = defineProps({
+  action: { type: String, default: 'custom' },
+  label: { type: String, default: '' },
+  icon: { type: String, default: '' },
+  color: { type: String, default: '' },
+  variant: { type: String, default: '' },
+  loading: { type: Boolean, default: false },
+  disabled: { type: Boolean, default: false },
+
+  // Renders icon-only (with tooltip + aria-label) for mobile action density.
+  compact: { type: Boolean, default: false },
+
+  // Opt out of the automatic label tooltip when the caller already supplies
+  // its own (e.g. a dynamic disabled-reason tooltip) in the default slot.
+  hideTooltip: { type: Boolean, default: false },
+})
+
 const ACTION_MAP = {
   simpan: { color: 'primary', variant: 'flat', icon: 'ri-save-line', label: 'Simpan' },
   ajukan: { color: 'primary', variant: 'flat', icon: 'ri-send-plane-2-line', label: 'Ajukan' },
@@ -39,21 +56,6 @@ const ACTION_MAP = {
   pulihkan: { color: 'success', variant: 'flat', icon: 'ri-arrow-go-back-line', label: 'Pulihkan' },
   custom: { color: 'primary', variant: 'flat', icon: '', label: '' },
 }
-
-const props = defineProps({
-  action: { type: String, default: 'custom' },
-  label: { type: String, default: '' },
-  icon: { type: String, default: '' },
-  color: { type: String, default: '' },
-  variant: { type: String, default: '' },
-  loading: { type: Boolean, default: false },
-  disabled: { type: Boolean, default: false },
-  // Renders icon-only (with tooltip + aria-label) for mobile action density.
-  compact: { type: Boolean, default: false },
-  // Opt out of the automatic label tooltip when the caller already supplies
-  // its own (e.g. a dynamic disabled-reason tooltip) in the default slot.
-  hideTooltip: { type: Boolean, default: false },
-})
 
 const base = computed(() => ACTION_MAP[props.action] ?? ACTION_MAP.custom)
 const resolvedColor = computed(() => props.color || base.value.color)

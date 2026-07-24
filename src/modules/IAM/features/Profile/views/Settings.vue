@@ -10,14 +10,21 @@
     />
 
     <!-- ── Hero Card ── -->
-    <VCard class="profile-hero mb-5" elevation="3">
+    <VCard
+      class="profile-hero mb-5"
+      elevation="3"
+    >
       <div class="hero-circle hero-circle--top" />
       <div class="hero-circle hero-circle--bottom" />
 
       <VCardText class="hero-content pa-6 d-flex align-center gap-x-5">
         <div class="avatar-wrapper">
           <div class="avatar-ring" />
-          <VAvatar size="88" color="white" class="avatar-inner elevation-4">
+          <VAvatar
+            size="88"
+            color="white"
+            class="avatar-inner elevation-4"
+          >
             <span class="text-h4 font-weight-bold text-primary">
               {{ namaKaryawan.charAt(0).toUpperCase() }}
             </span>
@@ -25,15 +32,23 @@
         </div>
 
         <div class="flex-grow-1">
-          <h2 class="text-h5 font-weight-bold text-white mb-1">{{ namaKaryawan }}</h2>
-          <p class="text-body-2 mb-3 hero-username">@{{ authStore.user?.username ?? '-' }}</p>
+          <h2 class="text-h5 font-weight-bold text-white mb-1">
+            {{ namaKaryawan }}
+          </h2>
+          <p class="text-body-2 mb-3 hero-username">
+            @{{ authStore.user?.username ?? '-' }}
+          </p>
           <div class="d-flex gap-2 flex-wrap">
             <VChip
               size="small"
               variant="outlined"
               class="hero-chip"
             >
-              <VIcon icon="ri-shield-user-line" size="13" class="me-1" />
+              <VIcon
+                icon="ri-shield-user-line"
+                size="13"
+                class="me-1"
+              />
               {{ namaRole }}
             </VChip>
             <VChip
@@ -41,7 +56,11 @@
               variant="outlined"
               class="hero-chip"
             >
-              <VIcon icon="ri-building-line" size="13" class="me-1" />
+              <VIcon
+                icon="ri-building-line"
+                size="13"
+                class="me-1"
+              />
               {{ authStore.user?.karyawan?.perusahaan?.nama_perusahaan ?? '-' }}
             </VChip>
           </div>
@@ -52,16 +71,32 @@
     <!-- ── Row: Edit Akun + Detail Kepegawaian ── -->
     <VRow class="mb-1">
       <!-- Edit Info Akun -->
-      <VCol cols="12" md="7">
-        <VForm ref="profileFormRef" @submit.prevent="handleUpdateProfile">
-          <VCard class="h-100" elevation="1">
+      <VCol
+        cols="12"
+        md="7"
+      >
+        <VForm
+          ref="profileFormRef"
+          @submit.prevent="handleUpdateProfile"
+        >
+          <VCard
+            class="h-100"
+            elevation="1"
+          >
             <div class="section-header">
               <div class="section-icon section-icon--primary me-3">
-                <VIcon icon="ri-edit-line" size="18" />
+                <VIcon
+                  icon="ri-edit-line"
+                  size="18"
+                />
               </div>
               <div>
-                <div class="text-subtitle-1 font-weight-semibold">Edit Info Akun</div>
-                <div class="text-caption text-medium-emphasis">Perbarui informasi akun Anda</div>
+                <div class="text-subtitle-1 font-weight-semibold">
+                  Edit Info Akun
+                </div>
+                <div class="text-caption text-medium-emphasis">
+                  Perbarui informasi akun Anda
+                </div>
               </div>
             </div>
 
@@ -117,7 +152,10 @@
                 variant="elevated"
                 min-width="160"
               >
-                <VIcon icon="ri-save-line" class="me-2" />
+                <VIcon
+                  icon="ri-save-line"
+                  class="me-2"
+                />
                 Simpan Perubahan
               </VBtn>
             </VCardActions>
@@ -126,15 +164,28 @@
       </VCol>
 
       <!-- Detail Kepegawaian (read-only) -->
-      <VCol cols="12" md="5">
-        <VCard class="h-100" elevation="1">
+      <VCol
+        cols="12"
+        md="5"
+      >
+        <VCard
+          class="h-100"
+          elevation="1"
+        >
           <div class="section-header">
             <div class="section-icon section-icon--info me-3">
-              <VIcon icon="ri-id-card-line" size="18" />
+              <VIcon
+                icon="ri-id-card-line"
+                size="18"
+              />
             </div>
             <div>
-              <div class="text-subtitle-1 font-weight-semibold">Detail Kepegawaian</div>
-              <div class="text-caption text-medium-emphasis">Data dari sistem HR</div>
+              <div class="text-subtitle-1 font-weight-semibold">
+                Detail Kepegawaian
+              </div>
+              <div class="text-caption text-medium-emphasis">
+                Data dari sistem HR
+              </div>
             </div>
           </div>
 
@@ -142,21 +193,43 @@
 
           <VCardText class="pa-5">
             <div class="info-item d-flex align-center mb-3">
-              <VAvatar size="34" color="primary" variant="tonal" class="me-3 flex-shrink-0">
-                <VIcon icon="ri-user-line" size="17" />
+              <VAvatar
+                size="34"
+                color="primary"
+                variant="tonal"
+                class="me-3 flex-shrink-0"
+              >
+                <VIcon
+                  icon="ri-user-line"
+                  size="17"
+                />
               </VAvatar>
               <div class="min-width-0">
-                <div class="text-caption text-medium-emphasis">Nama Karyawan</div>
-                <div class="text-body-2 font-weight-medium text-truncate">{{ namaKaryawan }}</div>
+                <div class="text-caption text-medium-emphasis">
+                  Nama Karyawan
+                </div>
+                <div class="text-body-2 font-weight-medium text-truncate">
+                  {{ namaKaryawan }}
+                </div>
               </div>
             </div>
 
             <div class="info-item d-flex align-center mb-3">
-              <VAvatar size="34" color="info" variant="tonal" class="me-3 flex-shrink-0">
-                <VIcon icon="ri-fingerprint-line" size="17" />
+              <VAvatar
+                size="34"
+                color="info"
+                variant="tonal"
+                class="me-3 flex-shrink-0"
+              >
+                <VIcon
+                  icon="ri-fingerprint-line"
+                  size="17"
+                />
               </VAvatar>
               <div class="min-width-0">
-                <div class="text-caption text-medium-emphasis">NIK</div>
+                <div class="text-caption text-medium-emphasis">
+                  NIK
+                </div>
                 <div class="text-body-2 font-weight-medium text-truncate">
                   {{ authStore.user?.karyawan?.nik ?? '-' }}
                 </div>
@@ -164,11 +237,21 @@
             </div>
 
             <div class="info-item d-flex align-center mb-3">
-              <VAvatar size="34" color="success" variant="tonal" class="me-3 flex-shrink-0">
-                <VIcon icon="ri-building-line" size="17" />
+              <VAvatar
+                size="34"
+                color="success"
+                variant="tonal"
+                class="me-3 flex-shrink-0"
+              >
+                <VIcon
+                  icon="ri-building-line"
+                  size="17"
+                />
               </VAvatar>
               <div class="min-width-0">
-                <div class="text-caption text-medium-emphasis">Perusahaan</div>
+                <div class="text-caption text-medium-emphasis">
+                  Perusahaan
+                </div>
                 <div class="text-body-2 font-weight-medium text-truncate">
                   {{ authStore.user?.karyawan?.perusahaan?.nama_perusahaan ?? '-' }}
                 </div>
@@ -176,12 +259,24 @@
             </div>
 
             <div class="info-item d-flex align-center">
-              <VAvatar size="34" color="warning" variant="tonal" class="me-3 flex-shrink-0">
-                <VIcon icon="ri-shield-user-line" size="17" />
+              <VAvatar
+                size="34"
+                color="warning"
+                variant="tonal"
+                class="me-3 flex-shrink-0"
+              >
+                <VIcon
+                  icon="ri-shield-user-line"
+                  size="17"
+                />
               </VAvatar>
               <div class="min-width-0">
-                <div class="text-caption text-medium-emphasis">Role</div>
-                <div class="text-body-2 font-weight-medium text-truncate">{{ namaRole }}</div>
+                <div class="text-caption text-medium-emphasis">
+                  Role
+                </div>
+                <div class="text-body-2 font-weight-medium text-truncate">
+                  {{ namaRole }}
+                </div>
               </div>
             </div>
           </VCardText>
@@ -190,15 +285,28 @@
     </VRow>
 
     <!-- ── Ubah Password ── -->
-    <VForm ref="passwordFormRef" @submit.prevent="handleUpdatePassword">
-      <VCard class="mt-4" elevation="1">
+    <VForm
+      ref="passwordFormRef"
+      @submit.prevent="handleUpdatePassword"
+    >
+      <VCard
+        class="mt-4"
+        elevation="1"
+      >
         <div class="section-header password-header-tint">
           <div class="section-icon section-icon--warning me-3">
-            <VIcon icon="ri-lock-password-line" size="18" />
+            <VIcon
+              icon="ri-lock-password-line"
+              size="18"
+            />
           </div>
           <div>
-            <div class="text-subtitle-1 font-weight-semibold">Ubah Password</div>
-            <div class="text-caption text-medium-emphasis">Ganti password akun Anda secara berkala</div>
+            <div class="text-subtitle-1 font-weight-semibold">
+              Ubah Password
+            </div>
+            <div class="text-caption text-medium-emphasis">
+              Ganti password akun Anda secara berkala
+            </div>
           </div>
         </div>
 
@@ -206,7 +314,10 @@
 
         <VCardText class="pa-5">
           <VRow>
-            <VCol cols="12" md="4">
+            <VCol
+              cols="12"
+              md="4"
+            >
               <VTextField
                 v-model="passwordForm.current_password"
                 label="Password Saat Ini"
@@ -221,7 +332,10 @@
                 @input="passwordErrors.current_password = []"
               />
             </VCol>
-            <VCol cols="12" md="4">
+            <VCol
+              cols="12"
+              md="4"
+            >
               <VTextField
                 v-model="passwordForm.new_password"
                 label="Password Baru"
@@ -236,7 +350,10 @@
                 @input="passwordErrors.new_password = []"
               />
             </VCol>
-            <VCol cols="12" md="4">
+            <VCol
+              cols="12"
+              md="4"
+            >
               <VTextField
                 v-model="passwordForm.new_password_confirmation"
                 label="Konfirmasi Password Baru"
@@ -274,7 +391,10 @@
             variant="elevated"
             min-width="160"
           >
-            <VIcon icon="ri-lock-line" class="me-2" />
+            <VIcon
+              icon="ri-lock-line"
+              class="me-2"
+            />
             Ubah Password
           </VBtn>
         </VCardActions>
@@ -294,11 +414,11 @@ const authStore = useAuthStore()
 const { showSuccess, showError, showLoading, closeAlert } = useSweetAlert()
 
 const namaKaryawan = computed(() =>
-  authStore.user?.karyawan?.nama_karyawan ?? authStore.user?.username ?? '-'
+  authStore.user?.karyawan?.nama_karyawan ?? authStore.user?.username ?? '-',
 )
 
 const namaRole = computed(() =>
-  authStore.user?.role?.nama_role ?? authStore.user?.role?.name ?? authStore.user?.roles?.[0] ?? '-'
+  authStore.user?.role?.nama_role ?? authStore.user?.role?.name ?? authStore.user?.roles?.[0] ?? '-',
 )
 
 // ── Profile form ──
@@ -328,14 +448,15 @@ async function handleUpdateProfile() {
   try {
     await api.put('/auth/profile', {
       username: form.username,
-      email:    form.email,
-      no_hp:    form.no_hp,
+      email: form.email,
+      no_hp: form.no_hp,
     })
     await authStore.fetchMe()
     closeAlert({ onlyLoading: true })
     showSuccess({ title: 'Berhasil', text: 'Profil berhasil diperbarui.' })
   } catch (err) {
     closeAlert({ onlyLoading: true })
+
     const serverErrors = err.response?.data?.errors ?? {}
     if (serverErrors.username) errors.username = serverErrors.username
     if (serverErrors.email)    errors.email    = serverErrors.email
@@ -356,14 +477,14 @@ const showNewPwd      = ref(false)
 const showConfirmPwd  = ref(false)
 
 const passwordForm = reactive({
-  current_password:          '',
-  new_password:              '',
+  current_password: '',
+  new_password: '',
   new_password_confirmation: '',
 })
 
 const passwordErrors = reactive({
-  current_password:          [],
-  new_password:              [],
+  current_password: [],
+  new_password: [],
   new_password_confirmation: [],
 })
 
@@ -388,6 +509,7 @@ async function handleUpdatePassword() {
     showSuccess({ title: 'Berhasil', text: 'Password berhasil diperbarui.' })
   } catch (err) {
     closeAlert({ onlyLoading: true })
+
     const serverErrors = err.response?.data?.errors ?? {}
     if (serverErrors.current_password)          passwordErrors.current_password          = serverErrors.current_password
     if (serverErrors.new_password)              passwordErrors.new_password              = serverErrors.new_password

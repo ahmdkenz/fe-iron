@@ -107,7 +107,9 @@
             size="20"
           />
           <div>
-            <div class="text-body-2 font-weight-medium">Status Role</div>
+            <div class="text-body-2 font-weight-medium">
+              Status Role
+            </div>
             <div class="text-caption text-medium-emphasis">
               {{ form.status ? 'Aktif — role dapat digunakan' : 'Nonaktif — role dinonaktifkan' }}
             </div>

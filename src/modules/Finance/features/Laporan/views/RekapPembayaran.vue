@@ -9,7 +9,13 @@
         { title: 'Rekap Pembayaran', disabled: true },
       ]"
     >
-      <VBtn variant="text" prepend-icon="ri-arrow-left-line" :to="{ name: 'finance-laporan' }">Kembali</VBtn>
+      <VBtn
+        variant="text"
+        prepend-icon="ri-arrow-left-line"
+        :to="{ name: 'finance-laporan' }"
+      >
+        Kembali
+      </VBtn>
     </PageHeader>
 
     <!-- Filter -->
@@ -23,9 +29,27 @@
           density="compact"
           @update:model-value="doFetch"
         >
-          <VBtn value="ALL" size="small" style="min-width: 80px">Semua</VBtn>
-          <VBtn value="B2C" size="small" style="min-width: 70px">B2C</VBtn>
-          <VBtn value="B2B" size="small" style="min-width: 70px">B2B</VBtn>
+          <VBtn
+            value="ALL"
+            size="small"
+            style="min-width: 80px"
+          >
+            Semua
+          </VBtn>
+          <VBtn
+            value="B2C"
+            size="small"
+            style="min-width: 70px"
+          >
+            B2C
+          </VBtn>
+          <VBtn
+            value="B2B"
+            size="small"
+            style="min-width: 70px"
+          >
+            B2B
+          </VBtn>
         </VBtnToggle>
         <VTextField
           v-model="filters.tanggal_dari"
@@ -68,7 +92,7 @@
           item-title="display_label"
           item-value="id"
           :loading="klienLoading"
-          @focus="ensureKlienLoaded()"
+          @focus="ensureKlienLoaded"
           @update:model-value="doFetch"
         />
       </VCardText>
@@ -76,42 +100,87 @@
 
     <!-- Summary Cards -->
     <VRow class="mb-4">
-      <VCol cols="12" sm="6" md="3">
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
         <VCard>
           <VCardText>
             <div class="d-flex align-center gap-3">
-              <VAvatar color="success" variant="tonal" size="44">
+              <VAvatar
+                color="success"
+                variant="tonal"
+                size="44"
+              >
                 <VIcon icon="ri-money-cny-circle-line" />
               </VAvatar>
               <div>
-                <div class="text-caption text-medium-emphasis">Total Pembayaran</div>
-                <div class="text-h6 font-weight-bold">{{ formatCurrency(report.summary?.total ?? 0) }}</div>
+                <div class="text-caption text-medium-emphasis">
+                  Total Pembayaran
+                </div>
+                <div class="text-h6 font-weight-bold">
+                  {{ formatCurrency(report.summary?.total ?? 0) }}
+                </div>
               </div>
             </div>
           </VCardText>
         </VCard>
       </VCol>
-      <VCol cols="12" sm="6" md="3">
-        <VCard color="info" variant="tonal">
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
+        <VCard
+          color="info"
+          variant="tonal"
+        >
           <VCardText class="pa-3">
-            <div class="text-caption font-weight-medium mb-1">Transfer</div>
-            <div class="text-subtitle-1 font-weight-bold">{{ formatCurrency(report.summary?.transfer ?? 0) }}</div>
+            <div class="text-caption font-weight-medium mb-1">
+              Transfer
+            </div>
+            <div class="text-subtitle-1 font-weight-bold">
+              {{ formatCurrency(report.summary?.transfer ?? 0) }}
+            </div>
           </VCardText>
         </VCard>
       </VCol>
-      <VCol cols="12" sm="6" md="3">
-        <VCard color="success" variant="tonal">
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
+        <VCard
+          color="success"
+          variant="tonal"
+        >
           <VCardText class="pa-3">
-            <div class="text-caption font-weight-medium mb-1">Cash</div>
-            <div class="text-subtitle-1 font-weight-bold">{{ formatCurrency(report.summary?.cash ?? 0) }}</div>
+            <div class="text-caption font-weight-medium mb-1">
+              Cash
+            </div>
+            <div class="text-subtitle-1 font-weight-bold">
+              {{ formatCurrency(report.summary?.cash ?? 0) }}
+            </div>
           </VCardText>
         </VCard>
       </VCol>
-      <VCol cols="12" sm="6" md="3">
-        <VCard color="warning" variant="tonal">
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
+        <VCard
+          color="warning"
+          variant="tonal"
+        >
           <VCardText class="pa-3">
-            <div class="text-caption font-weight-medium mb-1">Giro</div>
-            <div class="text-subtitle-1 font-weight-bold">{{ formatCurrency(report.summary?.giro ?? 0) }}</div>
+            <div class="text-caption font-weight-medium mb-1">
+              Giro
+            </div>
+            <div class="text-subtitle-1 font-weight-bold">
+              {{ formatCurrency(report.summary?.giro ?? 0) }}
+            </div>
           </VCardText>
         </VCard>
       </VCol>
@@ -149,7 +218,11 @@
           <span class="text-caption">{{ item.ref_payment ?? '-' }}</span>
         </template>
         <template #item.metode="{ item }">
-          <VChip size="x-small" :color="metodeColor(item.metode)" variant="tonal">
+          <VChip
+            size="x-small"
+            :color="metodeColor(item.metode)"
+            variant="tonal"
+          >
             {{ item.metode }}
           </VChip>
         </template>
@@ -160,8 +233,16 @@
           <span class="text-caption">{{ item.pic_ar || '-' }}</span>
         </template>
         <template #item.is_rekon="{ item }">
-          <VIcon v-if="item.is_rekon" icon="ri-checkbox-circle-line" color="success" size="20" />
-          <span v-else class="text-medium-emphasis text-caption">-</span>
+          <VIcon
+            v-if="item.is_rekon"
+            icon="ri-checkbox-circle-line"
+            color="success"
+            size="20"
+          />
+          <span
+            v-else
+            class="text-medium-emphasis text-caption"
+          >-</span>
         </template>
       </BaseTable>
     </VCard>
@@ -184,10 +265,10 @@ const report  = reactive({ tanggal_dari: null, tanggal_sampai: null, summary: nu
 const segment = ref('ALL')
 
 const filters = reactive({
-  tanggal_dari:      null,
-  tanggal_sampai:    null,
+  tanggal_dari: null,
+  tanggal_sampai: null,
   metode_pembayaran: null,
-  klien_ar_id:       null,
+  klien_ar_id: null,
 })
 
 const page    = ref(1)
@@ -233,6 +314,7 @@ async function doFetch({ resetPage = true } = {}) {
     if (segment.value !== 'ALL')   params.segment           = segment.value
 
     const { data } = await api.get('/finance/rekap-pembayaran', { params })
+
     Object.assign(report, data.data)
   } finally {
     loading.value = false
