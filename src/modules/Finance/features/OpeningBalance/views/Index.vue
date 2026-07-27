@@ -1,187 +1,79 @@
 <template>
   <div>
-    <PageHeader
+    <PageHeroHeader
+      tone="gold"
+      icon="ri-wallet-3-line"
       title="Opening Balance"
       :subtitle="authStore.canApproveOpeningBalance ? 'Tinjau dan proses opening balance yang memerlukan persetujuan' : 'Kelola saldo awal piutang klien'"
       :breadcrumbs="[
         { title: 'Dashboard', to: { name: 'dashboard' } },
         { title: 'Opening Balance', disabled: true },
       ]"
+      :stats="obHeroStats"
+      compact-actions
     >
-      <div
-        v-if="!authStore.canApproveOpeningBalance"
-        class="d-flex gap-2 justify-end w-100"
-      >
-        <template v-if="!xs">
-          <VBtn
-            v-if="authStore.canViewOpeningBalance"
-            color="primary"
-            prepend-icon="ri-file-excel-line"
-            :loading="isExporting"
-            @click="showExportModal = true"
-          >
-            Export
-          </VBtn>
-          <VBtn
-            v-if="authStore.canOperateOpeningBalance"
-            color="primary"
-            prepend-icon="ri-add-line"
-            :to="{ name: 'finance-opening-balance-create' }"
-          >
-            Ajukan Opening Balance
-          </VBtn>
-        </template>
-        <template v-else>
-          <VBtn
-            v-if="authStore.canViewOpeningBalance"
-            icon
-            color="primary"
-            size="small"
-            :loading="isExporting"
-            aria-label="Export"
-            @click="showExportModal = true"
-          >
-            <VIcon icon="ri-file-excel-line" />
-            <VTooltip
-              activator="parent"
-              location="bottom"
+      <template #actions>
+        <template v-if="!authStore.canApproveOpeningBalance">
+          <template v-if="!xs">
+            <VBtn
+              v-if="authStore.canViewOpeningBalance"
+              color="primary"
+              prepend-icon="ri-file-excel-line"
+              :loading="isExporting"
+              @click="showExportModal = true"
             >
               Export
-            </VTooltip>
-          </VBtn>
-          <VBtn
-            v-if="authStore.canOperateOpeningBalance"
-            icon
-            color="primary"
-            size="small"
-            aria-label="Ajukan Opening Balance"
-            :to="{ name: 'finance-opening-balance-create' }"
-          >
-            <VIcon icon="ri-add-line" />
-            <VTooltip
-              activator="parent"
-              location="bottom"
+            </VBtn>
+            <VBtn
+              v-if="authStore.canOperateOpeningBalance"
+              color="primary"
+              prepend-icon="ri-add-line"
+              :to="{ name: 'finance-opening-balance-create' }"
             >
               Ajukan Opening Balance
-            </VTooltip>
-          </VBtn>
+            </VBtn>
+          </template>
+          <template v-else>
+            <VBtn
+              v-if="authStore.canViewOpeningBalance"
+              icon
+              color="primary"
+              size="small"
+              :loading="isExporting"
+              aria-label="Export"
+              @click="showExportModal = true"
+            >
+              <VIcon icon="ri-file-excel-line" />
+              <VTooltip
+                activator="parent"
+                location="bottom"
+              >
+                Export
+              </VTooltip>
+            </VBtn>
+            <VBtn
+              v-if="authStore.canOperateOpeningBalance"
+              icon
+              color="primary"
+              size="small"
+              aria-label="Ajukan Opening Balance"
+              :to="{ name: 'finance-opening-balance-create' }"
+            >
+              <VIcon icon="ri-add-line" />
+              <VTooltip
+                activator="parent"
+                location="bottom"
+              >
+                Ajukan Opening Balance
+              </VTooltip>
+            </VBtn>
+          </template>
         </template>
-      </div>
-    </PageHeader>
+      </template>
+    </PageHeroHeader>
 
     <!-- ── Operator View (buat/kelola OB) — non-approver ──────────────────── -->
     <template v-if="!authStore.canApproveOpeningBalance">
-      <VRow class="mb-4">
-        <VCol
-          cols="12"
-          sm="6"
-          md="3"
-        >
-          <VCard>
-            <VCardText>
-              <div class="d-flex align-center gap-3">
-                <VAvatar
-                  color="primary"
-                  variant="tonal"
-                  size="44"
-                >
-                  <VIcon icon="ri-history-line" />
-                </VAvatar>
-                <div>
-                  <div class="text-caption text-medium-emphasis">
-                    Total Data
-                  </div>
-                  <div class="text-h6 font-weight-bold">
-                    {{ summary.total_invoice ?? '-' }}
-                  </div>
-                </div>
-              </div>
-            </VCardText>
-          </VCard>
-        </VCol>
-        <VCol
-          cols="12"
-          sm="6"
-          md="3"
-        >
-          <VCard>
-            <VCardText>
-              <div class="d-flex align-center gap-3">
-                <VAvatar
-                  color="warning"
-                  variant="tonal"
-                  size="44"
-                >
-                  <VIcon icon="ri-wallet-3-line" />
-                </VAvatar>
-                <div>
-                  <div class="text-caption text-medium-emphasis">
-                    Total Saldo Awal
-                  </div>
-                  <div class="text-h6 font-weight-bold">
-                    {{ formatCurrency(summary.total_tagihan) }}
-                  </div>
-                </div>
-              </div>
-            </VCardText>
-          </VCard>
-        </VCol>
-        <VCol
-          cols="12"
-          sm="6"
-          md="3"
-        >
-          <VCard>
-            <VCardText>
-              <div class="d-flex align-center gap-3">
-                <VAvatar
-                  color="success"
-                  variant="tonal"
-                  size="44"
-                >
-                  <VIcon icon="ri-money-cny-circle-line" />
-                </VAvatar>
-                <div>
-                  <div class="text-caption text-medium-emphasis">
-                    Total Terbayar
-                  </div>
-                  <div class="text-h6 font-weight-bold">
-                    {{ formatCurrency(summary.total_pembayaran) }}
-                  </div>
-                </div>
-              </div>
-            </VCardText>
-          </VCard>
-        </VCol>
-        <VCol
-          cols="12"
-          sm="6"
-          md="3"
-        >
-          <VCard>
-            <VCardText>
-              <div class="d-flex align-center gap-3">
-                <VAvatar
-                  color="error"
-                  variant="tonal"
-                  size="44"
-                >
-                  <VIcon icon="ri-error-warning-line" />
-                </VAvatar>
-                <div>
-                  <div class="text-caption text-medium-emphasis">
-                    Sisa Piutang
-                  </div>
-                  <div class="text-h6 font-weight-bold">
-                    {{ formatCurrency(summary.total_sisa) }}
-                  </div>
-                </div>
-              </div>
-            </VCardText>
-          </VCard>
-        </VCol>
-      </VRow>
-
       <!-- B2B Table (hanya untuk admin/manager/supervisor) -->
       <VCard
         v-if="canSeeAll"
@@ -832,117 +724,6 @@
         <span class="text-h6 font-weight-semibold">Persetujuan Opening Balance</span>
       </div>
 
-      <VRow class="mb-4">
-        <VCol
-          cols="12"
-          sm="6"
-          md="3"
-        >
-          <VCard>
-            <VCardText>
-              <div class="d-flex align-center gap-3">
-                <VAvatar
-                  color="warning"
-                  variant="tonal"
-                  size="44"
-                >
-                  <VIcon icon="ri-timer-line" />
-                </VAvatar>
-                <div>
-                  <div class="text-caption text-medium-emphasis">
-                    Total Data
-                  </div>
-                  <div class="text-h6 font-weight-bold">
-                    {{ dirApprovalSummary.total_invoice ?? '-' }}
-                  </div>
-                </div>
-              </div>
-            </VCardText>
-          </VCard>
-        </VCol>
-        <VCol
-          cols="12"
-          sm="6"
-          md="3"
-        >
-          <VCard>
-            <VCardText>
-              <div class="d-flex align-center gap-3">
-                <VAvatar
-                  color="primary"
-                  variant="tonal"
-                  size="44"
-                >
-                  <VIcon icon="ri-wallet-3-line" />
-                </VAvatar>
-                <div>
-                  <div class="text-caption text-medium-emphasis">
-                    Total Nominal
-                  </div>
-                  <div class="text-h6 font-weight-bold">
-                    {{ formatCurrency(dirApprovalSummary.total_tagihan) }}
-                  </div>
-                </div>
-              </div>
-            </VCardText>
-          </VCard>
-        </VCol>
-        <VCol
-          cols="12"
-          sm="6"
-          md="3"
-        >
-          <VCard>
-            <VCardText>
-              <div class="d-flex align-center gap-3">
-                <VAvatar
-                  color="success"
-                  variant="tonal"
-                  size="44"
-                >
-                  <VIcon icon="ri-checkbox-circle-line" />
-                </VAvatar>
-                <div>
-                  <div class="text-caption text-medium-emphasis">
-                    Total Terbayar
-                  </div>
-                  <div class="text-h6 font-weight-bold">
-                    {{ formatCurrency(dirApprovalSummary.total_pembayaran) }}
-                  </div>
-                </div>
-              </div>
-            </VCardText>
-          </VCard>
-        </VCol>
-        <VCol
-          cols="12"
-          sm="6"
-          md="3"
-        >
-          <VCard>
-            <VCardText>
-              <div class="d-flex align-center gap-3">
-                <VAvatar
-                  color="error"
-                  variant="tonal"
-                  size="44"
-                >
-                  <VIcon icon="ri-error-warning-line" />
-                </VAvatar>
-                <div>
-                  <div class="text-caption text-medium-emphasis">
-                    Sisa Piutang
-                  </div>
-                  <div class="text-h6 font-weight-bold">
-                    {{ formatCurrency(dirApprovalSummary.total_sisa) }}
-                  </div>
-                </div>
-              </div>
-            </VCardText>
-          </VCard>
-        </VCol>
-      </VRow>
-
       <!-- Filter Card -->
       <VCard class="mb-4">
         <VCardText class="pa-0">
@@ -1298,116 +1079,7 @@
         </div>
       </div>
 
-      <VRow class="mb-4">
-        <VCol
-          cols="12"
-          sm="6"
-          md="3"
-        >
-          <VCard>
-            <VCardText>
-              <div class="d-flex align-center gap-3">
-                <VAvatar
-                  color="primary"
-                  variant="tonal"
-                  size="44"
-                >
-                  <VIcon icon="ri-history-line" />
-                </VAvatar>
-                <div>
-                  <div class="text-caption text-medium-emphasis">
-                    Total Data
-                  </div>
-                  <div class="text-h6 font-weight-bold">
-                    {{ dirObSummary.total_invoice ?? '-' }}
-                  </div>
-                </div>
-              </div>
-            </VCardText>
-          </VCard>
-        </VCol>
-        <VCol
-          cols="12"
-          sm="6"
-          md="3"
-        >
-          <VCard>
-            <VCardText>
-              <div class="d-flex align-center gap-3">
-                <VAvatar
-                  color="warning"
-                  variant="tonal"
-                  size="44"
-                >
-                  <VIcon icon="ri-wallet-3-line" />
-                </VAvatar>
-                <div>
-                  <div class="text-caption text-medium-emphasis">
-                    Total Saldo Awal
-                  </div>
-                  <div class="text-h6 font-weight-bold">
-                    {{ formatCurrency(dirObSummary.total_tagihan) }}
-                  </div>
-                </div>
-              </div>
-            </VCardText>
-          </VCard>
-        </VCol>
-        <VCol
-          cols="12"
-          sm="6"
-          md="3"
-        >
-          <VCard>
-            <VCardText>
-              <div class="d-flex align-center gap-3">
-                <VAvatar
-                  color="success"
-                  variant="tonal"
-                  size="44"
-                >
-                  <VIcon icon="ri-money-cny-circle-line" />
-                </VAvatar>
-                <div>
-                  <div class="text-caption text-medium-emphasis">
-                    Total Terbayar
-                  </div>
-                  <div class="text-h6 font-weight-bold">
-                    {{ formatCurrency(dirObSummary.total_pembayaran) }}
-                  </div>
-                </div>
-              </div>
-            </VCardText>
-          </VCard>
-        </VCol>
-        <VCol
-          cols="12"
-          sm="6"
-          md="3"
-        >
-          <VCard>
-            <VCardText>
-              <div class="d-flex align-center gap-3">
-                <VAvatar
-                  color="error"
-                  variant="tonal"
-                  size="44"
-                >
-                  <VIcon icon="ri-error-warning-line" />
-                </VAvatar>
-                <div>
-                  <div class="text-caption text-medium-emphasis">
-                    Sisa Piutang
-                  </div>
-                  <div class="text-h6 font-weight-bold">
-                    {{ formatCurrency(dirObSummary.total_sisa) }}
-                  </div>
-                </div>
-              </div>
-            </VCardText>
-          </VCard>
-        </VCol>
-      </VRow>
+      <StatCard :cards="dirObStats" />
 
       <VRow>
         <VCol
@@ -2151,6 +1823,25 @@ const dirObSummary = reactive({
   total_pembayaran: null,
   total_sisa: null,
 })
+
+const obHeroStats = computed(() => {
+  const source = authStore.canApproveOpeningBalance ? dirApprovalSummary : summary
+  const totalLabel = authStore.canApproveOpeningBalance ? 'Total Nominal' : 'Total Saldo Awal'
+
+  return [
+    { key: 'total_invoice', label: 'Total Data', value: source.total_invoice ?? '-', icon: 'ri-history-line', color: 'primary' },
+    { key: 'total_tagihan', label: totalLabel, value: formatCurrency(source.total_tagihan), icon: 'ri-wallet-3-line', color: 'warning' },
+    { key: 'total_pembayaran', label: 'Total Terbayar', value: formatCurrency(source.total_pembayaran), icon: 'ri-money-cny-circle-line', color: 'success' },
+    { key: 'total_sisa', label: 'Sisa Piutang', value: formatCurrency(source.total_sisa), icon: 'ri-error-warning-line', color: 'error' },
+  ]
+})
+
+const dirObStats = computed(() => [
+  { key: 'total_invoice', label: 'Total Data', value: dirObSummary.total_invoice ?? '-', icon: 'ri-history-line', color: 'primary' },
+  { key: 'total_tagihan', label: 'Total Saldo Awal', value: formatCurrency(dirObSummary.total_tagihan), icon: 'ri-wallet-3-line', color: 'warning' },
+  { key: 'total_pembayaran', label: 'Total Terbayar', value: formatCurrency(dirObSummary.total_pembayaran), icon: 'ri-money-cny-circle-line', color: 'success' },
+  { key: 'total_sisa', label: 'Sisa Piutang', value: formatCurrency(dirObSummary.total_sisa), icon: 'ri-error-warning-line', color: 'error' },
+])
 
 // ── Bulk select state ──────────────────────────────────────────────────────
 const selectedInvoices    = ref([])

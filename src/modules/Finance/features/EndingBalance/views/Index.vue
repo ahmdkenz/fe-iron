@@ -1,6 +1,8 @@
 <template>
   <div>
-    <PageHeader
+    <PageHeroHeader
+      tone="slate"
+      icon="ri-file-shield-2-line"
       title="Ending Balance"
       :subtitle="authStore.canApproveEndingBalanceManager
         ? 'Tinjau dan proses koreksi ending balance yang memerlukan persetujuan'
@@ -9,6 +11,7 @@
         { title: 'Dashboard', to: { name: 'dashboard' } },
         { title: 'Ending Balance', disabled: true },
       ]"
+      :stats="ebHeroStats"
     />
 
     <!-- ═══════════════════════════════════════════════════════════════════ -->
@@ -1590,6 +1593,24 @@ async function doUnlock() {
 // ─── State & fungsi Approval Koreksi (dipindah dari Approval.vue) ────────────
 const pendingLoading = ref(false)
 const pendingRows    = ref([])
+
+const ebHeroStats = computed(() => {
+  const stats = [
+    { key: 'total', label: 'Total Ending Balance', value: total.value + (canSeeAll ? totalB2B.value : 0), icon: 'ri-file-list-3-line', color: 'primary' },
+  ]
+
+  if (canSeeAll) {
+    stats.push({ key: 'b2b', label: 'Ending Balance B2B', value: totalB2B.value, icon: 'ri-building-line' })
+  }
+
+  stats.push({ key: 'b2c', label: 'Ending Balance B2C', value: total.value, icon: 'ri-store-line' })
+
+  if (authStore.canApproveEndingBalanceManager) {
+    stats.push({ key: 'pending', label: 'Menunggu Persetujuan', value: pendingRows.value.length, icon: 'ri-timer-line', color: 'warning' })
+  }
+
+  return stats
+})
 
 const pendingHeaders = [
   { title: 'SEGMEN',           key: 'segment',       sortable: false },

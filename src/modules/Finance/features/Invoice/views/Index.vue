@@ -1,14 +1,18 @@
 <template>
   <div>
-    <PageHeader
+    <PageHeroHeader
+      tone="fuchsia"
+      icon="ri-file-list-3-line"
       title="Invoice AR"
       subtitle="Kelola tagihan Account Receivable"
       :breadcrumbs="[
         { title: 'Dashboard', to: { name: 'dashboard' } },
         { title: 'Invoice', disabled: true }
       ]"
+      :stats="invoiceStats"
+      compact-actions
     >
-      <div class="d-flex gap-2 justify-end w-100">
+      <template #actions>
         <template v-if="!xs">
           <VBtn
             color="primary"
@@ -59,120 +63,8 @@
             </VTooltip>
           </VBtn>
         </template>
-      </div>
-    </PageHeader>
-
-    <!-- Summary Cards -->
-    <VRow class="mb-4">
-      <VCol
-        cols="12"
-        sm="6"
-        md="3"
-      >
-        <VCard>
-          <VCardText>
-            <div class="d-flex align-center gap-3">
-              <VAvatar
-                color="primary"
-                variant="tonal"
-                size="44"
-              >
-                <VIcon icon="ri-file-list-3-line" />
-              </VAvatar>
-              <div>
-                <div class="text-caption text-medium-emphasis">
-                  Total Invoice
-                </div>
-                <div class="text-h6 font-weight-bold">
-                  {{ summary.total_invoice ?? '-' }}
-                </div>
-              </div>
-            </div>
-          </VCardText>
-        </VCard>
-      </VCol>
-      <VCol
-        cols="12"
-        sm="6"
-        md="3"
-      >
-        <VCard>
-          <VCardText>
-            <div class="d-flex align-center gap-3">
-              <VAvatar
-                color="warning"
-                variant="tonal"
-                size="44"
-              >
-                <VIcon icon="ri-bill-line" />
-              </VAvatar>
-              <div>
-                <div class="text-caption text-medium-emphasis">
-                  Total Tagihan
-                </div>
-                <div class="text-h6 font-weight-bold">
-                  {{ formatCurrency(summary.total_tagihan) }}
-                </div>
-              </div>
-            </div>
-          </VCardText>
-        </VCard>
-      </VCol>
-      <VCol
-        cols="12"
-        sm="6"
-        md="3"
-      >
-        <VCard>
-          <VCardText>
-            <div class="d-flex align-center gap-3">
-              <VAvatar
-                color="success"
-                variant="tonal"
-                size="44"
-              >
-                <VIcon icon="ri-money-cny-circle-line" />
-              </VAvatar>
-              <div>
-                <div class="text-caption text-medium-emphasis">
-                  Total Terbayar
-                </div>
-                <div class="text-h6 font-weight-bold">
-                  {{ formatCurrency(summary.total_pembayaran) }}
-                </div>
-              </div>
-            </div>
-          </VCardText>
-        </VCard>
-      </VCol>
-      <VCol
-        cols="12"
-        sm="6"
-        md="3"
-      >
-        <VCard>
-          <VCardText>
-            <div class="d-flex align-center gap-3">
-              <VAvatar
-                color="error"
-                variant="tonal"
-                size="44"
-              >
-                <VIcon icon="ri-error-warning-line" />
-              </VAvatar>
-              <div>
-                <div class="text-caption text-medium-emphasis">
-                  Sisa Piutang
-                </div>
-                <div class="text-h6 font-weight-bold">
-                  {{ formatCurrency(summary.total_sisa) }}
-                </div>
-              </div>
-            </div>
-          </VCardText>
-        </VCard>
-      </VCol>
-    </VRow>
+      </template>
+    </PageHeroHeader>
 
     <!-- Tab Selector B2B/B2C (hanya untuk admin/manager/supervisor) -->
     <VTabs
@@ -978,6 +870,14 @@ Object.assign(paramsB2C, { tanggal_dari: defaultDari, tanggal_sampai: defaultSam
 Object.assign(paramsB2B, { tanggal_dari: defaultDari, tanggal_sampai: defaultSampai })
 
 const summary          = reactive({ total_invoice: null, total_tagihan: null, total_pembayaran: null, total_sisa: null })
+
+const invoiceStats = computed(() => [
+  { key: 'total_invoice', label: 'Total Invoice', value: summary.total_invoice ?? '-', icon: 'ri-file-list-3-line', color: 'primary' },
+  { key: 'total_tagihan', label: 'Total Tagihan', value: formatCurrency(summary.total_tagihan), icon: 'ri-bill-line', color: 'warning' },
+  { key: 'total_pembayaran', label: 'Total Terbayar', value: formatCurrency(summary.total_pembayaran), icon: 'ri-money-cny-circle-line', color: 'success' },
+  { key: 'total_sisa', label: 'Sisa Piutang', value: formatCurrency(summary.total_sisa), icon: 'ri-error-warning-line', color: 'error' },
+])
+
 const showDelete       = ref(false)
 const deleteError      = ref('')
 const selectedInvoice  = ref(null)

@@ -1,14 +1,18 @@
 <template>
   <div>
-    <PageHeader
+    <PageHeroHeader
+      tone="sky"
+      icon="ri-team-line"
       title="Client"
       subtitle="Kelola data klien Account Receivable"
       :breadcrumbs="[
         { title: 'Dashboard', to: { name: 'dashboard' } },
         { title: 'Client', disabled: true }
       ]"
+      :stats="clientStats"
+      compact-actions
     >
-      <div class="d-flex gap-2 justify-end w-100">
+      <template #actions>
         <!-- Desktop: tombol dengan label; Mobile: ikon saja agar hemat ruang -->
         <template v-if="!xs">
           <VBtn
@@ -60,8 +64,8 @@
             </VTooltip>
           </VBtn>
         </template>
-      </div>
-    </PageHeader>
+      </template>
+    </PageHeroHeader>
 
     <!-- B2B Table (canSeeAll only) -->
     <VCard
@@ -612,6 +616,20 @@ const canSeeAll = authStore.hasAnyRole(['ADMIN', 'MANAGER', 'SUPERVISOR'])
 if (!canSeeAll) {
   paramsB2C.karyawan_ar_id = authStore.user?.karyawan?.id
 }
+
+const clientStats = computed(() => {
+  const stats = [
+    { key: 'total', label: 'Total Klien', value: metaB2B.total + metaB2C.total, icon: 'ri-team-line' },
+  ]
+
+  if (canSeeAll) {
+    stats.push({ key: 'b2b', label: 'Klien B2B', value: metaB2B.total, icon: 'ri-building-line' })
+  }
+
+  stats.push({ key: 'b2c', label: 'Klien B2C', value: metaB2C.total, icon: 'ri-user-line' })
+
+  return stats
+})
 
 const searchB2B = ref('')
 const statusB2B = ref(null)
