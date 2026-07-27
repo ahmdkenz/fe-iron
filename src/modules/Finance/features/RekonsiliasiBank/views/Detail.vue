@@ -351,19 +351,8 @@
                 :loading="unmatchLoading === item.id"
                 @click="openUnmatchDialog(item)"
               />
-              <AppActionButton
-                v-if="item.can_manage_match && item.status_posting_2 !== 'POSTED'"
-                action="custom"
-                color="success"
-                icon="ri-checkbox-circle-line"
-                size="x-small"
-                :loading="postingLoadingId === item.id"
-                @click="openPostingDialog(item)"
-              >
-                Posting
-              </AppActionButton>
               <VChip
-                v-else-if="item.status_posting_2 === 'POSTED'"
+                v-if="item.status_posting_2 === 'POSTED'"
                 color="success"
                 size="x-small"
                 variant="tonal"
@@ -375,6 +364,15 @@
                 >
                   ri-check-line
                 </VIcon>Sudah Posting
+              </VChip>
+              <VChip
+                v-else
+                color="grey"
+                size="x-small"
+                variant="tonal"
+                label
+              >
+                Belum Posting
               </VChip>
             </template>
             <span
@@ -418,45 +416,6 @@
             @click="doUnmatch"
           >
             Ya, Batalkan
-          </AppActionButton>
-        </VCardActions>
-      </VCard>
-    </VDialog>
-
-    <!-- ── Dialog: Konfirmasi Posting Jurnal ── -->
-    <VDialog
-      v-model="postingDialog"
-      max-width="420"
-      persistent
-    >
-      <VCard>
-        <VCardTitle class="pa-4 pb-2">
-          <span class="text-h6">Konfirmasi Posting</span>
-        </VCardTitle>
-        <VDivider />
-        <VCardText class="pa-4">
-          <p class="text-body-2 mb-1">
-            Posting transaksi berikut ke jurnal Rekening Koran?
-          </p>
-          <p class="text-body-2 font-weight-bold mb-0">
-            {{ postingTarget?.no_referensi ?? '-' }}
-          </p>
-        </VCardText>
-        <VDivider />
-        <VCardActions class="pa-4">
-          <VSpacer />
-          <AppActionButton
-            action="batalkan"
-            @click="postingDialog = false"
-          />
-          <AppActionButton
-            action="custom"
-            color="success"
-            icon="ri-checkbox-circle-line"
-            :loading="postingSaving"
-            @click="doPosting"
-          >
-            Ya, Posting
           </AppActionButton>
         </VCardActions>
       </VCard>
@@ -547,12 +506,6 @@ const unmatchSaving  = ref(false)
 const kelebihanDialog = ref(false)
 const kelebihanItem   = ref(null)
 
-// ── Posting dialog ──
-const postingLoadingId = ref(null)
-const postingDialog    = ref(false)
-const postingTarget    = ref(null)
-const postingSaving    = ref(false)
-
 function onFilterChange(status) {
   filterStatus.value = status
   reset({ status })
@@ -587,7 +540,7 @@ async function fetchHeader() {
 }
 
 // Refresh setelah aksi yang mengubah status baris (match/unmatch/abaikan/
-// posting/kelebihan): reset() memuat ulang dari halaman 1 dengan filter
+// kelebihan): reset() memuat ulang dari halaman 1 dengan filter
 // status yang sedang aktif dipertahankan; header ikut disegarkan karena
 // jumlah_matched/jumlah_unmatched pada ringkasan bisa berubah.
 function refreshAfterRowChange() {
@@ -668,27 +621,6 @@ async function doUnmatch() {
   } finally {
     unmatchSaving.value  = false
     unmatchLoading.value = null
-  }
-}
-
-// ── Posting ──
-function openPostingDialog(item) {
-  postingTarget.value = item
-  postingDialog.value = true
-}
-
-async function doPosting() {
-  postingSaving.value    = true
-  postingLoadingId.value = postingTarget.value.id
-  try {
-    await api.patch(`/finance/rekening-koran/${postingTarget.value.id}/posting`, {
-      status_posting_2: 'POSTED',
-    })
-    postingDialog.value = false
-    await refreshAfterRowChange()
-  } finally {
-    postingSaving.value    = false
-    postingLoadingId.value = null
   }
 }
 
