@@ -103,21 +103,36 @@
           <div class="text-body-2 mb-1">
             Segmen
           </div>
-          <div class="d-flex gap-4">
-            <VCheckbox
-              v-model="form.segmen"
-              label="B2B"
-              value="B2B"
-              density="compact"
+          <div class="d-flex align-center gap-2">
+            <VRadioGroup
+              v-model="segmenPilihan"
+              inline
               hide-details
-            />
-            <VCheckbox
-              v-model="form.segmen"
-              label="B2C"
-              value="B2C"
-              density="compact"
-              hide-details
-            />
+            >
+              <VRadio
+                label="B2B"
+                value="B2B"
+                density="compact"
+              />
+              <VRadio
+                label="B2C"
+                value="B2C"
+                density="compact"
+              />
+            </VRadioGroup>
+            <VBtn
+              v-if="segmenPilihan"
+              icon
+              size="x-small"
+              variant="text"
+              title="Kosongkan pilihan"
+              @click="segmenPilihan = null"
+            >
+              <VIcon
+                icon="ri-close-line"
+                size="16"
+              />
+            </VBtn>
           </div>
           <div
             v-if="errors.segmen?.length"
@@ -308,6 +323,11 @@ const defaultForm = () => ({
 })
 
 const form = reactive(defaultForm())
+
+const segmenPilihan = computed({
+  get: () => form.segmen[0] ?? null,
+  set: val => { form.segmen = val ? [val] : [] },
+})
 
 watch(() => props.modelValue, val => {
   if (val) {
