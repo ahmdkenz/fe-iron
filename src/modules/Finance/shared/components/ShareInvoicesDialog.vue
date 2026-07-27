@@ -22,7 +22,7 @@
                 Kirim via WhatsApp
               </div>
               <div class="text-caption text-medium-emphasis">
-                Pilih invoice yang ingin dikirim
+                {{ isInvestorBulkMode ? 'Rekap gabungan invoice investor' : 'Pilih invoice yang ingin dikirim' }}
               </div>
             </div>
           </div>
@@ -99,6 +99,87 @@
           />
         </div>
 
+        <!-- Mode: investor-bulk (read-only, otomatis) -->
+        <template v-else-if="isInvestorBulkMode">
+          <div
+            v-if="!bulkPreview || !bulkPreview.total_invoice"
+            class="d-flex flex-column align-center justify-center py-10 text-medium-emphasis"
+          >
+            <VIcon
+              icon="ri-file-unknow-line"
+              size="40"
+              class="mb-2 opacity-40"
+            />
+            <span class="text-body-2">Tidak ada invoice yang bisa digabung pada periode ini</span>
+          </div>
+
+          <template v-else>
+            <div class="px-5 pt-4 pb-2">
+              <div class="text-body-2 font-weight-semibold">
+                {{ bulkPreview.investor?.nama_investor }}
+              </div>
+              <div class="text-caption text-medium-emphasis">
+                Periode {{ bulkPreview.periode?.tanggal_dari }} s/d {{ bulkPreview.periode?.tanggal_sampai }}
+                &bull; {{ bulkPreview.total_invoice }} invoice &bull; {{ bulkPreview.total_resto }} outlet
+              </div>
+            </div>
+
+            <div
+              v-for="group in bulkPreview.resto_groups"
+              :key="group.resto_id ?? group.nama_resto"
+              class="px-4 pb-2"
+            >
+              <div class="section-label pt-2 pb-2">
+                <VIcon
+                  icon="ri-store-2-line"
+                  size="14"
+                  color="primary"
+                  class="me-1"
+                />
+                {{ group.nama_resto }}
+                <VChip
+                  size="x-small"
+                  color="primary"
+                  variant="tonal"
+                  class="ms-1"
+                >
+                  {{ group.invoices.length }}
+                </VChip>
+              </div>
+              <div class="d-flex flex-column gap-2">
+                <div
+                  v-for="inv in group.invoices"
+                  :key="inv.id"
+                  class="invoice-row"
+                  style="cursor: default;"
+                >
+                  <div class="flex-grow-1 min-width-0">
+                    <div class="d-flex align-center gap-2 mb-1">
+                      <VChip
+                        color="primary"
+                        size="x-small"
+                        variant="flat"
+                        label
+                      >
+                        {{ inv.status }}
+                      </VChip>
+                      <span class="text-body-2 font-weight-semibold">{{ inv.no_invoice }}</span>
+                    </div>
+                    <div class="text-caption text-medium-emphasis">
+                      Total: <strong>{{ formatCurrency(inv.subtotal) }}</strong>
+                      <span
+                        v-if="inv.sisa > 0"
+                        class="ms-2 text-error"
+                      >· Sisa: {{ formatCurrency(inv.sisa) }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </template>
+        </template>
+
+        <!-- Mode: client (checklist manual, existing) -->
         <template v-else>
           <!-- Empty -->
           <div
@@ -262,7 +343,31 @@
         <div class="d-flex align-center justify-space-between gap-3 flex-wrap">
           <!-- Summary -->
           <div
-            v-if="checkedIds.length"
+            v-if="isInvestorBulkMode"
+            class="summary-pill"
+          >
+            <template v-if="bulkPreview?.total_invoice">
+              <VIcon
+                icon="ri-checkbox-circle-fill"
+                size="16"
+                color="success"
+                class="me-1"
+              />
+              <span class="text-body-2 font-weight-semibold">{{ bulkPreview.total_invoice }} invoice</span>
+              <VDivider
+                vertical
+                class="mx-2"
+                style="height: 14px; align-self: center;"
+              />
+              <span class="text-body-2 font-weight-bold text-primary">{{ formatCurrency(bulkPreview.total_tagihan) }}</span>
+            </template>
+            <span
+              v-else
+              class="text-caption text-medium-emphasis"
+            >Tidak ada invoice untuk digabung</span>
+          </div>
+          <div
+            v-else-if="checkedIds.length"
             class="summary-pill"
           >
             <VIcon
@@ -294,6 +399,18 @@
               @click="isOpen = false"
             />
             <AppActionButton
+              v-if="isInvestorBulkMode"
+              action="custom"
+              color="success"
+              size="small"
+              icon="ri-whatsapp-line"
+              :disabled="!bulkPreview?.total_invoice || !clientPhone || loading"
+              @click="doSendInvestorBulk"
+            >
+              Kirim WA
+            </AppActionButton>
+            <AppActionButton
+              v-else
               action="custom"
               color="success"
               size="small"
@@ -319,6 +436,9 @@ import { useSweetAlert } from '@/composables/useSweetAlert.js'
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
   preSelected: { type: Array, default: () => [] },
+  mode: { type: String, default: 'client' }, // 'client' | 'investor-bulk'
+  periodeDari: { type: String, default: '' },
+  periodeSampai: { type: String, default: '' },
 })
 
 const emit = defineEmits(['update:modelValue'])
@@ -379,10 +499,90 @@ function toggleAll() {
   else checkedIds.value = allInvoices.value.map(inv => inv.id)
 }
 
+const isInvestorBulkMode = computed(() => props.mode === 'investor-bulk')
+const bulkPreview = ref(null)
+
 watch(isOpen, async open => {
   if (!open) return
-  await fetchRelated()
+
+  if (isInvestorBulkMode.value) {
+    await fetchInvestorBulkPreview()
+  } else {
+    await fetchRelated()
+  }
 })
+
+async function fetchInvestorBulkPreview() {
+  bulkPreview.value = null
+  if (!firstInvoice.value) return
+
+  loading.value = true
+  try {
+    const res = await api.post('/finance/invoices/bulk-b2c-investor/preview', {
+      anchor_invoice_id: firstInvoice.value.id,
+      tanggal_dari: props.periodeDari,
+      tanggal_sampai: props.periodeSampai,
+    })
+
+    bulkPreview.value = res.data?.data ?? null
+  } catch (err) {
+    await showError(err.response?.data?.message ?? 'Gagal memuat preview bulk invoice investor')
+  } finally {
+    loading.value = false
+  }
+}
+
+function buildInvestorBulkMessage(data, shareUrl) {
+  const klien = clientName.value
+  const totalInvoice = new Intl.NumberFormat('id-ID').format(data.total_tagihan)
+  const totalSisa = new Intl.NumberFormat('id-ID').format(data.total_sisa)
+
+  return (
+    `Yth. Bapak/Ibu *${klien}*,\n\n` +
+    `Bersama ini kami sampaikan rekap tagihan investor *${data.investor?.nama_investor ?? ''}* ` +
+    `untuk ${data.total_invoice} invoice dari ${data.total_resto} resto/outlet ` +
+    `periode ${data.periode?.tanggal_dari ?? ''} s/d ${data.periode?.tanggal_sampai ?? ''}:\n\n` +
+    `Total Tagihan: Rp ${totalInvoice}\n` +
+    `Sisa Tagihan: Rp ${totalSisa}\n\n` +
+    `Silakan akses dan unduh dokumen rekap melalui tautan berikut:\n${shareUrl}\n\n` +
+    `Mohon kesediaannya untuk melakukan pembayaran sesuai dengan total tagihan di atas. Atas perhatian dan kerja samanya, kami ucapkan terima kasih.`
+  )
+}
+
+async function doSendInvestorBulk() {
+  if (!clientPhone.value) {
+    await showError('Nomor WhatsApp klien belum diisi. Silakan lengkapi data No. WhatsApp pada form Client.')
+
+    return
+  }
+
+  if (!firstInvoice.value) return
+
+  loading.value = true
+  try {
+    const res = await api.post('/finance/invoices/bulk-b2c-investor/link', {
+      anchor_invoice_id: firstInvoice.value.id,
+      tanggal_dari: props.periodeDari,
+      tanggal_sampai: props.periodeSampai,
+    })
+
+    const data = res.data?.data
+    if (!data?.share_url) {
+      await showError('Gagal membuat tautan bulk invoice investor')
+
+      return
+    }
+
+    const msg = buildInvestorBulkMessage(data, data.share_url)
+
+    window.open(`https://wa.me/${clientPhone.value}?text=${encodeURIComponent(msg)}`, '_blank')
+    isOpen.value = false
+  } catch (err) {
+    await showError(err.response?.data?.message ?? 'Gagal membuat tautan bulk invoice investor')
+  } finally {
+    loading.value = false
+  }
+}
 
 async function fetchRelated() {
   if (!firstInvoice.value) return

@@ -893,7 +893,9 @@
     <!-- Bulk Action Bar -->
     <BulkActionBar
       :selected="selectedInvoices"
+      :show-investor-bulk="activeSegmentTab === 'b2c'"
       @share="openShareDialog(selectedInvoices)"
+      @investor-bulk="openBulkInvestorFromSelection"
       @delete="doBulkDelete"
       @clear="selectedInvoices = []"
     />
@@ -902,6 +904,9 @@
     <ShareInvoicesDialog
       v-model="showShareDialog"
       :pre-selected="shareTargetInvoices"
+      :mode="shareMode"
+      :periode-dari="paramsB2C.tanggal_dari"
+      :periode-sampai="paramsB2C.tanggal_sampai"
     />
   </div>
 </template>
@@ -980,6 +985,7 @@ const showPembayaran   = ref(false)
 const selectedInvoices = ref([])
 const showShareDialog  = ref(false)
 const shareTargetInvoices = ref([])
+const shareMode        = ref('client')
 const selectedForPayment  = ref(null)
 const exportingExcel   = ref(false)
 const showExportModal  = ref(false)
@@ -1180,7 +1186,21 @@ async function printInvoice(item) {
 
 function openShareDialog(invoices) {
   shareTargetInvoices.value = Array.isArray(invoices) ? invoices : [invoices]
+  shareMode.value = 'client'
   showShareDialog.value = true
+}
+
+function openInvestorBulkDialog(item) {
+  shareTargetInvoices.value = [item]
+  shareMode.value = 'investor-bulk'
+  showShareDialog.value = true
+}
+
+function openBulkInvestorFromSelection() {
+  const anchor = selectedInvoices.value.find(inv => inv.can_print && inv.resto)
+  if (!anchor) return
+
+  openInvestorBulkDialog(anchor)
 }
 
 async function doBulkDelete() {

@@ -52,6 +52,31 @@
             </VTooltip>
           </VBtn>
 
+          <VBtn
+            v-if="showInvestorBulk"
+            color="primary"
+            variant="tonal"
+            size="small"
+            :icon="xs || undefined"
+            :prepend-icon="xs ? undefined : 'ri-file-copy-2-line'"
+            :aria-label="xs ? 'Kirim Bulk Investor' : undefined"
+            :disabled="!canInvestorBulk"
+            @click="emit('investor-bulk')"
+          >
+            <VIcon
+              v-if="xs"
+              icon="ri-file-copy-2-line"
+              size="18"
+            />
+            <span v-else>Kirim Bulk Investor</span>
+            <VTooltip
+              v-if="xs || !canInvestorBulk"
+              activator="parent"
+            >
+              {{ !canInvestorBulk ? 'Pilih minimal 1 invoice B2C untuk kirim bulk per investor' : 'Kirim Bulk per Investor' }}
+            </VTooltip>
+          </VBtn>
+
           <AppActionButton
             action="hapus"
             size="small"
@@ -91,9 +116,10 @@ import { useConfigStore } from '@core/stores/config'
 
 const props = defineProps({
   selected: { type: Array, default: () => [] },
+  showInvestorBulk: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['share', 'delete', 'clear'])
+const emit = defineEmits(['share', 'delete', 'clear', 'investor-bulk'])
 
 const configStore = useConfigStore()
 const { xs } = useDisplay()
@@ -101,9 +127,11 @@ const { xs } = useDisplay()
 const canShare = computed(() => {
   if (!props.selected.length) return false
   const ids = props.selected.map(inv => inv.klien_ar_id ?? inv.klien_ar?.id)
-  
+
   return new Set(ids).size === 1
 })
+
+const canInvestorBulk = computed(() => props.selected.some(inv => inv.can_print && inv.resto))
 
 const hasDraft = computed(() => props.selected.some(inv => inv.status === 'DRAFT'))
 </script>
