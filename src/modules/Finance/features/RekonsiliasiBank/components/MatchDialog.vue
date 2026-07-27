@@ -157,7 +157,7 @@
           </div>
           <VTextField
             v-model="obSearch"
-            placeholder="Cari no invoice OB atau nama klien..."
+            placeholder="Cari no invoice OB, nama klien, atau nama resto..."
             density="compact"
             variant="outlined"
             prepend-inner-icon="ri-search-line"
@@ -388,7 +388,7 @@
           </div>
           <VTextField
             v-model="regularSearch"
-            placeholder="Cari no invoice atau nama klien..."
+            placeholder="Cari no invoice, nama klien, atau nama resto..."
             density="compact"
             variant="outlined"
             prepend-inner-icon="ri-search-line"
