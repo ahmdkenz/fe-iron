@@ -100,6 +100,33 @@
           />
         </VCol>
         <VCol cols="12">
+          <div class="text-body-2 mb-1">
+            Segmen
+          </div>
+          <div class="d-flex gap-4">
+            <VCheckbox
+              v-model="form.segmen"
+              label="B2B"
+              value="B2B"
+              density="compact"
+              hide-details
+            />
+            <VCheckbox
+              v-model="form.segmen"
+              label="B2C"
+              value="B2C"
+              density="compact"
+              hide-details
+            />
+          </div>
+          <div
+            v-if="errors.segmen?.length"
+            class="text-caption text-error mt-1"
+          >
+            {{ errors.segmen[0] }}
+          </div>
+        </VCol>
+        <VCol cols="12">
           <VTextField
             v-model="form.keterangan"
             label="Keterangan"
@@ -259,7 +286,7 @@ const { create, update, saving } = useCrud('/master/perusahaan')
 
 const formRef = ref(null)
 const errorMessage = ref('')
-const errors = reactive({ kode_perusahaan: [], nama_perusahaan: [], nama_singkatan_perusahaan: [], keterangan: [], alamat: [], kota: [], kode_pos: [], no_telp: [], email: [], no_npwp: [] })
+const errors = reactive({ kode_perusahaan: [], nama_perusahaan: [], nama_singkatan_perusahaan: [], keterangan: [], alamat: [], kota: [], kode_pos: [], no_telp: [], email: [], no_npwp: [], segmen: [] })
 
 const isEditing = computed(() => !!props.entitasData)
 
@@ -276,6 +303,7 @@ const defaultForm = () => ({
   no_telp: '',
   email: '',
   no_npwp: '',
+  segmen: [],
   status: 1,
 })
 
@@ -283,7 +311,7 @@ const form = reactive(defaultForm())
 
 watch(() => props.modelValue, val => {
   if (val) {
-    Object.assign(errors, { kode_perusahaan: [], nama_perusahaan: [], nama_singkatan_perusahaan: [], keterangan: [], alamat: [], kota: [], kode_pos: [], no_telp: [], email: [], no_npwp: [] })
+    Object.assign(errors, { kode_perusahaan: [], nama_perusahaan: [], nama_singkatan_perusahaan: [], keterangan: [], alamat: [], kota: [], kode_pos: [], no_telp: [], email: [], no_npwp: [], segmen: [] })
     errorMessage.value = ''
     if (props.entitasData) {
       form.kode_perusahaan           = props.entitasData.kode_perusahaan ?? ''
@@ -296,6 +324,7 @@ watch(() => props.modelValue, val => {
       form.no_telp                   = props.entitasData.no_telp ?? ''
       form.email                     = props.entitasData.email ?? ''
       form.no_npwp                   = props.entitasData.no_npwp ?? ''
+      form.segmen                    = props.entitasData.segmen ?? []
       form.status                    = normalizeBooleanStatus(props.entitasData.status)
     } else {
       Object.assign(form, defaultForm())

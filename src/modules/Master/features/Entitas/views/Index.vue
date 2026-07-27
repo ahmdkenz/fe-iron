@@ -70,7 +70,7 @@
             </div>
             <StatusChip :active="item.status" />
           </div>
-          <div class="d-flex align-center justify-space-between gap-2">
+          <div class="d-flex align-center justify-space-between gap-2 mb-2">
             <VChip
               color="primary"
               size="small"
@@ -79,6 +79,9 @@
             >
               {{ item.kode_perusahaan }}
             </VChip>
+            <SegmenChips :segmen="item.segmen" />
+          </div>
+          <div class="d-flex justify-end">
             <MobileCardActions
               :selected="selected"
               @detail="openDetail(item)"
@@ -101,6 +104,9 @@
           >
             {{ item.kode_perusahaan }}
           </VChip>
+        </template>
+        <template #item.segmen="{ item }">
+          <SegmenChips :segmen="item.segmen" />
         </template>
         <template #item.status="{ item }">
           <StatusChip :active="item.status" />
@@ -211,6 +217,9 @@
         label="Singkatan"
         :value="selectedEntitas?.nama_singkatan_perusahaan"
       />
+      <DetailRow label="Segmen">
+        <SegmenChips :segmen="selectedEntitas?.segmen" />
+      </DetailRow>
       <DetailRow
         label="Nama Entitas"
         :value="selectedEntitas?.nama_perusahaan"
@@ -336,6 +345,7 @@ import { useMinimizeWidgetStore } from '@/stores/minimize-widget.store'
 import api from '@/utils/axios'
 import BulkDeleteBar from '@/components/base/BulkDeleteBar.vue'
 import MobileCardActions from '@/components/shared/MobileCardActions.vue'
+import SegmenChips from '../components/SegmenChips.vue'
 
 const { showSuccess, showError, showLoading, closeAlert, confirmDelete: swalConfirmDelete } = useSweetAlert()
 const { items, loading, meta, params, fetchList, remove } = useCrud('/master/perusahaan')
@@ -364,6 +374,7 @@ const headers = [
   { title: 'Kode',       key: 'kode_perusahaan',           sortable: false },
   { title: 'Nama Entitas',   key: 'nama_perusahaan',       sortable: false },
   { title: 'Singkatan',  key: 'nama_singkatan_perusahaan', sortable: false },
+  { title: 'Segmen',     key: 'segmen',                    sortable: false },
   { title: 'Keterangan', key: 'keterangan',                sortable: false },
   { title: 'Status',     key: 'status',                    sortable: false },
   { title: 'Created By', key: 'created_by_name',           sortable: false },

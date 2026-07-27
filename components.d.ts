@@ -67,6 +67,7 @@ declare module 'vue' {
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     ScrollToTop: typeof import('./src/@core/components/ScrollToTop.vue')['default']
+    SegmenChips: typeof import('./src/modules/Master/features/Entitas/components/SegmenChips.vue')['default']
     ShareInvoicesDialog: typeof import('./src/modules/Finance/shared/components/ShareInvoicesDialog.vue')['default']
     Shz360ImportStatusBadge: typeof import('./src/modules/AP/features/Shz360Import/components/Shz360ImportStatusBadge.vue')['default']
     Shz360SyncProgressDialog: typeof import('./src/modules/AP/features/Shz360Import/components/Shz360SyncProgressDialog.vue')['default']

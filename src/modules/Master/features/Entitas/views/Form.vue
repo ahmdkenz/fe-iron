@@ -103,6 +103,33 @@
                 :error-messages="errors.keterangan"
               />
             </VCol>
+            <VCol cols="12">
+              <div class="text-body-2 mb-1">
+                Segmen
+              </div>
+              <div class="d-flex gap-4">
+                <VCheckbox
+                  v-model="form.segmen"
+                  label="B2B"
+                  value="B2B"
+                  density="compact"
+                  hide-details
+                />
+                <VCheckbox
+                  v-model="form.segmen"
+                  label="B2C"
+                  value="B2C"
+                  density="compact"
+                  hide-details
+                />
+              </div>
+              <div
+                v-if="errors.segmen?.length"
+                class="text-caption text-error mt-1"
+              >
+                {{ errors.segmen[0] }}
+              </div>
+            </VCol>
             <VCol
               cols="12"
               md="6"
@@ -266,14 +293,14 @@ const errorMessage = ref('')
 
 const errors = reactive({
   kode_perusahaan: [], nama_perusahaan: [], nama_singkatan_perusahaan: [],
-  keterangan: [], nama_direktur: [], alamat: [], kota: [], kode_pos: [], no_telp: [], email: [], no_npwp: [],
+  keterangan: [], nama_direktur: [], alamat: [], kota: [], kode_pos: [], no_telp: [], email: [], no_npwp: [], segmen: [],
 })
 
 const statusOptions = BOOLEAN_STATUS_OPTIONS
 
 const form = reactive({
   kode_perusahaan: '', nama_perusahaan: '', nama_singkatan_perusahaan: '',
-  keterangan: '', nama_direktur: '', alamat: '', kota: '', kode_pos: '', no_telp: '', email: '', no_npwp: '', status: 1,
+  keterangan: '', nama_direktur: '', alamat: '', kota: '', kode_pos: '', no_telp: '', email: '', no_npwp: '', segmen: [], status: 1,
 })
 
 async function handleSubmit() {
@@ -314,6 +341,7 @@ onMounted(async () => {
     form.email                     = data.email                     ?? ''
     form.no_npwp                   = data.no_npwp                   ?? ''
     form.nama_direktur             = data.nama_direktur             ?? ''
+    form.segmen                    = data.segmen                    ?? []
     form.status                    = normalizeBooleanStatus(data.status)
   }
   pageLoading.value = false
