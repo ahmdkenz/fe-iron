@@ -263,20 +263,62 @@
             </div>
           </template>
           <template v-else>
-            <div class="d-flex align-center gap-3">
-              <VProgressCircular
-                indeterminate
-                color="primary"
-                size="24"
-              />
-              <span>{{ phaseLabel(batchStatus?.phase) }}</span>
+            <div class="import-stepper">
+              <template
+                v-for="(step, i) in PHASE_STEPS"
+                :key="step.key"
+              >
+                <div
+                  class="import-step"
+                  :class="`import-step--${stepState(i)}`"
+                >
+                  <VIcon
+                    v-if="stepState(i) === 'done'"
+                    icon="ri-check-line"
+                    size="16"
+                  />
+                  <VIcon
+                    v-else
+                    :icon="step.icon"
+                    size="16"
+                  />
+                </div>
+                <div
+                  v-if="i < PHASE_STEPS.length - 1"
+                  class="import-connector"
+                  :class="{ 'import-connector--filled': stepState(i) === 'done' }"
+                />
+              </template>
             </div>
-            <div
-              v-if="batchStatus?.total_rows"
-              class="text-caption text-medium-emphasis mt-2"
+
+            <Transition
+              name="import-fade"
+              mode="out-in"
             >
-              {{ batchStatus.processed_rows }} / {{ batchStatus.total_rows }} baris diproses
-            </div>
+              <div
+                :key="batchStatus?.phase"
+                class="text-center mt-5"
+              >
+                <div class="text-body-2 font-weight-medium">
+                  {{ phaseLabel(batchStatus?.phase) }}
+                </div>
+                <div
+                  v-if="batchStatus?.total_rows"
+                  class="text-caption text-medium-emphasis mt-1"
+                >
+                  {{ batchStatus.processed_rows }} / {{ batchStatus.total_rows }} baris diproses
+                </div>
+              </div>
+            </Transition>
+
+            <VProgressLinear
+              :model-value="progressPercent"
+              :indeterminate="progressPercent === null"
+              color="primary"
+              height="6"
+              rounded
+              class="mt-4"
+            />
           </template>
         </VCardText>
         <VCardActions class="justify-end pa-4 gap-2">
@@ -387,7 +429,7 @@
 </template>
 
 <script setup>
-import { markRaw, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
+import { computed, markRaw, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { useLoadMore } from '@/composables/useLoadMore.js'
 import { useFormatter } from '@/composables/useFormatter'
 import { useAuthStore } from '@/stores/auth.store'
@@ -427,21 +469,46 @@ let pollTimer = null
 const overlapDialog = ref(false)
 const confirming    = ref(false)
 
-const PHASE_LABELS = {
-  queued:             'Menunggu diproses...',
-  parsing:            'Membaca file rekening koran...',
-  validating:         'Memvalidasi data transaksi...',
-  checking_overlap:   'Memeriksa duplikasi periode...',
-  saving:             'Menyimpan data transaksi...',
-  auto_matching:      'Mencocokkan otomatis dengan pembayaran...',
-  completed:          'Selesai',
-  failed:             'Gagal',
-  needs_confirmation: 'Menunggu konfirmasi',
+const PHASE_STEPS = [
+  { key: 'queued',           icon: 'ri-time-line',            label: 'Menunggu diproses...' },
+  { key: 'parsing',          icon: 'ri-file-search-line',     label: 'Membaca file rekening koran...' },
+  { key: 'validating',       icon: 'ri-shield-check-line',    label: 'Memvalidasi data transaksi...' },
+  { key: 'checking_overlap', icon: 'ri-git-compare-line',     label: 'Memeriksa duplikasi periode...' },
+  { key: 'saving',           icon: 'ri-save-3-line',          label: 'Menyimpan data transaksi...' },
+  { key: 'auto_matching',    icon: 'ri-link-m',               label: 'Mencocokkan otomatis dengan pembayaran...' },
+  { key: 'completed',        icon: 'ri-checkbox-circle-line', label: 'Selesai' },
+]
+
+function phaseIndex(phase) {
+  const i = PHASE_STEPS.findIndex(s => s.key === phase)
+  return i === -1 ? 0 : i
+}
+
+function stepState(i) {
+  const current = phaseIndex(batchStatus.value?.phase)
+  if (i < current) return 'done'
+  if (i === current) return 'active'
+  return 'pending'
 }
 
 function phaseLabel(phase) {
-  return PHASE_LABELS[phase] ?? 'Memproses...'
+  if (phase === 'needs_confirmation') return 'Menunggu konfirmasi...'
+  if (phase === 'failed') return 'Gagal'
+  return PHASE_STEPS.find(s => s.key === phase)?.label ?? 'Memproses...'
 }
+
+// Progress bar: pakai persentase baris nyata saat fase parsing (kalau sudah
+// tahu total_rows), selain itu diaproksimasi dari posisi tahap saat ini agar
+// dialog tidak terasa "diam" di antara tahap-tahap yang cepat.
+const progressPercent = computed(() => {
+  const status = batchStatus.value
+  if (!status) return null
+  if (status.phase === 'parsing' && status.total_rows) {
+    return Math.min(100, Math.round((status.processed_rows / status.total_rows) * 100))
+  }
+  const idx = phaseIndex(status.phase)
+  return Math.round((idx / (PHASE_STEPS.length - 1)) * 100)
+})
 
 const headers = [
   { title: 'No',           key: 'no',          sortable: false, width: '50px' },
@@ -734,5 +801,65 @@ onBeforeUnmount(() => {
 .dropzone--active {
   border-color: rgb(var(--v-theme-primary));
   background: rgba(var(--v-theme-primary), 0.05);
+}
+
+.import-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 0;
+}
+.import-step {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(var(--v-theme-on-surface), 0.08);
+  color: rgba(var(--v-theme-on-surface), 0.4);
+  transition: background-color 0.35s ease, color 0.35s ease, transform 0.35s ease;
+}
+.import-step--done {
+  background: rgb(var(--v-theme-success));
+  color: rgb(var(--v-theme-on-success));
+}
+.import-step--active {
+  background: rgb(var(--v-theme-primary));
+  color: rgb(var(--v-theme-on-primary));
+  transform: scale(1.2);
+  animation: import-pulse 1.6s ease-out infinite;
+}
+.import-connector {
+  flex: 1 1 auto;
+  min-width: 8px;
+  height: 3px;
+  margin: 0 2px;
+  border-radius: 2px;
+  background: rgba(var(--v-theme-on-surface), 0.08);
+  transition: background-color 0.5s ease;
+}
+.import-connector--filled {
+  background: rgb(var(--v-theme-success));
+}
+
+@keyframes import-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(var(--v-theme-primary), 0.45); }
+  70% { box-shadow: 0 0 0 9px rgba(var(--v-theme-primary), 0); }
+  100% { box-shadow: 0 0 0 0 rgba(var(--v-theme-primary), 0); }
+}
+
+.import-fade-enter-active,
+.import-fade-leave-active {
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.import-fade-enter-from {
+  opacity: 0;
+  transform: translateY(4px);
+}
+.import-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
 }
 </style>
