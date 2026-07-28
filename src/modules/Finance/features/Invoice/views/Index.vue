@@ -180,8 +180,10 @@
         show-select
         mobile-cards
         mobile-menu-select
+        interactive-rows
         column-resize-key="finance-invoice-b2b"
         @load-more="loadMoreB2B"
+        @row-activate="onRowActivate"
       >
         <template #mobile-card="{ item, selected, toggle }">
           <div class="d-flex align-center justify-space-between gap-2 mb-2">
@@ -500,8 +502,10 @@
         show-select
         mobile-cards
         mobile-menu-select
+        interactive-rows
         column-resize-key="finance-invoice-b2c"
         @load-more="loadMoreB2C"
+        @row-activate="onRowActivate"
       >
         <template #mobile-card="{ item, selected, toggle }">
           <div class="d-flex align-center justify-space-between gap-2 mb-2">
@@ -1041,6 +1045,10 @@ async function exportExcel() {
     closeAlert({ onlyLoading: true })
   }
 }
+function onRowActivate({ item }) {
+  router.push({ name: 'finance-invoice-show', params: { id: item.id } })
+}
+
 function confirmDelete(inv) { selectedInvoice.value = inv; deleteError.value = ''; showDelete.value = true }
 
 function openCatatBayar(item) {

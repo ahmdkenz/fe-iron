@@ -132,8 +132,9 @@
         :per-page="meta.per_page"
         :page="meta.current_page"
         :row-props="getRowProps"
+        interactive-rows
         @update:options="onTableOptions"
-        @click:row="(_, { item }) => openDetail(item)"
+        @row-activate="({ item }) => openDetail(item)"
       >
         <template #item.no="{ index }">
           {{ (meta.current_page - 1) * meta.per_page + index + 1 }}
@@ -613,10 +614,10 @@ function statusRekonColor(status) {
 }
 
 function getRowProps({ item }) {
-  if (item.status_rekonsiliasi === 'UNMATCHED') return { class: 'jurnal-row--unmatched cursor-pointer' }
-  if (!item.status_rekonsiliasi) return { class: 'jurnal-row--belum cursor-pointer' }
-  
-  return { class: 'cursor-pointer' }
+  if (item.status_rekonsiliasi === 'UNMATCHED') return { class: 'jurnal-row--unmatched' }
+  if (!item.status_rekonsiliasi) return { class: 'jurnal-row--belum' }
+
+  return {}
 }
 
 let controller = null
@@ -703,8 +704,5 @@ onBeforeUnmount(() => controller?.abort())
 }
 .jurnal-row--belum :deep(td) {
   background-color: rgba(var(--v-theme-warning), 0.06) !important;
-}
-.cursor-pointer {
-  cursor: pointer;
 }
 </style>

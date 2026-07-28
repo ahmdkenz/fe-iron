@@ -260,9 +260,17 @@ const mobileVirtualHeight = computed(() => {
 // Kosong (belum pernah loading) => natural height (cuma header).
 // Loading pertama kali (belum ada items) => tinggi kecil sekadar muat spinner,
 // bukan ikut virtualHeight penuh yang bikin box kosong raksasa.
+//
+// Estimasi header+baris dipakai sebagai perkiraan awal/fallback (dengan buffer
+// scrollbar horizontal supaya baris terakhir tidak sampai terpotong), lalu
+// disempurnakan oleh measureContentHeight() yang mengukur tinggi asli dari DOM
+// (termasuk tinggi scrollbar horizontal yang sebenarnya di browser/OS user).
 const LOADING_PLACEHOLDER_HEIGHT = 160
 const VIRTUAL_HEADER_HEIGHT = 56
 const VIRTUAL_ROW_HEIGHT = 52
+const VIRTUAL_SCROLLBAR_FALLBACK_BUFFER = 18
+
+const measuredContentHeight = ref(null)
 
 const desktopVirtualHeight = computed(() => {
   if (!props.items.length) return props.loading ? LOADING_PLACEHOLDER_HEIGHT : undefined
@@ -270,7 +278,10 @@ const desktopVirtualHeight = computed(() => {
   const configuredHeight = typeof props.virtualHeight === 'number'
     ? props.virtualHeight
     : Number.parseFloat(props.virtualHeight) || 600
-  const contentHeight = VIRTUAL_HEADER_HEIGHT + props.items.length * VIRTUAL_ROW_HEIGHT
+  const estimatedHeight = VIRTUAL_HEADER_HEIGHT
+    + props.items.length * VIRTUAL_ROW_HEIGHT
+    + VIRTUAL_SCROLLBAR_FALLBACK_BUFFER
+  const contentHeight = measuredContentHeight.value ?? estimatedHeight
 
   return Math.min(configuredHeight, contentHeight)
 })
@@ -362,6 +373,7 @@ watch(resizeStorageKey, key => {
   storedWidths.value = readStoredWidths(key)
   measuredWidths.value = {}
   layoutLocked.value = false
+  measuredContentHeight.value = null
   nextTick(measureNaturalWidths)
 }, { immediate: true })
 
@@ -374,7 +386,14 @@ watch(
     if (loadingNow || length === 0) return
     if (prev && prev[0] === loadingNow && prev[1] === length) return
 
-    nextTick(measureNaturalWidths)
+    // Ukuran lama bisa terlalu kecil untuk jumlah baris yang baru (mis. setelah
+    // "Muat lagi") - lepas dulu supaya sementara balik ke estimasi (yang sudah
+    // punya buffer aman), sampai pengukuran ulang selesai.
+    measuredContentHeight.value = null
+    nextTick(() => {
+      measureNaturalWidths()
+      nextTick(measureContentHeight)
+    })
   },
   { immediate: true },
 )
@@ -399,6 +418,23 @@ function measureNaturalWidths() {
 
   if (changed) measuredWidths.value = next
   layoutLocked.value = true
+}
+
+// Mengukur tinggi konten tabel yang sebenarnya (thead + tbody) langsung dari
+// DOM, plus tinggi scrollbar horizontal nyata di browser/OS user (kalau ada) -
+// supaya baris terakhir tidak terpotong akibat estimasi yang meleset.
+function measureContentHeight() {
+  if (!props.items.length) return
+
+  const wrapper = rootEl.value?.querySelector('.base-table > .v-table__wrapper')
+  const table = wrapper?.querySelector(':scope > table')
+  if (!wrapper || !table) return
+
+  const naturalHeight = table.getBoundingClientRect().height
+  const scrollbarHeight = Math.max(0, wrapper.offsetHeight - wrapper.clientHeight)
+  const next = Math.ceil(naturalHeight + scrollbarHeight)
+
+  if (next > 0) measuredContentHeight.value = next
 }
 
 function readStoredWidths(key) {

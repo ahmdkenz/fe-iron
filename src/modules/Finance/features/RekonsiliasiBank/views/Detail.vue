@@ -224,6 +224,13 @@
             <div class="font-weight-medium">
               {{ item.pembayaran.no_referensi || '-' }}
             </div>
+            <RouterLink
+              v-if="item.pembayaran.invoice_id"
+              :to="{ name: 'finance-invoice-show', params: { id: item.pembayaran.invoice_id } }"
+              class="text-primary text-decoration-none"
+            >
+              {{ item.pembayaran.no_invoice }}
+            </RouterLink>
             <div class="text-medium-emphasis">
               {{ formatDate(item.pembayaran.tanggal_pembayaran) }}
             </div>

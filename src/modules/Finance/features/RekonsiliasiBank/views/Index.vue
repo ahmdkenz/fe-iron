@@ -40,7 +40,9 @@
         :loading-more="loadingMore"
         :loaded-count="items.length"
         item-value="id"
+        interactive-rows
         @load-more="loadMore"
+        @row-activate="({ item }) => selectReport(item)"
       >
         <template #item.no="{ index }">
           {{ index + 1 }}

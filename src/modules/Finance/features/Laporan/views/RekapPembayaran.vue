@@ -203,7 +203,9 @@
         :loading="loading"
         :per-page="perPage"
         :page="page"
+        interactive-rows
         @update:options="onTableOptions"
+        @row-activate="onRowActivate"
       >
         <template #item.no="{ index }">
           {{ (page - 1) * perPage + index + 1 }}
@@ -212,10 +214,32 @@
           <span class="font-weight-medium">{{ formatDate(item.tanggal) }}</span>
         </template>
         <template #item.invoice="{ item }">
-          <span class="text-caption font-weight-medium">{{ item.invoice ?? '-' }}</span>
+          <RouterLink
+            v-if="item.invoice_id"
+            :to="{ name: 'finance-invoice-show', params: { id: item.invoice_id } }"
+            class="text-primary text-decoration-none text-caption font-weight-medium"
+            @click.stop
+          >
+            {{ item.invoice ?? '-' }}
+          </RouterLink>
+          <span
+            v-else
+            class="text-caption font-weight-medium"
+          >{{ item.invoice ?? '-' }}</span>
         </template>
         <template #item.ref_payment="{ item }">
-          <span class="text-caption">{{ item.ref_payment ?? '-' }}</span>
+          <RouterLink
+            v-if="item.invoice_id"
+            :to="{ name: 'finance-invoice-show', params: { id: item.invoice_id } }"
+            class="text-primary text-decoration-none text-caption"
+            @click.stop
+          >
+            {{ item.ref_payment ?? '-' }}
+          </RouterLink>
+          <span
+            v-else
+            class="text-caption"
+          >{{ item.ref_payment ?? '-' }}</span>
         </template>
         <template #item.metode="{ item }">
           <VChip
@@ -251,11 +275,13 @@
 
 <script setup>
 import { onMounted, reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { useCrud } from '@/composables/useCrud'
 import { useLazyFetchAll } from '@/composables/useLazyFetchAll'
 import { useFormatter } from '@/composables/useFormatter'
 import api from '@/utils/axios'
 
+const router = useRouter()
 const { formatCurrency, formatDate } = useFormatter()
 const { items: klienList, loading: klienLoading, fetchAll: fetchKlien } = useCrud('/finance/klien-ar')
 const { ensureLoaded: ensureKlienLoaded } = useLazyFetchAll(fetchKlien)
@@ -300,6 +326,12 @@ const metodeOptions = [
 
 function metodeColor(metode) {
   return { TRANSFER: 'info', CASH: 'success', GIRO: 'warning' }[metode] ?? 'default'
+}
+
+function onRowActivate({ item }) {
+  if (!item.invoice_id) return
+
+  router.push({ name: 'finance-invoice-show', params: { id: item.invoice_id } })
 }
 
 async function doFetch({ resetPage = true } = {}) {

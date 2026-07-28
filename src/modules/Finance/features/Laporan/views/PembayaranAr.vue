@@ -120,8 +120,9 @@
         item-value="id"
         hover
         wrap-text
+        interactive-rows
         @update:options="onTableOptions"
-        @click:row="onRowClick"
+        @row-activate="onRowActivate"
       >
         <template #item.no="{ index }">
           {{ (meta.current_page - 1) * meta.per_page + index + 1 }}
@@ -130,6 +131,7 @@
           <RouterLink
             :to="{ name: 'finance-invoice-show', params: { id: item.invoice_id } }"
             class="text-primary text-decoration-none"
+            @click.stop
           >
             {{ item.no_invoice }}
           </RouterLink>
@@ -332,7 +334,7 @@ function onSegmentChange(val) {
   doFetch()
 }
 
-function onRowClick(_event, { item } = {}) {
+function onRowActivate({ item } = {}) {
   const key = item?.id
   if (key == null) return
 
