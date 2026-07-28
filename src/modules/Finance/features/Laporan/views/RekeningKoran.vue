@@ -10,6 +10,16 @@
       ]"
     >
       <VBtn
+        color="primary"
+        variant="flat"
+        prepend-icon="ri-download-2-line"
+        :loading="exporting"
+        class="me-2"
+        @click="doExport"
+      >
+        Export
+      </VBtn>
+      <VBtn
         variant="text"
         prepend-icon="ri-arrow-left-line"
         :to="{ name: 'finance-laporan' }"
@@ -385,6 +395,7 @@ import { useLazyFetchAll } from '@/composables/useLazyFetchAll'
 import { useFormatter } from '@/composables/useFormatter'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import api from '@/utils/axios'
+import { readBlobError } from '@/utils/readBlobError'
 
 const { formatCurrency } = useFormatter()
 const { showError } = useSweetAlert()
@@ -406,8 +417,9 @@ async function fetchPicAr() {
 }
 const { ensureLoaded: ensurePicArLoaded } = useLazyFetchAll(fetchPicAr)
 
-const loading = ref(false)
-const rows    = ref([])
+const loading   = ref(false)
+const exporting = ref(false)
+const rows      = ref([])
 
 const summary = reactive({
   total_matched: 0,
@@ -491,6 +503,36 @@ function onTableOptions({ page, itemsPerPage }) {
   meta.current_page = page
   meta.per_page     = itemsPerPage
   doFetch(false)
+}
+
+async function doExport() {
+  exporting.value = true
+  try {
+    // Export mengikuti filter yang aktif, bukan halaman tabel yang terlihat —
+    // parameter paginasi sengaja tidak dikirim.
+    const { page, per_page: perPage, ...exportParams } = buildParams()
+
+    const response = await api.get('/finance/rekening-koran/export-excel', {
+      params: exportParams,
+      responseType: 'blob',
+      timeout: 300000,
+    })
+
+    const url = URL.createObjectURL(new Blob([response.data], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    }))
+
+    const link = document.createElement('a')
+
+    link.href = url
+    link.download = `rekening-koran-${filters.periode_awal ?? 'semua'}-sd-${filters.periode_akhir ?? 'semua'}.xlsx`
+    link.click()
+    URL.revokeObjectURL(url)
+  } catch (err) {
+    showError({ text: await readBlobError(err, 'Gagal mengekspor rekening koran.') })
+  } finally {
+    exporting.value = false
+  }
 }
 
 function statusRekonClass(status) {
