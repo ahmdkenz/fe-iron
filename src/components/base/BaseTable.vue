@@ -17,6 +17,7 @@
       :items-per-page-options="itemsPerPageOptions"
       :page="page"
       :item-value="itemValue"
+      :row-props="mergedRowProps"
       return-object
       :model-value="selected"
       @update:options="handleOptionsUpdate"
@@ -46,6 +47,7 @@
       :height="desktopVirtualHeight"
       fixed-header
       :item-value="itemValue"
+      :row-props="mergedRowProps"
       return-object
       :model-value="selected"
       @update:model-value="v => emit('update:selected', v)"
@@ -233,9 +235,11 @@ const props = defineProps({
   loadingMore: { type: Boolean, default: false },
   loadedCount: { type: Number, default: null },
   virtualHeight: { type: [Number, String], default: 600 },
+  interactiveRows: { type: Boolean, default: false },
+  rowProps: { type: [Function, Object], default: null },
 })
 
-const emit = defineEmits(['update:options', 'update:selected', 'load-more'])
+const emit = defineEmits(['update:options', 'update:selected', 'load-more', 'row-activate'])
 
 defineOptions({ inheritAttrs: false })
 
@@ -251,17 +255,24 @@ const mobileVirtualHeight = computed(() => {
   return `min(70vh, ${height}px)`
 })
 
-// Tinggi tetap (virtualHeight) hanya dipakai saat benar-benar ada baris untuk
-// di-scroll. Kosong (belum pernah loading) => natural height (cuma header).
+// Tinggi virtual mengikuti jumlah baris yang benar-benar ada, dibatasi oleh
+// virtualHeight sebagai maksimum (bukan dipaksakan sebagai tinggi tetap).
+// Kosong (belum pernah loading) => natural height (cuma header).
 // Loading pertama kali (belum ada items) => tinggi kecil sekadar muat spinner,
 // bukan ikut virtualHeight penuh yang bikin box kosong raksasa.
 const LOADING_PLACEHOLDER_HEIGHT = 160
+const VIRTUAL_HEADER_HEIGHT = 56
+const VIRTUAL_ROW_HEIGHT = 52
 
 const desktopVirtualHeight = computed(() => {
-  if (props.items.length) return props.virtualHeight
-  if (props.loading) return LOADING_PLACEHOLDER_HEIGHT
+  if (!props.items.length) return props.loading ? LOADING_PLACEHOLDER_HEIGHT : undefined
 
-  return undefined
+  const configuredHeight = typeof props.virtualHeight === 'number'
+    ? props.virtualHeight
+    : Number.parseFloat(props.virtualHeight) || 600
+  const contentHeight = VIRTUAL_HEADER_HEIGHT + props.items.length * VIRTUAL_ROW_HEIGHT
+
+  return Math.min(configuredHeight, contentHeight)
 })
 
 // ─── Safe pagination defaults ──────────────────────────────────────────────
@@ -286,6 +297,33 @@ function toggleItemSelected(item) {
   const next = idx === -1 ? [...current, item] : current.filter((_, i) => i !== idx)
 
   emit('update:selected', next)
+}
+
+// ─── Interactive rows ───────────────────────────────────────────────────
+// Opt-in (interactive-rows) row click, digabung dengan row-props milik
+// halaman pemanggil (mis. class status baris) lewat Vuetify row-props.
+// Target di dalam baris yang sudah punya aksi sendiri (link, tombol, form
+// control, atau elemen ber-data-row-action-stop) tidak boleh ikut memicu
+// row-activate — supaya klik "Cetak"/"Hapus"/checkbox dsb tidak dianggap
+// klik baris.
+const INTERACTIVE_TARGET_SELECTOR = 'a, button, input, select, textarea, [role="button"], [data-row-action-stop]'
+
+function onInteractiveRowClick(event, ctx) {
+  if (event.target.closest(INTERACTIVE_TARGET_SELECTOR)) return
+
+  emit('row-activate', { item: ctx.item, index: ctx.index, event })
+}
+
+function mergedRowProps(ctx) {
+  const base = typeof props.rowProps === 'function' ? (props.rowProps(ctx) ?? {}) : (props.rowProps ?? {})
+
+  if (!props.interactiveRows) return base
+
+  return {
+    ...base,
+    class: [base.class, 'base-table__row--interactive'].filter(Boolean),
+    onClick: event => onInteractiveRowClick(event, ctx),
+  }
 }
 
 function handleOptionsUpdate(options) {
@@ -635,6 +673,10 @@ onBeforeUnmount(() => {
 .base-table :deep(th.base-table__th--resizable:hover::after),
 .base-table :deep(th.base-table__th--resizable:active::after) {
   background-color: rgba(var(--v-theme-on-surface), 0.16);
+}
+
+.base-table :deep(tr.base-table__row--interactive) {
+  cursor: pointer;
 }
 
 .base-table-mobile-list {
