@@ -281,8 +281,9 @@
         item-value="vendor_id"
         hover
         wrap-text
+        interactive-rows
         @update:options="onTableOptions"
-        @click:row="onRowClick"
+        @row-activate="onRowClick"
       >
         <template #item.no="{ index }">
           <span class="text-medium-emphasis">{{ (page - 1) * perPage + index + 1 }}</span>
@@ -493,7 +494,7 @@ function onTableOptions({ page: p, itemsPerPage }) {
   fetchReport({ resetPage: false })
 }
 
-function onRowClick(_event, { item } = {}) {
+function onRowClick({ item } = {}) {
   const key = item?.vendor_id
   if (key == null) return
 

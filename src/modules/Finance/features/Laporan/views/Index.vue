@@ -94,15 +94,17 @@
           >
             <VCard
               flat
+              link
               class="report-card report-card--featured"
               :style="accentStyle(report.color)"
+              @click="goTo(report.route)"
             >
               <VCardText class="d-flex align-start gap-3">
                 <VAvatar
                   :color="report.color"
                   variant="tonal"
                   size="52"
-                  class="flex-shrink-0 rounded-lg"
+                  class="flex-shrink-0"
                 >
                   <VIcon
                     :icon="report.icon"
@@ -130,6 +132,7 @@
                     size="small"
                     append-icon="ri-arrow-right-line"
                     :to="{ name: report.route }"
+                    @click.stop
                   >
                     Lihat laporan
                   </VBtn>
@@ -177,33 +180,36 @@
           >
             <VCard
               flat
+              link
               height="100%"
               class="report-card"
               :style="accentStyle(report.color)"
+              @click="goTo(report.route)"
             >
               <VCardText class="d-flex flex-column h-100">
                 <div class="d-flex align-start justify-space-between gap-2 mb-2">
                   <VAvatar
                     :color="report.color"
                     variant="tonal"
-                    size="40"
-                    class="rounded-lg"
+                    size="44"
                   >
                     <VIcon
                       :icon="report.icon"
-                      size="20"
+                      size="22"
                     />
                   </VAvatar>
                   <VBtn
                     icon
-                    variant="text"
-                    size="small"
-                    :color="report.color"
+                    size="32"
+                    variant="outlined"
+                    rounded="lg"
+                    class="card-link-btn"
                     :to="{ name: report.route }"
+                    @click.stop
                   >
                     <VIcon
                       icon="ri-arrow-right-up-line"
-                      size="18"
+                      size="16"
                     />
                   </VBtn>
                 </div>
@@ -218,8 +224,8 @@
                     v-for="tag in report.tags"
                     :key="tag"
                     size="x-small"
-                    variant="outlined"
-                    label
+                    variant="tonal"
+                    class="tag-pill"
                   >
                     {{ tag }}
                   </VChip>
@@ -235,9 +241,11 @@
 
 <script setup>
 import { computed, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.store'
 
 const authStore = useAuthStore()
+const router = useRouter()
 
 // Laporan global lintas PIC (komparatif/rekening perusahaan) — disembunyikan
 // dari PIC AR murni, yang hanya boleh melihat laporan operasional miliknya sendiri.
@@ -383,8 +391,15 @@ function resetFilters() {
   activeGroup.value = 'all'
 }
 
+function goTo(routeName) {
+  router.push({ name: routeName })
+}
+
 function accentStyle(color) {
-  return { borderInlineStartColor: `rgb(var(--v-theme-${color}))` }
+  return {
+    borderInlineStartColor: `rgb(var(--v-theme-${color}))`,
+    '--card-accent': `var(--v-theme-${color})`,
+  }
 }
 </script>
 
@@ -411,18 +426,35 @@ function accentStyle(color) {
 
 .report-card {
   border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
-  border-inline-start: 3px solid rgba(var(--v-theme-on-surface), 0.08);
-  border-radius: 8px;
-  transition: border-color 0.15s ease, transform 0.15s ease;
+  border-inline-start: 4px solid rgba(var(--card-accent), 0.5);
+  border-radius: 12px;
+  background-image: linear-gradient(135deg, rgba(var(--card-accent), 0.1) 0%, transparent 55%);
+  cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .report-card:hover {
   border-color: rgba(var(--v-theme-on-surface), 0.18);
+  border-inline-start-color: rgba(var(--card-accent), 0.9);
   transform: translateY(-2px);
+  box-shadow: 0 12px 24px -12px rgba(0, 0, 0, 0.4);
+}
+
+.report-card:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-primary));
+  outline-offset: 2px;
 }
 
 .report-card--featured {
   height: 100%;
+}
+
+.card-link-btn {
+  border-color: rgba(var(--v-theme-on-surface), 0.16) !important;
+}
+
+.tag-pill {
+  border-radius: 999px;
 }
 
 @media (max-width: 599px) {

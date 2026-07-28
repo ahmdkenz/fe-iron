@@ -202,8 +202,9 @@
         item-value="klien_id"
         hover
         wrap-text
+        interactive-rows
         @update:options="onTableOptions"
-        @click:row="onRowClick"
+        @row-activate="onRowClick"
       >
         <template #item.no="{ index }">
           {{ (page - 1) * perPage + index + 1 }}
@@ -448,7 +449,7 @@ function segmentLabel(value) {
   return value === 'RESTO' ? 'B2C' : value === 'PT' ? 'B2B' : value ?? '-'
 }
 
-function onRowClick(_event, { item } = {}) {
+function onRowClick({ item } = {}) {
   const key = item?.klien_id
   if (key == null) return
 

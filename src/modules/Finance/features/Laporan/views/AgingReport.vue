@@ -176,8 +176,9 @@
         show-expand
         item-value="klien_id"
         hover
+        interactive-rows
         @load-more="loadMore"
-        @click:row="onRowClick"
+        @row-activate="onRowClick"
       >
         <template #item.no="{ index }">
           {{ index + 1 }}
@@ -415,7 +416,7 @@ function resetBucket() {
 }
 
 // Klik baris untuk toggle expand detail invoice (ikon panah tetap berfungsi sebagai fallback).
-function onRowClick(_event, { item } = {}) {
+function onRowClick({ item } = {}) {
   const key = item?.klien_id
   if (key == null) return
 

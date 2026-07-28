@@ -188,8 +188,9 @@
         item-value="vendor_id"
         hover
         wrap-text
+        interactive-rows
         @load-more="loadMore"
-        @click:row="onRowClick"
+        @row-activate="onRowClick"
       >
         <template #item.no="{ index }">
           <span class="text-medium-emphasis">{{ index + 1 }}</span>
@@ -407,7 +408,7 @@ function buildParams() {
   return params
 }
 
-function onRowClick(_event, { item } = {}) {
+function onRowClick({ item } = {}) {
   const key = item?.vendor_id
   if (key == null) return
 
