@@ -214,50 +214,143 @@
       </VCard>
     </VDialog>
 
-    <!-- Dialog Konfirmasi Duplikat Upload -->
+    <!-- Dialog Progress Import (async, persistent — polling status batch) -->
     <VDialog
-      v-model="conflictDialog"
-      max-width="440"
+      v-model="progressDialog"
+      max-width="480"
+      persistent
+    >
+      <VCard>
+        <VCardTitle class="pa-4">
+          Import Rekening Koran Bank
+        </VCardTitle>
+        <VDivider />
+        <VCardText class="pt-4">
+          <template v-if="batchStatus?.status === 'failed'">
+            <VAlert
+              type="error"
+              density="compact"
+              variant="tonal"
+            >
+              {{ batchStatus.message || 'Import gagal.' }}
+            </VAlert>
+            <div
+              v-if="batchStatus.errors?.length"
+              class="mt-3"
+            >
+              <div class="text-caption text-medium-emphasis mb-1">
+                Baris bermasalah ({{ batchStatus.error_rows }} total{{ batchStatus.errors.length < batchStatus.error_rows ? `, ditampilkan ${batchStatus.errors.length}` : '' }}):
+              </div>
+              <div style="max-height: 240px; overflow-y: auto;">
+                <VTable density="compact">
+                  <thead>
+                    <tr>
+                      <th>Baris</th>
+                      <th>Pesan</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      v-for="(e, i) in batchStatus.errors"
+                      :key="i"
+                    >
+                      <td>{{ e.row }}</td>
+                      <td>{{ e.message }}</td>
+                    </tr>
+                  </tbody>
+                </VTable>
+              </div>
+            </div>
+          </template>
+          <template v-else>
+            <div class="d-flex align-center gap-3">
+              <VProgressCircular
+                indeterminate
+                color="primary"
+                size="24"
+              />
+              <span>{{ phaseLabel(batchStatus?.phase) }}</span>
+            </div>
+            <div
+              v-if="batchStatus?.total_rows"
+              class="text-caption text-medium-emphasis mt-2"
+            >
+              {{ batchStatus.processed_rows }} / {{ batchStatus.total_rows }} baris diproses
+            </div>
+          </template>
+        </VCardText>
+        <VCardActions class="justify-end pa-4 gap-2">
+          <AppActionButton
+            v-if="batchStatus?.status === 'failed'"
+            action="custom"
+            @click="closeProgressDialog"
+          >
+            Tutup
+          </AppActionButton>
+        </VCardActions>
+      </VCard>
+    </VDialog>
+
+    <!-- Dialog Konfirmasi Periode Bertumpang Tindih -->
+    <VDialog
+      v-model="overlapDialog"
+      max-width="560"
       persistent
     >
       <VCard>
         <VCardTitle class="pa-4 text-warning">
-          Rekening Koran Sudah Diupload
+          Periode Bertumpang Tindih
         </VCardTitle>
         <VDivider />
-        <VCardText
-          v-if="conflictData"
-          class="pt-4"
-        >
+        <VCardText class="pt-4">
           <p>
-            File <strong>{{ conflictData.nama_file }}</strong> periode
-            <strong>{{ conflictData.periode_awal }} – {{ conflictData.periode_akhir }}</strong>
-            sudah diupload sebelumnya oleh <strong>{{ conflictData.uploaded_by }}</strong>.
+            File ini bertumpang tindih dengan {{ batchStatus?.overlaps?.length ?? 0 }} data yang sudah diupload:
           </p>
-          <p class="mt-2 text-body-2">
-            {{ conflictData.total_transaksi }} transaksi
-            ({{ conflictData.jumlah_matched }} matched,
-            {{ conflictData.jumlah_unmatched }} unmatched).
-          </p>
+          <div style="max-height: 240px; overflow-y: auto;">
+            <VTable
+              density="compact"
+              class="mt-2"
+            >
+              <thead>
+                <tr>
+                  <th>Periode</th>
+                  <th>Total Transaksi</th>
+                  <th>Matched</th>
+                  <th>Unmatched</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="o in batchStatus?.overlaps"
+                  :key="o.id"
+                >
+                  <td>{{ o.periode_awal }} — {{ o.periode_akhir }}</td>
+                  <td>{{ o.total_transaksi }}</td>
+                  <td>{{ o.jumlah_matched }}</td>
+                  <td>{{ o.jumlah_unmatched }}</td>
+                </tr>
+              </tbody>
+            </VTable>
+          </div>
           <VAlert
             type="warning"
             density="compact"
             variant="tonal"
             class="mt-3"
           >
-            Jika diganti, semua hasil matching manual akan hilang permanen.
+            Jika dilanjutkan, semua data periode yang tumpang tindih (termasuk hasil matching manual) akan dihapus permanen dan digantikan file baru.
           </VAlert>
         </VCardText>
         <VCardActions class="justify-end pa-4 gap-2">
           <AppActionButton
             action="batalkan"
-            @click="conflictDialog = false"
+            @click="overlapDialog = false"
           />
           <AppActionButton
             action="custom"
             color="warning"
-            :loading="uploading"
-            @click="doUpload(true)"
+            :loading="confirming"
+            @click="confirmReplace"
           >
             Ganti dengan File Baru
           </AppActionButton>
@@ -325,8 +418,30 @@ const deleteDialog   = ref(false)
 const deleteTarget   = ref(null)
 const deleting       = ref(false)
 
-const conflictDialog = ref(false)
-const conflictData   = ref(null)
+// ── Progress import async (upload -> queue -> polling) ──────────────────
+const progressDialog = ref(false)
+const batchId         = ref(null)
+const batchStatus     = ref(null)
+let pollTimer = null
+
+const overlapDialog = ref(false)
+const confirming    = ref(false)
+
+const PHASE_LABELS = {
+  queued:             'Menunggu diproses...',
+  parsing:            'Membaca file rekening koran...',
+  validating:         'Memvalidasi data transaksi...',
+  checking_overlap:   'Memeriksa duplikasi periode...',
+  saving:             'Menyimpan data transaksi...',
+  auto_matching:      'Mencocokkan otomatis dengan pembayaran...',
+  completed:          'Selesai',
+  failed:             'Gagal',
+  needs_confirmation: 'Menunggu konfirmasi',
+}
+
+function phaseLabel(phase) {
+  return PHASE_LABELS[phase] ?? 'Memproses...'
+}
 
 const headers = [
   { title: 'No',           key: 'no',          sortable: false, width: '50px' },
@@ -358,28 +473,95 @@ function closeDialog() {
   if (fileInput.value) fileInput.value.value = ''
 }
 
-async function doUpload(force = false) {
+async function doUpload() {
   uploadError.value = ''
   uploading.value   = true
   try {
     const fd = new FormData()
 
     fd.append('file', form.file)
-    if (force) fd.append('force', '1')
-    await api.post('/finance/rekonsiliasi-bank/upload', fd)
+    const res = await api.post('/finance/rekonsiliasi-bank/upload', fd)
+    batchId.value = res.data?.data?.batch_id ?? null
     closeDialog()
-    conflictDialog.value = false
-    reset()
-  } catch (err) {
-    if (err?.response?.status === 409) {
-      conflictData.value   = err.response.data?.errors?.existing ?? null
-      conflictDialog.value = true
-    } else {
-      uploadError.value = err?.response?.data?.message ?? 'Upload gagal. Pastikan format file sesuai.'
+
+    if (batchId.value) {
+      openProgressDialog()
+      poll()
     }
+  } catch (err) {
+    uploadError.value = err?.response?.data?.message ?? 'Upload gagal. Pastikan format file sesuai.'
   } finally {
     uploading.value = false
   }
+}
+
+function openProgressDialog() {
+  batchStatus.value  = { status: 'queued', phase: 'queued' }
+  progressDialog.value = true
+}
+
+function poll() {
+  clearTimeout(pollTimer)
+  pollTimer = setTimeout(async () => {
+    try {
+      const res  = await api.get(`/finance/rekonsiliasi-bank/imports/${batchId.value}/status`)
+      const data = res.data?.data
+
+      if (data) batchStatus.value = data
+
+      if (data?.status === 'completed') {
+        onImportCompleted(data)
+        return
+      }
+      if (data?.status === 'needs_confirmation') {
+        onImportNeedsConfirmation()
+        return
+      }
+      if (data?.status === 'failed') {
+        return // dialog progress tetap terbuka menampilkan message + errors
+      }
+
+      poll()
+    } catch {
+      batchStatus.value = { status: 'failed', phase: 'failed', message: 'Gagal memuat status import.' }
+    }
+  }, 2500)
+}
+
+function onImportCompleted(data) {
+  progressDialog.value = false
+  batchId.value = null
+  reset()
+  if (data.bank_statement_id) selectedId.value = data.bank_statement_id
+}
+
+function onImportNeedsConfirmation() {
+  progressDialog.value = false
+  overlapDialog.value  = true
+}
+
+async function confirmReplace() {
+  confirming.value = true
+  try {
+    await api.post(`/finance/rekonsiliasi-bank/imports/${batchId.value}/confirm-replace`)
+    overlapDialog.value = false
+    openProgressDialog()
+    poll()
+  } catch (err) {
+    overlapDialog.value = false
+    batchStatus.value = {
+      status: 'failed', phase: 'failed',
+      message: err?.response?.data?.message ?? 'Gagal melanjutkan import.',
+    }
+    progressDialog.value = true
+  } finally {
+    confirming.value = false
+  }
+}
+
+function closeProgressDialog() {
+  progressDialog.value = false
+  batchId.value = null
 }
 
 async function doDownloadTemplate() {
@@ -531,7 +713,10 @@ async function doDelete() {
 }
 
 onMounted(reset)
-onBeforeUnmount(abort)
+onBeforeUnmount(() => {
+  clearTimeout(pollTimer)
+  abort()
+})
 </script>
 
 <style scoped>
