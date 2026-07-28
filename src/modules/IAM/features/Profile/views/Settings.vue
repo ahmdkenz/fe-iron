@@ -369,16 +369,6 @@
               />
             </VCol>
           </VRow>
-
-          <VAlert
-            type="info"
-            variant="tonal"
-            class="mt-3"
-            density="compact"
-            icon="ri-information-line"
-          >
-            Password minimal 8 karakter.
-          </VAlert>
         </VCardText>
 
         <VDivider />
