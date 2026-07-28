@@ -261,10 +261,13 @@ const mobileVirtualHeight = computed(() => {
 // Loading pertama kali (belum ada items) => tinggi kecil sekadar muat spinner,
 // bukan ikut virtualHeight penuh yang bikin box kosong raksasa.
 //
-// Estimasi header+baris dipakai sebagai perkiraan awal/fallback (dengan buffer
-// scrollbar horizontal supaya baris terakhir tidak sampai terpotong), lalu
-// disempurnakan oleh measureContentHeight() yang mengukur tinggi asli dari DOM
-// (termasuk tinggi scrollbar horizontal yang sebenarnya di browser/OS user).
+// Estimasi header+baris dipakai sebagai lantai (floor) minimum (dengan buffer
+// scrollbar horizontal supaya baris terakhir tidak sampai terpotong).
+// measureContentHeight() (tinggi asli dari DOM, termasuk tinggi scrollbar
+// horizontal nyata di browser/OS user) hanya dipakai kalau >= estimasi -
+// mencegah tabel menyusut ke ukuran kecil yang salah saat terukur di tengah
+// transisi virtual-scroll (mis. container masih memakai tinggi kecil sisa
+// state loading sebelumnya).
 const LOADING_PLACEHOLDER_HEIGHT = 160
 const VIRTUAL_HEADER_HEIGHT = 56
 const VIRTUAL_ROW_HEIGHT = 52
@@ -281,7 +284,12 @@ const desktopVirtualHeight = computed(() => {
   const estimatedHeight = VIRTUAL_HEADER_HEIGHT
     + props.items.length * VIRTUAL_ROW_HEIGHT
     + VIRTUAL_SCROLLBAR_FALLBACK_BUFFER
-  const contentHeight = measuredContentHeight.value ?? estimatedHeight
+  // measureContentHeight() bisa sempat mengukur DOM di tengah transisi virtual-scroll
+  // (mis. saat container masih memakai tinggi lama yang kecil dari state loading
+  // sebelumnya), menghasilkan angka yang jauh lebih kecil dari isi sebenarnya.
+  // estimasi dipakai sebagai lantai (floor) supaya tabel tidak pernah menyusut
+  // di bawah perkiraan wajar untuk jumlah baris saat ini.
+  const contentHeight = Math.max(measuredContentHeight.value ?? estimatedHeight, estimatedHeight)
 
   return Math.min(configuredHeight, contentHeight)
 })

@@ -931,10 +931,19 @@ async function loadSummary() {
   const controller = new AbortController()
 
   summaryController = controller
+
+  // KPI mengikuti filter tab yang sedang aktif (segment/tanggal/search), supaya
+  // tidak terlihat bertentangan dengan angka pada tabel yang sedang dilihat.
+  const activeParams = canSeeAll && activeSegmentTab.value === 'b2b' ? paramsB2B : paramsB2C
+
   try {
     const { data } = await api.get('/finance/invoices/summary', {
       params: {
-        ...(!canSeeAll && { karyawan_id: paramsB2C.karyawan_id }),
+        segment: activeParams.segment,
+        search: activeParams.search,
+        tanggal_dari: activeParams.tanggal_dari,
+        tanggal_sampai: activeParams.tanggal_sampai,
+        karyawan_id: activeParams.karyawan_id,
       },
       signal: controller.signal,
     })
@@ -969,10 +978,12 @@ function debouncedFetchB2C() {
 
 function applyDateFiltersB2B() {
   resetB2B(dateFiltersB2B)
+  loadSummary()
 }
 
 function applyDateFiltersB2C() {
   resetB2C(dateFiltersB2C)
+  loadSummary()
 }
 
 function resetFiltersB2B() {
@@ -981,6 +992,7 @@ function resetFiltersB2B() {
   Object.assign(filtersB2B, { search: '' })
   Object.assign(dateFiltersB2B, { tanggal_dari, tanggal_sampai })
   resetB2B({ ...filtersB2B, ...dateFiltersB2B })
+  loadSummary()
 }
 
 function resetFiltersB2C() {
@@ -989,6 +1001,7 @@ function resetFiltersB2C() {
   Object.assign(filtersB2C, { search: '' })
   Object.assign(dateFiltersB2C, { tanggal_dari, tanggal_sampai })
   resetB2C({ ...filtersB2C, ...dateFiltersB2C })
+  loadSummary()
 }
 
 function onSegmentTabChange(tab) {
@@ -997,6 +1010,7 @@ function onSegmentTabChange(tab) {
     b2bLoaded = true
     resetB2B()
   }
+  loadSummary()
 }
 
 function refreshLists() {
