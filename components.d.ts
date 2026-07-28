@@ -44,6 +44,8 @@ declare module 'vue' {
     KoreksiWizardDialog: typeof import('./src/modules/AP/features/EndingBalanceAp/components/KoreksiWizardDialog.vue')['default']
     ManagementIndexShell: typeof import('./src/components/shared/ManagementIndexShell.vue')['default']
     ManagerDashboardSection: typeof import('./src/modules/Finance/features/Dashboard/components/ManagerDashboardSection.vue')['default']
+    MasterDataTab: typeof import('./src/modules/Master/features/MasterData/components/MasterDataTab.vue')['default']
+    MasterInvoiceTab: typeof import('./src/modules/Master/features/MasterData/components/MasterInvoiceTab.vue')['default']
     MatchDialog: typeof import('./src/modules/Finance/features/RekonsiliasiBank/components/MatchDialog.vue')['default']
     MobileCardActions: typeof import('./src/components/shared/MobileCardActions.vue')['default']
     MoreBtn: typeof import('./src/@core/components/MoreBtn.vue')['default']
