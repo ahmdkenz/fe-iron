@@ -117,7 +117,7 @@ export default [
     title: 'Dashboard AP',
     to: { name: 'ap-dashboard' },
     icon: { icon: 'ri-dashboard-line' },
-    roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AP'],
+    roles: ['AP'],
     mobileNav: 'more',
   },
   {

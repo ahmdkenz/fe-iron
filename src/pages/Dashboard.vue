@@ -1,14 +1,10 @@
 <template>
   <PicArDashboardSection v-if="authStore.isArOnly" />
 
-  <ManagerDashboardSection v-else-if="authStore.isManager && !authStore.isAdmin" />
-
-  <SupervisorDashboardSection v-else-if="authStore.isSupervisor && !authStore.isAdmin && !authStore.isManager" />
-
   <div v-else>
     <PageHeader
       title="Overview Dashboard"
-      subtitle="Ringkasan aktivitas bisnis dan finansial perusahaan"
+      subtitle="Ringkasan piutang (AR) dan hutang (AP) perusahaan"
     />
 
     <VAlert
@@ -19,6 +15,14 @@
     >
       {{ error }}
     </VAlert>
+
+    <div class="d-flex align-center text-h6 font-weight-bold mb-4">
+      <VIcon
+        icon="ri-hand-coin-line"
+        class="me-2 text-primary"
+      />
+      Account Receivable (AR)
+    </div>
 
     <!-- Summary Cards -->
     <VRow class="mb-4">
@@ -267,6 +271,18 @@
         </VCard>
       </VCol>
     </VRow>
+
+    <VDivider class="my-6" />
+
+    <div class="d-flex align-center text-h6 font-weight-bold mb-4">
+      <VIcon
+        icon="ri-wallet-3-line"
+        class="me-2 text-primary"
+      />
+      Account Payable (AP)
+    </div>
+
+    <ApDashboardSection />
   </div>
 </template>
 
@@ -280,8 +296,7 @@ import { useFormatter } from '@/composables/useFormatter'
 import api from '@/utils/axios'
 
 const PicArDashboardSection = defineAsyncComponent(() => import('@/modules/Finance/features/Dashboard/components/PicArDashboardSection.vue'))
-const ManagerDashboardSection = defineAsyncComponent(() => import('@/modules/Finance/features/Dashboard/components/ManagerDashboardSection.vue'))
-const SupervisorDashboardSection = defineAsyncComponent(() => import('@/modules/Finance/features/Dashboard/components/SupervisorDashboardSection.vue'))
+const ApDashboardSection = defineAsyncComponent(() => import('@/modules/AP/features/Dashboard/components/ApDashboardSection.vue'))
 
 const authStore = useAuthStore()
 const theme     = useTheme()
@@ -293,12 +308,8 @@ const avatarSize = computed(() => isMobile.value ? 40 : 54)
 const avatarIconSize = computed(() => isMobile.value ? 20 : 30)
 const valueTextClass = computed(() => isMobile.value ? 'text-h6' : 'text-h4')
 
-// Mirrors the template's v-if/v-else-if chain — only this branch fetches/renders the full admin dashboard.
-const showFullDashboard = computed(() => (
-  !authStore.isArOnly
-  && !(authStore.isManager && !authStore.isAdmin)
-  && !(authStore.isSupervisor && !authStore.isAdmin && !authStore.isManager)
-))
+// Mirrors the template's v-if/v-else chain — only this branch fetches/renders the combined AR+AP dashboard.
+const showFullDashboard = computed(() => !authStore.isArOnly)
 
 const compactFormatter = new Intl.NumberFormat('id-ID', {
   notation: 'compact',

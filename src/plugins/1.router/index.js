@@ -58,6 +58,11 @@ router.beforeEach(async (to, _from, next) => {
   if (requiresAuth && isLoggedIn && to.name === 'dashboard' && authStore.isApOnly)
     return next({ name: homeRouteName })
 
+  // ADMIN/MANAGER/SUPERVISOR kini melihat ringkasan AP lewat dashboard gabungan,
+  // jadi halaman Dashboard AP mandiri hanya untuk AP murni.
+  if (requiresAuth && isLoggedIn && to.name === 'ap-dashboard' && !authStore.isApOnly)
+    return next({ name: 'dashboard' })
+
   if (requiresAuth && routeRoles.length > 0 && !routeRoles.some(role => roles.includes(role)))
     return next({ name: homeRouteName })
 

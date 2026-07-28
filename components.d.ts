@@ -7,6 +7,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    ApDashboardSection: typeof import('./src/modules/AP/features/Dashboard/components/ApDashboardSection.vue')['default']
     ApMatchDialog: typeof import('./src/modules/Finance/features/RekonsiliasiBank/components/ApMatchDialog.vue')['default']
     AppActionButton: typeof import('./src/components/base/AppActionButton.vue')['default']
     AppDrawerHeaderSection: typeof import('./src/@core/components/AppDrawerHeaderSection.vue')['default']
@@ -43,7 +44,6 @@ declare module 'vue' {
     KoreksiApprovalDialog: typeof import('./src/modules/AP/features/EndingBalanceAp/components/KoreksiApprovalDialog.vue')['default']
     KoreksiWizardDialog: typeof import('./src/modules/AP/features/EndingBalanceAp/components/KoreksiWizardDialog.vue')['default']
     ManagementIndexShell: typeof import('./src/components/shared/ManagementIndexShell.vue')['default']
-    ManagerDashboardSection: typeof import('./src/modules/Finance/features/Dashboard/components/ManagerDashboardSection.vue')['default']
     MasterDataTab: typeof import('./src/modules/Master/features/MasterData/components/MasterDataTab.vue')['default']
     MasterInvoiceTab: typeof import('./src/modules/Master/features/MasterData/components/MasterInvoiceTab.vue')['default']
     MatchDialog: typeof import('./src/modules/Finance/features/RekonsiliasiBank/components/MatchDialog.vue')['default']
@@ -76,7 +76,6 @@ declare module 'vue' {
     Shz360SyncProgressDialog: typeof import('./src/modules/AP/features/Shz360Import/components/Shz360SyncProgressDialog.vue')['default']
     StatCard: typeof import('./src/components/shared/StatCard.vue')['default']
     StatusChip: typeof import('./src/components/shared/StatusChip.vue')['default']
-    SupervisorDashboardSection: typeof import('./src/modules/Finance/features/Dashboard/components/SupervisorDashboardSection.vue')['default']
     TagihanApItemRow: typeof import('./src/modules/AP/features/TagihanAp/components/TagihanApItemRow.vue')['default']
     TagihanApMultiPickerDialog: typeof import('./src/modules/AP/features/PembayaranAp/components/TagihanApMultiPickerDialog.vue')['default']
     TagihanApPembayaranForm: typeof import('./src/modules/AP/features/TagihanAp/components/TagihanApPembayaranForm.vue')['default']
