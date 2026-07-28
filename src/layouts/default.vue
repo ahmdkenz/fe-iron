@@ -99,22 +99,29 @@ function shouldKeepRouteAlive(route) {
     <AppLoadingIndicator ref="refLoadingIndicator" />
 
     <RouterView v-slot="{ Component, route }">
-      <Suspense
-        :timeout="0"
-        @fallback="isFallbackStateActive = true"
-        @resolve="isFallbackStateActive = false"
+      <Transition
+        name="app-transition-fade-bottom"
+        mode="out-in"
+        appear
       >
-        <KeepAlive v-if="shouldKeepRouteAlive(route)">
+        <Suspense
+          :timeout="0"
+          @fallback="isFallbackStateActive = true"
+          @resolve="isFallbackStateActive = false"
+        >
+          <KeepAlive v-if="shouldKeepRouteAlive(route)">
+            <Component
+              :is="Component"
+              :key="route.name"
+            />
+          </KeepAlive>
           <Component
             :is="Component"
-            :key="route.name"
+            :key="route.fullPath"
+            v-else
           />
-        </KeepAlive>
-        <Component
-          :is="Component"
-          v-else
-        />
-      </Suspense>
+        </Suspense>
+      </Transition>
     </RouterView>
   </Component>
 </template>
