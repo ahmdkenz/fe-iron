@@ -125,7 +125,6 @@ export default [
     to: { name: 'ap-shz360-import-index' },
     icon: { icon: 'ri-refresh-line' },
     roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AP'],
-    mobileNav: 'more',
   },
   {
     title: 'Vendor',
@@ -146,14 +145,12 @@ export default [
     to: { name: 'ap-opening-balance-index' },
     icon: { icon: 'ri-history-line' },
     roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AP'],
-    mobileNav: 'more',
   },
   {
     title: 'Ending Balance',
     to: { name: 'ap-ending-balance-index' },
     icon: { icon: 'ri-scales-2-line' },
     roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AP'],
-    mobileNav: 'more',
   },
   {
     title: 'Payment Voucher',
@@ -167,7 +164,6 @@ export default [
     to: { name: 'ap-laporan' },
     icon: { icon: 'ri-file-chart-line' },
     roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AP'],
-    mobileNav: 'more',
   },
   { heading: 'REKONSILIASI' },
   {
@@ -183,6 +179,5 @@ export default [
     to: { name: 'finance-laporan' },
     icon: { icon: 'ri-file-chart-line' },
     roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'],
-    mobileNav: 'more',
   },
 ]
