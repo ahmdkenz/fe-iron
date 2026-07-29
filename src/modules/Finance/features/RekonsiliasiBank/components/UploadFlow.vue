@@ -340,6 +340,8 @@ const progressDialog = ref(false)
 const batchId         = ref(null)
 const batchStatus     = ref(null)
 let pollTimer = null
+let pollFailureCount = 0
+const MAX_POLL_FAILURES = 5
 
 const overlapDialog = ref(false)
 const confirming    = ref(false)
@@ -429,6 +431,7 @@ async function doUpload() {
 function openProgressDialog() {
   batchStatus.value  = { status: 'queued', phase: 'queued' }
   progressDialog.value = true
+  pollFailureCount = 0
 }
 
 function poll() {
@@ -438,6 +441,7 @@ function poll() {
       const res  = await api.get(`/finance/rekonsiliasi-bank/imports/${batchId.value}/status`)
       const data = res.data?.data
 
+      pollFailureCount = 0
       if (data) batchStatus.value = data
 
       if (data?.status === 'completed') {
@@ -456,7 +460,16 @@ function poll() {
 
       poll()
     } catch {
-      batchStatus.value = { status: 'failed', phase: 'failed', message: 'Gagal memuat status import.' }
+      pollFailureCount++
+      // Error transient (mis. deadlock sesaat di DB) tidak boleh langsung
+      // menghentikan polling — import di backend mungkin tetap lanjut/selesai.
+      // Hanya nyatakan gagal setelah beberapa kali gagal berturut-turut.
+      if (pollFailureCount >= MAX_POLL_FAILURES) {
+        batchStatus.value = { status: 'failed', phase: 'failed', message: 'Gagal memuat status import.' }
+
+        return
+      }
+      poll()
     }
   }, 2500)
 }
