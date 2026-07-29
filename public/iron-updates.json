@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "updates": [
+    {
+      "id": "2026-07-29-notifikasi-finance",
+      "version": "1.0.0",
+      "published_at": "2026-07-29T00:00:00+07:00",
+      "title": "Lonceng Notifikasi Finance",
+      "summary": "Notifikasi realtime untuk aktivitas Finance (approval, import, rekonsiliasi bank) kini tersedia lewat ikon lonceng di navbar.",
+      "items": [
+        "Notifikasi realtime untuk approval Opening Balance & Koreksi Ending Balance (AR/AP)",
+        "Notifikasi status import Invoice, Master Data, dan Rekening Koran",
+        "Notifikasi aktivitas Rekonsiliasi Bank (catat bayar, catat PDM, catat voucher AP, unmatch, pembatalan)",
+        "Tab \"Update Aplikasi\" untuk mengikuti perubahan/rilis terbaru sistem IRON"
+      ],
+      "tags": ["finance", "notifikasi"],
+      "target_roles": []
+    }
+  ]
+}

@@ -2,6 +2,7 @@
 import navItems from '@/navigation/vertical'
 import { useAuthStore } from '@/stores/auth.store'
 import { useFinanceNotificationStore } from '@/stores/finance-notification.store'
+import { useSystemNotificationStore } from '@/stores/system-notification.store'
 import { useConfigStore } from '@core/stores/config'
 import { themeConfig } from '@themeConfig'
 
@@ -10,6 +11,7 @@ import Footer from '@/layouts/components/Footer.vue'
 import MobileBottomNav from '@/layouts/components/MobileBottomNav.vue'
 import NavbarThemeSwitcher from '@/layouts/components/NavbarThemeSwitcher.vue'
 import NavSidebarProfile from '@/layouts/components/NavSidebarProfile.vue'
+import NotificationBell from '@/layouts/components/NotificationBell.vue'
 import UserProfile from '@/layouts/components/UserProfile.vue'
 import NavBarI18n from '@core/components/I18n.vue'
 import GlobalMinimizeWidgets from '@/components/base/GlobalMinimizeWidgets.vue'
@@ -20,6 +22,7 @@ import { VerticalNavLayout } from '@layouts'
 const configStore = useConfigStore()
 const authStore = useAuthStore()
 const financeNotificationStore = useFinanceNotificationStore()
+const systemNotificationStore = useSystemNotificationStore()
 const route = useRoute()
 let financeNotificationIntervalId = null
 let ebKoreksiNotificationIntervalId = null
@@ -106,8 +109,21 @@ async function refreshAllNotifications() {
   await Promise.all([
     authStore.canApproveOpeningBalance ? refreshFinanceNotifications() : Promise.resolve(),
     canApproveEbKoreksi.value ? refreshEbKoreksiNotifications() : Promise.resolve(),
+    systemNotificationStore.fetchAppUpdates(),
   ])
 }
+
+// Lonceng notifikasi: subscribe channel realtime begitu user login, dan
+// putuskan begitu logout (mis. dari layar lain, watcher tetap reaktif).
+watch(() => authStore.user?.id, userId => {
+  if (userId) {
+    systemNotificationStore.connect(userId)
+    systemNotificationStore.fetchFinanceUnreadCount()
+    systemNotificationStore.fetchAppUpdates()
+  } else {
+    systemNotificationStore.reset()
+  }
+}, { immediate: true })
 
 watch(() => authStore.canApproveOpeningBalance, async canApprove => {
   clearInterval(financeNotificationIntervalId)
@@ -186,6 +202,7 @@ watch([
           v-if="themeConfig.app.i18n.enable && themeConfig.app.i18n.langConfig?.length"
           :languages="themeConfig.app.i18n.langConfig"
         />
+        <NotificationBell />
         <UserProfile />
       </div>
 

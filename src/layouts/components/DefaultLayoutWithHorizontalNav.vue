@@ -1,14 +1,42 @@
 <script setup>
 import navItems from '@/navigation/horizontal'
+import { useAuthStore } from '@/stores/auth.store'
+import { useSystemNotificationStore } from '@/stores/system-notification.store'
 import { themeConfig } from '@themeConfig'
 
 // Components
 import Footer from '@/layouts/components/Footer.vue'
 import NavbarThemeSwitcher from '@/layouts/components/NavbarThemeSwitcher.vue'
+import NotificationBell from '@/layouts/components/NotificationBell.vue'
 import UserProfile from '@/layouts/components/UserProfile.vue'
 import NavBarI18n from '@core/components/I18n.vue'
 import { HorizontalNavLayout } from '@layouts'
 import { VNodeRenderer } from '@layouts/components/VNodeRenderer'
+
+const authStore = useAuthStore()
+const systemNotificationStore = useSystemNotificationStore()
+
+watch(() => authStore.user?.id, userId => {
+  if (userId) {
+    systemNotificationStore.connect(userId)
+    systemNotificationStore.fetchFinanceUnreadCount()
+    systemNotificationStore.fetchAppUpdates()
+  } else {
+    systemNotificationStore.reset()
+  }
+}, { immediate: true })
+
+function refreshAppUpdates() {
+  systemNotificationStore.fetchAppUpdates()
+}
+
+onMounted(() => {
+  window.addEventListener('focus', refreshAppUpdates)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('focus', refreshAppUpdates)
+})
 </script>
 
 <template>
@@ -33,6 +61,7 @@ import { VNodeRenderer } from '@layouts/components/VNodeRenderer'
       />
 
       <NavbarThemeSwitcher class="me-2" />
+      <NotificationBell />
       <UserProfile />
     </template>
 
