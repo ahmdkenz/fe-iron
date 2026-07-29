@@ -217,10 +217,10 @@
                   {{ phaseLabel(batchStatus?.phase) }}
                 </div>
                 <div
-                  v-if="batchStatus?.total_rows"
+                  v-if="progressLabel"
                   class="text-caption text-medium-emphasis mt-1"
                 >
-                  {{ batchStatus.processed_rows }} / {{ batchStatus.total_rows }} baris diproses
+                  {{ progressLabel }}
                 </div>
               </div>
             </Transition>
@@ -377,6 +377,25 @@ function phaseLabel(phase) {
   return PHASE_STEPS.find(s => s.key === phase)?.label ?? 'Memproses...'
 }
 
+// "processed_rows" selama fase parsing berarti baris FILE yang di-scan (bisa
+// termasuk baris kosong/footer), bukan jumlah transaksi valid — dua jenis
+// angka yang berbeda. Sebelum total_rows (transaksi valid) diketahui, jangan
+// tampilkan sebagai pecahan supaya tidak pernah muncul pembilang > penyebut.
+const progressLabel = computed(() => {
+  const status = batchStatus.value
+  if (!status) return ''
+  if (status.phase === 'parsing' && !status.total_rows) {
+    return status.processed_rows ? `${status.processed_rows} baris file dibaca` : ''
+  }
+  if (status.total_rows) {
+    const processed = Math.min(status.processed_rows ?? 0, status.total_rows)
+
+    return `${processed} / ${status.total_rows} transaksi diproses`
+  }
+
+  return ''
+})
+
 const progressPercent = computed(() => {
   const status = batchStatus.value
   if (!status) return null
@@ -428,8 +447,11 @@ async function doUpload() {
   }
 }
 
+// Reset lokal ini murni UX guard (supaya dialog tidak sempat berkedip
+// menampilkan sisa angka batch sebelumnya sebelum polling pertama datang) —
+// reset yang sesungguhnya wajib terjadi di backend (lihat run()/confirmReplace()).
 function openProgressDialog() {
-  batchStatus.value  = { status: 'queued', phase: 'queued' }
+  batchStatus.value  = { status: 'queued', phase: 'queued', total_rows: 0, processed_rows: 0 }
   progressDialog.value = true
   pollFailureCount = 0
 }

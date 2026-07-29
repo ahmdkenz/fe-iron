@@ -102,24 +102,38 @@
               @abaikan="doAbaikan"
               @unmatch="openUnmatchDialog"
               @kelebihan="openKelebihanDialog"
+              @options-change="resetDesktopDetailPosition"
             />
           </VCol>
           <VCol
             cols="12"
             md="4"
+            class="rekon-detail-col"
           >
-            <DetailPanel
-              :item="selectedItem"
-              :uploaded-by="report.uploaded_by"
-              :can-process-row="canProcessRow"
-              :abaikan-loading-id="abaikanLoadingId"
-              :unmatch-loading-id="unmatchLoadingId"
-              :closable="false"
-              @cocokkan="openMatchDialog"
-              @abaikan="doAbaikan"
-              @unmatch="openUnmatchDialog"
-              @kelebihan="openKelebihanDialog"
-            />
+            <div
+              ref="detailTrackRef"
+              class="rekon-detail-track"
+              :style="desktopDetailRequiredHeight ? { '--detail-required-height': `${desktopDetailRequiredHeight}px` } : undefined"
+            >
+              <div
+                ref="detailFollowRef"
+                class="rekon-detail-follow"
+                :style="{ top: `${desktopDetailOffset}px` }"
+              >
+                <DetailPanel
+                  :item="selectedItem"
+                  :uploaded-by="report.uploaded_by"
+                  :can-process-row="canProcessRow"
+                  :abaikan-loading-id="abaikanLoadingId"
+                  :unmatch-loading-id="unmatchLoadingId"
+                  :closable="false"
+                  @cocokkan="openMatchDialog"
+                  @abaikan="doAbaikan"
+                  @unmatch="openUnmatchDialog"
+                  @kelebihan="openKelebihanDialog"
+                />
+              </div>
+            </div>
           </VCol>
         </VRow>
 
@@ -252,7 +266,7 @@
 </template>
 
 <script setup>
-import { computed, defineAsyncComponent, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useDisplay } from 'vuetify'
 import { useLoadMore } from '@/composables/useLoadMore.js'
@@ -288,6 +302,10 @@ const activeTab         = ref('transaksi')
 const selectedItem      = ref(null)
 const mobileDetailOpen  = ref(false)
 const transactionTableRef = ref(null)
+const detailTrackRef    = ref(null)
+const detailFollowRef   = ref(null)
+const desktopDetailOffset = ref(0)
+const desktopDetailRequiredHeight = ref(0)
 
 const report = reactive({
   id: null, bank_type: null, nama_file: null,
@@ -345,8 +363,55 @@ async function refreshAfterRowChange() {
   ])
 }
 
-function onSelectRow(item) {
+function syncDesktopDetailOffset(event) {
+  const rowEl = event?.currentTarget
+  const trackEl = detailTrackRef.value
+  if (!rowEl || !trackEl) {
+    desktopDetailOffset.value = 0
+
+    return
+  }
+
+  const rowRect = rowEl.getBoundingClientRect()
+  const trackRect = trackEl.getBoundingClientRect()
+
+  desktopDetailOffset.value = Math.max(0, Math.round(rowRect.top - trackRect.top))
+}
+
+// Dipanggil tiap kali daftar baris di kiri berubah susunan/isinya (ganti
+// laporan, tab, halaman, atau items-per-page) — offset lama sudah tidak
+// merujuk baris manapun yang valid, jadi panel harus kembali sejajar
+// puncak track (bukan nyangkut di posisi baris yang sudah tidak terlihat).
+function resetDesktopDetailPosition() {
+  desktopDetailOffset.value = 0
+}
+
+// rekon-detail-track diberi tinggi minimum = offset baris + tinggi panel,
+// supaya saat baris yang diklik dekat dasar tabel (mis. baris 100), track
+// otomatis punya ruang untuk menampung panel sepenuhnya alih-alih panel
+// meluber ke luar kolom kanan tanpa area yang bisa di-scroll ke sana.
+// CSS menggabungkan angka ini dengan floor `100%` lewat max(), jadi tetap
+// aman ketika belum ada baris terpilih (angka ini 0).
+watch([selectedItem, desktopDetailOffset], async () => {
+  if (xs.value || !selectedItem.value) {
+    desktopDetailRequiredHeight.value = 0
+
+    return
+  }
+
+  await nextTick()
+  const followEl = detailFollowRef.value
+
+  desktopDetailRequiredHeight.value = followEl
+    ? desktopDetailOffset.value + followEl.offsetHeight
+    : 0
+})
+
+function onSelectRow(payload) {
+  const item = payload?.item ?? payload
+
   selectedItem.value = item
+  if (!xs.value) syncDesktopDetailOffset(payload?.event)
   if (xs.value) mobileDetailOpen.value = true
 }
 
@@ -461,12 +526,14 @@ async function doDelete() {
 watch(selectedReportId, async id => {
   selectedItem.value = null
   mobileDetailOpen.value = false
+  resetDesktopDetailPosition()
   router.replace({ query: { ...route.query, report: id ?? undefined } })
   if (id) await fetchHeader(id)
 })
 
 watch(activeTab, tab => {
   router.replace({ query: { ...route.query, tab } })
+  resetDesktopDetailPosition()
 })
 
 onMounted(async () => {
@@ -481,3 +548,25 @@ onBeforeUnmount(() => {
   abortReports()
 })
 </script>
+
+<style scoped>
+.rekon-detail-col {
+  position: relative;
+}
+
+.rekon-detail-track {
+  position: relative;
+  /* Floor 100% (biar kolom kanan minimal setinggi tabel kiri) digabung
+     dengan kebutuhan aktual (offset baris + tinggi panel) lewat max() —
+     jadi track selalu cukup tinggi untuk menampung panel di posisi manapun
+     tanpa perlu tahu tinggi kolom kiri dari sisi JS. */
+  min-height: max(100%, var(--detail-required-height, 0px));
+}
+
+.rekon-detail-follow {
+  position: absolute;
+  inset-inline-start: 0;
+  width: 100%;
+  transition: top 0.12s ease;
+}
+</style>

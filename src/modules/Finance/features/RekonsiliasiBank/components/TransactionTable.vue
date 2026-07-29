@@ -11,7 +11,7 @@
     mobile-cards
     :row-props="rowProps"
     @update:options="onTableOptions"
-    @row-activate="({ item }) => $emit('select-row', item)"
+    @row-activate="$emit('select-row', $event)"
   >
     <template #mobile-card="{ item }">
       <div
@@ -284,7 +284,7 @@ const props = defineProps({
   unmatchLoadingId: { type: [Number, String], default: null },
 })
 
-defineEmits(['select-row', 'cocokkan', 'abaikan', 'unmatch', 'kelebihan'])
+const emit = defineEmits(['select-row', 'cocokkan', 'abaikan', 'unmatch', 'kelebihan', 'options-change'])
 
 const { formatCurrency } = useFormatter()
 
@@ -348,6 +348,7 @@ async function load({ force = false } = {}) {
 function onTableOptions({ page, itemsPerPage }) {
   params.page = page
   params.per_page = itemsPerPage
+  emit('options-change')
   load()
 }
 
