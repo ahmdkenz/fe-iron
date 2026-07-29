@@ -62,7 +62,7 @@
       </VTabs>
 
       <UploadHistoryTable
-        v-if="activeTab === 'riwayat'"
+        v-show="activeTab === 'riwayat'"
         :reports="reportItems"
         :total="reportsTotal"
         :loading="reportsLoading"
@@ -75,7 +75,13 @@
         @load-more="loadMoreReports"
       />
 
-      <template v-else>
+      <!--
+        v-show (bukan v-if/v-else) sengaja dipakai supaya TransactionTable
+        TIDAK di-unmount saat pindah ke tab Riwayat Upload lalu kembali —
+        instance & cache internalnya (per status) tetap hidup, jadi kembali
+        ke Transaksi Bank/Belum Cocok/Sudah Cocok tidak selalu fetch ulang.
+      -->
+      <div v-show="activeTab !== 'riwayat'">
         <VRow v-if="!xs">
           <VCol
             cols="12"
@@ -150,7 +156,7 @@
             />
           </VBottomSheet>
         </template>
-      </template>
+      </div>
     </template>
 
     <VCard v-else-if="!reportsLoading">

@@ -20,6 +20,7 @@ const keepAliveRouteNames = new Set([
   'master-brand',
   'finance-klien-ar',
   'ap-vendor-index',
+  'finance-rekonsiliasi-bank',
 ])
 
 // Halaman finance berat (tabel, dialog, form besar sekaligus) — tidak sepadan

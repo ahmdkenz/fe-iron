@@ -316,21 +316,56 @@ function rowProps(ctx) {
   return ctx.item.id === props.selectedId ? { class: 'tx-row--selected' } : {}
 }
 
+// Cache per (status, page, per_page) — supaya berpindah balik ke tab yang
+// sudah pernah dibuka (mis. Belum Cocok -> Sudah Cocok -> Belum Cocok lagi)
+// langsung tampil dari cache, tanpa network round-trip & overlay loading lagi.
+// Dibersihkan total tiap ada perubahan data (lihat refresh()) karena baris bisa
+// berpindah status (abaikan/cocokkan/unmatch) sehingga cache tab lain jadi basi.
+const cache = new Map()
+const cacheKey = () => `${params.status}|${params.page}|${params.per_page}`
+
+// Token pencegah race: kalau user pindah tab lagi sebelum request sebelumnya
+// selesai, respons yang datang belakangan (out-of-order) tidak boleh menimpa
+// cache dengan data tab yang sudah ditinggalkan.
+let loadToken = 0
+
+async function load({ force = false } = {}) {
+  const key = cacheKey()
+  if (!force && cache.has(key)) {
+    const cached = cache.get(key)
+    rows.value = cached.rows
+    Object.assign(meta, cached.meta)
+    return
+  }
+
+  const token = ++loadToken
+  await fetchList()
+  if (token !== loadToken) return
+
+  cache.set(key, { rows: [...rows.value], meta: { ...meta } })
+}
+
 function onTableOptions({ page, itemsPerPage }) {
   params.page = page
   params.per_page = itemsPerPage
-  fetchList()
+  load()
 }
 
 watch(() => props.status, status => {
   params.status = status
   params.page = 1
-  fetchList()
+  load()
 })
 
-onMounted(fetchList)
+onMounted(() => load())
 
-defineExpose({ refresh: () => fetchList(), rows })
+defineExpose({
+  refresh: () => {
+    cache.clear()
+    return load({ force: true })
+  },
+  rows,
+})
 </script>
 
 <style scoped>

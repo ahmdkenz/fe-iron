@@ -301,7 +301,7 @@
         <VCardActions class="justify-end pa-4 gap-2">
           <AppActionButton
             action="batalkan"
-            @click="overlapDialog = false"
+            @click="cancelOverlap"
           />
           <AppActionButton
             action="custom"
@@ -494,6 +494,18 @@ async function confirmReplace() {
 function closeProgressDialog() {
   progressDialog.value = false
   batchId.value = null
+}
+
+// Tanpa panggilan ini, file upload + staging rows batch yang menunggu
+// konfirmasi overlap akan menggantung permanen di server (job hanya
+// membersihkannya untuk status completed/failed, bukan needs_confirmation).
+function cancelOverlap() {
+  const id = batchId.value
+  overlapDialog.value = false
+  batchId.value = null
+  if (id) {
+    api.post(`/finance/rekonsiliasi-bank/imports/${id}/cancel`).catch(() => {})
+  }
 }
 
 async function doDownloadTemplate() {
