@@ -248,14 +248,21 @@ const selisihLabel = computed(() => {
 </script>
 
 <style scoped>
+/* Menempel (sticky) di dekat atas viewport dan mengikuti tinggi kontennya
+   sendiri — TransactionTable di sebelahnya bisa jadi sangat panjang (mis.
+   per-page 100), dan panel ini tidak boleh ikut memaksa tinggi penuh yang
+   sama sehingga menyisakan area kosong besar. */
 .detail-panel {
-  height: 100%;
-  min-height: 400px;
+  /* !important: base .v-card class sudah men-set position:relative dengan
+     spesifisitas selector yang sama (satu class), jadi urutan cascade bisa
+     memenangkannya alih-alih aturan sticky di bawah ini. */
+  position: sticky !important;
+  top: 16px;
+  max-height: calc(100vh - 32px);
 }
 
 .detail-panel--compact {
-  height: auto;
-  min-height: 0;
+  position: static !important;
   max-height: 80vh;
   border-radius: 16px 16px 0 0;
 }
