@@ -31,7 +31,6 @@ const mobileExcludedRouteNames = new Set([
   'finance-opening-balance',
   'finance-export-data',
   'finance-rekonsiliasi-bank',
-  'finance-rekonsiliasi-bank-show',
   'finance-ending-balance-show',
   'ap-shz360-import-index',
   'ap-ending-balance-show',

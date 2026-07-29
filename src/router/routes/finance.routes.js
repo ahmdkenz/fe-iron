@@ -167,9 +167,7 @@ export default [
   },
   {
     path: '/finance/rekonsiliasi-bank/:id',
-    name: 'finance-rekonsiliasi-bank-show',
-    component: () => import('@/modules/Finance/features/RekonsiliasiBank/views/Show.vue'),
-    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR', 'AP'] },
+    redirect: to => ({ name: 'finance-rekonsiliasi-bank', query: { report: to.params.id } }),
   },
   { path: '/finance/jurnal-pic', redirect: { name: 'finance-laporan-jurnal-pic' } },
 ]

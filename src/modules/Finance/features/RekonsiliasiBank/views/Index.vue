@@ -2,407 +2,222 @@
   <div>
     <PageHeader
       title="Rekonsiliasi Bank"
-      subtitle="Upload rekening koran bank dan cocokkan dengan data pembayaran"
+      subtitle="Cocokkan mutasi rekening dengan data pembayaran secara otomatis maupun manual."
       :breadcrumbs="[
         { title: 'Dashboard', to: { name: 'dashboard' } },
         { title: 'Rekonsiliasi Bank', disabled: true },
       ]"
-    />
-
-    <!-- Tombol Upload — disembunyikan untuk role AR/AP murni (khusus ADMIN/MANAGER/SUPERVISOR) -->
-    <VCard
-      v-if="!authStore.isArOnly && !authStore.isApOnly"
-      class="mb-4"
     >
-      <VCardText class="d-flex align-center gap-3">
-        <VBtn
-          color="primary"
-          prepend-icon="ri-upload-cloud-2-line"
-          @click="dialog = true"
+      <template #default="{ mobile }">
+        <div
+          class="d-flex align-center gap-2"
+          :class="{ 'w-100': mobile }"
         >
-          Upload Rekening Koran Bank
-        </VBtn>
-        <span class="text-caption text-medium-emphasis">
-          Dukung format: .xlsx atau .xls
-        </span>
+          <ReportPickerSelect
+            v-model="selectedReportId"
+            :reports="reportItems"
+            :loading="reportsLoading"
+            :class="{ 'flex-grow-1': mobile }"
+          />
+          <UploadFlow
+            v-if="!authStore.isArOnly && !authStore.isApOnly"
+            @imported="onImported"
+          />
+        </div>
+      </template>
+    </PageHeader>
+
+    <template v-if="selectedReportId">
+      <StatCards :report="report" />
+      <ProgressCard :report="report" />
+
+      <VTabs
+        v-model="activeTab"
+        class="mb-4"
+      >
+        <VTab value="transaksi">
+          Transaksi Bank
+        </VTab>
+        <VTab value="belum-cocok">
+          Belum Cocok
+          <VChip
+            size="x-small"
+            class="ms-2"
+          >
+            {{ report.jumlah_unmatched ?? 0 }}
+          </VChip>
+        </VTab>
+        <VTab value="sudah-cocok">
+          Sudah Cocok
+          <VChip
+            size="x-small"
+            class="ms-2"
+          >
+            {{ report.jumlah_matched ?? 0 }}
+          </VChip>
+        </VTab>
+        <VTab value="riwayat">
+          Riwayat Upload
+        </VTab>
+      </VTabs>
+
+      <UploadHistoryTable
+        v-if="activeTab === 'riwayat'"
+        :reports="reportItems"
+        :total="reportsTotal"
+        :loading="reportsLoading"
+        :loading-more="reportsLoadingMore"
+        :has-more="reportsHasMore"
+        :selected-report-id="selectedReportId"
+        :deletable="!authStore.isArOnly && !authStore.isApOnly"
+        @select-report="onSelectReport"
+        @delete="confirmDelete"
+        @load-more="loadMoreReports"
+      />
+
+      <template v-else>
+        <VRow v-if="!xs">
+          <VCol
+            cols="12"
+            md="8"
+          >
+            <TransactionTable
+              ref="transactionTableRef"
+              :key="selectedReportId"
+              :report-id="selectedReportId"
+              :status="filterStatus"
+              :selected-id="selectedItem?.id"
+              :can-process-row="canProcessRow"
+              :uploaded-by="report.uploaded_by"
+              :abaikan-loading-id="abaikanLoadingId"
+              :unmatch-loading-id="unmatchLoadingId"
+              @select-row="onSelectRow"
+              @cocokkan="openMatchDialog"
+              @abaikan="doAbaikan"
+              @unmatch="openUnmatchDialog"
+              @kelebihan="openKelebihanDialog"
+            />
+          </VCol>
+          <VCol
+            cols="12"
+            md="4"
+          >
+            <DetailPanel
+              :item="selectedItem"
+              :uploaded-by="report.uploaded_by"
+              :can-process-row="canProcessRow"
+              :abaikan-loading-id="abaikanLoadingId"
+              :unmatch-loading-id="unmatchLoadingId"
+              :closable="false"
+              @cocokkan="openMatchDialog"
+              @abaikan="doAbaikan"
+              @unmatch="openUnmatchDialog"
+              @kelebihan="openKelebihanDialog"
+            />
+          </VCol>
+        </VRow>
+
+        <template v-else>
+          <TransactionTable
+            ref="transactionTableRef"
+            :key="selectedReportId"
+            :report-id="selectedReportId"
+            :status="filterStatus"
+            :selected-id="selectedItem?.id"
+            :can-process-row="canProcessRow"
+            :uploaded-by="report.uploaded_by"
+            :abaikan-loading-id="abaikanLoadingId"
+            :unmatch-loading-id="unmatchLoadingId"
+            @select-row="onSelectRow"
+            @cocokkan="openMatchDialog"
+            @abaikan="doAbaikan"
+            @unmatch="openUnmatchDialog"
+            @kelebihan="openKelebihanDialog"
+          />
+          <VBottomSheet v-model="mobileDetailOpen">
+            <DetailPanel
+              compact
+              :item="selectedItem"
+              :uploaded-by="report.uploaded_by"
+              :can-process-row="canProcessRow"
+              :abaikan-loading-id="abaikanLoadingId"
+              :unmatch-loading-id="unmatchLoadingId"
+              @close="mobileDetailOpen = false"
+              @cocokkan="openMatchDialog"
+              @abaikan="doAbaikan"
+              @unmatch="openUnmatchDialog"
+              @kelebihan="openKelebihanDialog"
+            />
+          </VBottomSheet>
+        </template>
+      </template>
+    </template>
+
+    <VCard v-else-if="!reportsLoading">
+      <VCardText class="text-center py-8 text-medium-emphasis">
+        Belum ada laporan rekening koran yang diupload.
       </VCardText>
     </VCard>
 
-    <!-- Tabel History Upload -->
-    <VCard>
-      <BaseTable
-        :headers="headers"
-        :items="items"
-        :total="total"
-        :loading="loading"
-        pagination-mode="load-more"
-        :has-more="hasMore"
-        :loading-more="loadingMore"
-        :loaded-count="items.length"
-        item-value="id"
-        interactive-rows
-        @load-more="loadMore"
-        @row-activate="({ item }) => selectReport(item)"
-      >
-        <template #item.no="{ index }">
-          {{ index + 1 }}
-        </template>
-        <template #item.periode="{ item }">
-          {{ item.periode_awal }} — {{ item.periode_akhir }}
-        </template>
-        <template #item.total_kredit="{ item }">
-          {{ formatCurrency(item.total_kredit) }}
-        </template>
-        <template #item.status="{ item }">
-          <div class="d-flex gap-1 flex-wrap">
-            <VChip
-              color="success"
-              size="x-small"
-              variant="tonal"
-            >
-              {{ item.jumlah_matched }} MATCHED
-            </VChip>
-            <VChip
-              color="error"
-              size="x-small"
-              variant="tonal"
-            >
-              {{ item.jumlah_unmatched }} UNMATCHED
-            </VChip>
-            <VChip
-              color="grey"
-              size="x-small"
-              variant="tonal"
-            >
-              {{ item.total_transaksi - item.jumlah_matched - item.jumlah_unmatched }} lainnya
-            </VChip>
-          </div>
-        </template>
-        <template #item.aksi="{ item }">
-          <div class="d-flex gap-2">
-            <VBtn
-              size="x-small"
-              variant="tonal"
-              :color="selectedId === item.id ? 'secondary' : 'primary'"
-              :icon="selectedId === item.id ? 'ri-eye-off-line' : 'ri-eye-line'"
-              @click="selectReport(item)"
-            />
-            <VBtn
-              v-if="!authStore.isArOnly && !authStore.isApOnly"
-              size="x-small"
-              variant="tonal"
-              color="error"
-              icon="ri-delete-bin-line"
-              @click="confirmDelete(item)"
-            />
-          </div>
-        </template>
-      </BaseTable>
-    </VCard>
+    <!-- Dialog Cocokkan & Kelebihan Bayar — dimuat async, hanya saat dibuka -->
+    <MatchDialog
+      v-if="matchDialog"
+      v-model="matchDialog"
+      :item="matchItem"
+      @matched="onMatched"
+      @connection-error="onMatchConnectionError"
+    />
+    <ApMatchDialog
+      v-if="apMatchDialog"
+      v-model="apMatchDialog"
+      :item="matchItem"
+      @matched="onMatched"
+      @connection-error="onMatchConnectionError"
+    />
+    <KelebihanDialog
+      v-if="kelebihanDialog"
+      v-model="kelebihanDialog"
+      :item="kelebihanItem"
+      @changed="onKelebihanChanged"
+    />
 
-    <!-- Detail Rekening Koran (inline) -->
-    <div
-      v-if="selectedId"
-      class="mt-4"
-    >
-      <RekonsiliasiBankDetail
-        :key="selectedId"
-        :report-id="selectedId"
-        @close="selectedId = null"
-      />
-    </div>
-
-    <!-- Dialog Upload -->
+    <!-- Dialog Konfirmasi Batalkan Cocok -->
     <VDialog
-      v-model="dialog"
-      max-width="480"
+      v-model="unmatchDialog"
+      max-width="400"
       persistent
     >
       <VCard>
-        <VCardTitle class="d-flex align-center justify-space-between pa-4">
-          <span>Upload Rekening Koran Bank</span>
-          <VBtn
-            icon="ri-close-line"
-            variant="text"
-            size="small"
-            @click="closeDialog"
-          />
+        <VCardTitle class="pa-4 pb-2">
+          <span class="text-h6">Batalkan Cocok Transaksi</span>
         </VCardTitle>
         <VDivider />
-        <VCardText class="pt-4 d-flex flex-column gap-4">
-          <!-- Download Template -->
-          <div class="d-flex align-center gap-2">
-            <VIcon
-              icon="ri-information-line"
-              size="16"
-              class="text-info"
-            />
-            <span class="text-caption text-medium-emphasis">
-              Belum punya file format yang sesuai?
-            </span>
-            <VBtn
-              variant="text"
-              color="info"
-              size="x-small"
-              density="compact"
-              prepend-icon="ri-download-line"
-              @click="doDownloadTemplate"
-            >
-              Download Template
-            </VBtn>
-          </div>
-
-          <!-- Dropzone -->
-          <div
-            class="dropzone"
-            :class="{ 'dropzone--active': isDragging }"
-            @dragover.prevent="isDragging = true"
-            @dragleave="isDragging = false"
-            @drop.prevent="onDrop"
-            @click="$refs.fileInput.click()"
-          >
-            <VIcon
-              icon="ri-file-upload-line"
-              size="40"
-              class="mb-2 text-primary"
-            />
-            <div
-              v-if="form.file"
-              class="text-body-2 font-weight-medium text-primary"
-            >
-              {{ form.file.name }}
-            </div>
-            <div
-              v-else
-              class="text-body-2 text-medium-emphasis text-center"
-            >
-              <div>Klik atau drag & drop file di sini</div>
-              <div class="text-caption mt-1">
-                .xlsx atau .xls
-              </div>
-            </div>
-            <input
-              ref="fileInput"
-              type="file"
-              accept=".xlsx,.xls"
-              style="display:none"
-              @change="onFileChange"
-            >
-          </div>
-
-          <VAlert
-            v-if="uploadError"
-            type="error"
-            density="compact"
-            variant="tonal"
-          >
-            {{ uploadError }}
-          </VAlert>
-        </VCardText>
-        <VCardActions class="pa-4 pt-0 justify-end gap-2">
-          <AppActionButton
-            action="batalkan"
-            @click="closeDialog"
-          />
-          <AppActionButton
-            action="custom"
-            :loading="uploading"
-            :disabled="!form.file"
-            @click="doUpload"
-          >
-            Upload & Proses
-          </AppActionButton>
-        </VCardActions>
-      </VCard>
-    </VDialog>
-
-    <!-- Dialog Progress Import (async, persistent — polling status batch) -->
-    <VDialog
-      v-model="progressDialog"
-      max-width="480"
-      persistent
-    >
-      <VCard>
-        <VCardTitle class="pa-4">
-          Import Rekening Koran Bank
-        </VCardTitle>
-        <VDivider />
-        <VCardText class="pt-4">
-          <template v-if="batchStatus?.status === 'failed'">
-            <VAlert
-              type="error"
-              density="compact"
-              variant="tonal"
-            >
-              {{ batchStatus.message || 'Import gagal.' }}
-            </VAlert>
-            <div
-              v-if="batchStatus.errors?.length"
-              class="mt-3"
-            >
-              <div class="text-caption text-medium-emphasis mb-1">
-                Baris bermasalah ({{ batchStatus.error_rows }} total{{ batchStatus.errors.length < batchStatus.error_rows ? `, ditampilkan ${batchStatus.errors.length}` : '' }}):
-              </div>
-              <div style="max-height: 240px; overflow-y: auto;">
-                <VTable density="compact">
-                  <thead>
-                    <tr>
-                      <th>Baris</th>
-                      <th>Pesan</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr
-                      v-for="(e, i) in batchStatus.errors"
-                      :key="i"
-                    >
-                      <td>{{ e.row }}</td>
-                      <td>{{ e.message }}</td>
-                    </tr>
-                  </tbody>
-                </VTable>
-              </div>
-            </div>
-          </template>
-          <template v-else>
-            <div class="import-stepper">
-              <template
-                v-for="(step, i) in PHASE_STEPS"
-                :key="step.key"
-              >
-                <div
-                  class="import-step"
-                  :class="`import-step--${stepState(i)}`"
-                >
-                  <VIcon
-                    v-if="stepState(i) === 'done'"
-                    icon="ri-check-line"
-                    size="16"
-                  />
-                  <VIcon
-                    v-else
-                    :icon="step.icon"
-                    size="16"
-                  />
-                </div>
-                <div
-                  v-if="i < PHASE_STEPS.length - 1"
-                  class="import-connector"
-                  :class="{ 'import-connector--filled': stepState(i) === 'done' }"
-                />
-              </template>
-            </div>
-
-            <Transition
-              name="import-fade"
-              mode="out-in"
-            >
-              <div
-                :key="batchStatus?.phase"
-                class="text-center mt-5"
-              >
-                <div class="text-body-2 font-weight-medium">
-                  {{ phaseLabel(batchStatus?.phase) }}
-                </div>
-                <div
-                  v-if="batchStatus?.total_rows"
-                  class="text-caption text-medium-emphasis mt-1"
-                >
-                  {{ batchStatus.processed_rows }} / {{ batchStatus.total_rows }} baris diproses
-                </div>
-              </div>
-            </Transition>
-
-            <VProgressLinear
-              :model-value="progressPercent"
-              :indeterminate="progressPercent === null"
-              color="primary"
-              height="6"
-              rounded
-              class="mt-4"
-            />
-          </template>
-        </VCardText>
-        <VCardActions class="justify-end pa-4 gap-2">
-          <AppActionButton
-            v-if="batchStatus?.status === 'failed'"
-            action="custom"
-            @click="closeProgressDialog"
-          >
-            Tutup
-          </AppActionButton>
-        </VCardActions>
-      </VCard>
-    </VDialog>
-
-    <!-- Dialog Konfirmasi Periode Bertumpang Tindih -->
-    <VDialog
-      v-model="overlapDialog"
-      max-width="560"
-      persistent
-    >
-      <VCard>
-        <VCardTitle class="pa-4 text-warning">
-          Periode Bertumpang Tindih
-        </VCardTitle>
-        <VDivider />
-        <VCardText class="pt-4">
-          <p>
-            File ini bertumpang tindih dengan {{ batchStatus?.overlaps?.length ?? 0 }} data yang sudah diupload:
+        <VCardText class="pa-4">
+          <p class="text-body-2 mb-0">
+            Apakah Anda yakin ingin membatalkan cocok transaksi ini?
+            Status akan kembali ke <strong>UNMATCHED</strong>.
           </p>
-          <div style="max-height: 240px; overflow-y: auto;">
-            <VTable
-              density="compact"
-              class="mt-2"
-            >
-              <thead>
-                <tr>
-                  <th>Periode</th>
-                  <th>Total Transaksi</th>
-                  <th>Matched</th>
-                  <th>Unmatched</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  v-for="o in batchStatus?.overlaps"
-                  :key="o.id"
-                >
-                  <td>{{ o.periode_awal }} — {{ o.periode_akhir }}</td>
-                  <td>{{ o.total_transaksi }}</td>
-                  <td>{{ o.jumlah_matched }}</td>
-                  <td>{{ o.jumlah_unmatched }}</td>
-                </tr>
-              </tbody>
-            </VTable>
-          </div>
-          <VAlert
-            type="warning"
-            density="compact"
-            variant="tonal"
-            class="mt-3"
-          >
-            Jika dilanjutkan, semua data periode yang tumpang tindih (termasuk hasil matching manual) akan dihapus permanen dan digantikan file baru.
-          </VAlert>
         </VCardText>
-        <VCardActions class="justify-end pa-4 gap-2">
+        <VDivider />
+        <VCardActions class="pa-4">
+          <VSpacer />
           <AppActionButton
             action="batalkan"
-            @click="overlapDialog = false"
+            @click="unmatchDialog = false"
           />
           <AppActionButton
             action="custom"
-            color="warning"
-            :loading="confirming"
-            @click="confirmReplace"
+            color="error"
+            :loading="unmatchSaving"
+            @click="doUnmatch"
           >
-            Ganti dengan File Baru
+            Ya, Batalkan
           </AppActionButton>
         </VCardActions>
       </VCard>
     </VDialog>
 
-    <!-- Dialog Konfirmasi Hapus -->
+    <!-- Dialog Konfirmasi Hapus Laporan -->
     <VDialog
       v-model="deleteDialog"
       max-width="380"
@@ -431,337 +246,187 @@
 </template>
 
 <script setup>
-import { computed, markRaw, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
+import { computed, defineAsyncComponent, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useDisplay } from 'vuetify'
 import { useLoadMore } from '@/composables/useLoadMore.js'
-import { useFormatter } from '@/composables/useFormatter'
+import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useAuthStore } from '@/stores/auth.store'
 import api from '@/utils/axios'
-import writeXlsxFile from 'write-excel-file/browser'
-import RekonsiliasiBankDetail from './Detail.vue'
+import ReportPickerSelect from '../components/ReportPickerSelect.vue'
+import StatCards from '../components/StatCards.vue'
+import ProgressCard from '../components/ProgressCard.vue'
+import TransactionTable from '../components/TransactionTable.vue'
+import DetailPanel from '../components/DetailPanel.vue'
+import UploadHistoryTable from '../components/UploadHistoryTable.vue'
+import UploadFlow from '../components/UploadFlow.vue'
+
+const MatchDialog     = defineAsyncComponent(() => import('../components/MatchDialog.vue'))
+const ApMatchDialog   = defineAsyncComponent(() => import('../components/ApMatchDialog.vue'))
+const KelebihanDialog = defineAsyncComponent(() => import('../components/KelebihanDialog.vue'))
 
 const authStore = useAuthStore()
-
-const { formatCurrency } = useFormatter()
+const route = useRoute()
+const router = useRouter()
+const { xs } = useDisplay()
+const { showSuccess, showError } = useSweetAlert()
 
 const {
-  items, loading, loadingMore, hasMore, total,
-  reset, loadMore, abort,
-} = useLoadMore('/finance/rekonsiliasi-bank', { perPage: 15 })
+  items: reportItems, loading: reportsLoading, loadingMore: reportsLoadingMore,
+  hasMore: reportsHasMore, total: reportsTotal,
+  reset: resetReports, loadMore: loadMoreReports, abort: abortReports,
+} = useLoadMore('/finance/rekonsiliasi-bank', { perPage: 20 })
 
-const dialog      = ref(false)
-const uploading   = ref(false)
-const uploadError = ref('')
-const isDragging  = ref(false)
-const fileInput   = ref(null)
+const selectedReportId  = ref(null)
+const activeTab         = ref('transaksi')
+const selectedItem      = ref(null)
+const mobileDetailOpen  = ref(false)
+const transactionTableRef = ref(null)
 
-const form = reactive({ file: null })
-
-const selectedId     = ref(null)
-
-const deleteDialog   = ref(false)
-const deleteTarget   = ref(null)
-const deleting       = ref(false)
-
-// ── Progress import async (upload -> queue -> polling) ──────────────────
-const progressDialog = ref(false)
-const batchId         = ref(null)
-const batchStatus     = ref(null)
-let pollTimer = null
-
-const overlapDialog = ref(false)
-const confirming    = ref(false)
-
-const PHASE_STEPS = [
-  { key: 'queued',           icon: 'ri-time-line',            label: 'Menunggu diproses...' },
-  { key: 'parsing',          icon: 'ri-file-search-line',     label: 'Membaca file rekening koran...' },
-  { key: 'validating',       icon: 'ri-shield-check-line',    label: 'Memvalidasi data transaksi...' },
-  { key: 'checking_overlap', icon: 'ri-git-compare-line',     label: 'Memeriksa duplikasi periode...' },
-  { key: 'saving',           icon: 'ri-save-3-line',          label: 'Menyimpan data transaksi...' },
-  { key: 'auto_matching',    icon: 'ri-link-m',               label: 'Mencocokkan otomatis dengan pembayaran...' },
-  { key: 'completed',        icon: 'ri-checkbox-circle-line', label: 'Selesai' },
-]
-
-function phaseIndex(phase) {
-  const i = PHASE_STEPS.findIndex(s => s.key === phase)
-  return i === -1 ? 0 : i
-}
-
-function stepState(i) {
-  const current = phaseIndex(batchStatus.value?.phase)
-  if (i < current) return 'done'
-  if (i === current) return 'active'
-  return 'pending'
-}
-
-function phaseLabel(phase) {
-  if (phase === 'needs_confirmation') return 'Menunggu konfirmasi...'
-  if (phase === 'failed') return 'Gagal'
-  return PHASE_STEPS.find(s => s.key === phase)?.label ?? 'Memproses...'
-}
-
-// Progress bar: pakai persentase baris nyata saat fase parsing (kalau sudah
-// tahu total_rows), selain itu diaproksimasi dari posisi tahap saat ini agar
-// dialog tidak terasa "diam" di antara tahap-tahap yang cepat.
-const progressPercent = computed(() => {
-  const status = batchStatus.value
-  if (!status) return null
-  if (status.phase === 'parsing' && status.total_rows) {
-    return Math.min(100, Math.round((status.processed_rows / status.total_rows) * 100))
-  }
-  const idx = phaseIndex(status.phase)
-  return Math.round((idx / (PHASE_STEPS.length - 1)) * 100)
+const report = reactive({
+  id: null, bank_type: null, nama_file: null,
+  periode_awal: null, periode_akhir: null,
+  total_transaksi: 0, total_kredit: 0,
+  jumlah_matched: 0, jumlah_unmatched: 0,
+  uploaded_by: null, created_at: null,
 })
 
-const headers = [
-  { title: 'No',           key: 'no',          sortable: false, width: '50px' },
-  { title: 'Tanggal Upload', key: 'created_at', sortable: false },
-  { title: 'Nama File',    key: 'nama_file',   sortable: false },
-  { title: 'Periode',      key: 'periode',     sortable: false },
-  { title: 'Total Kredit', key: 'total_kredit', sortable: false, align: 'end' },
-  { title: 'Status Cocok', key: 'status',      sortable: false },
-  { title: 'Aksi',         key: 'aksi',        sortable: false, width: '90px' },
-]
+const filterStatus = computed(() => ({
+  transaksi: 'SEMUA',
+  'belum-cocok': 'UNMATCHED',
+  'sudah-cocok': 'MATCHED',
+}[activeTab.value] ?? 'SEMUA'))
 
-function selectReport(item) {
-  selectedId.value = selectedId.value === item.id ? null : item.id
+const abaikanLoadingId = ref(null)
+const unmatchLoadingId = ref(null)
+
+const matchItem     = ref(null)
+const matchDialog   = ref(false)
+const apMatchDialog = ref(false)
+
+const unmatchDialog = ref(false)
+const unmatchItem   = ref(null)
+const unmatchSaving = ref(false)
+
+const kelebihanDialog = ref(false)
+const kelebihanItem   = ref(null)
+
+const deleteDialog = ref(false)
+const deleteTarget = ref(null)
+const deleting     = ref(false)
+
+// PIC AR murni cuma boleh proses baris kredit (invoice/PDM AR), PIC AP murni
+// cuma boleh proses baris debit (Payment Voucher AP). Admin/Manager/Supervisor
+// bebas keduanya. Backend menegakkan aturan yang sama — ini cuma lapisan UI
+// supaya tombol yang tidak relevan tidak ditampilkan.
+function canProcessRow(item) {
+  if (authStore.isArOnly) return Number(item.kredit) > 0
+  if (authStore.isApOnly) return Number(item.debit) > 0
+
+  return true
 }
 
-function onFileChange(e) {
-  form.file = markRaw(e.target.files[0] ?? null)
+async function fetchHeader(id) {
+  const { data } = await api.get(`/finance/rekonsiliasi-bank/${id}/header`)
+
+  Object.assign(report, data.data)
 }
 
-function onDrop(e) {
-  isDragging.value = false
-  form.file = markRaw(e.dataTransfer.files[0] ?? null)
+async function refreshAfterRowChange() {
+  return Promise.all([
+    transactionTableRef.value?.refresh(),
+    fetchHeader(selectedReportId.value),
+  ])
 }
 
-function closeDialog() {
-  dialog.value      = false
-  form.file         = null
-  uploadError.value = ''
-  if (fileInput.value) fileInput.value.value = ''
+function onSelectRow(item) {
+  selectedItem.value = item
+  if (xs.value) mobileDetailOpen.value = true
 }
 
-async function doUpload() {
-  uploadError.value = ''
-  uploading.value   = true
+function onSelectReport(item) {
+  selectedReportId.value = item.id
+  activeTab.value = 'transaksi'
+}
+
+async function onImported(reportId) {
+  await resetReports()
+  activeTab.value = 'transaksi'
+  if (reportId) selectedReportId.value = reportId
+}
+
+function openMatchDialog(item) {
+  matchItem.value = item
+  if (Number(item.debit) > 0) {
+    apMatchDialog.value = true
+  } else {
+    matchDialog.value = true
+  }
+}
+
+async function onMatched() {
+  showSuccess('Pembayaran berhasil dicatat.')
+  await refreshAfterRowChange()
+}
+
+async function onMatchConnectionError(message) {
+  await refreshAfterRowChange()
+  showError(message)
+}
+
+function openUnmatchDialog(item) {
+  unmatchItem.value   = item
+  unmatchDialog.value = true
+}
+
+async function doUnmatch() {
+  if (!unmatchItem.value) return
+  unmatchSaving.value  = true
+  unmatchLoadingId.value = unmatchItem.value.id
   try {
-    const fd = new FormData()
-
-    fd.append('file', form.file)
-    const res = await api.post('/finance/rekonsiliasi-bank/upload', fd)
-    batchId.value = res.data?.data?.batch_id ?? null
-    closeDialog()
-
-    if (batchId.value) {
-      openProgressDialog()
-      poll()
-    }
+    await api.patch(`/finance/rekonsiliasi-bank/detail/${unmatchItem.value.id}/unmatch`)
+    unmatchDialog.value  = false
+    unmatchItem.value    = null
+    showSuccess('Pencocokan berhasil dibatalkan.')
+    await refreshAfterRowChange()
   } catch (err) {
-    uploadError.value = err?.response?.data?.message ?? 'Upload gagal. Pastikan format file sesuai.'
+    unmatchDialog.value = false
+    unmatchItem.value   = null
+    if (!err?.response || err?.code === 'ECONNABORTED') {
+      await refreshAfterRowChange()
+      showError('Koneksi terputus. Data telah dimuat ulang — silakan periksa status transaksi.')
+    } else {
+      showError(err?.response?.data?.message ?? 'Gagal membatalkan pencocokan, coba lagi.')
+    }
   } finally {
-    uploading.value = false
+    unmatchSaving.value  = false
+    unmatchLoadingId.value = null
   }
 }
 
-function openProgressDialog() {
-  batchStatus.value  = { status: 'queued', phase: 'queued' }
-  progressDialog.value = true
-}
-
-function poll() {
-  clearTimeout(pollTimer)
-  pollTimer = setTimeout(async () => {
-    try {
-      const res  = await api.get(`/finance/rekonsiliasi-bank/imports/${batchId.value}/status`)
-      const data = res.data?.data
-
-      if (data) batchStatus.value = data
-
-      if (data?.status === 'completed') {
-        onImportCompleted(data)
-        return
-      }
-      if (data?.status === 'needs_confirmation') {
-        onImportNeedsConfirmation()
-        return
-      }
-      if (data?.status === 'failed') {
-        return // dialog progress tetap terbuka menampilkan message + errors
-      }
-
-      poll()
-    } catch {
-      batchStatus.value = { status: 'failed', phase: 'failed', message: 'Gagal memuat status import.' }
-    }
-  }, 2500)
-}
-
-function onImportCompleted(data) {
-  progressDialog.value = false
-  batchId.value = null
-  reset()
-  if (data.bank_statement_id) selectedId.value = data.bank_statement_id
-}
-
-function onImportNeedsConfirmation() {
-  progressDialog.value = false
-  overlapDialog.value  = true
-}
-
-async function confirmReplace() {
-  confirming.value = true
+async function doAbaikan(item) {
+  abaikanLoadingId.value = item.id
   try {
-    await api.post(`/finance/rekonsiliasi-bank/imports/${batchId.value}/confirm-replace`)
-    overlapDialog.value = false
-    openProgressDialog()
-    poll()
-  } catch (err) {
-    overlapDialog.value = false
-    batchStatus.value = {
-      status: 'failed', phase: 'failed',
-      message: err?.response?.data?.message ?? 'Gagal melanjutkan import.',
-    }
-    progressDialog.value = true
+    await api.patch(`/finance/rekonsiliasi-bank/detail/${item.id}/abaikan`)
+    await refreshAfterRowChange()
   } finally {
-    confirming.value = false
+    abaikanLoadingId.value = null
   }
 }
 
-function closeProgressDialog() {
-  progressDialog.value = false
-  batchId.value = null
+function openKelebihanDialog(item) {
+  kelebihanItem.value   = item
+  kelebihanDialog.value = true
 }
 
-async function doDownloadTemplate() {
-  const c = (value, opts = {}) => ({ value, fontFamily: 'Calibri', fontSize: 10, alignVertical: 'middle', ...opts })
-  const bd = { borderStyle: 'thin', borderColor: '#B8CCE4' }
+async function onKelebihanChanged(itemId) {
+  await refreshAfterRowChange()
 
-  // ── Sheet 1: Template ─────────────────────────────────────────────────
-  const templateSheet = {
-    sheet: 'Template',
-    columns: [
-      { width: 14 },
-      { width: 42 },
-      { width: 22 },
-      { width: 16 },
-      { width: 16 },
-      { width: 16 },
-    ],
-    data: [
-      // Baris 1 — Judul (navy gelap, teks putih)
-      [c('TEMPLATE REKENING KORAN — Sistem IRON', {
-        span: 6, fontWeight: 'bold', fontSize: 14, height: 32,
-        color: '#FFFFFF', backgroundColor: '#1F3864', align: 'left',
-      })],
-
-      // Baris 2 — Sub-info (biru medium, teks putih)
-      [c('Isi data mulai baris ke-4  ·  Format Tanggal: DDMMYYYY  ·  Angka tanpa titik, koma, atau simbol Rp', {
-        span: 6, fontStyle: 'italic', fontSize: 9, height: 16,
-        color: '#DDEEFF', backgroundColor: '#2E75B6', align: 'left',
-      })],
-
-      // Baris 3 — Header kolom (biru medium-gelap, teks putih)
-      [
-        c('Tanggal',      { fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#2F5496', align: 'center', height: 22, ...bd }),
-        c('Keterangan',   { fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#2F5496', align: 'left',   height: 22, ...bd }),
-        c('No Referensi', { fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#2F5496', align: 'left',   height: 22, ...bd }),
-        c('Debit',        { fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#2F5496', align: 'right',  height: 22, ...bd }),
-        c('Kredit',       { fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#2F5496', align: 'right',  height: 22, ...bd }),
-        c('Saldo',        { fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#2F5496', align: 'right',  height: 22, ...bd }),
-      ],
-
-      // Baris 4 — Contoh data (biru sangat muda, teks abu gelap)
-      [
-        c('01012025',                            { backgroundColor: '#DEEAF1', align: 'center', color: '#404040', fontStyle: 'italic', height: 18, ...bd }),
-        c('Contoh: Transfer Pembayaran Invoice', { backgroundColor: '#DEEAF1', align: 'left',   color: '#404040', fontStyle: 'italic', height: 18, ...bd }),
-        c('TRF202501010001',                     { backgroundColor: '#DEEAF1', align: 'left',   color: '#404040', fontStyle: 'italic', height: 18, ...bd }),
-        c(null,                                  { backgroundColor: '#DEEAF1', align: 'right',  color: '#404040', fontStyle: 'italic', height: 18, ...bd }),
-        c('5000000',                             { backgroundColor: '#DEEAF1', align: 'right',  color: '#404040', fontStyle: 'italic', height: 18, ...bd }),
-        c('25000000',                            { backgroundColor: '#DEEAF1', align: 'right',  color: '#404040', fontStyle: 'italic', height: 18, ...bd }),
-      ],
-    ],
+  const updatedItem = transactionTableRef.value?.rows?.find(d => d.id === itemId)
+  if (updatedItem) {
+    kelebihanItem.value = updatedItem
+    if (selectedItem.value?.id === itemId) selectedItem.value = updatedItem
   }
-
-  // ── Sheet 2: Petunjuk ──────────────────────────────────────────────────
-  const pb  = { borderStyle: 'thin', borderColor: '#B8CCE4' }
-  const row = (value, opts = {}) => c(value, { align: 'left', height: 18, ...opts })
-
-  const kolomData = [
-    ['Tanggal',      'DDMMYYYY (teks)',  'Tanggal transaksi — tulis 8 digit sebagai teks',                '01012025'],
-    ['Keterangan',   'Teks bebas',      'Deskripsi transaksi sesuai rekening koran',                     'TRANSFER MASUK - INV-2025-001'],
-    ['No Referensi', 'Teks (opsional)', 'No. referensi bank — dipakai sistem untuk auto-matching',       'TRF202501010001'],
-    ['Debit',        'Angka bulat',     'Uang keluar (tanpa titik/koma). Biarkan kosong jika tidak ada', '1500000'],
-    ['Kredit',       'Angka bulat',     'Uang masuk (tanpa titik/koma). Biarkan kosong jika tidak ada', '5000000'],
-    ['Saldo',        'Angka bulat',     'Saldo rekening setelah transaksi (tanpa titik/koma)',            '25000000'],
-  ]
-
-  const aturanData = [
-    ['1.', 'Jangan hapus atau mengubah baris 1 (judul), baris 2 (info), dan baris 3 (header kolom).'],
-    ['2.', 'Isi data transaksi mulai dari BARIS KE-4.'],
-    ['3.', 'Format tanggal wajib DDMMYYYY — contoh: 01012025 untuk tanggal 1 Januari 2025.'],
-    ['4.', 'Angka (Debit, Kredit, Saldo) diisi bilangan bulat TANPA titik ribuan, koma, atau simbol Rp.'],
-    ['5.', 'Tiap baris hanya boleh memiliki salah satu: Debit ATAU Kredit yang terisi (tidak keduanya).'],
-    ['6.', 'Kolom No Referensi opsional, namun jika diisi akan digunakan untuk pencocokan otomatis.'],
-    ['7.', 'Simpan file dalam format .xlsx atau .xls sebelum diupload ke sistem.'],
-  ]
-
-  const petunjukSheet = {
-    sheet: 'Petunjuk',
-    columns: [{ width: 18 }, { width: 18 }, { width: 52 }, { width: 22 }],
-    data: [
-      // Judul (navy gelap, teks putih)
-      [row('PETUNJUK PENGISIAN REKENING KORAN', {
-        span: 4, fontWeight: 'bold', fontSize: 14, height: 32,
-        color: '#FFFFFF', backgroundColor: '#1F3864',
-      })],
-
-      // Sub-judul (biru medium, italic putih)
-      [row('Template Rekening Koran — Sistem IRON', {
-        span: 4, fontStyle: 'italic', fontSize: 9, height: 16,
-        color: '#DDEEFF', backgroundColor: '#2E75B6',
-      })],
-
-      // Spasi
-      [row('', { span: 4, height: 8, backgroundColor: '#EBF3FB' })],
-
-      // Section: Penjelasan Kolom (biru medium-gelap, teks putih)
-      [row('PENJELASAN KOLOM', {
-        span: 4, fontWeight: 'bold', fontSize: 11, height: 22,
-        color: '#FFFFFF', backgroundColor: '#2F5496',
-      })],
-
-      // Header tabel (biru agak terang, teks putih)
-      [
-        row('Kolom',        { fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#4472C4', ...pb }),
-        row('Format',       { fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#4472C4', ...pb }),
-        row('Keterangan',   { fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#4472C4', ...pb }),
-        row('Contoh Nilai', { fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#4472C4', ...pb }),
-      ],
-
-      // Baris kolom — zebra biru sangat muda & putih
-      ...kolomData.map((cols, i) => cols.map(v =>
-        row(v, { backgroundColor: i % 2 === 0 ? '#DEEAF1' : '#FFFFFF', color: '#212121', ...pb }),
-      )),
-
-      // Spasi
-      [row('', { span: 4, height: 10 })],
-
-      // Section: Aturan Penting (biru medium-gelap, teks putih)
-      [row('ATURAN PENTING', {
-        span: 4, fontWeight: 'bold', fontSize: 11, height: 22,
-        color: '#FFFFFF', backgroundColor: '#2F5496',
-      })],
-
-      // Baris aturan — zebra biru sangat muda & putih
-      ...aturanData.map(([no, teks], i) => [
-        row(no,   { fontWeight: 'bold', color: '#1F3864', backgroundColor: i % 2 === 0 ? '#DEEAF1' : '#FFFFFF', ...pb }),
-        row(teks, { span: 3,            color: '#212121', backgroundColor: i % 2 === 0 ? '#DEEAF1' : '#FFFFFF', ...pb }),
-      ]),
-    ],
-  }
-
-  await writeXlsxFile([templateSheet, petunjukSheet]).toFile('template-rekening-koran.xlsx')
 }
 
 function confirmDelete(item) {
@@ -773,95 +438,40 @@ async function doDelete() {
   deleting.value = true
   try {
     await api.delete(`/finance/rekonsiliasi-bank/${deleteTarget.value.id}`)
-    if (selectedId.value === deleteTarget.value.id) selectedId.value = null
+
+    const wasSelected = selectedReportId.value === deleteTarget.value.id
+
     deleteDialog.value = false
-    reset()
+    await resetReports()
+    if (wasSelected) {
+      selectedItem.value = null
+      selectedReportId.value = reportItems.value[0]?.id ?? null
+    }
   } finally {
     deleting.value = false
   }
 }
 
-onMounted(reset)
+watch(selectedReportId, async id => {
+  selectedItem.value = null
+  mobileDetailOpen.value = false
+  router.replace({ query: { ...route.query, report: id ?? undefined } })
+  if (id) await fetchHeader(id)
+})
+
+watch(activeTab, tab => {
+  router.replace({ query: { ...route.query, tab } })
+})
+
+onMounted(async () => {
+  await resetReports()
+  selectedReportId.value = route.query.report
+    ? Number(route.query.report)
+    : (reportItems.value[0]?.id ?? null)
+  if (route.query.tab) activeTab.value = route.query.tab
+})
+
 onBeforeUnmount(() => {
-  clearTimeout(pollTimer)
-  abort()
+  abortReports()
 })
 </script>
-
-<style scoped>
-.dropzone {
-  border: 2px dashed rgba(var(--v-theme-primary), 0.4);
-  border-radius: 8px;
-  padding: 28px 16px;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  transition: border-color 0.2s, background 0.2s;
-}
-.dropzone:hover,
-.dropzone--active {
-  border-color: rgb(var(--v-theme-primary));
-  background: rgba(var(--v-theme-primary), 0.05);
-}
-
-.import-stepper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px 0;
-}
-.import-step {
-  flex-shrink: 0;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(var(--v-theme-on-surface), 0.08);
-  color: rgba(var(--v-theme-on-surface), 0.4);
-  transition: background-color 0.35s ease, color 0.35s ease, transform 0.35s ease;
-}
-.import-step--done {
-  background: rgb(var(--v-theme-success));
-  color: rgb(var(--v-theme-on-success));
-}
-.import-step--active {
-  background: rgb(var(--v-theme-primary));
-  color: rgb(var(--v-theme-on-primary));
-  transform: scale(1.2);
-  animation: import-pulse 1.6s ease-out infinite;
-}
-.import-connector {
-  flex: 1 1 auto;
-  min-width: 8px;
-  height: 3px;
-  margin: 0 2px;
-  border-radius: 2px;
-  background: rgba(var(--v-theme-on-surface), 0.08);
-  transition: background-color 0.5s ease;
-}
-.import-connector--filled {
-  background: rgb(var(--v-theme-success));
-}
-
-@keyframes import-pulse {
-  0% { box-shadow: 0 0 0 0 rgba(var(--v-theme-primary), 0.45); }
-  70% { box-shadow: 0 0 0 9px rgba(var(--v-theme-primary), 0); }
-  100% { box-shadow: 0 0 0 0 rgba(var(--v-theme-primary), 0); }
-}
-
-.import-fade-enter-active,
-.import-fade-leave-active {
-  transition: opacity 0.25s ease, transform 0.25s ease;
-}
-.import-fade-enter-from {
-  opacity: 0;
-  transform: translateY(4px);
-}
-.import-fade-leave-to {
-  opacity: 0;
-  transform: translateY(-4px);
-}
-</style>
