@@ -43,7 +43,7 @@
             class="ps-4 mt-2"
           >
             <li>Upload <strong>1 file Excel</strong> dengan <strong>3 sheet</strong>: <strong>MASTER DATA</strong> (Investor + Resto + Client AR), <strong>MASTER BARANG</strong> (Produk/Barang), dan <strong>Petunjuk Pengisian</strong>.</li>
-            <li>Sheet <strong>MASTER DATA</strong>: 1 baris = 1 outlet. Field Client AR: <strong>pic_ar</strong> (PIC AR) wajib jika <code>tipe_klien</code> diisi. Kolom <strong>nama_entitas wajib</strong> jika <code>tipe_klien = PT</code>.</li>
+            <li>Sheet <strong>MASTER DATA</strong>: 1 baris = 1 outlet. Kolom <code>tipe_klien</code> boleh diisi <strong>RESTO/B2C</strong> atau <strong>PT/B2B</strong>. Untuk <code>tipe_klien = PT/B2B</code>: <strong>nama_entitas</strong> dan <strong>pic_ar</strong> wajib diisi. Untuk <code>tipe_klien = RESTO/B2C</code>: <strong>nama_pic</strong> wajib diisi (pic_ar hanya fallback jika nama_pic kosong).</li>
             <li>Sheet <strong>MASTER BARANG</strong>: <strong>kode_barang wajib</strong> untuk setiap baris (identitas unik barang, boleh nama sama untuk barang berbeda).</li>
             <li><strong>Invoice tidak lagi diimport di sini.</strong> Gunakan tab <strong>Import Master Invoice</strong> — di sana data dibaca &amp; diklasifikasi dulu supaya invoice yang sudah ditagih/dibayar tidak tertimpa.</li>
             <li>Import hanya dapat dilakukan oleh role <strong>ADMIN, MANAGER, atau SUPERVISOR</strong>.</li>
@@ -235,7 +235,7 @@
           >
             <ul class="ps-4">
               <li>File harus berformat <strong>.xlsx</strong> dengan sheet <strong>MASTER DATA</strong> dan <strong>MASTER BARANG</strong>.</li>
-              <li>Sheet <strong>MASTER DATA</strong>: 1 baris = Investor + Resto + Client AR. Kolom <strong>tipe_klien</strong> (PT/RESTO) &amp; <strong>pic_ar</strong> wajib untuk membuat Client AR.</li>
+              <li>Sheet <strong>MASTER DATA</strong>: 1 baris = Investor + Resto + Client AR. Kolom <strong>tipe_klien</strong> boleh diisi <strong>RESTO/B2C</strong> atau <strong>PT/B2B</strong>. PT/B2B wajib isi <strong>nama_entitas</strong> &amp; <strong>pic_ar</strong>; RESTO/B2C wajib isi <strong>nama_pic</strong>.</li>
               <li>Sheet <strong>MASTER BARANG</strong>: kode_barang, nama_barang, spesifikasi, keterangan, status. <strong>kode_barang wajib</strong> di setiap baris.</li>
               <li>Sheet <strong>MASTER INVOICE</strong> pada file lama akan <strong>diabaikan</strong> — upload invoice lewat tab Import Master Invoice.</li>
             </ul>
