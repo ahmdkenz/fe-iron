@@ -51,6 +51,7 @@ function openAppUpdate(update) {
     width="420"
     location="bottom end"
     offset="15px"
+    :close-on-content-click="false"
   >
     <template #activator="{ props }">
       <VBadge
@@ -59,6 +60,7 @@ function openAppUpdate(update) {
         color="error"
         offset-x="4"
         offset-y="4"
+        class="me-3"
       >
         <VBtn
           v-bind="props"
