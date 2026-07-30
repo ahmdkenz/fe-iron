@@ -1,18 +1,31 @@
 <template>
-  <BaseTable
-    :headers="headers"
-    :items="rows"
-    :total="meta.total"
-    :loading="loading"
-    :per-page="meta.per_page"
-    :page="meta.current_page"
-    item-value="id"
-    interactive-rows
-    mobile-cards
-    :row-props="rowProps"
-    @update:options="onTableOptions"
-    @row-activate="$emit('select-row', $event)"
-  >
+  <div>
+    <VTextField
+      v-model="params.search"
+      placeholder="Cari No Ref Bank..."
+      clearable
+      hide-details
+      density="compact"
+      style="max-width: 280px"
+      class="mb-3"
+      prepend-inner-icon="ri-search-line"
+      @update:model-value="onSearchInput"
+    />
+
+    <BaseTable
+      :headers="headers"
+      :items="rows"
+      :total="meta.total"
+      :loading="loading"
+      :per-page="meta.per_page"
+      :page="meta.current_page"
+      item-value="id"
+      interactive-rows
+      mobile-cards
+      :row-props="rowProps"
+      @update:options="onTableOptions"
+      @row-activate="$emit('select-row', $event)"
+    >
     <template #mobile-card="{ item }">
       <div
         class="d-flex align-center justify-space-between gap-2"
@@ -266,7 +279,8 @@
         >-</span>
       </div>
     </template>
-  </BaseTable>
+    </BaseTable>
+  </div>
 </template>
 
 <script setup>
@@ -299,7 +313,6 @@ params.per_page = 15
 const headers = [
   { title: 'No',             key: 'no',            sortable: false, width: '50px' },
   { title: 'Tanggal',        key: 'tanggal',       sortable: false, width: '110px' },
-  { title: 'Keterangan',     key: 'keterangan',    sortable: false },
   { title: 'No Ref Bank',    key: 'no_referensi',  sortable: false, width: '140px' },
   { title: 'Debit',          key: 'debit',         sortable: false, align: 'end' },
   { title: 'Kredit',         key: 'kredit',        sortable: false, align: 'end' },
@@ -309,11 +322,21 @@ const headers = [
   { title: 'Selisih',        key: 'selisih_bank',  sortable: false, width: '90px', align: 'center' },
   { title: 'Dicocokkan Oleh', key: 'matched_by',    sortable: false, width: '130px' },
   { title: 'Kelebihan',      key: 'kelebihan',     sortable: false, width: '120px' },
+  { title: 'Keterangan',     key: 'keterangan',    sortable: false },
   { title: 'Aksi',           key: 'aksi',          sortable: false, width: '160px' },
 ]
 
 function rowProps(ctx) {
   return ctx.item.id === props.selectedId ? { class: 'tx-row--selected' } : {}
+}
+
+let searchDebounce = null
+function onSearchInput() {
+  clearTimeout(searchDebounce)
+  searchDebounce = setTimeout(() => {
+    params.page = 1
+    load()
+  }, 400)
 }
 
 // Cache per (status, page, per_page) — supaya berpindah balik ke tab yang
@@ -322,7 +345,7 @@ function rowProps(ctx) {
 // Dibersihkan total tiap ada perubahan data (lihat refresh()) karena baris bisa
 // berpindah status (abaikan/cocokkan/unmatch) sehingga cache tab lain jadi basi.
 const cache = new Map()
-const cacheKey = () => `${params.status}|${params.page}|${params.per_page}`
+const cacheKey = () => `${params.status}|${params.search}|${params.page}|${params.per_page}`
 
 // Token pencegah race: kalau user pindah tab lagi sebelum request sebelumnya
 // selesai, respons yang datang belakangan (out-of-order) tidak boleh menimpa
