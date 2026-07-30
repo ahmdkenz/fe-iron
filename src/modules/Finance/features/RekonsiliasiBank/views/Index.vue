@@ -85,7 +85,7 @@
         <VRow v-if="!xs">
           <VCol
             cols="12"
-            md="8"
+            :md="desktopDetailOpen ? 8 : 12"
           >
             <TransactionTable
               ref="transactionTableRef"
@@ -106,6 +106,7 @@
             />
           </VCol>
           <VCol
+            v-if="desktopDetailOpen"
             cols="12"
             md="4"
             class="rekon-detail-col"
@@ -126,7 +127,7 @@
                   :can-process-row="canProcessRow"
                   :abaikan-loading-id="abaikanLoadingId"
                   :unmatch-loading-id="unmatchLoadingId"
-                  :closable="false"
+                  @close="desktopDetailOpen = false"
                   @cocokkan="openMatchDialog"
                   @abaikan="doAbaikan"
                   @unmatch="openUnmatchDialog"
@@ -301,6 +302,7 @@ const selectedReportId  = ref(null)
 const activeTab         = ref('transaksi')
 const selectedItem      = ref(null)
 const mobileDetailOpen  = ref(false)
+const desktopDetailOpen = ref(true)
 const transactionTableRef = ref(null)
 const detailTrackRef    = ref(null)
 const detailFollowRef   = ref(null)
@@ -411,6 +413,7 @@ function onSelectRow(payload) {
   const item = payload?.item ?? payload
 
   selectedItem.value = item
+  desktopDetailOpen.value = true
   if (!xs.value) syncDesktopDetailOffset(payload?.event)
   if (xs.value) mobileDetailOpen.value = true
 }
@@ -526,6 +529,7 @@ async function doDelete() {
 watch(selectedReportId, async id => {
   selectedItem.value = null
   mobileDetailOpen.value = false
+  desktopDetailOpen.value = true
   resetDesktopDetailPosition()
   router.replace({ query: { ...route.query, report: id ?? undefined } })
   if (id) await fetchHeader(id)
