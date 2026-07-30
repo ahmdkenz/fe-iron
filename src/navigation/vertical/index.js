@@ -73,7 +73,7 @@ export default [
     title: 'Data Brand',
     to: { name: 'master-brand' },
     icon: { icon: 'ri-price-tag-3-line' },
-    roles: ['ADMIN'],
+    roles: ['ADMIN', 'MANAGER', 'SUPERVISOR'],
     mobileNav: 'more',
   },
   {

@@ -33,7 +33,7 @@ export default [
     path: '/master/brand',
     name: 'master-brand',
     component: () => import('@/modules/Master/features/Brand/views/Index.vue'),
-    meta: { requiresAuth: true, roles: ['ADMIN'] },
+    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR'] },
   },
   {
     path: '/master/barang',
@@ -93,13 +93,13 @@ export default [
     path: '/master/brand/create',
     name: 'master-brand-create',
     component: () => import('@/modules/Master/features/Brand/views/Form.vue'),
-    meta: { requiresAuth: true, roles: ['ADMIN'] },
+    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR'] },
   },
   {
     path: '/master/brand/:id/edit',
     name: 'master-brand-edit',
     component: () => import('@/modules/Master/features/Brand/views/Form.vue'),
-    meta: { requiresAuth: true, roles: ['ADMIN'] },
+    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR'] },
   },
   {
     path: '/master/barang/create',
