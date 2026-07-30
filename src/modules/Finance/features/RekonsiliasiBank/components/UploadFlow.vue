@@ -563,7 +563,7 @@ async function doDownloadTemplate() {
         span: 6, fontWeight: 'bold', fontSize: 14, height: 32,
         color: '#FFFFFF', backgroundColor: '#1F3864', align: 'left',
       })],
-      [c('Isi data mulai baris ke-4  ·  Format Tanggal: DDMMYYYY  ·  Angka tanpa titik, koma, atau simbol Rp', {
+      [c('Isi data mulai baris ke-4  ·  Format Tanggal: DD-MM-YYYY  ·  Angka tanpa titik, koma, atau simbol Rp', {
         span: 6, fontStyle: 'italic', fontSize: 9, height: 16,
         color: '#DDEEFF', backgroundColor: '#2E75B6', align: 'left',
       })],
@@ -576,7 +576,7 @@ async function doDownloadTemplate() {
         c('Saldo',        { fontWeight: 'bold', color: '#FFFFFF', backgroundColor: '#2F5496', align: 'right',  height: 22, ...bd }),
       ],
       [
-        c('01012025',                            { backgroundColor: '#DEEAF1', align: 'center', color: '#404040', fontStyle: 'italic', height: 18, ...bd }),
+        c('01-01-2025',                          { backgroundColor: '#DEEAF1', align: 'center', color: '#404040', fontStyle: 'italic', height: 18, ...bd }),
         c('Contoh: Transfer Pembayaran Invoice', { backgroundColor: '#DEEAF1', align: 'left',   color: '#404040', fontStyle: 'italic', height: 18, ...bd }),
         c('TRF202501010001',                     { backgroundColor: '#DEEAF1', align: 'left',   color: '#404040', fontStyle: 'italic', height: 18, ...bd }),
         c(null,                                  { backgroundColor: '#DEEAF1', align: 'right',  color: '#404040', fontStyle: 'italic', height: 18, ...bd }),
@@ -591,7 +591,7 @@ async function doDownloadTemplate() {
   const row = (value, opts = {}) => c(value, { align: 'left', height: 18, ...opts })
 
   const kolomData = [
-    ['Tanggal',      'DDMMYYYY (teks)',  'Tanggal transaksi — tulis 8 digit sebagai teks',                '01012025'],
+    ['Tanggal',      'DD-MM-YYYY (teks)', 'Tanggal transaksi — tulis dengan tanda strip (-)',              '01-01-2025'],
     ['Keterangan',   'Teks bebas',      'Deskripsi transaksi sesuai rekening koran',                     'TRANSFER MASUK - INV-2025-001'],
     ['No Referensi', 'Teks (opsional)', 'No. referensi bank — dipakai sistem untuk auto-matching',       'TRF202501010001'],
     ['Debit',        'Angka bulat',     'Uang keluar (tanpa titik/koma). Biarkan kosong jika tidak ada', '1500000'],
@@ -602,7 +602,7 @@ async function doDownloadTemplate() {
   const aturanData = [
     ['1.', 'Jangan hapus atau mengubah baris 1 (judul), baris 2 (info), dan baris 3 (header kolom).'],
     ['2.', 'Isi data transaksi mulai dari BARIS KE-4.'],
-    ['3.', 'Format tanggal wajib DDMMYYYY — contoh: 01012025 untuk tanggal 1 Januari 2025.'],
+    ['3.', 'Format tanggal wajib DD-MM-YYYY — contoh: 01-01-2025 untuk tanggal 1 Januari 2025.'],
     ['4.', 'Angka (Debit, Kredit, Saldo) diisi bilangan bulat TANPA titik ribuan, koma, atau simbol Rp.'],
     ['5.', 'Tiap baris hanya boleh memiliki salah satu: Debit ATAU Kredit yang terisi (tidak keduanya).'],
     ['6.', 'Kolom No Referensi opsional, namun jika diisi akan digunakan untuk pencocokan otomatis.'],
