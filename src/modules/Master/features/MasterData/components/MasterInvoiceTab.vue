@@ -523,18 +523,18 @@
           <VBtn
             variant="outlined"
             color="primary"
-            prepend-icon="ri-file-excel-line"
+            prepend-icon="ri-file-text-line"
             class="mb-4"
             :loading="downloadingTemplate"
             @click="downloadTemplate"
           >
-            Download Template Excel
+            Download Template CSV
           </VBtn>
 
           <VFileInput
             v-model="importFile"
-            label="Pilih File (.xlsx)"
-            accept=".xlsx,.xls"
+            label="Pilih File (.csv)"
+            accept=".csv,text/csv,text/plain"
             prepend-icon="ri-file-upload-line"
             variant="outlined"
             density="compact"
@@ -817,7 +817,7 @@ async function downloadTemplate() {
     const a = document.createElement('a')
 
     a.href = url
-    a.download = 'template-import-master-invoice.xlsx'
+    a.download = 'template-import-master-invoice.csv'
     a.click()
     URL.revokeObjectURL(url)
   } finally {

@@ -16,7 +16,7 @@
         <template v-if="!xs">
           <VBtn
             color="primary"
-            prepend-icon="ri-file-excel-line"
+            prepend-icon="ri-file-text-line"
             :loading="exportingExcel"
             @click="showExportModal = true"
           >
@@ -39,7 +39,7 @@
             aria-label="Export"
             @click="showExportModal = true"
           >
-            <VIcon icon="ri-file-excel-line" />
+            <VIcon icon="ri-file-text-line" />
             <VTooltip
               activator="parent"
               location="bottom"
@@ -1048,12 +1048,12 @@ async function exportExcel() {
     const a    = document.createElement('a')
 
     a.href     = url
-    a.download = `Data Tagihan Invoice-${new Date().toISOString().slice(0, 10)}.xlsx`
+    a.download = `Data Tagihan Invoice-${new Date().toISOString().slice(0, 10)}.csv`
     a.click()
     URL.revokeObjectURL(url)
     showSuccess({ title: 'Export Berhasil!', text: 'File berhasil diunduh.' })
   } catch {
-    await showError('Gagal mengunduh data Excel.')
+    await showError('Gagal mengunduh data.')
   } finally {
     exportingExcel.value = false
     closeAlert({ onlyLoading: true })
