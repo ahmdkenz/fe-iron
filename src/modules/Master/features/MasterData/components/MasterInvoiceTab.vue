@@ -514,27 +514,43 @@
             variant="tonal"
             class="mb-4"
           >
-            <div class="text-body-2">
-              Upload di sini <strong>tidak langsung menulis invoice</strong>. Sistem membaca &amp; mengklasifikasi dulu,
-              lalu Anda yang memutuskan mana yang diproses dan mana yang diajukan sebagai Credit/Debit Note.
-            </div>
+            <ul class="ps-4">
+              <li>
+                Upload di sini <strong>tidak langsung menulis invoice</strong>. Sistem membaca &amp; mengklasifikasi dulu,
+                lalu Anda yang memutuskan mana yang diproses dan mana yang diajukan sebagai Credit/Debit Note.
+              </li>
+              <li>
+                Gunakan <strong>XLSX</strong> untuk data hingga ±13.000 baris; gunakan <strong>CSV</strong> untuk data lebih besar,
+                hingga ±50.000–100.000 baris.
+              </li>
+            </ul>
           </VAlert>
 
-          <VBtn
-            variant="outlined"
-            color="primary"
-            prepend-icon="ri-file-text-line"
-            class="mb-4"
-            :loading="downloadingTemplate"
-            @click="downloadTemplate"
-          >
-            Download Template CSV
-          </VBtn>
+          <div class="d-flex flex-wrap ga-2 mb-4">
+            <VBtn
+              variant="outlined"
+              color="primary"
+              prepend-icon="ri-file-excel-line"
+              :loading="downloadingTemplate.xlsx"
+              @click="downloadTemplate('xlsx')"
+            >
+              Template XLSX
+            </VBtn>
+            <VBtn
+              variant="outlined"
+              color="primary"
+              prepend-icon="ri-file-text-line"
+              :loading="downloadingTemplate.csv"
+              @click="downloadTemplate('csv')"
+            >
+              Template CSV
+            </VBtn>
+          </div>
 
           <VFileInput
             v-model="importFile"
-            label="Pilih File (.csv)"
-            accept=".csv,text/csv,text/plain"
+            label="Pilih File (.xlsx atau .csv)"
+            accept=".xlsx,.xls,.csv,text/csv,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             prepend-icon="ri-file-upload-line"
             variant="outlined"
             density="compact"
@@ -627,7 +643,7 @@ const { busy, progress, result } = storeToRefs(store)
 const showImport = ref(false)
 const showInfo = ref(false)
 const importFile = ref(null)
-const downloadingTemplate = ref(false)
+const downloadingTemplate = ref({ xlsx: false, csv: false })
 const selected = ref([])
 
 let searchTimer = null
@@ -809,19 +825,22 @@ function closeImport() {
   minimizeStore.remove(WIDGET_ID)
 }
 
-async function downloadTemplate() {
-  downloadingTemplate.value = true
+async function downloadTemplate(format) {
+  downloadingTemplate.value[format] = true
   try {
-    const res = await api.get('/finance/invoices/import-template', { responseType: 'blob' })
+    const res = await api.get('/finance/invoices/import-template', {
+      params: { format },
+      responseType: 'blob',
+    })
     const url = URL.createObjectURL(new Blob([res.data]))
     const a = document.createElement('a')
 
     a.href = url
-    a.download = 'template-import-master-invoice.csv'
+    a.download = `template-import-master-invoice.${format}`
     a.click()
     URL.revokeObjectURL(url)
   } finally {
-    downloadingTemplate.value = false
+    downloadingTemplate.value[format] = false
   }
 }
 

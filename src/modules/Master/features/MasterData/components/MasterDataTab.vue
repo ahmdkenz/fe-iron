@@ -238,6 +238,7 @@
               <li>Sheet <strong>MASTER DATA</strong>: 1 baris = Investor + Resto + Client AR. Kolom <strong>tipe_klien</strong> boleh diisi <strong>RESTO/B2C</strong> atau <strong>PT/B2B</strong>. PT/B2B wajib isi <strong>nama_entitas</strong> &amp; <strong>pic_ar</strong>; RESTO/B2C wajib isi <strong>nama_pic</strong>.</li>
               <li>Sheet <strong>MASTER BARANG</strong>: kode_barang, nama_barang, spesifikasi, keterangan, status. <strong>kode_barang wajib</strong> di setiap baris.</li>
               <li>Sheet <strong>MASTER INVOICE</strong> pada file lama akan <strong>diabaikan</strong> — upload invoice lewat tab Import Master Invoice.</li>
+              <li>Format XLSX cocok untuk Master Data hingga ±13.000 baris. Untuk volume lebih besar, pertimbangkan membagi jadi beberapa file upload.</li>
             </ul>
           </VAlert>
 
