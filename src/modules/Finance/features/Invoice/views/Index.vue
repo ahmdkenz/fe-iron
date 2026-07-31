@@ -727,32 +727,40 @@
         class="mb-3"
       />
 
-      <div class="mb-1 text-caption text-medium-emphasis">
+      <div class="mb-2 text-caption text-medium-emphasis">
         Format File
       </div>
-      <VBtnToggle
-        v-model="exportFormat"
-        variant="outlined"
-        mandatory
-        divided
-        density="compact"
-        class="mb-3"
-      >
-        <VBtn
-          value="xlsx"
-          size="small"
-          style="min-width: 90px"
+      <div class="d-flex gap-3 mb-3">
+        <VCard
+          v-for="opt in exportFormatOptions"
+          :key="opt.value"
+          :variant="exportFormat === opt.value ? 'tonal' : 'outlined'"
+          :color="exportFormat === opt.value ? 'primary' : undefined"
+          class="cursor-pointer flex-1-1"
+          @click="exportFormat = opt.value"
         >
-          XLSX (Excel)
-        </VBtn>
-        <VBtn
-          value="csv"
-          size="small"
-          style="min-width: 90px"
-        >
-          CSV
-        </VBtn>
-      </VBtnToggle>
+          <VCardText class="pa-4 text-center">
+            <VIcon
+              :icon="opt.icon"
+              :color="exportFormat === opt.value ? 'primary' : 'grey'"
+              size="28"
+              class="mb-2"
+            />
+            <div class="d-flex align-center justify-center gap-1">
+              <span class="text-body-2 font-weight-semibold">{{ opt.label }}</span>
+              <VIcon
+                v-if="exportFormat === opt.value"
+                icon="ri-checkbox-circle-fill"
+                color="primary"
+                size="16"
+              />
+            </div>
+            <div class="text-caption text-medium-emphasis mt-1">
+              {{ opt.caption }}
+            </div>
+          </VCardText>
+        </VCard>
+      </div>
 
       <VAlert
         v-if="exportFormat === 'xlsx' && exportRowCount > 13000"
@@ -875,6 +883,10 @@ const exportingExcel   = ref(false)
 const showExportModal  = ref(false)
 const exportMonth      = ref(new Date().toISOString().slice(0, 7))
 const exportFormat     = ref('xlsx')
+const exportFormatOptions = [
+  { value: 'xlsx', label: 'XLSX (Excel)', caption: '2 sheet: Invoice & Detail Invoice', icon: 'ri-file-excel-line' },
+  { value: 'csv', label: 'CSV', caption: '1 file, kolom berdampingan', icon: 'ri-file-text-line' },
+]
 const exportRowCount   = ref(null)
 const printingId        = ref(null)
 const activeSegmentTab  = ref(canSeeAll ? 'b2b' : 'b2c')
