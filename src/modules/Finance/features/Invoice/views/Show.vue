@@ -1120,7 +1120,20 @@
                       {{ formatCurrency(p.jumlah_pembayaran) }}
                     </td>
                     <td>{{ p.no_referensi ?? '-' }}</td>
-                    <td>{{ p.keterangan ?? '-' }}</td>
+                    <td>
+                      <VChip
+                        v-if="p.is_multi_payment"
+                        size="x-small"
+                        color="primary"
+                        variant="tonal"
+                        label
+                        class="mb-1 d-block"
+                        style="width: fit-content;"
+                      >
+                        Multi Payment
+                      </VChip>
+                      {{ p.keterangan ?? '-' }}
+                    </td>
                     <td>
                       <VBtn
                         v-if="p.bukti_url"
@@ -1194,6 +1207,18 @@
       confirm-action="hapus"
       @confirm="doDeletePembayaran"
     >
+      <VAlert
+        v-if="selectedPembayaran?.is_multi_payment"
+        type="warning"
+        variant="tonal"
+        density="compact"
+        class="mb-3"
+      >
+        Pembayaran ini bagian dari <strong>Multi Payment</strong> yang juga melunasi
+        {{ selectedPembayaran.multi_payment_invoice_count }} invoice lain. Menghapus akan
+        <strong>membatalkan seluruh Multi Payment ini</strong> — semua invoice terkait akan kembali
+        ke status pembayaran sebelumnya, bukan hanya invoice ini.
+      </VAlert>
       <p>Apakah Anda yakin ingin menghapus catatan pembayaran ini?</p>
     </BaseModal>
 

@@ -35,6 +35,7 @@ declare module 'vue' {
     GlobalMinimizeWidgets: typeof import('./src/components/base/GlobalMinimizeWidgets.vue')['default']
     I18n: typeof import('./src/@core/components/I18n.vue')['default']
     InvestorForm: typeof import('./src/modules/Master/features/Investor/components/InvestorForm.vue')['default']
+    InvoiceArMultiPickerDialog: typeof import('./src/modules/Finance/features/RekonsiliasiBank/components/InvoiceArMultiPickerDialog.vue')['default']
     InvoiceItemRow: typeof import('./src/modules/Finance/features/Invoice/components/InvoiceItemRow.vue')['default']
     InvoiceStatusBadge: typeof import('./src/modules/Finance/shared/components/InvoiceStatusBadge.vue')['default']
     JatuhTempoSection: typeof import('./src/modules/Finance/features/Laporan/components/JatuhTempoSection.vue')['default']

@@ -60,41 +60,144 @@
           </div>
         </VCard>
 
-        <VBtnToggle
-          v-model="mode"
-          mandatory
-          density="compact"
-          variant="outlined"
-          divided
-          class="mb-4"
-        >
+        <div class="d-flex flex-wrap gap-3 mb-5">
           <VBtn
-            value="invoice"
+            v-for="opt in modeOptions"
+            :key="opt.value"
+            :color="mode === opt.value ? 'primary' : 'default'"
+            :variant="mode === opt.value ? 'flat' : 'outlined'"
             size="small"
-            style="min-width: 120px"
+            rounded="lg"
+            class="px-4 mode-toggle-btn"
+            @click="mode = opt.value"
           >
             <VIcon
               start
               size="16"
             >
-              ri-file-list-3-line
-            </VIcon>Invoice
+              {{ opt.icon }}
+            </VIcon>
+            {{ opt.label }}
           </VBtn>
-          <VBtn
-            value="pdm"
-            size="small"
-            style="min-width: 120px"
-          >
-            <VIcon
-              start
-              size="16"
-            >
-              ri-book-line
-            </VIcon>Catat PDM
-          </VBtn>
-        </VBtnToggle>
+        </div>
 
-        <template v-if="mode === 'pdm'">
+        <template v-if="mode === 'multi'">
+          <div class="d-flex align-center gap-2 mb-2">
+            <VIcon
+              size="18"
+              color="primary"
+            >
+              ri-git-merge-line
+            </VIcon>
+            <span class="text-body-2 font-weight-medium">Multi Payment — Lintas Resto/Investor</span>
+          </div>
+          <div class="text-caption text-medium-emphasis mb-3">
+            Pilih invoice apa saja (boleh resto/investor berbeda, asal 1 entitas penagih yang sama) untuk dilunaskan
+            dari 1 transaksi bank ini. Nominal per invoice otomatis terisi sesuai sisa tagihan saat dipilih, dan bisa
+            diedit manual. Maksimum 50 invoice per Multi Payment.
+          </div>
+
+          <div class="d-flex align-center justify-space-between mb-3">
+            <span class="text-body-2 font-weight-medium">Alokasi Invoice ({{ multiAllocations.length }})</span>
+            <VBtn
+              color="primary"
+              size="small"
+              variant="tonal"
+              prepend-icon="ri-add-line"
+              :disabled="multiAllocations.length >= 50"
+              @click="multiPickerOpen = true"
+            >
+              Tambah Invoice
+            </VBtn>
+          </div>
+
+          <div
+            v-if="multiAllocations.length === 0"
+            class="d-flex flex-column align-center justify-center py-8 text-medium-emphasis"
+          >
+            <VIcon
+              icon="ri-file-list-3-line"
+              size="36"
+              class="mb-2 opacity-40"
+            />
+            <span class="text-body-2">Belum ada invoice dipilih</span>
+          </div>
+
+          <div
+            v-else
+            class="d-flex flex-column gap-2 mb-3"
+          >
+            <VCard
+              v-for="(row, idx) in multiAllocations"
+              :key="row.invoice_id"
+              variant="outlined"
+            >
+              <VCardText class="pa-3">
+                <div class="d-flex align-start gap-2">
+                  <div class="flex-grow-1 min-width-0">
+                    <div class="d-flex align-center gap-2 flex-wrap mb-1">
+                      <span class="text-body-2 font-weight-semibold">{{ row.no_invoice }}</span>
+                      <span
+                        v-if="row.nama_resto"
+                        class="text-caption text-primary"
+                      >{{ row.nama_resto }}</span>
+                    </div>
+                    <div class="text-caption text-medium-emphasis mb-2">
+                      {{ row.nama_klien ?? '-' }} · Sisa Tagihan: {{ formatCurrency(row.sisa_tagihan) }}
+                    </div>
+                    <VTextField
+                      :model-value="row.jumlah"
+                      type="number"
+                      label="Nominal Dibayar"
+                      density="compact"
+                      variant="outlined"
+                      hide-details
+                      :min="0"
+                      :max="row.sisa_tagihan"
+                      @update:model-value="val => clampMultiJumlah(row, Number(val))"
+                    />
+                  </div>
+                  <VBtn
+                    icon
+                    variant="text"
+                    size="small"
+                    color="error"
+                    @click="removeMultiAllocation(idx)"
+                  >
+                    <VIcon
+                      icon="ri-delete-bin-line"
+                      size="18"
+                    />
+                  </VBtn>
+                </div>
+              </VCardText>
+            </VCard>
+          </div>
+
+          <VCard
+            variant="tonal"
+            :color="multiTotalAlokasi > (Number(item?.kredit) || 0) + 0.01 ? 'error' : 'success'"
+            class="pa-3"
+          >
+            <div class="d-flex justify-space-between text-body-2">
+              <span>Total Alokasi</span>
+              <strong>{{ formatCurrency(multiTotalAlokasi) }}</strong>
+            </div>
+            <div class="d-flex justify-space-between text-caption text-medium-emphasis">
+              <span>Nominal Kredit Bank</span>
+              <span>{{ formatCurrency(item?.kredit ?? 0) }}</span>
+            </div>
+            <div
+              v-if="multiSisaBelumAlokasi > 0.01"
+              class="text-caption mt-1"
+            >
+              Sisa {{ formatCurrency(multiSisaBelumAlokasi) }} akan tercatat sebagai Kelebihan Bayar dan bisa
+              dialokasikan ke invoice lain setelah transaksi ini dicocokkan.
+            </div>
+          </VCard>
+        </template>
+
+        <template v-else-if="mode === 'pdm'">
           <div class="d-flex align-center gap-2 mb-2">
             <VIcon
               size="18"
@@ -502,12 +605,21 @@
         />
         <AppActionButton
           action="lanjutkan"
-          :disabled="mode === 'invoice' ? (!selectedInvoiceId || obLoading || regularLoading || !canProceedSettle) : !pdmKlienId"
+          :disabled="canProceedDisabled"
           @click="proceedToBuktiStep"
         />
       </VCardActions>
     </VCard>
   </VDialog>
+
+  <InvoiceArMultiPickerDialog
+    v-model="multiPickerOpen"
+    :invoice-list="multiCandidateList"
+    :loading="multiCandidateLoading"
+    :disabled-ids="multiAllocations.map(a => a.invoice_id)"
+    @search="fetchMultiCandidates"
+    @confirm="onMultiPickerConfirm"
+  />
 
   <BuktiBayarDialog
     v-model:file="buktiBayar"
@@ -529,6 +641,7 @@ import { useLazyFetchAll } from '@/composables/useLazyFetchAll'
 import { useSettleWaterfall } from '@/composables/useSettleWaterfall'
 import api from '@/utils/axios'
 import BuktiBayarDialog from './BuktiBayarDialog.vue'
+import InvoiceArMultiPickerDialog from './InvoiceArMultiPickerDialog.vue'
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
@@ -545,6 +658,12 @@ const statusInvoiceColor = s => ({ LUNAS: 'success', SEBAGIAN: 'warning', TERKIR
 const mode           = ref('invoice')
 const pdmKlienId     = ref(null)
 const pdmKeterangan  = ref('')
+
+const modeOptions = [
+  { value: 'invoice', label: 'Invoice', icon: 'ri-file-list-3-line' },
+  { value: 'multi', label: 'Multi Payment', icon: 'ri-git-merge-line' },
+  { value: 'pdm', label: 'Catat PDM', icon: 'ri-book-line' },
+]
 
 const { items: klienList, loading: klienLoading, fetchAll: fetchKlien } = useCrud('/finance/klien-ar')
 const { ensureLoaded: ensureKlienLoaded } = useLazyFetchAll(fetchKlien)
@@ -732,6 +851,94 @@ function onRegularSearchInput() {
   regularTimer = setTimeout(() => fetchCandidates('regular'), 400)
 }
 
+// ── Mode "Multi Payment" — banyak invoice (boleh lintas resto/investor,
+// asal 1 entitas penagih sama) dari 1 transaksi bank ini, alokasi dilengkapi
+// waterfall auto-fill saat invoice dipilih dari picker (pola sama seperti
+// ApMatchDialog.vue di alur Payment Voucher AP).
+const multiAllocations       = ref([]) // { invoice_id, no_invoice, nama_klien, nama_resto, sisa_tagihan, jumlah }
+const multiPickerOpen        = ref(false)
+const multiCandidateList     = ref([])
+const multiCandidateLoading  = ref(false)
+
+const multiTotalAlokasi = computed(() =>
+  multiAllocations.value.reduce((sum, row) => sum + (Number(row.jumlah) || 0), 0))
+
+const multiSisaBelumAlokasi = computed(() =>
+  round2(Math.max(0, (Number(props.item?.kredit) || 0) - multiTotalAlokasi.value)))
+
+const multiIsWithinKredit = computed(() =>
+  multiTotalAlokasi.value <= (Number(props.item?.kredit) || 0) + 0.01)
+
+const canProceedMulti = computed(() =>
+  multiAllocations.value.length > 0
+  && multiAllocations.value.every(row => Number(row.jumlah) > 0)
+  && multiIsWithinKredit.value)
+
+function round2(n) {
+  return Math.round((Number(n) + Number.EPSILON) * 100) / 100
+}
+
+async function fetchMultiCandidates(search = '') {
+  const id = props.item?.id
+  if (!id) return
+  multiCandidateLoading.value = true
+  try {
+    const { data } = await api.get(`/finance/rekonsiliasi-bank/detail/${id}/invoice-candidates`, {
+      // Multi Payment v1 sengaja dibatasi ke invoice reguler saja — OB punya
+      // mekanisme "lunaskan invoice periode sebelumnya" sendiri (mode Invoice)
+      // yang belum kompatibel dengan alokasi per-baris di sini.
+      params: { search: search || undefined, type: 'regular', per_page: 50 },
+    })
+
+    multiCandidateList.value = data.data?.data ?? []
+  } catch {
+    multiCandidateList.value = []
+  } finally {
+    multiCandidateLoading.value = false
+  }
+}
+
+function onMultiPickerConfirm(selectedRows) {
+  const existingIds = new Set(multiAllocations.value.map(a => a.invoice_id))
+  let pool = Math.max(0, round2((Number(props.item?.kredit) || 0) - multiTotalAlokasi.value))
+
+  selectedRows.forEach(inv => {
+    if (existingIds.has(inv.id)) return
+    const sisa   = Number(inv.sisa_tagihan) || 0
+    const jumlah = round2(Math.min(sisa, pool))
+
+    pool = round2(Math.max(0, pool - jumlah))
+
+    multiAllocations.value.push({
+      invoice_id: inv.id,
+      no_invoice: inv.no_invoice,
+      nama_klien: inv.nama_klien,
+      nama_resto: inv.nama_resto,
+      sisa_tagihan: sisa,
+      jumlah,
+    })
+  })
+  matchError.value = ''
+}
+
+function clampMultiJumlah(row, val) {
+  if (Number.isNaN(val)) val = 0
+  if (val > row.sisa_tagihan) row.jumlah = row.sisa_tagihan
+  else if (val < 0) row.jumlah = 0
+  else row.jumlah = val
+}
+
+function removeMultiAllocation(idx) {
+  multiAllocations.value.splice(idx, 1)
+}
+
+const canProceedDisabled = computed(() => {
+  if (mode.value === 'multi') return !canProceedMulti.value
+  if (mode.value === 'pdm') return !pdmKlienId.value
+
+  return !selectedInvoiceId.value || obLoading.value || regularLoading.value || !canProceedSettle.value
+})
+
 function resetState() {
   mode.value               = 'invoice'
   pdmKlienId.value         = null
@@ -759,6 +966,10 @@ function resetState() {
   settleShortfallAck.value = false
   clearTimeout(obTimer)
   clearTimeout(regularTimer)
+
+  multiAllocations.value      = []
+  multiPickerOpen.value       = false
+  multiCandidateList.value    = []
 }
 
 watch(() => props.modelValue, open => {
@@ -770,6 +981,7 @@ watch(() => props.modelValue, open => {
   resetState()
   fetchCandidates('ob')
   fetchCandidates('regular')
+  fetchMultiCandidates()
 }, { immediate: true })
 
 function onDialogUpdate(value) {
@@ -778,7 +990,9 @@ function onDialogUpdate(value) {
 
 function proceedToBuktiStep() {
   if (!props.item) return
-  if (mode.value === 'invoice') {
+  if (mode.value === 'multi') {
+    if (!canProceedMulti.value) return
+  } else if (mode.value === 'invoice') {
     if (!selectedInvoiceId.value || !canProceedSettle.value) return
   } else if (!pdmKlienId.value) {
     return
@@ -807,7 +1021,40 @@ function handleMatchError(err) {
 }
 
 async function doManualMatch() {
+  if (mode.value === 'multi') return doManualMatchMulti()
+
   return mode.value === 'invoice' ? doManualMatchInvoice() : doManualMatchPdm()
+}
+
+async function doManualMatchMulti() {
+  if (!canProceedMulti.value || !props.item) return
+  matchSaving.value    = true
+  matchError.value     = null
+  buktiBayarError.value = null
+  try {
+    const payload = new FormData()
+
+    multiAllocations.value.forEach((row, idx) => {
+      payload.append(`alokasi[${idx}][invoice_id]`, row.invoice_id)
+      payload.append(`alokasi[${idx}][jumlah]`, row.jumlah)
+    })
+
+    const file = Array.isArray(buktiBayar.value) ? buktiBayar.value[0] : buktiBayar.value
+    if (file instanceof File) payload.append('bukti_pembayaran', file)
+
+    const { data } = await api.post(
+      `/finance/rekonsiliasi-bank/detail/${props.item.id}/catat-bayar-multi`,
+      payload,
+      { headers: { 'Content-Type': 'multipart/form-data' } },
+    )
+
+    emit('matched', { itemId: props.item.id, updated: data.data })
+    emit('update:modelValue', false)
+  } catch (err) {
+    handleMatchError(err)
+  } finally {
+    matchSaving.value = false
+  }
 }
 
 async function doManualMatchInvoice() {
@@ -868,3 +1115,13 @@ async function doManualMatchPdm() {
   }
 }
 </script>
+
+<style scoped>
+.mode-toggle-btn {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.mode-toggle-btn:hover {
+  transform: translateY(-1px);
+}
+</style>

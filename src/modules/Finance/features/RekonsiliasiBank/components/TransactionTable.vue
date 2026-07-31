@@ -135,6 +135,15 @@
         >
           {{ item.pembayaran.no_invoice }}
         </RouterLink>
+        <VChip
+          v-else-if="item.pembayaran.jumlah_invoice"
+          size="x-small"
+          color="primary"
+          variant="tonal"
+          label
+        >
+          {{ item.pembayaran.jumlah_invoice }} Invoice
+        </VChip>
         <div class="text-medium-emphasis">
           {{ item.pembayaran.klien ?? item.pembayaran.vendor }}
         </div>
