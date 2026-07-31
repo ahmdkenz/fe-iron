@@ -223,15 +223,6 @@
               </div>
             </div>
             <div class="d-flex align-center gap-1 flex-shrink-0">
-              <VBtn
-                v-if="item.can_record_payment && item.status !== 'LUNAS'"
-                icon="ri-money-cny-circle-line"
-                size="small"
-                variant="tonal"
-                color="success"
-                aria-label="Catat Bayar"
-                @click="openCatatBayar(item)"
-              />
               <MobileCardActions
                 :selected="selected"
                 :editable="item.status === 'DRAFT' && !item.is_eb_locked"
@@ -305,22 +296,6 @@
         </template>
         <template #item.actions="{ item }">
           <div class="d-flex gap-1">
-            <VBtn
-              v-if="item.can_record_payment && item.status !== 'LUNAS'"
-              icon
-              size="small"
-              variant="tonal"
-              color="success"
-              @click="openCatatBayar(item)"
-            >
-              <VIcon
-                icon="ri-money-cny-circle-line"
-                size="18"
-              />
-              <VTooltip activator="parent">
-                Catat Bayar
-              </VTooltip>
-            </VBtn>
             <VBtn
               v-if="item.can_print"
               icon
@@ -551,15 +526,6 @@
               </div>
             </div>
             <div class="d-flex align-center gap-1 flex-shrink-0">
-              <VBtn
-                v-if="item.can_record_payment && item.status !== 'LUNAS'"
-                icon="ri-money-cny-circle-line"
-                size="small"
-                variant="tonal"
-                color="success"
-                aria-label="Catat Bayar"
-                @click="openCatatBayar(item)"
-              />
               <MobileCardActions
                 :selected="selected"
                 :editable="item.status === 'DRAFT' && !item.is_eb_locked"
@@ -636,22 +602,6 @@
         </template>
         <template #item.actions="{ item }">
           <div class="d-flex gap-1">
-            <VBtn
-              v-if="item.can_record_payment && item.status !== 'LUNAS'"
-              icon
-              size="small"
-              variant="tonal"
-              color="success"
-              @click="openCatatBayar(item)"
-            >
-              <VIcon
-                icon="ri-money-cny-circle-line"
-                size="18"
-              />
-              <VTooltip activator="parent">
-                Catat Bayar
-              </VTooltip>
-            </VBtn>
             <VBtn
               v-if="item.can_print"
               icon
@@ -820,15 +770,6 @@
       </VAlert>
     </BaseModal>
 
-    <!-- Catat Bayar Modal -->
-    <PembayaranForm
-      v-if="selectedForPayment"
-      v-model="showPembayaran"
-      :invoice-id="selectedForPayment.id"
-      :sisa-tagihan="Math.max(0, selectedForPayment.subtotal - selectedForPayment.total_pembayaran - (selectedForPayment.total_penyesuaian ?? 0))"
-      @saved="onPembayaranSaved"
-    />
-
     <!-- Bulk Action Bar -->
     <BulkActionBar
       :selected="selectedInvoices"
@@ -879,8 +820,6 @@ import MobileCardActions from '@/components/shared/MobileCardActions.vue'
 import { useRouter } from 'vue-router'
 import { useDisplay } from 'vuetify'
 
-const PembayaranForm = defineAsyncComponent(() => import('@/modules/Finance/shared/components/PembayaranForm.vue'))
-
 const { xs } = useDisplay()
 const router = useRouter()
 const { showSuccess, showError, showLoading, closeAlert, confirmDelete: confirmDeleteSwal } = useSweetAlert()
@@ -928,12 +867,10 @@ const invoiceStats = computed(() => [
 const showDelete       = ref(false)
 const deleteError      = ref('')
 const selectedInvoice  = ref(null)
-const showPembayaran   = ref(false)
 const selectedInvoices = ref([])
 const showShareDialog  = ref(false)
 const shareTargetInvoices = ref([])
 const shareMode        = ref('client')
-const selectedForPayment  = ref(null)
 const exportingExcel   = ref(false)
 const showExportModal  = ref(false)
 const exportMonth      = ref(new Date().toISOString().slice(0, 7))
@@ -1151,15 +1088,6 @@ function onRowActivate({ item }) {
 }
 
 function confirmDelete(inv) { selectedInvoice.value = inv; deleteError.value = ''; showDelete.value = true }
-
-function openCatatBayar(item) {
-  selectedForPayment.value = item
-  showPembayaran.value     = true
-}
-
-function onPembayaranSaved() {
-  refreshLists()
-}
 
 async function printInvoice(item) {
   if (item.share_url) {
