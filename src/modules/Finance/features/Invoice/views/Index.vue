@@ -774,7 +774,50 @@
         label="Pilih Bulan"
         variant="outlined"
         density="compact"
+        class="mb-3"
       />
+
+      <div class="mb-1 text-caption text-medium-emphasis">
+        Format File
+      </div>
+      <VBtnToggle
+        v-model="exportFormat"
+        variant="outlined"
+        mandatory
+        divided
+        density="compact"
+        class="mb-3"
+      >
+        <VBtn
+          value="xlsx"
+          size="small"
+          style="min-width: 90px"
+        >
+          XLSX (Excel)
+        </VBtn>
+        <VBtn
+          value="csv"
+          size="small"
+          style="min-width: 90px"
+        >
+          CSV
+        </VBtn>
+      </VBtnToggle>
+
+      <VAlert
+        v-if="exportFormat === 'xlsx' && exportRowCount > 13000"
+        type="warning"
+        variant="tonal"
+        density="compact"
+      >
+        Data cukup besar (&plusmn;{{ exportRowCountLabel }} baris).
+        <template v-if="exportRowCount > 50000">
+          Untuk data sebesar ini, <strong>CSV</strong> jauh lebih cepat &amp; stabil dibanding XLSX &mdash; XLSX berisiko lambat atau gagal.
+        </template>
+        <template v-else>
+          Sebaiknya gunakan <strong>CSV</strong> agar proses export lebih cepat &amp; stabil.
+        </template>
+      </VAlert>
     </BaseModal>
 
     <!-- Catat Bayar Modal -->
@@ -808,7 +851,7 @@
 </template>
 
 <script setup>
-import { computed, defineAsyncComponent, nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
+import { computed, defineAsyncComponent, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 
 function getDefaultMonthRange() {
   const now = new Date()
@@ -894,6 +937,8 @@ const selectedForPayment  = ref(null)
 const exportingExcel   = ref(false)
 const showExportModal  = ref(false)
 const exportMonth      = ref(new Date().toISOString().slice(0, 7))
+const exportFormat     = ref('xlsx')
+const exportRowCount   = ref(null)
 const printingId        = ref(null)
 const activeSegmentTab  = ref(canSeeAll ? 'b2b' : 'b2c')
 let b2bLoaded = false
@@ -1022,33 +1067,75 @@ function refreshLists() {
 function monthToRange(ym) {
   const [year, month] = ym.split('-').map(Number)
   const lastDay = new Date(year, month, 0).getDate()
-  
+
   return {
     tanggal_dari: `${ym}-01`,
     tanggal_sampai: `${ym}-${String(lastDay).padStart(2, '0')}`,
   }
 }
 
+function buildExportQuery() {
+  const { tanggal_dari, tanggal_sampai } = monthToRange(exportMonth.value)
+  const isB2B = canSeeAll && activeSegmentTab.value === 'b2b'
+
+  const query = new URLSearchParams()
+
+  query.set('tanggal_dari', tanggal_dari)
+  query.set('tanggal_sampai', tanggal_sampai)
+  query.set('segment', isB2B ? 'B2B' : 'B2C')
+
+  return query
+}
+
+const exportRowCountLabel = computed(() => (exportRowCount.value ?? 0).toLocaleString('id-ID'))
+
+let exportRowCountController = null
+
+async function fetchExportRowCount() {
+  exportRowCountController?.abort()
+
+  const controller = new AbortController()
+
+  exportRowCountController = controller
+
+  try {
+    const { data } = await api.get(`/finance/invoices/export-count?${buildExportQuery()}`, { signal: controller.signal })
+
+    if (controller.signal.aborted) return
+    exportRowCount.value = data.data?.row_count ?? null
+  } catch {
+    // Hitungan ini cuma advisory buat peringatan — kalau gagal, diamkan saja, jangan ganggu alur export.
+  } finally {
+    if (exportRowCountController === controller)
+      exportRowCountController = null
+  }
+}
+
+let exportRowCountDebounce = null
+
+function debouncedFetchExportRowCount() {
+  clearTimeout(exportRowCountDebounce)
+  exportRowCountDebounce = setTimeout(fetchExportRowCount, 300)
+}
+
+watch(showExportModal, v => { if (v) fetchExportRowCount() })
+watch([exportMonth, activeSegmentTab], () => { if (showExportModal.value) debouncedFetchExportRowCount() })
+
 async function exportExcel() {
   showExportModal.value = false
   exportingExcel.value = true
   showLoading({ title: 'Mengeksport Data Invoice', text: 'Mohon tunggu sebentar...' })
   try {
-    const { tanggal_dari, tanggal_sampai } = monthToRange(exportMonth.value)
-    const isB2B = canSeeAll && activeSegmentTab.value === 'b2b'
+    const query = buildExportQuery()
 
-    const query = new URLSearchParams()
-
-    query.set('tanggal_dari', tanggal_dari)
-    query.set('tanggal_sampai', tanggal_sampai)
-    query.set('segment', isB2B ? 'B2B' : 'B2C')
+    query.set('format', exportFormat.value)
 
     const res = await api.get(`/finance/invoices/export-excel?${query}`, { responseType: 'blob', timeout: 300000 })
     const url  = URL.createObjectURL(res.data)
     const a    = document.createElement('a')
 
     a.href     = url
-    a.download = `Data Tagihan Invoice-${new Date().toISOString().slice(0, 10)}.csv`
+    a.download = `Data Tagihan Invoice-${new Date().toISOString().slice(0, 10)}.${exportFormat.value}`
     a.click()
     URL.revokeObjectURL(url)
     showSuccess({ title: 'Export Berhasil!', text: 'File berhasil diunduh.' })
