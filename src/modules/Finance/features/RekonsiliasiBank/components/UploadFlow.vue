@@ -295,7 +295,7 @@
             variant="tonal"
             class="mt-3"
           >
-            Jika dilanjutkan, semua data periode yang tumpang tindih (termasuk hasil matching manual) akan dihapus permanen dan digantikan file baru.
+            Baris yang sudah dibayar/dicocokkan pada periode ini akan otomatis dipertahankan. Baris lain yang belum dicocokkan akan diganti dengan data dari file baru.
           </VAlert>
         </VCardText>
         <VCardActions class="justify-end pa-4 gap-2">
@@ -340,6 +340,7 @@ const progressDialog = ref(false)
 const batchId         = ref(null)
 const batchStatus     = ref(null)
 let pollTimer = null
+let completeTimer = null
 let pollFailureCount = 0
 const MAX_POLL_FAILURES = 5
 
@@ -384,6 +385,11 @@ function phaseLabel(phase) {
 const progressLabel = computed(() => {
   const status = batchStatus.value
   if (!status) return ''
+  // Saat completed, message dari backend memuat ringkasan (termasuk jumlah
+  // baris lama yang sudah dibayar/dicocokkan dan dipertahankan saat reupload).
+  if (status.phase === 'completed' && status.message) {
+    return status.message
+  }
   if (status.phase === 'parsing' && !status.total_rows) {
     return status.processed_rows ? `${status.processed_rows} baris file dibaca` : ''
   }
@@ -497,9 +503,15 @@ function poll() {
 }
 
 function onImportCompleted(data) {
-  progressDialog.value = false
-  batchId.value = null
-  emit('imported', data.bank_statement_id ?? null)
+  // Tahan dialog "Selesai" sebentar supaya ringkasan hasil (termasuk jumlah
+  // baris lama yang dipertahankan, lihat progressLabel) sempat terlihat user
+  // sebelum dialog otomatis tertutup.
+  clearTimeout(completeTimer)
+  completeTimer = setTimeout(() => {
+    progressDialog.value = false
+    batchId.value = null
+    emit('imported', data.bank_statement_id ?? null)
+  }, 1500)
 }
 
 function onImportNeedsConfirmation() {
@@ -652,6 +664,7 @@ async function doDownloadTemplate() {
 
 onBeforeUnmount(() => {
   clearTimeout(pollTimer)
+  clearTimeout(completeTimer)
 })
 </script>
 
