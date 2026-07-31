@@ -6,6 +6,7 @@
         <VBtn
           color="primary"
           prepend-icon="ri-upload-2-line"
+          :disabled="store.awaitingReview"
           @click="openImport"
         >
           Import File
@@ -86,6 +87,12 @@
               <span class="text-body-2">
                 <strong>{{ statusAlert.title }}</strong>
                 <span v-if="progress.message"> — {{ progress.message }}</span>
+                <span
+                  v-if="progress.uploaded_by"
+                  class="text-caption text-medium-emphasis d-block"
+                >
+                  Diunggah oleh {{ progress.uploaded_by }} · {{ formatDateTime(progress.created_at) }}
+                </span>
               </span>
             </div>
           </VAlert>
@@ -179,6 +186,16 @@
               @click="store.fetchReview()"
             >
               Muat Ulang Tabel
+            </VBtn>
+            <VBtn
+              v-if="progress.status === 'awaiting_review'"
+              color="error"
+              variant="outlined"
+              prepend-icon="ri-close-circle-line"
+              :disabled="busy"
+              @click="confirmCancel = true"
+            >
+              Batalkan Import
             </VBtn>
           </div>
 
@@ -623,6 +640,50 @@
         </VCardActions>
       </VCard>
     </VDialog>
+
+    <!-- ── Dialog konfirmasi batalkan import ────────────────────── -->
+    <VDialog
+      v-model="confirmCancel"
+      max-width="480"
+    >
+      <VCard>
+        <VCardTitle>Batalkan Import Ini?</VCardTitle>
+        <VDivider />
+        <VCardText class="pt-4">
+          <p>
+            File <strong>{{ progress?.original_filename }}</strong> beserta seluruh baris yang belum diproses
+            atau belum diputuskan pada batch ini akan dibuang.
+          </p>
+          <p
+            v-if="progress?.adjustment_submitted > 0"
+            class="text-warning mt-2"
+          >
+            {{ progress.adjustment_submitted }} penyesuaian Credit/Debit Note yang sudah diajukan
+            <strong>tidak ikut dibatalkan</strong> — tetap lanjut ke approval Ending Balance.
+          </p>
+          <p class="mt-2 text-medium-emphasis">
+            Anda bisa langsung mengunggah file yang sudah dibetulkan setelah ini.
+          </p>
+        </VCardText>
+        <VDivider />
+        <VCardActions class="pa-4 justify-end ga-2">
+          <VBtn
+            variant="outlined"
+            :disabled="canceling"
+            @click="confirmCancel = false"
+          >
+            Batal
+          </VBtn>
+          <VBtn
+            color="error"
+            :loading="canceling"
+            @click="doCancelImport"
+          >
+            Ya, Batalkan
+          </VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
   </div>
 </template>
 
@@ -645,6 +706,8 @@ const showInfo = ref(false)
 const importFile = ref(null)
 const downloadingTemplate = ref({ xlsx: false, csv: false })
 const selected = ref([])
+const confirmCancel = ref(false)
+const canceling = ref(false)
 
 let searchTimer = null
 
@@ -790,6 +853,12 @@ function formatDate(v) {
   return new Date(v).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
+function formatDateTime(v) {
+  if (!v) return '—'
+
+  return new Date(v).toLocaleString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+}
+
 function onOptions(options) {
   store.review.page = options.page ?? store.review.page
   store.review.perPage = options.itemsPerPage ?? store.review.perPage
@@ -810,9 +879,25 @@ function openImport() {
     return
   }
 
+  // Masih ada batch (mungkin milik PIC lain) menunggu keputusan — jangan buang
+  // progress/tabel review yang sudah ditampilkan dengan membuka dialog upload
+  // kosong. Tombol sudah didisable di kondisi ini (lihat :disabled di atas),
+  // guard ini jaga-jaga kalau dipanggil lewat jalur lain.
+  if (store.awaitingReview) return
+
   importFile.value = null
   store.reset()
   showImport.value = true
+}
+
+async function doCancelImport() {
+  canceling.value = true
+  try {
+    await store.cancelImport()
+    confirmCancel.value = false
+  } finally {
+    canceling.value = false
+  }
 }
 
 function minimizeImport() {
@@ -880,6 +965,13 @@ onMounted(() => {
     minimizeStore.clearPendingRestore(WIDGET_ID)
     minimizeStore.setMinimizedFalse(WIDGET_ID)
     showImport.value = true
+
+    return
   }
+
+  // Batch awaiting_review milik sesi/PIC lain hidup independen dari FE (lihat
+  // komentar di store.checkActive()) — cek begitu tab dibuka supaya langsung
+  // terlihat tanpa harus gagal upload dulu untuk tahu masih ada yang menggantung.
+  store.checkActive()
 })
 </script>

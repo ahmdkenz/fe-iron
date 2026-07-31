@@ -68,6 +68,46 @@ export const useMasterInvoiceImportStore = defineStore('master-invoice-import', 
       this.review = { ...this.review, items: [], total: 0, page: 1, search: '' }
     },
 
+    /**
+     * Batch aktif (belum completed/failed) hidup di server terlepas dari sesi
+     * FE — batchId cuma disimpan in-memory di Pinia, jadi reload halaman/tab
+     * baru bikin FE "buta" terhadap batch lama yang masih menggantung
+     * (biasanya di awaiting_review). Dipanggil saat tab dibuka supaya batch
+     * itu langsung terlihat lagi (ringkasan + tabel review) tanpa harus
+     * menunggu upload baru gagal dengan 409 dulu.
+     */
+    async checkActive() {
+      if (this.batchId) return
+
+      try {
+        const res = await api.get(`${BASE}/active`)
+        const data = res.data?.data
+
+        if (!data) return
+
+        this.batchId = data.batch_id
+        this.progress = data
+        this.result = data
+
+        if (data.status === 'awaiting_review' || data.status === 'completed') {
+          this.fetchReview(1)
+        }
+      } catch {
+        /* bukan data kritis — biarkan tab tampil seperti belum ada batch */
+      }
+    },
+
+    /** Batalkan batch yang menggantung di awaiting_review supaya bisa upload file baru. */
+    async cancelImport() {
+      if (!this.batchId) return null
+
+      const res = await api.post(`${BASE}/${this.batchId}/cancel`)
+
+      this.reset()
+
+      return res.data?.data ?? null
+    },
+
     async startImport(file) {
       if (this.busy) return
 
