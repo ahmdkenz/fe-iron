@@ -220,6 +220,7 @@
 import { ref, reactive, watch, computed } from 'vue'
 import { useCrud } from '@/composables/useCrud.js'
 import { BOOLEAN_STATUS_OPTIONS, normalizeBooleanStatus } from '@/utils/status.js'
+import { sanitizePhoneNumber } from '@/utils/phone.js'
 
 const props = defineProps({
   modelValue: Boolean,
@@ -288,7 +289,11 @@ async function handleSubmit() {
   errorMessage.value = ''
   Object.keys(errors).forEach(k => (errors[k] = []))
 
-  const payload = { ...form }
+  const payload = {
+    ...form,
+    no_hp: sanitizePhoneNumber(form.no_hp),
+    no_hp_pengelola: sanitizePhoneNumber(form.no_hp_pengelola),
+  }
 
   const res = isEditing.value
     ? await update(props.investorData.id, payload)

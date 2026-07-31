@@ -648,6 +648,7 @@ import { useSweetAlert } from '@/composables/useSweetAlert'
 import { setFlashAlert } from '@/utils/flashAlert'
 import api from '@/utils/axios.js'
 import { BOOLEAN_STATUS_OPTIONS, normalizeBooleanStatus } from '@/utils/status.js'
+import { sanitizePhoneNumber } from '@/utils/phone.js'
 import { useAuthStore } from '@/stores/auth.store.js'
 
 const route = useRoute()
@@ -799,7 +800,7 @@ async function handleSubmit() {
 
   if (isArEditMode.value) {
     try {
-      await api.patch(`/finance/klien-ar/${id}/wa`, { no_wa: form.no_wa || null })
+      await api.patch(`/finance/klien-ar/${id}/wa`, { no_wa: sanitizePhoneNumber(form.no_wa) || null })
       setFlashAlert({ icon: 'success', title: 'Berhasil', text: 'No. WhatsApp berhasil diperbarui.' })
       router.push({ name: 'finance-klien-ar' })
     } catch (e) {
@@ -812,7 +813,7 @@ async function handleSubmit() {
     return
   }
 
-  const payload = { ...form }
+  const payload = { ...form, no_wa: sanitizePhoneNumber(form.no_wa) }
   const res = isEditing.value ? await update(id, payload) : await create(payload)
 
   if (res.success) {

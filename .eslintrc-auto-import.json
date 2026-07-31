@@ -377,6 +377,7 @@
     "clearSessionMarker": true,
     "hasSessionMarker": true,
     "setSessionMarker": true,
-    "useLoadMore": true
+    "useLoadMore": true,
+    "sanitizePhoneNumber": true
   }
 }

@@ -399,6 +399,7 @@ import { useAuthStore } from '@/stores/auth.store'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import api from '@/utils/axios'
 import PageHeader from '@/components/shared/PageHeader.vue'
+import { sanitizePhoneNumber } from '@/utils/phone.js'
 
 const authStore = useAuthStore()
 const { showSuccess, showError, showLoading, closeAlert } = useSweetAlert()
@@ -439,7 +440,7 @@ async function handleUpdateProfile() {
     await api.put('/auth/profile', {
       username: form.username,
       email: form.email,
-      no_hp: form.no_hp,
+      no_hp: sanitizePhoneNumber(form.no_hp),
     })
     await authStore.fetchMe()
     closeAlert({ onlyLoading: true })

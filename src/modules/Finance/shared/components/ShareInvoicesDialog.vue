@@ -432,6 +432,7 @@ import { ref, computed, watch } from 'vue'
 import api from '@/utils/axios.js'
 import { useFormatter } from '@/composables/useFormatter.js'
 import { useSweetAlert } from '@/composables/useSweetAlert.js'
+import { sanitizePhoneNumber } from '@/utils/phone.js'
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
@@ -472,8 +473,10 @@ const clientPhone = computed(() => {
   if (!inv) return ''
   const raw = inv.klien_ar?.no_wa ?? ''
   if (!raw) return ''
-  
-  return raw.startsWith('0') ? '62' + raw.slice(1) : raw.replace(/^\+/, '')
+
+  const digits = sanitizePhoneNumber(raw).replace(/^\+/, '')
+
+  return digits.startsWith('0') ? '62' + digits.slice(1) : digits
 })
 
 const grandTotal = computed(() =>

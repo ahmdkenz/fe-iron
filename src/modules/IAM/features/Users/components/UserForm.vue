@@ -218,6 +218,7 @@ import { ref, reactive, watch, computed } from 'vue'
 import { useCrud } from '@/composables/useCrud.js'
 import api from '@/utils/axios.js'
 import { BOOLEAN_STATUS_OPTIONS, normalizeBooleanStatus } from '@/utils/status.js'
+import { sanitizePhoneNumber } from '@/utils/phone.js'
 
 const props = defineProps({
   modelValue: Boolean,
@@ -311,7 +312,7 @@ async function handleSubmit() {
   const { valid } = await formRef.value.validate()
   if (!valid) return
 
-  const payload = { ...form }
+  const payload = { ...form, no_hp: sanitizePhoneNumber(form.no_hp) }
   if (isEditing.value && !payload.password) delete payload.password
 
   const res = isEditing.value
