@@ -112,6 +112,35 @@
           </div>
 
           <div
+            v-if="multiAllocations.length > 0"
+            class="d-flex align-center justify-space-between mb-2"
+          >
+            <VCheckbox
+              :model-value="multiAllSelected"
+              :indeterminate="multiSomeSelected && !multiAllSelected"
+              hide-details
+              density="compact"
+              color="primary"
+              @update:model-value="toggleMultiSelectAll"
+            >
+              <template #label>
+                <span class="text-caption font-weight-medium">Pilih Semua</span>
+              </template>
+            </VCheckbox>
+
+            <VBtn
+              v-if="multiSomeSelected"
+              color="error"
+              size="small"
+              variant="tonal"
+              prepend-icon="ri-delete-bin-line"
+              @click="removeMultiAllocationsBulk"
+            >
+              Hapus Terpilih ({{ multiSelectedIds.length }})
+            </VBtn>
+          </div>
+
+          <div
             v-if="multiAllocations.length === 0"
             class="d-flex flex-column align-center justify-center py-8 text-medium-emphasis"
           >
@@ -134,6 +163,14 @@
             >
               <VCardText class="pa-3">
                 <div class="d-flex align-start gap-2">
+                  <VCheckbox
+                    :model-value="multiSelectedIds.includes(row.invoice_id)"
+                    hide-details
+                    density="compact"
+                    color="primary"
+                    class="flex-shrink-0"
+                    @update:model-value="toggleMultiSelect(row.invoice_id)"
+                  />
                   <div class="flex-grow-1 min-width-0">
                     <div class="d-flex align-center gap-2 flex-wrap mb-1">
                       <span class="text-body-2 font-weight-semibold">{{ row.no_invoice }}</span>
@@ -859,9 +896,15 @@ const multiAllocations       = ref([]) // { invoice_id, no_invoice, nama_klien, 
 const multiPickerOpen        = ref(false)
 const multiCandidateList     = ref([])
 const multiCandidateLoading  = ref(false)
+const multiSelectedIds       = ref([]) // invoice_id[] dicentang untuk bulk delete
 
 const multiTotalAlokasi = computed(() =>
   multiAllocations.value.reduce((sum, row) => sum + (Number(row.jumlah) || 0), 0))
+
+const multiAllSelected = computed(() =>
+  multiAllocations.value.length > 0 && multiSelectedIds.value.length === multiAllocations.value.length)
+
+const multiSomeSelected = computed(() => multiSelectedIds.value.length > 0)
 
 const multiSisaBelumAlokasi = computed(() =>
   round2(Math.max(0, (Number(props.item?.kredit) || 0) - multiTotalAlokasi.value)))
@@ -929,7 +972,31 @@ function clampMultiJumlah(row, val) {
 }
 
 function removeMultiAllocation(idx) {
+  const row = multiAllocations.value[idx]
+
   multiAllocations.value.splice(idx, 1)
+
+  if (row) {
+    const selIdx = multiSelectedIds.value.indexOf(row.invoice_id)
+    if (selIdx !== -1) multiSelectedIds.value.splice(selIdx, 1)
+  }
+}
+
+function toggleMultiSelect(invoiceId) {
+  const idx = multiSelectedIds.value.indexOf(invoiceId)
+  if (idx === -1) multiSelectedIds.value.push(invoiceId)
+  else multiSelectedIds.value.splice(idx, 1)
+}
+
+function toggleMultiSelectAll(val) {
+  multiSelectedIds.value = val ? multiAllocations.value.map(row => row.invoice_id) : []
+}
+
+function removeMultiAllocationsBulk() {
+  const ids = multiSelectedIds.value
+
+  multiAllocations.value = multiAllocations.value.filter(row => !ids.includes(row.invoice_id))
+  multiSelectedIds.value = []
 }
 
 const canProceedDisabled = computed(() => {
@@ -968,6 +1035,7 @@ function resetState() {
   clearTimeout(regularTimer)
 
   multiAllocations.value      = []
+  multiSelectedIds.value      = []
   multiPickerOpen.value       = false
   multiCandidateList.value    = []
 }
