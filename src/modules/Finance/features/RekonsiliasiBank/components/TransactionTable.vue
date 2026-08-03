@@ -251,7 +251,7 @@
         </template>
         <template v-else-if="item.status_cocok === 'MATCHED'">
           <AppActionButton
-            v-if="item.can_manage_match"
+            v-if="item.can_manage_match && !item.has_approved_koreksi"
             action="batalkan"
             icon="ri-link-unlink"
             size="x-small"
