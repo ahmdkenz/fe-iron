@@ -1079,596 +1079,600 @@
         </div>
       </div>
 
+      <VTabs
+        v-model="activeSegmentTab"
+        class="mb-4"
+      >
+        <VTab value="b2b">
+          Opening Balance B2B
+        </VTab>
+        <VTab value="b2c">
+          Opening Balance B2C
+        </VTab>
+      </VTabs>
+
       <StatCard :cards="dirObStats" />
 
-      <VRow>
-        <VCol
-          cols="12"
-          lg="6"
-        >
-        <!-- B2B Table -->
-        <VCard>
-          <div class="d-flex align-center justify-space-between px-4 py-3">
-            <div class="d-flex align-center gap-2">
-              <VAvatar
-                color="warning"
-                variant="tonal"
-                size="32"
-              >
-                <VIcon
-                  icon="ri-building-line"
-                  size="18"
-                />
-              </VAvatar>
-              <span class="text-subtitle-1 font-weight-semibold">Opening Balance B2B</span>
-            </div>
-            <VBtn
-              variant="text"
-              color="secondary"
-              size="small"
-              prepend-icon="ri-refresh-line"
-              @click="resetDirObFilterB2B"
-            >
-              Reset
-            </VBtn>
-          </div>
-          <VDivider />
-          <div class="d-flex flex-wrap align-center gap-4 px-4 py-3">
-            <div style="min-width: 200px; flex: 1; max-width: 280px;">
-              <div class="text-caption text-medium-emphasis mb-2">
-                Pencarian
-              </div>
-              <VTextField
-                v-model="dirObParamsB2B.search"
-                placeholder="Cari no. OB / klien..."
-                clearable
-                hide-details
-                density="compact"
-                prepend-inner-icon="ri-search-line"
-                @update:model-value="debouncedDirObFetchB2B"
-              />
-            </div>
-            <VDivider
-              vertical
-              style="height: 40px; align-self: flex-end;"
-              class="d-none d-sm-block"
-            />
-            <div>
-              <div class="text-caption text-medium-emphasis mb-2">
-                Dari
-              </div>
-              <VTextField
-                v-model="dateDraftDirObB2B.tanggal_dari"
-                type="date"
-                hide-details
-                density="compact"
-                style="min-width: 150px; max-width: 170px;"
-              />
-            </div>
-            <div>
-              <div class="text-caption text-medium-emphasis mb-2">
-                Sampai
-              </div>
-              <VTextField
-                v-model="dateDraftDirObB2B.tanggal_sampai"
-                type="date"
-                hide-details
-                density="compact"
-                style="min-width: 150px; max-width: 170px;"
-              />
-            </div>
-            <VBtn
-              color="primary"
+      <!-- B2B Table -->
+      <VCard
+        v-if="activeSegmentTab === 'b2b'"
+        class="mb-4"
+      >
+        <div class="d-flex align-center justify-space-between px-4 py-3">
+          <div class="d-flex align-center gap-2">
+            <VAvatar
+              color="warning"
               variant="tonal"
-              size="small"
-              prepend-icon="ri-filter-3-line"
-              style="align-self: flex-end;"
-              @click="applyDateFiltersDirObB2B"
+              size="32"
             >
-              Filter
-            </VBtn>
+              <VIcon
+                icon="ri-building-line"
+                size="18"
+              />
+            </VAvatar>
+            <span class="text-subtitle-1 font-weight-semibold">Opening Balance B2B</span>
           </div>
-          <VDivider />
-          <BaseTable
-            :headers="dirObHeadersB2B"
-            :items="dirObItemsB2B"
-            :total="dirObMetaB2B.total"
-            :loading="dirObLoadingB2B"
-            :per-page="dirObMetaB2B.per_page"
-            :page="dirObMetaB2B.current_page"
-            class="mt-2"
-            mobile-cards
-            column-resize-key="finance-opening-balance-dir-b2b"
-            @update:options="onDirObTableOptionsB2B"
+          <VBtn
+            variant="text"
+            color="secondary"
+            size="small"
+            prepend-icon="ri-refresh-line"
+            @click="resetDirObFilterB2B"
           >
-            <template #mobile-card="{ item }">
-              <div class="d-flex align-center justify-space-between gap-2 mb-2">
-                <div class="min-width-0">
-                  <div class="d-flex align-center gap-1">
-                    <VChip
-                      color="primary"
-                      size="small"
-                      variant="tonal"
-                      label
-                    >
-                      {{ item.no_invoice }}
-                    </VChip>
-                    <VIcon
-                      v-if="item.is_eb_locked"
-                      icon="ri-lock-line"
-                      size="14"
-                      color="warning"
-                    />
-                  </div>
-                  <div class="text-caption text-medium-emphasis text-truncate mt-1">
-                    {{ item.klien_ar?.nama_klien ?? '-' }}
-                  </div>
-                </div>
-                <div class="d-flex flex-column align-end gap-1 flex-shrink-0">
-                  <InvoiceStatusBadge :status="item.status" />
-                  <ApprovalStatusBadge :status="item.approval_status" />
-                </div>
-              </div>
-              <div class="d-flex align-end justify-space-between gap-2">
-                <div class="min-width-0">
-                  <div class="text-caption text-medium-emphasis">
-                    {{ formatDate(item.tanggal_invoice) }} · Saldo Awal {{ formatCurrency(item.total_tagihan) }}
-                  </div>
-                  <div
-                    class="font-weight-bold"
-                    :class="item.sisa_tagihan > 0 ? 'text-error' : 'text-success'"
-                  >
-                    Sisa: {{ formatCurrency(item.sisa_tagihan) }}
-                  </div>
-                </div>
-                <div class="d-flex align-center gap-1 flex-shrink-0">
-                  <VBtn
-                    v-if="item.can_record_payment && item.status !== 'LUNAS'"
-                    icon="ri-money-cny-circle-line"
+            Reset
+          </VBtn>
+        </div>
+        <VDivider />
+        <div class="d-flex flex-wrap align-center gap-4 px-4 py-3">
+          <div style="min-width: 200px; flex: 1; max-width: 280px;">
+            <div class="text-caption text-medium-emphasis mb-2">
+              Pencarian
+            </div>
+            <VTextField
+              v-model="dirObParamsB2B.search"
+              placeholder="Cari no. OB / klien..."
+              clearable
+              hide-details
+              density="compact"
+              prepend-inner-icon="ri-search-line"
+              @update:model-value="debouncedDirObFetchB2B"
+            />
+          </div>
+          <VDivider
+            vertical
+            style="height: 40px; align-self: flex-end;"
+            class="d-none d-sm-block"
+          />
+          <div>
+            <div class="text-caption text-medium-emphasis mb-2">
+              Dari
+            </div>
+            <VTextField
+              v-model="dateDraftDirObB2B.tanggal_dari"
+              type="date"
+              hide-details
+              density="compact"
+              style="min-width: 150px; max-width: 170px;"
+            />
+          </div>
+          <div>
+            <div class="text-caption text-medium-emphasis mb-2">
+              Sampai
+            </div>
+            <VTextField
+              v-model="dateDraftDirObB2B.tanggal_sampai"
+              type="date"
+              hide-details
+              density="compact"
+              style="min-width: 150px; max-width: 170px;"
+            />
+          </div>
+          <VBtn
+            color="primary"
+            variant="tonal"
+            size="small"
+            prepend-icon="ri-filter-3-line"
+            style="align-self: flex-end;"
+            @click="applyDateFiltersDirObB2B"
+          >
+            Filter
+          </VBtn>
+        </div>
+        <VDivider />
+        <BaseTable
+          :headers="dirObHeadersB2B"
+          :items="dirObItemsB2B"
+          :total="dirObMetaB2B.total"
+          :loading="dirObLoadingB2B"
+          :per-page="dirObMetaB2B.per_page"
+          :page="dirObMetaB2B.current_page"
+          class="mt-2"
+          mobile-cards
+          column-resize-key="finance-opening-balance-dir-b2b"
+          @update:options="onDirObTableOptionsB2B"
+        >
+          <template #mobile-card="{ item }">
+            <div class="d-flex align-center justify-space-between gap-2 mb-2">
+              <div class="min-width-0">
+                <div class="d-flex align-center gap-1">
+                  <VChip
+                    color="primary"
                     size="small"
                     variant="tonal"
-                    color="success"
-                    aria-label="Catat Bayar"
-                    @click="openCatatBayar(item)"
-                  />
-                  <MobileCardActions
-                    :editable="false"
-                    :deletable="false"
-                    :selectable="false"
-                    :show-menu="item.can_print"
-                    @detail="router.push({ name: 'finance-invoice-show', params: { id: item.id } })"
+                    label
                   >
-                    <template #menu-extra>
-                      <template v-if="item.can_print">
-                        <VListItem
-                          prepend-icon="ri-whatsapp-line"
-                          title="Kirim WhatsApp"
-                          @click="openShareDialog([item])"
-                        />
-                        <VListItem
-                          prepend-icon="ri-printer-line"
-                          title="Cetak"
-                          @click="printInvoice(item.id)"
-                        />
-                      </template>
-                    </template>
-                  </MobileCardActions>
+                    {{ item.no_invoice }}
+                  </VChip>
+                  <VIcon
+                    v-if="item.is_eb_locked"
+                    icon="ri-lock-line"
+                    size="14"
+                    color="warning"
+                  />
+                </div>
+                <div class="text-caption text-medium-emphasis text-truncate mt-1">
+                  {{ item.klien_ar?.nama_klien ?? '-' }}
                 </div>
               </div>
-            </template>
-
-            <template #item.no="{ index }">
-              {{ (dirObMetaB2B.current_page - 1) * dirObMetaB2B.per_page + index + 1 }}
-            </template>
-            <template #item.no_invoice="{ item }">
-              <VChip
-                color="primary"
-                size="small"
-                variant="tonal"
-                label
-              >
-                {{ item.no_invoice }}
-              </VChip>
-              <VIcon
-                v-if="item.is_eb_locked"
-                icon="ri-lock-line"
-                size="14"
-                color="warning"
-                class="ms-1"
-              >
-                <VTooltip activator="parent">
-                  Periode opening balance ini sudah dikunci di Ending Balance — tidak dapat diedit
-                </VTooltip>
-              </VIcon>
-            </template>
-            <template #item.klien_ar="{ item }">
-              {{ item.klien_ar?.nama_klien ?? '-' }}
-            </template>
-            <template #item.tanggal_invoice="{ item }">
-              <span class="text-no-wrap">{{ formatDate(item.tanggal_invoice) }}</span>
-            </template>
-            <template #item.total_tagihan="{ item }">
-              {{ formatCurrency(item.total_tagihan) }}
-            </template>
-            <template #item.total_pembayaran="{ item }">
-              {{ formatCurrency(item.total_pembayaran) }}
-            </template>
-            <template #item.sisa_tagihan="{ item }">
-              <span :class="item.sisa_tagihan > 0 ? 'text-error' : 'text-success'">
-                {{ formatCurrency(item.sisa_tagihan) }}
-              </span>
-            </template>
-            <template #item.status="{ item }">
-              <InvoiceStatusBadge :status="item.status" />
-            </template>
-            <template #item.dir_ob_b2b_approval_status="{ item }">
-              <ApprovalStatusBadge :status="item.approval_status" />
-            </template>
-            <template #item.dir_ob_b2b_actions="{ item }">
-              <div class="d-flex gap-1">
+              <div class="d-flex flex-column align-end gap-1 flex-shrink-0">
+                <InvoiceStatusBadge :status="item.status" />
+                <ApprovalStatusBadge :status="item.approval_status" />
+              </div>
+            </div>
+            <div class="d-flex align-end justify-space-between gap-2">
+              <div class="min-width-0">
+                <div class="text-caption text-medium-emphasis">
+                  {{ formatDate(item.tanggal_invoice) }} · Saldo Awal {{ formatCurrency(item.total_tagihan) }}
+                </div>
+                <div
+                  class="font-weight-bold"
+                  :class="item.sisa_tagihan > 0 ? 'text-error' : 'text-success'"
+                >
+                  Sisa: {{ formatCurrency(item.sisa_tagihan) }}
+                </div>
+              </div>
+              <div class="d-flex align-center gap-1 flex-shrink-0">
                 <VBtn
                   v-if="item.can_record_payment && item.status !== 'LUNAS'"
-                  icon
+                  icon="ri-money-cny-circle-line"
                   size="small"
                   variant="tonal"
                   color="success"
+                  aria-label="Catat Bayar"
                   @click="openCatatBayar(item)"
+                />
+                <MobileCardActions
+                  :editable="false"
+                  :deletable="false"
+                  :selectable="false"
+                  :show-menu="item.can_print"
+                  @detail="router.push({ name: 'finance-invoice-show', params: { id: item.id } })"
                 >
-                  <VIcon
-                    icon="ri-money-cny-circle-line"
-                    size="18"
-                  />
-                  <VTooltip activator="parent">
-                    Catat Bayar
-                  </VTooltip>
-                </VBtn>
-                <VBtn
-                  v-if="item.can_print"
-                  icon
-                  size="small"
-                  variant="tonal"
-                  color="success"
-                  @click="openShareDialog([item])"
-                >
-                  <VIcon
-                    icon="ri-whatsapp-line"
-                    size="18"
-                  />
-                  <VTooltip activator="parent">
-                    Kirim via WhatsApp
-                  </VTooltip>
-                </VBtn>
-                <VBtn
-                  v-if="item.can_print"
-                  icon
-                  size="small"
-                  variant="text"
-                  color="secondary"
-                  :loading="printingId === item.id"
-                  @click="printInvoice(item.id)"
-                >
-                  <VIcon
-                    icon="ri-printer-line"
-                    size="18"
-                  />
-                  <VTooltip activator="parent">
-                    Cetak
-                  </VTooltip>
-                </VBtn>
-                <VBtn
-                  icon
-                  size="small"
-                  variant="text"
-                  color="info"
-                  :to="{ name: 'finance-invoice-show', params: { id: item.id } }"
-                >
-                  <VIcon
-                    icon="ri-eye-line"
-                    size="18"
-                  />
-                  <VTooltip activator="parent">
-                    Detail
-                  </VTooltip>
-                </VBtn>
+                  <template #menu-extra>
+                    <template v-if="item.can_print">
+                      <VListItem
+                        prepend-icon="ri-whatsapp-line"
+                        title="Kirim WhatsApp"
+                        @click="openShareDialog([item])"
+                      />
+                      <VListItem
+                        prepend-icon="ri-printer-line"
+                        title="Cetak"
+                        @click="printInvoice(item.id)"
+                      />
+                    </template>
+                  </template>
+                </MobileCardActions>
               </div>
-            </template>
-          </BaseTable>
-        </VCard>
-        </VCol>
-        <VCol
-          cols="12"
-          lg="6"
-        >
-        <!-- B2C Table -->
-        <VCard>
-          <div class="d-flex align-center justify-space-between px-4 py-3">
-            <div class="d-flex align-center gap-2">
-              <VAvatar
-                color="primary"
+            </div>
+          </template>
+
+          <template #item.no="{ index }">
+            {{ (dirObMetaB2B.current_page - 1) * dirObMetaB2B.per_page + index + 1 }}
+          </template>
+          <template #item.no_invoice="{ item }">
+            <VChip
+              color="primary"
+              size="small"
+              variant="tonal"
+              label
+            >
+              {{ item.no_invoice }}
+            </VChip>
+            <VIcon
+              v-if="item.is_eb_locked"
+              icon="ri-lock-line"
+              size="14"
+              color="warning"
+              class="ms-1"
+            >
+              <VTooltip activator="parent">
+                Periode opening balance ini sudah dikunci di Ending Balance — tidak dapat diedit
+              </VTooltip>
+            </VIcon>
+          </template>
+          <template #item.klien_ar="{ item }">
+            {{ item.klien_ar?.nama_klien ?? '-' }}
+          </template>
+          <template #item.tanggal_invoice="{ item }">
+            <span class="text-no-wrap">{{ formatDate(item.tanggal_invoice) }}</span>
+          </template>
+          <template #item.total_tagihan="{ item }">
+            {{ formatCurrency(item.total_tagihan) }}
+          </template>
+          <template #item.total_pembayaran="{ item }">
+            {{ formatCurrency(item.total_pembayaran) }}
+          </template>
+          <template #item.sisa_tagihan="{ item }">
+            <span :class="item.sisa_tagihan > 0 ? 'text-error' : 'text-success'">
+              {{ formatCurrency(item.sisa_tagihan) }}
+            </span>
+          </template>
+          <template #item.status="{ item }">
+            <InvoiceStatusBadge :status="item.status" />
+          </template>
+          <template #item.dir_ob_b2b_approval_status="{ item }">
+            <ApprovalStatusBadge :status="item.approval_status" />
+          </template>
+          <template #item.dir_ob_b2b_actions="{ item }">
+            <div class="d-flex gap-1">
+              <VBtn
+                v-if="item.can_record_payment && item.status !== 'LUNAS'"
+                icon
+                size="small"
                 variant="tonal"
-                size="32"
+                color="success"
+                @click="openCatatBayar(item)"
               >
                 <VIcon
-                  icon="ri-user-line"
+                  icon="ri-money-cny-circle-line"
                   size="18"
                 />
-              </VAvatar>
-              <span class="text-subtitle-1 font-weight-semibold">Opening Balance B2C</span>
-            </div>
-            <VBtn
-              variant="text"
-              color="secondary"
-              size="small"
-              prepend-icon="ri-refresh-line"
-              @click="resetDirObFilterB2C"
-            >
-              Reset
-            </VBtn>
-          </div>
-          <VDivider />
-          <div class="d-flex flex-wrap align-center gap-4 px-4 py-3">
-            <div style="min-width: 200px; flex: 1; max-width: 280px;">
-              <div class="text-caption text-medium-emphasis mb-2">
-                Pencarian
-              </div>
-              <VTextField
-                v-model="dirObParams.search"
-                placeholder="Cari no. OB / klien..."
-                clearable
-                hide-details
-                density="compact"
-                prepend-inner-icon="ri-search-line"
-                @update:model-value="debouncedDirObFetch"
-              />
-            </div>
-            <VDivider
-              vertical
-              style="height: 40px; align-self: flex-end;"
-              class="d-none d-sm-block"
-            />
-            <div>
-              <div class="text-caption text-medium-emphasis mb-2">
-                Dari
-              </div>
-              <VTextField
-                v-model="dateDraftDirOb.tanggal_dari"
-                type="date"
-                hide-details
-                density="compact"
-                style="min-width: 150px; max-width: 170px;"
-              />
-            </div>
-            <div>
-              <div class="text-caption text-medium-emphasis mb-2">
-                Sampai
-              </div>
-              <VTextField
-                v-model="dateDraftDirOb.tanggal_sampai"
-                type="date"
-                hide-details
-                density="compact"
-                style="min-width: 150px; max-width: 170px;"
-              />
-            </div>
-            <VBtn
-              color="primary"
-              variant="tonal"
-              size="small"
-              prepend-icon="ri-filter-3-line"
-              style="align-self: flex-end;"
-              @click="applyDateFiltersDirOb"
-            >
-              Filter
-            </VBtn>
-          </div>
-          <VDivider />
-          <BaseTable
-            :headers="dirObHeaders"
-            :items="dirObItems"
-            :total="dirObMeta.total"
-            :loading="dirObLoading"
-            :per-page="dirObMeta.per_page"
-            :page="dirObMeta.current_page"
-            class="mt-2"
-            mobile-cards
-            column-resize-key="finance-opening-balance-dir-b2c"
-            @update:options="onDirObTableOptions"
-          >
-            <template #mobile-card="{ item }">
-              <div class="d-flex align-center justify-space-between gap-2 mb-2">
-                <div class="min-width-0">
-                  <div class="d-flex align-center gap-1">
-                    <VChip
-                      color="primary"
-                      size="small"
-                      variant="tonal"
-                      label
-                    >
-                      {{ item.no_invoice }}
-                    </VChip>
-                    <VIcon
-                      v-if="item.is_eb_locked"
-                      icon="ri-lock-line"
-                      size="14"
-                      color="warning"
-                    />
-                  </div>
-                  <div class="text-caption text-medium-emphasis text-truncate mt-1">
-                    {{ item.klien_ar?.nama_klien ?? '-' }}
-                  </div>
-                </div>
-                <div class="d-flex flex-column align-end gap-1 flex-shrink-0">
-                  <InvoiceStatusBadge :status="item.status" />
-                  <ApprovalStatusBadge :status="item.approval_status" />
-                </div>
-              </div>
-              <div class="d-flex align-end justify-space-between gap-2">
-                <div class="min-width-0">
-                  <div class="text-caption text-medium-emphasis">
-                    {{ formatDate(item.tanggal_invoice) }} · Saldo Awal {{ formatCurrency(item.total_tagihan) }}
-                  </div>
-                  <div
-                    class="font-weight-bold"
-                    :class="item.sisa_tagihan > 0 ? 'text-error' : 'text-success'"
-                  >
-                    Sisa: {{ formatCurrency(item.sisa_tagihan) }}
-                  </div>
-                </div>
-                <div class="d-flex align-center gap-1 flex-shrink-0">
-                  <VBtn
-                    v-if="item.can_record_payment && item.status !== 'LUNAS'"
-                    icon="ri-money-cny-circle-line"
-                    size="small"
-                    variant="tonal"
-                    color="success"
-                    aria-label="Catat Bayar"
-                    @click="openCatatBayar(item)"
-                  />
-                  <MobileCardActions
-                    :editable="false"
-                    :deletable="false"
-                    :selectable="false"
-                    :show-menu="item.can_print"
-                    @detail="router.push({ name: 'finance-invoice-show', params: { id: item.id } })"
-                  >
-                    <template #menu-extra>
-                      <template v-if="item.can_print">
-                        <VListItem
-                          prepend-icon="ri-whatsapp-line"
-                          title="Kirim WhatsApp"
-                          @click="openShareDialog([item])"
-                        />
-                        <VListItem
-                          prepend-icon="ri-printer-line"
-                          title="Cetak"
-                          @click="printInvoice(item.id)"
-                        />
-                      </template>
-                    </template>
-                  </MobileCardActions>
-                </div>
-              </div>
-            </template>
-
-            <template #item.no="{ index }">
-              {{ (dirObMeta.current_page - 1) * dirObMeta.per_page + index + 1 }}
-            </template>
-            <template #item.no_invoice="{ item }">
-              <VChip
-                color="primary"
+                <VTooltip activator="parent">
+                  Catat Bayar
+                </VTooltip>
+              </VBtn>
+              <VBtn
+                v-if="item.can_print"
+                icon
                 size="small"
                 variant="tonal"
-                label
+                color="success"
+                @click="openShareDialog([item])"
               >
-                {{ item.no_invoice }}
-              </VChip>
-              <VIcon
-                v-if="item.is_eb_locked"
-                icon="ri-lock-line"
-                size="14"
-                color="warning"
-                class="ms-1"
-              >
+                <VIcon
+                  icon="ri-whatsapp-line"
+                  size="18"
+                />
                 <VTooltip activator="parent">
-                  Periode opening balance ini sudah dikunci di Ending Balance — tidak dapat diedit
+                  Kirim via WhatsApp
                 </VTooltip>
-              </VIcon>
-            </template>
-            <template #item.klien_ar="{ item }">
-              {{ item.klien_ar?.nama_klien ?? '-' }}
-            </template>
-            <template #item.tanggal_invoice="{ item }">
-              <span class="text-no-wrap">{{ formatDate(item.tanggal_invoice) }}</span>
-            </template>
-            <template #item.total_tagihan="{ item }">
-              {{ formatCurrency(item.total_tagihan) }}
-            </template>
-            <template #item.total_pembayaran="{ item }">
-              {{ formatCurrency(item.total_pembayaran) }}
-            </template>
-            <template #item.sisa_tagihan="{ item }">
-              <span :class="item.sisa_tagihan > 0 ? 'text-error' : 'text-success'">
-                {{ formatCurrency(item.sisa_tagihan) }}
-              </span>
-            </template>
-            <template #item.status="{ item }">
-              <InvoiceStatusBadge :status="item.status" />
-            </template>
-            <template #item.dir_ob_approval_status="{ item }">
-              <ApprovalStatusBadge :status="item.approval_status" />
-            </template>
-            <template #item.dir_ob_actions="{ item }">
-              <div class="d-flex gap-1">
+              </VBtn>
+              <VBtn
+                v-if="item.can_print"
+                icon
+                size="small"
+                variant="text"
+                color="secondary"
+                :loading="printingId === item.id"
+                @click="printInvoice(item.id)"
+              >
+                <VIcon
+                  icon="ri-printer-line"
+                  size="18"
+                />
+                <VTooltip activator="parent">
+                  Cetak
+                </VTooltip>
+              </VBtn>
+              <VBtn
+                icon
+                size="small"
+                variant="text"
+                color="info"
+                :to="{ name: 'finance-invoice-show', params: { id: item.id } }"
+              >
+                <VIcon
+                  icon="ri-eye-line"
+                  size="18"
+                />
+                <VTooltip activator="parent">
+                  Detail
+                </VTooltip>
+              </VBtn>
+            </div>
+          </template>
+        </BaseTable>
+      </VCard>
+
+      <!-- B2C Table -->
+      <VCard v-if="activeSegmentTab === 'b2c'">
+        <div class="d-flex align-center justify-space-between px-4 py-3">
+          <div class="d-flex align-center gap-2">
+            <VAvatar
+              color="primary"
+              variant="tonal"
+              size="32"
+            >
+              <VIcon
+                icon="ri-user-line"
+                size="18"
+              />
+            </VAvatar>
+            <span class="text-subtitle-1 font-weight-semibold">Opening Balance B2C</span>
+          </div>
+          <VBtn
+            variant="text"
+            color="secondary"
+            size="small"
+            prepend-icon="ri-refresh-line"
+            @click="resetDirObFilterB2C"
+          >
+            Reset
+          </VBtn>
+        </div>
+        <VDivider />
+        <div class="d-flex flex-wrap align-center gap-4 px-4 py-3">
+          <div style="min-width: 200px; flex: 1; max-width: 280px;">
+            <div class="text-caption text-medium-emphasis mb-2">
+              Pencarian
+            </div>
+            <VTextField
+              v-model="dirObParams.search"
+              placeholder="Cari no. OB / klien..."
+              clearable
+              hide-details
+              density="compact"
+              prepend-inner-icon="ri-search-line"
+              @update:model-value="debouncedDirObFetch"
+            />
+          </div>
+          <VDivider
+            vertical
+            style="height: 40px; align-self: flex-end;"
+            class="d-none d-sm-block"
+          />
+          <div>
+            <div class="text-caption text-medium-emphasis mb-2">
+              Dari
+            </div>
+            <VTextField
+              v-model="dateDraftDirOb.tanggal_dari"
+              type="date"
+              hide-details
+              density="compact"
+              style="min-width: 150px; max-width: 170px;"
+            />
+          </div>
+          <div>
+            <div class="text-caption text-medium-emphasis mb-2">
+              Sampai
+            </div>
+            <VTextField
+              v-model="dateDraftDirOb.tanggal_sampai"
+              type="date"
+              hide-details
+              density="compact"
+              style="min-width: 150px; max-width: 170px;"
+            />
+          </div>
+          <VBtn
+            color="primary"
+            variant="tonal"
+            size="small"
+            prepend-icon="ri-filter-3-line"
+            style="align-self: flex-end;"
+            @click="applyDateFiltersDirOb"
+          >
+            Filter
+          </VBtn>
+        </div>
+        <VDivider />
+        <BaseTable
+          :headers="dirObHeaders"
+          :items="dirObItems"
+          :total="dirObMeta.total"
+          :loading="dirObLoading"
+          :per-page="dirObMeta.per_page"
+          :page="dirObMeta.current_page"
+          class="mt-2"
+          mobile-cards
+          column-resize-key="finance-opening-balance-dir-b2c"
+          @update:options="onDirObTableOptions"
+        >
+          <template #mobile-card="{ item }">
+            <div class="d-flex align-center justify-space-between gap-2 mb-2">
+              <div class="min-width-0">
+                <div class="d-flex align-center gap-1">
+                  <VChip
+                    color="primary"
+                    size="small"
+                    variant="tonal"
+                    label
+                  >
+                    {{ item.no_invoice }}
+                  </VChip>
+                  <VIcon
+                    v-if="item.is_eb_locked"
+                    icon="ri-lock-line"
+                    size="14"
+                    color="warning"
+                  />
+                </div>
+                <div class="text-caption text-medium-emphasis text-truncate mt-1">
+                  {{ item.klien_ar?.nama_klien ?? '-' }}
+                </div>
+              </div>
+              <div class="d-flex flex-column align-end gap-1 flex-shrink-0">
+                <InvoiceStatusBadge :status="item.status" />
+                <ApprovalStatusBadge :status="item.approval_status" />
+              </div>
+            </div>
+            <div class="d-flex align-end justify-space-between gap-2">
+              <div class="min-width-0">
+                <div class="text-caption text-medium-emphasis">
+                  {{ formatDate(item.tanggal_invoice) }} · Saldo Awal {{ formatCurrency(item.total_tagihan) }}
+                </div>
+                <div
+                  class="font-weight-bold"
+                  :class="item.sisa_tagihan > 0 ? 'text-error' : 'text-success'"
+                >
+                  Sisa: {{ formatCurrency(item.sisa_tagihan) }}
+                </div>
+              </div>
+              <div class="d-flex align-center gap-1 flex-shrink-0">
                 <VBtn
                   v-if="item.can_record_payment && item.status !== 'LUNAS'"
-                  icon
+                  icon="ri-money-cny-circle-line"
                   size="small"
                   variant="tonal"
                   color="success"
+                  aria-label="Catat Bayar"
                   @click="openCatatBayar(item)"
+                />
+                <MobileCardActions
+                  :editable="false"
+                  :deletable="false"
+                  :selectable="false"
+                  :show-menu="item.can_print"
+                  @detail="router.push({ name: 'finance-invoice-show', params: { id: item.id } })"
                 >
-                  <VIcon
-                    icon="ri-money-cny-circle-line"
-                    size="18"
-                  />
-                  <VTooltip activator="parent">
-                    Catat Bayar
-                  </VTooltip>
-                </VBtn>
-                <VBtn
-                  v-if="item.can_print"
-                  icon
-                  size="small"
-                  variant="tonal"
-                  color="success"
-                  @click="openShareDialog([item])"
-                >
-                  <VIcon
-                    icon="ri-whatsapp-line"
-                    size="18"
-                  />
-                  <VTooltip activator="parent">
-                    Kirim via WhatsApp
-                  </VTooltip>
-                </VBtn>
-                <VBtn
-                  v-if="item.can_print"
-                  icon
-                  size="small"
-                  variant="text"
-                  color="secondary"
-                  :loading="printingId === item.id"
-                  @click="printInvoice(item.id)"
-                >
-                  <VIcon
-                    icon="ri-printer-line"
-                    size="18"
-                  />
-                  <VTooltip activator="parent">
-                    Cetak
-                  </VTooltip>
-                </VBtn>
-                <VBtn
-                  icon
-                  size="small"
-                  variant="text"
-                  color="info"
-                  :to="{ name: 'finance-invoice-show', params: { id: item.id } }"
-                >
-                  <VIcon
-                    icon="ri-eye-line"
-                    size="18"
-                  />
-                  <VTooltip activator="parent">
-                    Detail
-                  </VTooltip>
-                </VBtn>
+                  <template #menu-extra>
+                    <template v-if="item.can_print">
+                      <VListItem
+                        prepend-icon="ri-whatsapp-line"
+                        title="Kirim WhatsApp"
+                        @click="openShareDialog([item])"
+                      />
+                      <VListItem
+                        prepend-icon="ri-printer-line"
+                        title="Cetak"
+                        @click="printInvoice(item.id)"
+                      />
+                    </template>
+                  </template>
+                </MobileCardActions>
               </div>
-            </template>
-          </BaseTable>
-        </VCard>
-        </VCol>
-      </VRow>
+            </div>
+          </template>
+
+          <template #item.no="{ index }">
+            {{ (dirObMeta.current_page - 1) * dirObMeta.per_page + index + 1 }}
+          </template>
+          <template #item.no_invoice="{ item }">
+            <VChip
+              color="primary"
+              size="small"
+              variant="tonal"
+              label
+            >
+              {{ item.no_invoice }}
+            </VChip>
+            <VIcon
+              v-if="item.is_eb_locked"
+              icon="ri-lock-line"
+              size="14"
+              color="warning"
+              class="ms-1"
+            >
+              <VTooltip activator="parent">
+                Periode opening balance ini sudah dikunci di Ending Balance — tidak dapat diedit
+              </VTooltip>
+            </VIcon>
+          </template>
+          <template #item.klien_ar="{ item }">
+            {{ item.klien_ar?.nama_klien ?? '-' }}
+          </template>
+          <template #item.tanggal_invoice="{ item }">
+            <span class="text-no-wrap">{{ formatDate(item.tanggal_invoice) }}</span>
+          </template>
+          <template #item.total_tagihan="{ item }">
+            {{ formatCurrency(item.total_tagihan) }}
+          </template>
+          <template #item.total_pembayaran="{ item }">
+            {{ formatCurrency(item.total_pembayaran) }}
+          </template>
+          <template #item.sisa_tagihan="{ item }">
+            <span :class="item.sisa_tagihan > 0 ? 'text-error' : 'text-success'">
+              {{ formatCurrency(item.sisa_tagihan) }}
+            </span>
+          </template>
+          <template #item.status="{ item }">
+            <InvoiceStatusBadge :status="item.status" />
+          </template>
+          <template #item.dir_ob_approval_status="{ item }">
+            <ApprovalStatusBadge :status="item.approval_status" />
+          </template>
+          <template #item.dir_ob_actions="{ item }">
+            <div class="d-flex gap-1">
+              <VBtn
+                v-if="item.can_record_payment && item.status !== 'LUNAS'"
+                icon
+                size="small"
+                variant="tonal"
+                color="success"
+                @click="openCatatBayar(item)"
+              >
+                <VIcon
+                  icon="ri-money-cny-circle-line"
+                  size="18"
+                />
+                <VTooltip activator="parent">
+                  Catat Bayar
+                </VTooltip>
+              </VBtn>
+              <VBtn
+                v-if="item.can_print"
+                icon
+                size="small"
+                variant="tonal"
+                color="success"
+                @click="openShareDialog([item])"
+              >
+                <VIcon
+                  icon="ri-whatsapp-line"
+                  size="18"
+                />
+                <VTooltip activator="parent">
+                  Kirim via WhatsApp
+                </VTooltip>
+              </VBtn>
+              <VBtn
+                v-if="item.can_print"
+                icon
+                size="small"
+                variant="text"
+                color="secondary"
+                :loading="printingId === item.id"
+                @click="printInvoice(item.id)"
+              >
+                <VIcon
+                  icon="ri-printer-line"
+                  size="18"
+                />
+                <VTooltip activator="parent">
+                  Cetak
+                </VTooltip>
+              </VBtn>
+              <VBtn
+                icon
+                size="small"
+                variant="text"
+                color="info"
+                :to="{ name: 'finance-invoice-show', params: { id: item.id } }"
+              >
+                <VIcon
+                  icon="ri-eye-line"
+                  size="18"
+                />
+                <VTooltip activator="parent">
+                  Detail
+                </VTooltip>
+              </VBtn>
+            </div>
+          </template>
+        </BaseTable>
+      </VCard>
     </template>
 
     <!-- Catat Bayar Modal -->
@@ -1817,7 +1821,16 @@ dirObParamsB2B.segment = 'B2B'
 const dateDraftDirOb = reactive({ tanggal_dari: defaultDari, tanggal_sampai: defaultSampai })
 const dateDraftDirObB2B = reactive({ tanggal_dari: defaultDari, tanggal_sampai: defaultSampai })
 
+const activeSegmentTab = ref('b2b')
+
 const dirObSummary = reactive({
+  total_invoice: null,
+  total_tagihan: null,
+  total_pembayaran: null,
+  total_sisa: null,
+})
+
+const dirObSummaryB2B = reactive({
   total_invoice: null,
   total_tagihan: null,
   total_pembayaran: null,
@@ -1836,12 +1849,16 @@ const obHeroStats = computed(() => {
   ]
 })
 
-const dirObStats = computed(() => [
-  { key: 'total_invoice', label: 'Total Data', value: dirObSummary.total_invoice ?? '-', icon: 'ri-history-line', color: 'primary' },
-  { key: 'total_tagihan', label: 'Total Saldo Awal', value: formatCurrency(dirObSummary.total_tagihan), icon: 'ri-wallet-3-line', color: 'warning' },
-  { key: 'total_pembayaran', label: 'Total Terbayar', value: formatCurrency(dirObSummary.total_pembayaran), icon: 'ri-money-cny-circle-line', color: 'success' },
-  { key: 'total_sisa', label: 'Sisa Piutang', value: formatCurrency(dirObSummary.total_sisa), icon: 'ri-error-warning-line', color: 'error' },
-])
+const dirObStats = computed(() => {
+  const source = activeSegmentTab.value === 'b2b' ? dirObSummaryB2B : dirObSummary
+
+  return [
+    { key: 'total_invoice', label: 'Total Data', value: source.total_invoice ?? '-', icon: 'ri-history-line', color: 'primary' },
+    { key: 'total_tagihan', label: 'Total Saldo Awal', value: formatCurrency(source.total_tagihan), icon: 'ri-wallet-3-line', color: 'warning' },
+    { key: 'total_pembayaran', label: 'Total Terbayar', value: formatCurrency(source.total_pembayaran), icon: 'ri-money-cny-circle-line', color: 'success' },
+    { key: 'total_sisa', label: 'Sisa Piutang', value: formatCurrency(source.total_sisa), icon: 'ri-error-warning-line', color: 'error' },
+  ]
+})
 
 // ── Bulk select state ──────────────────────────────────────────────────────
 const selectedInvoices    = ref([])
@@ -1904,6 +1921,7 @@ function onPembayaranSaved() {
     loadDirObList()
     loadDirObListB2B()
     loadDirObSummary()
+    loadDirObSummaryB2B()
   } else {
     reset()
     if (canSeeAll) resetB2B()
@@ -2101,6 +2119,7 @@ let dirApprovalSumCtrl      = null
 let dirObController         = null
 let dirObB2BController      = null
 let dirObSumCtrl            = null
+let dirObSumB2BCtrl         = null
 
 function clearDirDebounceTimer() {
   clearTimeout(dirDebounceTimer)
@@ -2230,6 +2249,7 @@ async function loadDirObSummary() {
         approval_status: dirObParams.approval_status,
         tanggal_dari: dirObParams.tanggal_dari,
         tanggal_sampai: dirObParams.tanggal_sampai,
+        segment: dirObParams.segment,
       },
       signal: controller.signal,
     })
@@ -2240,6 +2260,33 @@ async function loadDirObSummary() {
     if (err.code === 'ERR_CANCELED') return
   } finally {
     if (dirObSumCtrl === controller) dirObSumCtrl = null
+  }
+}
+
+async function loadDirObSummaryB2B() {
+  dirObSumB2BCtrl?.abort()
+
+  const controller = new AbortController()
+
+  dirObSumB2BCtrl = controller
+  try {
+    const { data } = await api.get('/finance/opening-balance/summary', {
+      params: {
+        search: dirObParamsB2B.search,
+        approval_status: dirObParamsB2B.approval_status,
+        tanggal_dari: dirObParamsB2B.tanggal_dari,
+        tanggal_sampai: dirObParamsB2B.tanggal_sampai,
+        segment: dirObParamsB2B.segment,
+      },
+      signal: controller.signal,
+    })
+
+    if (controller.signal.aborted) return
+    Object.assign(dirObSummaryB2B, data.data)
+  } catch (err) {
+    if (err.code === 'ERR_CANCELED') return
+  } finally {
+    if (dirObSumB2BCtrl === controller) dirObSumB2BCtrl = null
   }
 }
 
@@ -2361,6 +2408,7 @@ function onDirObTableOptions({ page, itemsPerPage }) {
 function doDirObFetchB2B() {
   dirObParamsB2B.page = 1
   loadDirObListB2B()
+  loadDirObSummaryB2B()
 }
 
 let dirObDebounceTimerB2B = null
@@ -2441,6 +2489,7 @@ async function confirmApprove(item) {
     loadDirObList()
     loadDirObListB2B()
     loadDirObSummary()
+    loadDirObSummaryB2B()
     financeNotificationStore.fetchPendingOpeningBalanceCount()
   } catch (err) {
     const message = err?.response?.data?.message ?? 'Gagal menyetujui Opening Balance.'
@@ -2519,6 +2568,7 @@ async function confirmApproveAll() {
     loadDirObList()
     loadDirObListB2B()
     loadDirObSummary()
+    loadDirObSummaryB2B()
     financeNotificationStore.fetchPendingOpeningBalanceCount()
   } catch (err) {
     const message = err?.response?.data?.message ?? 'Gagal menyetujui sebagian Opening Balance.'
@@ -2538,6 +2588,7 @@ function initLoad() {
     loadDirObList()
     loadDirObListB2B()
     loadDirObSummary()
+    loadDirObSummaryB2B()
   } else {
     const isPrivileged = authStore.isAdmin || authStore.isManager || authStore.isSupervisor
     if (!isPrivileged && authStore.user?.karyawan_id) {
