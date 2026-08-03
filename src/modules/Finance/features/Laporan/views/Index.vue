@@ -249,7 +249,9 @@ const router = useRouter()
 
 // Laporan global lintas PIC (komparatif/rekening perusahaan) — disembunyikan
 // dari PIC AR murni, yang hanya boleh melihat laporan operasional miliknya sendiri.
-const GLOBAL_ONLY_ROUTES = ['finance-laporan-rekening-koran', 'finance-laporan-kinerja-ar', 'finance-laporan-pdm']
+// Pendapatan di Muka TIDAK lagi di sini — sudah di-scope backend ke klien
+// milik PIC AR sendiri (bukan laporan komparatif lintas PIC seperti 2 lainnya).
+const GLOBAL_ONLY_ROUTES = ['finance-laporan-rekening-koran', 'finance-laporan-kinerja-ar']
 
 const allReports = [
   {

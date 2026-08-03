@@ -101,8 +101,38 @@
         <template #item.no="{ index }">
           {{ (meta.current_page - 1) * meta.per_page + index + 1 }}
         </template>
+        <template #item.klien="{ item }">
+          <template v-if="item.is_multi_payment && item.multi_payment_klien_count > 1">
+            {{ item.klien }} <span class="text-medium-emphasis">+{{ item.multi_payment_klien_count - 1 }} klien lain</span>
+          </template>
+          <template v-else>
+            {{ item.klien }}
+          </template>
+        </template>
         <template #item.no_invoice="{ item }">
+          <VTooltip
+            v-if="item.is_multi_payment"
+            location="top"
+          >
+            <template #activator="{ props }">
+              <VChip
+                v-bind="props"
+                size="small"
+                variant="tonal"
+                color="info"
+              >
+                {{ item.multi_payment_invoices?.length ?? 0 }} Invoice (Multi Payment)
+              </VChip>
+            </template>
+            <div
+              v-for="inv in item.multi_payment_invoices"
+              :key="inv.invoice_id"
+            >
+              {{ inv.no_invoice }} — {{ formatCurrency(inv.jumlah) }}
+            </div>
+          </VTooltip>
           <RouterLink
+            v-else
             :to="{ name: 'finance-invoice-show', params: { id: item.invoice_id } }"
             class="text-primary text-decoration-none"
           >

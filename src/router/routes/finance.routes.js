@@ -140,8 +140,10 @@ export default [
     name: 'finance-laporan-pdm',
     component: () => import('@/modules/Finance/features/Laporan/views/PendapatanDiMuka.vue'),
 
-    // Laporan global lintas PIC — bukan untuk PIC AR murni.
-    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR'] },
+    // Dibuka untuk PIC AR — backend men-scope hasil ke klien mereka sendiri
+    // (lihat PendapatanDiMukaController::applyPicArScope), supaya PIC AR bisa
+    // "Gunakan" PDM kliennya sendiri untuk melunasi invoice baru.
+    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'] },
   },
 
   // Redirect URL lama ke route dedicated masing-masing
