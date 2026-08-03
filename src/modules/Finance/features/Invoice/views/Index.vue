@@ -1139,17 +1139,25 @@ function openShareDialog(invoices) {
   showShareDialog.value = true
 }
 
-function openInvestorBulkDialog(item) {
-  shareTargetInvoices.value = [item]
+function openInvestorBulkDialog(itemOrItems) {
+  shareTargetInvoices.value = Array.isArray(itemOrItems) ? itemOrItems : [itemOrItems]
   shareMode.value = 'investor-bulk'
   showShareDialog.value = true
 }
 
 function openBulkInvestorFromSelection() {
-  const anchor = selectedInvoices.value.find(inv => inv.can_print && inv.resto)
-  if (!anchor) return
+  const qualifying = selectedInvoices.value.filter(inv => inv.can_print && inv.resto)
+  if (!qualifying.length) return
 
-  openInvestorBulkDialog(anchor)
+  // Satu anchor per klien_ar_id unik (outlet) — dialog yang akan dedupe hasil
+  // per investor.id sesudah fetch, kalau beberapa outlet ternyata 1 investor sama.
+  const anchorsByKlien = new Map()
+  for (const inv of qualifying) {
+    const klienId = inv.klien_ar_id ?? inv.klien_ar?.id
+    if (klienId && !anchorsByKlien.has(klienId)) anchorsByKlien.set(klienId, inv)
+  }
+
+  openInvestorBulkDialog([...anchorsByKlien.values()])
 }
 
 async function doBulkDelete() {

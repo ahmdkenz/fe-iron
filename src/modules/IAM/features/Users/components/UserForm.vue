@@ -170,6 +170,35 @@
         </VCol>
       </VRow>
 
+      <!-- Section: Token Device Fonnte (WA PIC) -->
+      <div
+        class="text-caption font-weight-bold text-uppercase d-flex align-center gap-1 mt-3 mb-2"
+        style="color: rgb(var(--v-theme-primary))"
+      >
+        <VIcon
+          icon="ri-whatsapp-line"
+          size="13"
+        />
+        Token Device Fonnte (WA PIC)
+      </div>
+      <VRow dense>
+        <VCol cols="12">
+          <VTextField
+            v-model="form.fonnte_token"
+            label="Token Device Fonnte"
+            placeholder="Token dari dashboard Fonnte untuk device WA milik user ini"
+            density="compact"
+            variant="outlined"
+            hint="Dipakai saat kirim WA blast ke klien yang PIC AR-nya user ini. Kosongkan untuk melepas device."
+            persistent-hint
+            :append-inner-icon="showToken ? 'ri-eye-off-line' : 'ri-eye-line'"
+            :type="showToken ? 'text' : 'password'"
+            :error-messages="errors.fonnte_token"
+            @click:append-inner="showToken = !showToken"
+          />
+        </VCol>
+      </VRow>
+
       <!-- Status Toggle -->
       <div
         class="d-flex align-center justify-space-between pa-3 rounded-lg mt-3"
@@ -232,8 +261,9 @@ const { items: roles, loading: rolesLoading, fetchAll: fetchRoles } = useCrud('/
 
 const formRef = ref(null)
 const showPwd = ref(false)
+const showToken = ref(false)
 const errorMessage = ref('')
-const errors = reactive({ username: [], email: [], password: [], no_hp: [], role_id: [], karyawan_id: [] })
+const errors = reactive({ username: [], email: [], password: [], no_hp: [], role_id: [], karyawan_id: [], fonnte_token: [] })
 
 // NIK autocomplete state
 const nikSearch = ref('')
@@ -246,7 +276,7 @@ const isEditing = computed(() => !!props.userData)
 
 const statusOptions = BOOLEAN_STATUS_OPTIONS
 
-const defaultForm = () => ({ username: '', email: '', no_hp: '', password: '', role_id: null, status: 1, karyawan_id: null })
+const defaultForm = () => ({ username: '', email: '', no_hp: '', password: '', role_id: null, status: 1, karyawan_id: null, fonnte_token: '' })
 const form = reactive(defaultForm())
 
 async function onNikSearch(val) {
@@ -278,9 +308,10 @@ function onKaryawanSelect(val) {
 
 watch([() => props.modelValue, () => props.userData], ([open]) => {
   if (!open) return
-  Object.assign(errors, { username: [], email: [], password: [], no_hp: [], role_id: [], karyawan_id: [] })
+  Object.assign(errors, { username: [], email: [], password: [], no_hp: [], role_id: [], karyawan_id: [], fonnte_token: [] })
   errorMessage.value = ''
   showPwd.value = false
+  showToken.value = false
   nikSearch.value = ''
   karyawanOptions.value = []
   fetchRoles()
@@ -292,6 +323,7 @@ watch([() => props.modelValue, () => props.userData], ([open]) => {
     form.role_id = props.userData.role?.id ?? null
     form.status = normalizeBooleanStatus(props.userData.status)
     form.karyawan_id = props.userData.karyawan_id ?? null
+    form.fonnte_token = props.userData.fonnte_token ?? ''
 
     if (props.userData.karyawan) {
       selectedKaryawan.value = props.userData.karyawan

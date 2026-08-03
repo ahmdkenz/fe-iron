@@ -35,7 +35,6 @@
             :icon="xs || undefined"
             :prepend-icon="xs ? undefined : 'ri-whatsapp-line'"
             :aria-label="xs ? 'Kirim WA' : undefined"
-            :disabled="!canShare"
             @click="emit('share')"
           >
             <VIcon
@@ -45,10 +44,10 @@
             />
             <span v-else>Kirim WA</span>
             <VTooltip
-              v-if="xs || !canShare"
+              v-if="xs"
               activator="parent"
             >
-              {{ !canShare ? 'Pilih satu klien yang sama untuk berbagi via WhatsApp' : 'Kirim WA' }}
+              Kirim WA
             </VTooltip>
           </VBtn>
 
@@ -123,13 +122,6 @@ const emit = defineEmits(['share', 'delete', 'clear', 'investor-bulk'])
 
 const configStore = useConfigStore()
 const { xs } = useDisplay()
-
-const canShare = computed(() => {
-  if (!props.selected.length) return false
-  const ids = props.selected.map(inv => inv.klien_ar_id ?? inv.klien_ar?.id)
-
-  return new Set(ids).size === 1
-})
 
 const canInvestorBulk = computed(() => props.selected.some(inv => inv.can_print && inv.resto))
 
