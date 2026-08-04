@@ -49,6 +49,7 @@ declare module 'vue' {
     ManagementIndexShell: typeof import('./src/components/shared/ManagementIndexShell.vue')['default']
     MasterDataTab: typeof import('./src/modules/Master/features/MasterData/components/MasterDataTab.vue')['default']
     MasterInvoiceTab: typeof import('./src/modules/Master/features/MasterData/components/MasterInvoiceTab.vue')['default']
+    MasterOpeningBalanceTab: typeof import('./src/modules/Master/features/MasterData/components/MasterOpeningBalanceTab.vue')['default']
     MatchDialog: typeof import('./src/modules/Finance/features/RekonsiliasiBank/components/MatchDialog.vue')['default']
     MobileCardActions: typeof import('./src/components/shared/MobileCardActions.vue')['default']
     MoreBtn: typeof import('./src/@core/components/MoreBtn.vue')['default']

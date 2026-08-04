@@ -28,6 +28,13 @@
           {{ pendingReview }}
         </VChip>
       </VTab>
+      <VTab value="opening-balance">
+        <VIcon
+          icon="ri-wallet-3-line"
+          start
+        />
+        Import Master Opening Balance
+      </VTab>
     </VTabs>
 
     <!--
@@ -50,6 +57,12 @@
       >
         <MasterInvoiceTab />
       </VWindowItem>
+      <VWindowItem
+        value="opening-balance"
+        eager
+      >
+        <MasterOpeningBalanceTab />
+      </VWindowItem>
     </VWindow>
   </div>
 </template>
@@ -58,6 +71,7 @@
 import { computed, ref } from 'vue'
 import MasterDataTab from '../components/MasterDataTab.vue'
 import MasterInvoiceTab from '../components/MasterInvoiceTab.vue'
+import MasterOpeningBalanceTab from '../components/MasterOpeningBalanceTab.vue'
 import { useMasterInvoiceImportStore } from '@/stores/master-invoice-import.store'
 
 const tab = ref('master')
