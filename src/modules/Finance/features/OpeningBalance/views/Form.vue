@@ -133,6 +133,9 @@
                       :error-messages="errors.no_invoice"
                       hint="Format: OB-{SINGKATAN}-{DDMMYYYYHHMMSSmmm} — Contoh PT: OB-ABB-13062026143022479 | Contoh RESTO: OB-MKS-13062026143022479"
                       persistent-hint
+                      readonly
+                      tabindex="-1"
+                      class="readonly-locked-field"
                     />
                   </VCol>
 
@@ -242,6 +245,8 @@
                       :rules="[v => v > 0 || 'Saldo harus lebih dari 0']"
                       :error-messages="errors.saldo_awal"
                       readonly
+                      tabindex="-1"
+                      class="readonly-locked-field"
                       hint="Dihitung otomatis dari total sisa tagihan rincian"
                       persistent-hint
                     />
@@ -795,6 +800,11 @@ onMounted(async () => {
 <style scoped>
 .opening-balance-layout {
   row-gap: 4px;
+}
+
+.readonly-locked-field :deep(input) {
+  cursor: default;
+  pointer-events: none;
 }
 
 .opening-balance-loading-card,

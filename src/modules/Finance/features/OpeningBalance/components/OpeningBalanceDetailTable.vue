@@ -208,7 +208,6 @@
                 density="compact"
                 variant="outlined"
                 placeholder="Contoh: Penjualan Minyak Goreng"
-                :rules="[v => !!v || 'Deskripsi wajib diisi']"
                 hide-details="auto"
                 @input="emitRows"
               />
