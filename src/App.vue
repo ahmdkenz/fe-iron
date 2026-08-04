@@ -8,6 +8,7 @@ import {
   initConfigStore,
   useConfigStore,
 } from '@core/stores/config'
+import AuthTransitionOverlay from '@/components/AuthTransitionOverlay.vue'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { consumeFlashAlert } from '@/utils/flashAlert'
 import { hexToRgb } from '@core/utils/colorConverter'
@@ -46,6 +47,7 @@ onMounted(() => {
     <VApp :style="`--v-global-theme-primary: ${hexToRgb(global.current.value.colors.primary)}`">
       <RouterView />
 
+      <AuthTransitionOverlay />
       <ScrollToTop />
     </VApp>
   </VLocaleProvider>

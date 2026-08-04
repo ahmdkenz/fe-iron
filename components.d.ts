@@ -15,6 +15,7 @@ declare module 'vue' {
     ApprovalStatusBadge: typeof import('./src/modules/Finance/shared/components/ApprovalStatusBadge.vue')['default']
     AppStepper: typeof import('./src/@core/components/AppStepper.vue')['default']
     ApSummaryInsights: typeof import('./src/modules/AP/shared/components/ApSummaryInsights.vue')['default']
+    AuthTransitionOverlay: typeof import('./src/components/AuthTransitionOverlay.vue')['default']
     BarangForm: typeof import('./src/modules/Master/features/Barang/components/BarangForm.vue')['default']
     BaseInput: typeof import('./src/components/base/BaseInput.vue')['default']
     BaseModal: typeof import('./src/components/base/BaseModal.vue')['default']

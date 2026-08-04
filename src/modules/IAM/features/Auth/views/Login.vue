@@ -556,7 +556,10 @@
         </div>
       </div>
 
-      <div class="form-card">
+      <div
+        class="form-card"
+        :class="{ 'is-shrinking': isTransitioning }"
+      >
         <!-- Mobile Brand -->
         <div class="mobile-brand">
           <div class="mobile-logo-tile">
@@ -677,6 +680,7 @@
           </VAlert>
 
           <VBtn
+            ref="submitBtnRef"
             type="submit"
             block
             size="large"
@@ -724,44 +728,6 @@
         </VForm>
       </div>
     </main>
-
-    <!-- SUCCESS OVERLAY -->
-    <Transition name="fade">
-      <div
-        v-if="showOverlay"
-        class="sov"
-      >
-        <div class="sov-wrap mb-6">
-          <div class="sov-spinner" />
-
-          <div class="sov-box">
-            <VIcon
-              icon="ri-shield-check-line"
-              size="38"
-              class="sov-icon"
-            />
-          </div>
-        </div>
-
-        <span class="sov-label">ACCESS VERIFIED</span>
-
-        <h2 class="sov-title">
-          Otentikasi Berhasil
-        </h2>
-
-        <p class="sov-name">
-          Selamat datang, {{ employeeDisplayName }}
-        </p>
-
-        <p class="sov-status loading-dots">
-          {{ processingText }}
-        </p>
-
-        <div class="sov-prog mt-5">
-          <div class="sov-bar" />
-        </div>
-      </div>
-    </Transition>
   </div>
 </template>
 
@@ -774,10 +740,16 @@ import {
   ref,
 } from 'vue'
 import { useRouter } from 'vue-router'
+import { useTheme } from 'vuetify'
+import { useAuthTransition } from '@/composables/useAuthTransition.js'
 import { useAuthStore } from '@/stores/auth.store.js'
+import { useConfigStore } from '@core/stores/config'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const configStore = useConfigStore()
+const vuetifyTheme = useTheme()
+const { start: startAuthTransition, setStatus: setAuthTransitionStatus, leave: leaveAuthTransition, reset: resetAuthTransition } = useAuthTransition()
 
 const currentYear = new Date().getFullYear()
 
@@ -785,13 +757,12 @@ const currentYear = new Date().getFullYear()
 // Form State
 // ─────────────────────────────────────────────────────────
 const formRef = ref(null)
+const submitBtnRef = ref(null)
 const showPassword = ref(false)
 const rememberMe = ref(false)
 const errorMessage = ref('')
-const showOverlay = ref(false)
 const isSubmitting = ref(false)
-
-const processingText = ref('Memverifikasi kredensial...')
+const isTransitioning = ref(false)
 
 const errors = reactive({
   username: [],
@@ -929,19 +900,14 @@ const themes = [
   },
 ]
 
-const currentTheme = ref('dark')
-const systemDark = ref(false)
-
-const resolvedTheme = computed(() => {
-  if (currentTheme.value === 'system') {
-    return systemDark.value ? 'dark' : 'light'
-  }
-
-  return currentTheme.value
+const currentTheme = computed({
+  get: () => configStore.theme,
+  set: value => {
+    configStore.theme = value
+  },
 })
 
-let mediaQuery = null
-let mqListener = null
+const resolvedTheme = computed(() => vuetifyTheme.global.name.value)
 
 // ─────────────────────────────────────────────────────────
 // User Display Name
@@ -958,26 +924,12 @@ const employeeDisplayName = computed(() => {
 // Lifecycle
 // ─────────────────────────────────────────────────────────
 onMounted(() => {
-  mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-
-  systemDark.value = mediaQuery.matches
-
-  mqListener = event => {
-    systemDark.value = event.matches
-  }
-
-  mediaQuery.addEventListener('change', mqListener)
-
   loadLockState()
 })
 
 onUnmounted(() => {
   if (countdownTimer) {
     clearInterval(countdownTimer)
-  }
-
-  if (mediaQuery && mqListener) {
-    mediaQuery.removeEventListener('change', mqListener)
   }
 })
 
@@ -1009,19 +961,39 @@ async function handleLogin() {
 
     clearLockState()
 
-    showOverlay.value = true
+    isTransitioning.value = true
 
-    setTimeout(() => {
-      processingText.value = 'Menyiapkan ruang kerja aman...'
-    }, 800)
+    const btnEl = submitBtnRef.value?.$el
+    const rect = btnEl?.getBoundingClientRect()
+    const originX = rect ? ((rect.left + rect.width / 2) / window.innerWidth) * 100 : 50
+    const originY = rect ? ((rect.top + rect.height / 2) / window.innerHeight) * 100 : 70
 
-    setTimeout(() => {
-      processingText.value = 'Menginisialisasi dasbor utama...'
-    }, 1600)
+    startAuthTransition({
+      employeeName: employeeDisplayName.value,
+      originX,
+      originY,
+      statusText: 'Memverifikasi kredensial...',
+    })
 
     setTimeout(() => {
       router.push({ name: authStore.isApOnly ? 'ap-dashboard' : 'dashboard' })
-    }, 2800)
+    }, 750)
+
+    setTimeout(() => {
+      setAuthTransitionStatus('Menyiapkan ruang kerja aman...')
+    }, 900)
+
+    setTimeout(() => {
+      setAuthTransitionStatus('Menginisialisasi dasbor utama...')
+    }, 1700)
+
+    setTimeout(() => {
+      leaveAuthTransition()
+    }, 2500)
+
+    setTimeout(() => {
+      resetAuthTransition()
+    }, 3200)
   } catch (err) {
     isSubmitting.value = false
 
@@ -1878,178 +1850,17 @@ async function handleLogin() {
 }
 
 /* ─────────────────────────────────────────────────────────
-   Success Overlay
+   Auth Transition Trigger (overlay itself lives in
+   AuthTransitionOverlay.vue, rendered globally in App.vue)
 ───────────────────────────────────────────────────────── */
-.sov {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-
-  padding: 1.5rem;
-
-  background:
-    radial-gradient(circle at center, rgba(34, 91, 162, 0.32), transparent 36%),
-    rgba(5, 15, 33, 0.91);
-
-  backdrop-filter: blur(10px);
+.form-card {
+  transition: transform 0.35s ease, opacity 0.35s ease;
 }
 
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.35s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
+.form-card.is-shrinking {
+  transform: scale(0.96);
   opacity: 0;
-}
-
-.sov-wrap {
-  width: 96px;
-  height: 96px;
-
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.sov-spinner {
-  position: absolute;
-  inset: 0;
-
-  border: 3px solid rgba(255, 255, 255, 0.12);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.sov-box {
-  width: 72px;
-  height: 72px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  border: 1px solid rgba(255, 255, 255, 0.17);
-  border-radius: 50%;
-
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.sov-icon {
-  color: var(--accent) !important;
-}
-
-.sov-label {
-  margin-bottom: 0.55rem;
-
-  color: rgba(255, 255, 255, 0.5);
-
-  font-size: 0.64rem;
-  font-weight: 800;
-  letter-spacing: 0.15em;
-}
-
-.sov-title {
-  margin: 0 0 0.3rem;
-
-  color: #ffffff;
-
-  font-size: 1.38rem;
-  font-weight: 800;
-}
-
-.sov-name {
-  margin: 0 0 0.2rem;
-
-  color: var(--accent);
-
-  font-size: 0.91rem;
-  font-weight: 600;
-}
-
-.sov-status {
-  margin: 0;
-
-  color: rgba(255, 255, 255, 0.62);
-
-  font-size: 0.79rem;
-}
-
-.sov-prog {
-  width: min(220px, 74vw);
-  height: 3px;
-
-  overflow: hidden;
-  border-radius: 99px;
-
-  background: rgba(255, 255, 255, 0.13);
-}
-
-.sov-bar {
-  height: 100%;
-
-  border-radius: inherit;
-  background: var(--accent);
-
-  animation: fill 2.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-@keyframes fill {
-  0% {
-    width: 0;
-  }
-
-  30% {
-    width: 40%;
-  }
-
-  65% {
-    width: 72%;
-  }
-
-  100% {
-    width: 100%;
-  }
-}
-
-.loading-dots::after {
-  content: "";
-  animation: dots 1.5s steps(4, end) infinite;
-}
-
-@keyframes dots {
-  0%,
-  20% {
-    content: "";
-  }
-
-  40% {
-    content: ".";
-  }
-
-  60% {
-    content: "..";
-  }
-
-  80%,
-  100% {
-    content: "...";
-  }
+  pointer-events: none;
 }
 /* =========================================================
    FUTURISTIC ACCOUNTING BACKGROUND

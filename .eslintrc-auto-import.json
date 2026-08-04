@@ -378,6 +378,7 @@
     "hasSessionMarker": true,
     "setSessionMarker": true,
     "useLoadMore": true,
-    "sanitizePhoneNumber": true
+    "sanitizePhoneNumber": true,
+    "useAuthTransition": true
   }
 }

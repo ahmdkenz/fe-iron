@@ -21,10 +21,11 @@ localStorage.removeItem('iron_auth_session')
 // before any session/cookie exists. See plugins/1.router/index.js.
 async function bootstrap() {
   // Run CSRF priming and minimum splash duration in parallel.
-  // Minimum 1.2s ensures decrypt + progress animations complete before loader dismisses.
+  // Minimum 3.6s ensures the shield draw-in + scatter-assemble subtitle
+  // (see index.html) complete before loader dismisses.
   await Promise.allSettled([
     ensureCsrfCookie(),
-    new Promise(resolve => setTimeout(resolve, 2400)),
+    new Promise(resolve => setTimeout(resolve, 3600)),
   ])
 
   app.mount('#app')

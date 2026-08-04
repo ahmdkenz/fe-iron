@@ -3,6 +3,44 @@
 
 <head>
   <meta charset="UTF-8" />
+
+  <!-- Resolve theme synchronously, before loader.css is applied, so the -->
+  <!-- splash never flashes the wrong theme. Mirrors resolveVuetifyTheme() -->
+  <!-- in src/@core/utils/vuetify.js, hand-rolled since Vue isn't loaded yet. -->
+  <script>
+    (function () {
+      try {
+        function readCookie(name) {
+          var match = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+          return match ? decodeURIComponent(match[1]) : null;
+        }
+
+        var themeCookie = readCookie('IRON-theme');
+        var colorScheme = readCookie('IRON-color-scheme');
+        var resolved;
+
+        if (themeCookie === 'dark' || themeCookie === 'light') {
+          resolved = themeCookie;
+        } else if (colorScheme === 'dark' || colorScheme === 'light') {
+          resolved = colorScheme;
+        } else {
+          resolved = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+
+        document.documentElement.setAttribute('data-theme', resolved);
+
+        var storedAccent = window.localStorage && window.localStorage.getItem('IRON-initial-loader-color');
+        if (storedAccent && /^#[0-9a-fA-F]{3,8}$/.test(storedAccent)) {
+          document.documentElement.style.setProperty('--iron-accent', storedAccent);
+        }
+      } catch (e) {}
+    })();
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" />
+
   <link rel="icon" type="image/png" href="/images/iron/Logo_IRON.png" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>IRON - Intelligent Record of Organization Number</title>
@@ -13,16 +51,33 @@
   <!-- Loading screen — outside #app so Vue mount doesn't remove it prematurely -->
   <div id="loading-bg">
     <div class="iron-content">
-      <!-- Scatter-assemble title -->
-      <div class="iron-brand-wrap">
-        <span class="iron-title" id="iron-decrypt"></span>
+      <!-- Vault shield -->
+      <div class="iron-shield-wrap">
+        <svg class="iron-shield" id="iron-shield" viewBox="0 0 100 120" aria-hidden="true">
+          <polygon class="iron-facet iron-facet-left" points="50,20 25,35 30,75 50,95" />
+          <polygon class="iron-facet iron-facet-right" points="50,20 75,35 70,75 50,95" />
+          <polygon class="iron-core" points="50,45 60,55 50,75 40,55" />
+          <path class="iron-outline" pathLength="1" d="M 50 5 L 95 25 L 85 85 L 50 115 L 15 85 L 5 25 Z" />
+          <path class="iron-nodes" pathLength="1" d="M 50 5 L 50 20 M 95 25 L 75 35 M 85 85 L 70 75 M 50 115 L 50 95 M 15 85 L 30 75 M 5 25 L 25 35" />
+          <path class="iron-armor-outline" pathLength="1" d="M 50 20 L 75 35 L 70 75 L 50 95 L 30 75 L 25 35 Z" />
+        </svg>
+      </div>
+
+      <!-- Brand title -->
+      <div class="iron-brand-wrap" id="iron-brand-wrap">
+        <span class="iron-title">I.R.O.N</span>
+      </div>
+
+      <!-- Scatter-assemble subtitle -->
+      <div class="iron-subtitle-wrap">
+        <span class="iron-subtitle" id="iron-decrypt"></span>
       </div>
 
       <!-- Divider line -->
       <div class="iron-divider" id="iron-divider"></div>
 
       <!-- Progress section -->
-      <div class="iron-progress-section">
+      <div class="iron-progress-section" id="iron-progress-section">
         <div class="iron-progress-track">
           <div class="iron-progress-fill" id="iron-progress-fill"></div>
           <div class="iron-progress-glow" id="iron-progress-glow"></div>
@@ -33,6 +88,8 @@
         </div>
       </div>
     </div>
+
+    <div class="iron-flash" id="iron-flash"></div>
   </div>
 
   <div id="app"></div>
@@ -41,89 +98,111 @@
 
   <script>
     ;(function () {
+      var shield = document.getElementById('iron-shield');
+      var brand  = document.getElementById('iron-brand-wrap');
+
+      // ── Phase 1: Draw shield outline ──────────────────────────────────────
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          if (shield) shield.classList.add('draw');
+        });
+      });
+
+      // ── Phase 2: Fill shield facets + glow core ─────────────────────────────
+      setTimeout(function () {
+        if (shield) shield.classList.add('fill');
+      }, 1150);
+
+      // ── Phase 3: Reveal "I.R.O.N" title ─────────────────────────────────────
+      setTimeout(function () {
+        if (brand) brand.classList.add('iron-visible');
+      }, 1350);
+
+      // ── Phase 4: Subtitle scatter-assemble ──────────────────────────────────
       var CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%&*!?+=~';
       var TEXT  = 'Intelligent Record of Organization Number';
       var el    = document.getElementById('iron-decrypt');
 
-      // Build individual character spans
-      el.innerHTML = '';
-      var charData = [];
-      TEXT.split('').forEach(function (ch) {
-        var span = document.createElement('span');
-        span.className = 'iron-char';
-        if (ch === ' ') {
-          span.textContent = ' ';
-          span.style.opacity = '1';
-        } else {
-          span.textContent = CHARS[Math.floor(Math.random() * CHARS.length)];
-          span.style.opacity = '0';
-        }
-        el.appendChild(span);
-        charData.push({ el: span, target: ch, isSpace: ch === ' ' });
-      });
-
-      // ── Phase 1: Scatter chars across viewport ─────────────────────────────
-      requestAnimationFrame(function () {
-        requestAnimationFrame(function () {
-          var vw = window.innerWidth;
-          var vh = window.innerHeight;
-
-          charData.forEach(function (d) {
-            if (d.isSpace) return;
-            var rx  = (Math.random() - 0.5) * vw * 1.5;
-            var ry  = (Math.random() - 0.5) * vh * 1.3;
-            var rot = (Math.random() - 0.5) * 720;
-            d.el.style.transform  = 'translate(' + rx + 'px, ' + ry + 'px) rotate(' + rot + 'deg)';
-            d.el.style.opacity    = '0.25';
-            d.el.style.transition = 'none';
-          });
-
-          // ── Phase 2: Assemble after 400ms scatter display ───────────────────
-          setTimeout(function () {
-            var settled   = 0;
-            var nonSpaces = charData.filter(function (d) { return !d.isSpace; });
-            var total     = nonSpaces.length;
-
-            nonSpaces.forEach(function (d) {
-              var delay = Math.random() * 500; // max 500ms stagger
-
-              setTimeout(function () {
-                // Fly to natural position
-                d.el.style.transition = 'transform 0.75s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease';
-                d.el.style.transform  = 'translate(0px, 0px) rotate(0deg)';
-                d.el.style.opacity    = '1';
-
-                // Scramble during flight, settle at arrival
-                var ticks    = 0;
-                var maxTicks = 10;
-                var timer = setInterval(function () {
-                  if (ticks >= maxTicks) {
-                    d.el.textContent = d.target;
-                    clearInterval(timer);
-                    settled++;
-                    if (settled >= total) {
-                      setTimeout(function () {
-                        var div = document.getElementById('iron-divider');
-                        if (div) div.classList.add('iron-visible');
-                      }, 150);
-                    }
-                  } else {
-                    d.el.textContent = CHARS[Math.floor(Math.random() * CHARS.length)];
-                    ticks++;
-                  }
-                }, 50);
-
-              }, delay);
-            });
-          }, 400);
+      function startSubtitle() {
+        el.innerHTML = '';
+        var charData = [];
+        TEXT.split('').forEach(function (ch) {
+          var span = document.createElement('span');
+          span.className = 'iron-char';
+          if (ch === ' ') {
+            span.textContent = ' ';
+            span.style.opacity = '1';
+          } else {
+            span.textContent = CHARS[Math.floor(Math.random() * CHARS.length)];
+            span.style.opacity = '0';
+          }
+          el.appendChild(span);
+          charData.push({ el: span, target: ch, isSpace: ch === ' ' });
         });
-      });
+
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () {
+            var vw = window.innerWidth;
+            var vh = window.innerHeight;
+
+            charData.forEach(function (d) {
+              if (d.isSpace) return;
+              var rx  = (Math.random() - 0.5) * vw * 1.5;
+              var ry  = (Math.random() - 0.5) * vh * 1.3;
+              var rot = (Math.random() - 0.5) * 720;
+              d.el.style.transform  = 'translate(' + rx + 'px, ' + ry + 'px) rotate(' + rot + 'deg)';
+              d.el.style.opacity    = '0.25';
+              d.el.style.transition = 'none';
+            });
+
+            // ── Assemble after scatter display ──────────────────────────────
+            setTimeout(function () {
+              var settled   = 0;
+              var nonSpaces = charData.filter(function (d) { return !d.isSpace; });
+              var total     = nonSpaces.length;
+
+              nonSpaces.forEach(function (d) {
+                var delay = Math.random() * 350; // max 350ms stagger
+
+                setTimeout(function () {
+                  // Fly to natural position
+                  d.el.style.transition = 'transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease';
+                  d.el.style.transform  = 'translate(0px, 0px) rotate(0deg)';
+                  d.el.style.opacity    = '1';
+
+                  // Scramble during flight, settle at arrival
+                  var ticks    = 0;
+                  var maxTicks = 8;
+                  var timer = setInterval(function () {
+                    if (ticks >= maxTicks) {
+                      d.el.textContent = d.target;
+                      clearInterval(timer);
+                      settled++;
+                      if (settled >= total) {
+                        setTimeout(function () {
+                          var div = document.getElementById('iron-divider');
+                          if (div) div.classList.add('iron-visible');
+                        }, 150);
+                      }
+                    } else {
+                      d.el.textContent = CHARS[Math.floor(Math.random() * CHARS.length)];
+                      ticks++;
+                    }
+                  }, 50);
+
+                }, delay);
+              });
+            }, 300);
+          });
+        });
+      }
 
       // ── Progress Bar Simulation ─────────────────────────────────────────────
       var fill     = document.getElementById('iron-progress-fill');
       var glow     = document.getElementById('iron-progress-glow');
       var pctEl    = document.getElementById('iron-progress-pct');
       var statusEl = document.getElementById('iron-status');
+      var section  = document.getElementById('iron-progress-section');
 
       var statuses = [
         { at: 5,  text: 'Initializing modules...' },
@@ -135,43 +214,56 @@
 
       var progress  = 0;
       var statusIdx = 0;
+      var progressTimer = null;
 
-      var progressTimer = setInterval(function () {
-        var inc = progress < 50
-          ? Math.random() * 7 + 3
-          : progress < 75
-            ? Math.random() * 4 + 1
-            : Math.random() * 1.5 + 0.5;
+      function startProgress() {
+        if (section) section.classList.add('iron-visible');
 
-        progress = Math.min(progress + inc, 90);
+        progressTimer = setInterval(function () {
+          var inc = progress < 50
+            ? Math.random() * 7 + 3
+            : progress < 75
+              ? Math.random() * 4 + 1
+              : Math.random() * 1.5 + 0.5;
 
-        var pct = Math.floor(progress);
-        if (fill)  fill.style.width  = pct + '%';
-        if (glow)  glow.style.left   = Math.max(0, pct - 4) + '%';
-        if (pctEl) pctEl.textContent = pct;
+          progress = Math.min(progress + inc, 90);
 
-        if (statusIdx < statuses.length && progress >= statuses[statusIdx].at) {
-          if (statusEl) statusEl.textContent = statuses[statusIdx].text;
-          statusIdx++;
-        }
+          var pct = Math.floor(progress);
+          if (fill)  fill.style.width  = pct + '%';
+          if (glow)  glow.style.left   = Math.max(0, pct - 4) + '%';
+          if (pctEl) pctEl.textContent = pct;
 
-        if (progress >= 90) clearInterval(progressTimer);
-      }, 110);
+          if (statusIdx < statuses.length && progress >= statuses[statusIdx].at) {
+            if (statusEl) statusEl.textContent = statuses[statusIdx].text;
+            statusIdx++;
+          }
+
+          if (progress >= 90) clearInterval(progressTimer);
+        }, 110);
+      }
+
+      setTimeout(function () {
+        startSubtitle();
+        startProgress();
+      }, 1650);
 
       // ── Completion Callback (called by main.js after Vue mount) ────────────
       window.__ironLoadingComplete = function () {
-        clearInterval(progressTimer);
+        if (progressTimer) clearInterval(progressTimer);
         progress = 100;
 
         if (fill) {
           fill.style.transition = 'width 0.35s cubic-bezier(0.4,0,0.2,1)';
           fill.style.width = '100%';
         }
-        if (glow)  glow.style.left         = '96%';
-        if (pctEl) pctEl.textContent       = '100';
-        if (statusEl) statusEl.textContent = 'Ready.';
+        if (glow)     glow.style.left       = '96%';
+        if (pctEl)    pctEl.textContent     = '100';
+        if (statusEl) statusEl.textContent  = 'Ready.';
 
         setTimeout(function () {
+          var flash = document.getElementById('iron-flash');
+          if (flash) flash.classList.add('iron-active');
+
           var bg = document.getElementById('loading-bg');
           if (bg) {
             bg.classList.add('iron-fade-out');
@@ -179,7 +271,7 @@
               if (bg.parentNode) bg.parentNode.removeChild(bg);
             }, 700);
           }
-        }, 350);
+        }, 300);
       };
     })();
   </script>
