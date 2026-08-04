@@ -218,15 +218,6 @@
                 </div>
               </div>
               <div class="d-flex align-center gap-1 flex-shrink-0">
-                <VBtn
-                  v-if="item.can_record_payment && item.status !== 'LUNAS'"
-                  icon="ri-money-cny-circle-line"
-                  size="small"
-                  variant="tonal"
-                  color="success"
-                  aria-label="Catat Bayar"
-                  @click="openCatatBayar(item)"
-                />
                 <MobileCardActions
                   :selected="selected"
                   :editable="item.can_edit"
@@ -304,22 +295,6 @@
           </template>
           <template #item.actions="{ item }">
             <div class="d-flex gap-1">
-              <VBtn
-                v-if="item.can_record_payment && item.status !== 'LUNAS'"
-                icon
-                size="small"
-                variant="tonal"
-                color="success"
-                @click="openCatatBayar(item)"
-              >
-                <VIcon
-                  icon="ri-money-cny-circle-line"
-                  size="18"
-                />
-                <VTooltip activator="parent">
-                  Catat Bayar
-                </VTooltip>
-              </VBtn>
               <VBtn
                 v-if="item.can_print"
                 icon
@@ -530,15 +505,6 @@
                 </div>
               </div>
               <div class="d-flex align-center gap-1 flex-shrink-0">
-                <VBtn
-                  v-if="item.can_record_payment && item.status !== 'LUNAS'"
-                  icon="ri-money-cny-circle-line"
-                  size="small"
-                  variant="tonal"
-                  color="success"
-                  aria-label="Catat Bayar"
-                  @click="openCatatBayar(item)"
-                />
                 <MobileCardActions
                   :selected="selected"
                   :editable="item.can_edit"
@@ -616,22 +582,6 @@
           </template>
           <template #item.actions="{ item }">
             <div class="d-flex gap-1">
-              <VBtn
-                v-if="item.can_record_payment && item.status !== 'LUNAS'"
-                icon
-                size="small"
-                variant="tonal"
-                color="success"
-                @click="openCatatBayar(item)"
-              >
-                <VIcon
-                  icon="ri-money-cny-circle-line"
-                  size="18"
-                />
-                <VTooltip activator="parent">
-                  Catat Bayar
-                </VTooltip>
-              </VBtn>
               <VBtn
                 v-if="item.can_print"
                 icon
@@ -1232,15 +1182,6 @@
                 </div>
               </div>
               <div class="d-flex align-center gap-1 flex-shrink-0">
-                <VBtn
-                  v-if="item.can_record_payment && item.status !== 'LUNAS'"
-                  icon="ri-money-cny-circle-line"
-                  size="small"
-                  variant="tonal"
-                  color="success"
-                  aria-label="Catat Bayar"
-                  @click="openCatatBayar(item)"
-                />
                 <MobileCardActions
                   :editable="false"
                   :deletable="false"
@@ -1316,22 +1257,6 @@
           </template>
           <template #item.dir_ob_b2b_actions="{ item }">
             <div class="d-flex gap-1">
-              <VBtn
-                v-if="item.can_record_payment && item.status !== 'LUNAS'"
-                icon
-                size="small"
-                variant="tonal"
-                color="success"
-                @click="openCatatBayar(item)"
-              >
-                <VIcon
-                  icon="ri-money-cny-circle-line"
-                  size="18"
-                />
-                <VTooltip activator="parent">
-                  Catat Bayar
-                </VTooltip>
-              </VBtn>
               <VBtn
                 v-if="item.can_print"
                 icon
@@ -1521,15 +1446,6 @@
                 </div>
               </div>
               <div class="d-flex align-center gap-1 flex-shrink-0">
-                <VBtn
-                  v-if="item.can_record_payment && item.status !== 'LUNAS'"
-                  icon="ri-money-cny-circle-line"
-                  size="small"
-                  variant="tonal"
-                  color="success"
-                  aria-label="Catat Bayar"
-                  @click="openCatatBayar(item)"
-                />
                 <MobileCardActions
                   :editable="false"
                   :deletable="false"
@@ -1606,22 +1522,6 @@
           <template #item.dir_ob_actions="{ item }">
             <div class="d-flex gap-1">
               <VBtn
-                v-if="item.can_record_payment && item.status !== 'LUNAS'"
-                icon
-                size="small"
-                variant="tonal"
-                color="success"
-                @click="openCatatBayar(item)"
-              >
-                <VIcon
-                  icon="ri-money-cny-circle-line"
-                  size="18"
-                />
-                <VTooltip activator="parent">
-                  Catat Bayar
-                </VTooltip>
-              </VBtn>
-              <VBtn
                 v-if="item.can_print"
                 icon
                 size="small"
@@ -1675,16 +1575,6 @@
       </VCard>
     </template>
 
-    <!-- Catat Bayar Modal -->
-    <PembayaranForm
-      v-if="selectedForPayment"
-      v-model="showPembayaran"
-      :invoice-id="selectedForPayment.id"
-      :sisa-tagihan="selectedForPayment.sisa_tagihan"
-      :is-opening-balance="true"
-      @saved="onPembayaranSaved"
-    />
-
     <!-- Export Modal -->
     <BaseModal
       v-if="showExportModal"
@@ -1705,7 +1595,7 @@
 
 <script setup>
 /* eslint-disable camelcase */
-import { computed, defineAsyncComponent, onActivated, onBeforeUnmount, onDeactivated, reactive, ref } from 'vue'
+import { computed, onActivated, onBeforeUnmount, onDeactivated, reactive, ref } from 'vue'
 
 function getDefaultMonthRange() {
   const now = new Date()
@@ -1733,8 +1623,6 @@ import BulkActionBar from '@/modules/Finance/shared/components/BulkActionBar.vue
 import MobileCardActions from '@/components/shared/MobileCardActions.vue'
 import { useRouter } from 'vue-router'
 import { useDisplay } from 'vuetify'
-
-const PembayaranForm = defineAsyncComponent(() => import('@/modules/Finance/shared/components/PembayaranForm.vue'))
 
 const { xs } = useDisplay()
 const router = useRouter()
@@ -1904,28 +1792,6 @@ async function doBulkDelete() {
     await showError(err.response?.data?.message ?? 'Gagal menghapus invoice')
   } finally {
     closeAlert({ onlyLoading: true })
-  }
-}
-
-// ── Catat Bayar state ──────────────────────────────────────────────────────
-const showPembayaran     = ref(false)
-const selectedForPayment = ref(null)
-
-function openCatatBayar(item) {
-  selectedForPayment.value = item
-  showPembayaran.value     = true
-}
-
-function onPembayaranSaved() {
-  if (authStore.canApproveOpeningBalance) {
-    loadDirObList()
-    loadDirObListB2B()
-    loadDirObSummary()
-    loadDirObSummaryB2B()
-  } else {
-    reset()
-    if (canSeeAll) resetB2B()
-    loadSummary()
   }
 }
 
@@ -2617,7 +2483,6 @@ onDeactivated(() => {
   // Dialog teleports (VDialog) survive keep-alive deactivation, so force-close
   // them to avoid a stuck scrim on other pages.
   showShareDialog.value = false
-  showPembayaran.value = false
   showExportModal.value = false
 })
 

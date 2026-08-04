@@ -200,11 +200,11 @@
 
                   <VCol
                     cols="12"
-                    md="6"
+                    md="4"
                   >
                     <VTextField
                       :model-value="selectedCompanyName"
-                      label="Entitas Penagih"
+                      label="Entitas Bisnis"
                       density="compact"
                       variant="outlined"
                       prepend-inner-icon="ri-building-4-line"
@@ -214,7 +214,21 @@
 
                   <VCol
                     cols="12"
-                    md="6"
+                    md="4"
+                  >
+                    <VTextField
+                      :model-value="selectedPicArName"
+                      label="PIC AR"
+                      density="compact"
+                      variant="outlined"
+                      prepend-inner-icon="ri-user-line"
+                      readonly
+                    />
+                  </VCol>
+
+                  <VCol
+                    cols="12"
+                    md="4"
                   >
                     <VTextField
                       v-model.number="form.saldo_awal"
@@ -357,6 +371,11 @@
                 <div class="summary-list__item">
                   <span class="summary-list__label">Entitas</span>
                   <strong class="summary-list__value">{{ selectedCompanyName || '-' }}</strong>
+                </div>
+
+                <div class="summary-list__item">
+                  <span class="summary-list__label">PIC AR</span>
+                  <strong class="summary-list__value">{{ selectedPicArName || '-' }}</strong>
                 </div>
 
                 <div class="summary-list__item">
@@ -624,6 +643,8 @@ const selectedCompanyName = computed(() =>
   ?? selectedKlien.value?.karyawan_ar?.perusahaan?.nama_perusahaan
   ?? selectedKlien.value?.karyawan_ar?.perusahaan?.nama_singkatan_perusahaan
   ?? '')
+
+const selectedPicArName = computed(() => selectedKlien.value?.karyawan_ar?.nama_karyawan ?? '')
 
 const selectedKlienMeta = computed(() => {
   if (!selectedKlien.value) return 'Belum ada klien yang dipilih'

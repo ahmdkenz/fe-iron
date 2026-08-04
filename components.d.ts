@@ -62,7 +62,6 @@ declare module 'vue' {
     PageHeader: typeof import('./src/components/shared/PageHeader.vue')['default']
     PageHeroHeader: typeof import('./src/components/shared/PageHeroHeader.vue')['default']
     PembayaranArSection: typeof import('./src/modules/Finance/features/Laporan/components/PembayaranArSection.vue')['default']
-    PembayaranForm: typeof import('./src/modules/Finance/shared/components/PembayaranForm.vue')['default']
     PendapatanDiMukaSection: typeof import('./src/modules/Finance/features/Laporan/components/PendapatanDiMukaSection.vue')['default']
     PicArDashboardSection: typeof import('./src/modules/Finance/features/Dashboard/components/PicArDashboardSection.vue')['default']
     ProgressCard: typeof import('./src/modules/Finance/features/RekonsiliasiBank/components/ProgressCard.vue')['default']

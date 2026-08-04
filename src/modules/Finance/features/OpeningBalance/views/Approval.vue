@@ -568,22 +568,6 @@
         <template #item.ob_b2b_actions="{ item }">
           <div class="d-flex gap-1">
             <VBtn
-              v-if="item.can_record_payment && item.status !== 'LUNAS'"
-              icon
-              size="small"
-              variant="tonal"
-              color="success"
-              @click="openCatatBayar(item)"
-            >
-              <VIcon
-                icon="ri-money-cny-circle-line"
-                size="18"
-              />
-              <VTooltip activator="parent">
-                Catat Bayar
-              </VTooltip>
-            </VBtn>
-            <VBtn
               v-if="item.can_print"
               icon
               size="small"
@@ -795,22 +779,6 @@
         <template #item.ob_actions="{ item }">
           <div class="d-flex gap-1">
             <VBtn
-              v-if="item.can_record_payment && item.status !== 'LUNAS'"
-              icon
-              size="small"
-              variant="tonal"
-              color="success"
-              @click="openCatatBayar(item)"
-            >
-              <VIcon
-                icon="ri-money-cny-circle-line"
-                size="18"
-              />
-              <VTooltip activator="parent">
-                Catat Bayar
-              </VTooltip>
-            </VBtn>
-            <VBtn
               v-if="item.can_print"
               icon
               size="small"
@@ -846,21 +814,12 @@
       </BaseTable>
     </VCard>
 
-    <!-- Catat Bayar Modal -->
-    <PembayaranForm
-      v-if="selectedForPayment"
-      v-model="showPembayaran"
-      :invoice-id="selectedForPayment.id"
-      :sisa-tagihan="selectedForPayment.sisa_tagihan"
-      :is-opening-balance="true"
-      @saved="onPembayaranSaved"
-    />
   </div>
 </template>
 
 <script setup>
 /* eslint-disable camelcase */
-import { defineAsyncComponent, onBeforeUnmount, onDeactivated, onMounted, reactive, ref } from 'vue'
+import { onBeforeUnmount, onDeactivated, onMounted, reactive, ref } from 'vue'
 import { useCrud } from '@/composables/useCrud'
 import { useLazyFetchAll } from '@/composables/useLazyFetchAll'
 import { useFormatter } from '@/composables/useFormatter'
@@ -871,8 +830,6 @@ import { useAuthStore } from '@/stores/auth.store'
 import { useFinanceNotificationStore } from '@/stores/finance-notification.store'
 import ApprovalStatusBadge from '@/modules/Finance/shared/components/ApprovalStatusBadge.vue'
 import InvoiceStatusBadge from '@/modules/Finance/shared/components/InvoiceStatusBadge.vue'
-
-const PembayaranForm = defineAsyncComponent(() => import('@/modules/Finance/shared/components/PembayaranForm.vue'))
 
 const { items, loading, meta, params, fetchList } = useCrud('/finance/opening-balance')
 const { items: klienListAll, loading: klienLoadingAll, fetchAll: fetchKlienAll } = useCrud('/finance/klien-ar')
@@ -926,21 +883,6 @@ const obSummary = reactive({
   total_pembayaran: null,
   total_sisa: null,
 })
-
-// ── Catat Bayar state ──────────────────────────────────────────────────────
-const showPembayaran     = ref(false)
-const selectedForPayment = ref(null)
-
-function openCatatBayar(item) {
-  selectedForPayment.value = item
-  showPembayaran.value     = true
-}
-
-function onPembayaranSaved() {
-  loadObList()
-  loadObListB2B()
-  loadObSummary()
-}
 
 // ── Export ─────────────────────────────────────────────────────────────────
 const isExporting    = ref(false)
