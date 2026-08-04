@@ -6,7 +6,7 @@
           <div class="text-body-1 font-weight-medium text-truncate">
             Progress Rekonsiliasi
           </div>
-          <div class="text-caption text-medium-emphasis text-truncate">
+          <div class="text-caption text-medium-emphasis progress-card__period">
             {{ periodeLabel }}
           </div>
         </div>
@@ -106,5 +106,8 @@ const percentLabel = computed(() => pct(matched.value))
   border-radius: 50%;
   display: inline-block;
   flex-shrink: 0;
+}
+.progress-card__period {
+  word-break: break-word;
 }
 </style>

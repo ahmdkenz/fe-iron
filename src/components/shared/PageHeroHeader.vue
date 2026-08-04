@@ -407,20 +407,23 @@ function formatStat(value) {
     flex: 0 0 auto;
   }
 
-  /* Statistik besar → kartu ringkas sejajar (summary kecil). */
+  /* Statistik besar → grid 2 kolom (2x2) agar tiap kartu cukup lebar untuk
+     menampilkan nominal Rupiah penuh, tidak terpotong oleh overflow:hidden
+     pada .phh__header. */
   .phh__stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
     margin-top: 12px;
   }
 
   .phh__stat {
-    flex: 1 1 0;
-    min-width: 0;
     flex-direction: column;
     align-items: flex-start;
     gap: 2px;
     padding: 8px 10px;
     border-radius: 12px;
+    min-width: 0;
   }
 
   .phh__stat-icon {
@@ -429,6 +432,8 @@ function formatStat(value) {
 
   .phh__stat-value {
     font-size: 0.95rem;
+    overflow-wrap: break-word;
+    word-break: break-word;
   }
 
   .phh__stat-label {

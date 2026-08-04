@@ -2,8 +2,10 @@
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.store.js'
+import { useConfigStore } from '@core/stores/config'
 
 const authStore = useAuthStore()
+const configStore = useConfigStore()
 const router = useRouter()
 
 const isMenuOpen     = ref(false)
@@ -133,14 +135,16 @@ async function doLogout() {
         </div>
       </VListItem>
 
-      <VDivider class="my-1" />
+      <template v-if="!configStore.isLessThanOverlayNavBreakpoint">
+        <VDivider class="my-1" />
 
-      <VListItem
-        prepend-icon="ri-settings-3-line"
-        title="Pengaturan Profil"
-        :to="{ name: 'profile-settings' }"
-        @click="isMenuOpen = false"
-      />
+        <VListItem
+          prepend-icon="ri-settings-3-line"
+          title="Pengaturan Profil"
+          :to="{ name: 'profile-settings' }"
+          @click="isMenuOpen = false"
+        />
+      </template>
 
       <VDivider class="my-1" />
 

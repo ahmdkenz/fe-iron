@@ -9,102 +9,90 @@
         { title: detailLabel, disabled: true },
       ]"
     >
-      <div class="d-flex flex-wrap gap-2">
-        <VBtn
-          variant="tonal"
-          color="secondary"
-          :to="listRoute"
-        >
-          <VIcon
+      <template #default="{ mobile }">
+        <div class="d-flex flex-wrap gap-2">
+          <AppActionButton
+            action="custom"
+            color="secondary"
+            variant="tonal"
             icon="ri-arrow-left-line"
-            class="me-1"
+            label="Kembali"
+            :compact="mobile"
+            :to="listRoute"
           />
-          Kembali
-        </VBtn>
-        <VBtn
-          v-if="showEditButton"
-          color="primary"
-          :to="editRoute"
-        >
-          <VIcon
+          <AppActionButton
+            v-if="showEditButton"
+            action="custom"
+            color="primary"
+            variant="elevated"
             icon="ri-pencil-line"
-            class="me-1"
+            label="Edit"
+            :compact="mobile"
+            :to="editRoute"
           />
-          Edit
-        </VBtn>
-        <VBtn
-          v-if="invoice?.can_submit"
-          color="primary"
-          variant="tonal"
-          @click="showResubmitModal = true"
-        >
-          <VIcon
+          <AppActionButton
+            v-if="invoice?.can_submit"
+            action="custom"
+            color="primary"
+            variant="tonal"
             icon="ri-send-plane-line"
-            class="me-1"
+            label="Ajukan Ulang"
+            :compact="mobile"
+            @click="showResubmitModal = true"
           />
-          Ajukan Ulang
-        </VBtn>
-        <VBtn
-          v-if="invoice?.can_approve"
-          color="success"
-          @click="showApproveModal = true"
-        >
-          <VIcon
+          <AppActionButton
+            v-if="invoice?.can_approve"
+            action="custom"
+            color="success"
+            variant="elevated"
             icon="ri-checkbox-circle-line"
-            class="me-1"
+            label="Approve"
+            :compact="mobile"
+            @click="showApproveModal = true"
           />
-          Approve
-        </VBtn>
-        <VBtn
-          v-if="invoice?.can_reject"
-          color="error"
-          variant="tonal"
-          @click="showRejectModal = true"
-        >
-          <VIcon
+          <AppActionButton
+            v-if="invoice?.can_reject"
+            action="custom"
+            color="error"
+            variant="tonal"
             icon="ri-close-circle-line"
-            class="me-1"
+            label="Reject"
+            :compact="mobile"
+            @click="showRejectModal = true"
           />
-          Reject
-        </VBtn>
-        <VBtn
-          v-if="canChangeStatus"
-          color="info"
-          variant="tonal"
-          @click="showUbahStatus = true"
-        >
-          <VIcon
+          <AppActionButton
+            v-if="canChangeStatus"
+            action="custom"
+            color="info"
+            variant="tonal"
             icon="ri-exchange-line"
-            class="me-1"
+            label="Ubah Status"
+            :compact="mobile"
+            @click="showUbahStatus = true"
           />
-          Ubah Status
-        </VBtn>
-        <VBtn
-          v-if="invoice?.can_print"
-          color="info"
-          variant="elevated"
-          class="font-weight-bold text-white elevation-2"
-          @click="printInvoice"
-        >
-          <VIcon
+          <AppActionButton
+            v-if="invoice?.can_print"
+            action="custom"
+            color="info"
+            variant="elevated"
+            class="font-weight-bold text-white elevation-2"
             icon="ri-printer-line"
-            class="me-1"
+            label="Cetak"
+            :compact="mobile"
+            @click="printInvoice"
           />
-          Cetak
-        </VBtn>
-        <VBtn
-          v-if="invoice?.can_print"
-          color="success"
-          variant="tonal"
-          @click="shareViaWhatsapp"
-        >
-          <VIcon
+          <AppActionButton
+            v-if="invoice?.can_print"
+            action="custom"
+            color="success"
+            variant="tonal"
             icon="ri-whatsapp-line"
-            class="me-1"
+            label="Kirim WA"
+            :compact="mobile"
+            @click="shareViaWhatsapp"
           />
-          Kirim WA
-        </VBtn>
-      </div>
+        </div>
+      </template>
     </PageHeader>
 
     <VAlert
@@ -1982,5 +1970,36 @@ onBeforeUnmount(() => {
 .b2b-card,
 .b2b-client-card {
   border-left: 3px solid rgb(var(--v-theme-info)) !important;
+}
+
+@media (max-width: 599.98px) {
+  .invoice-show-stack {
+    gap: 1rem;
+  }
+
+  :deep(.v-card-title) {
+    padding: 10px 12px 6px !important;
+    font-size: 0.95rem;
+  }
+
+  :deep(.detail-row-item) {
+    padding: 8px 12px !important;
+  }
+
+  :deep(.detail-row-item span) {
+    font-size: 0.8rem !important;
+  }
+
+  .invoice-table :deep(th) {
+    font-size: 0.65rem;
+  }
+
+  .invoice-table :deep(td) {
+    font-size: 0.78rem;
+  }
+
+  :deep(.v-alert) {
+    font-size: 0.8rem;
+  }
 }
 </style>

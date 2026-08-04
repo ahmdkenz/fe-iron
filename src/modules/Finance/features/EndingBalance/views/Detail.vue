@@ -131,6 +131,7 @@
               v-if="authStore.canOperateEndingBalance"
               action="ajukan"
               label="Ajukan Koreksi"
+              :compact="xs"
               :loading="openingKoreksi"
               @click="openKoreksiDialog"
             />
@@ -139,11 +140,11 @@
               action="custom"
               color="success"
               icon="ri-lock-line"
+              label="Tutup Periode"
+              :compact="xs"
               :loading="locking"
               @click="showLockDialog = true"
-            >
-              Tutup Periode
-            </AppActionButton>
+            />
           </div>
         </VCardText>
       </VCard>
@@ -172,6 +173,7 @@
               v-if="authStore.canOperateEndingBalance && !eb.has_active_koreksi"
               action="ajukan"
               label="Ajukan Koreksi"
+              :compact="xs"
               :loading="openingKoreksi"
               @click="openKoreksiDialog"
             />
@@ -180,11 +182,11 @@
               action="custom"
               color="warning"
               icon="ri-lock-unlock-line"
+              label="Buka Periode"
+              :compact="xs"
               :loading="unlocking"
               @click="showUnlockDialog = true"
-            >
-              Buka Periode
-            </AppActionButton>
+            />
           </div>
         </VCardText>
       </VCard>
@@ -871,6 +873,7 @@
 <script setup>
 import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { useDisplay } from 'vuetify'
 import { useAuthStore } from '@/stores/auth.store'
 import api from '@/utils/axios'
 import EndingBalanceStatusBadge from '@/modules/Finance/shared/components/EndingBalanceStatusBadge.vue'
@@ -879,6 +882,7 @@ const KoreksiWizardDialog = defineAsyncComponent(() => import('../components/Kor
 
 const route     = useRoute()
 const authStore = useAuthStore()
+const { xs }    = useDisplay()
 
 const loading  = ref(false)
 const eb       = ref(null)

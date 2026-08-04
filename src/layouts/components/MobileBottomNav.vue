@@ -14,10 +14,13 @@ const authStore = useAuthStore()
 const route = useRoute()
 
 // Dock bawah dikomposisi eksplisit per role — bukan lagi lewat flag generik
-// di nav data, karena bentuknya beda secara struktural per role (ADMIN dkk.
-// dapat tombol grup "AR"/"AP" yang membuka sheet, bukan navigasi langsung).
-// Slot 'route' di-resolve dari props.navItems (sudah difilter role) supaya
-// title/icon/badge tetap satu sumber kebenaran dengan nav data.
+// di nav data, karena bentuknya beda secara struktural per role. Slot 'route'
+// di-resolve dari props.navItems (sudah difilter role) supaya title/icon/badge
+// tetap satu sumber kebenaran dengan nav data. Slot boleh override `to`/`icon`
+// sendiri (mis. Profile) untuk rute yang sengaja tidak dimasukkan ke
+// navigation/vertical (supaya tidak nyasar ke sidebar desktop). Tipe 'group'
+// masih didukung resolvedDockItems untuk role lain di masa depan, meski tidak
+// ada bucket yang memakainya saat ini.
 const DOCK_CONFIG = {
   AR: [
     { type: 'route', name: 'dashboard' },
@@ -33,9 +36,15 @@ const DOCK_CONFIG = {
   ],
   DEFAULT: [
     { type: 'route', name: 'dashboard' },
-    { type: 'group', heading: 'ACCOUNT RECEIVABLE', label: 'AR' },
-    { type: 'group', heading: 'ACCOUNT PAYABLE', label: 'AP' },
-    { type: 'route', name: 'finance-rekonsiliasi-bank', label: 'Rekonsiliasi' },
+    { type: 'route', name: 'finance-invoice-index', label: 'Invoice' },
+    { type: 'route', name: 'ap-tagihan-index', label: 'Tagihan' },
+    {
+      type: 'route',
+      name: 'profile-settings',
+      label: 'Profile',
+      to: { name: 'profile-settings' },
+      icon: 'ri-user-line',
+    },
   ],
 }
 
@@ -108,20 +117,37 @@ const resolvedDockItems = computed(() => DOCK_CONFIG[dockBucket.value]
     const navItem = props.navItems.find(item => item.to?.name === slot.name)
 
     // Role memfilter navItem-nya — jangan render slot dock yang datanya hilang.
-    if (!navItem)
+    // Slot dengan `to`/`icon` sendiri (mis. Profile) tidak butuh entri di
+    // navItems sama sekali — dock bawah sengaja terpisah dari sidebar desktop.
+    if (!navItem && !slot.to)
       return null
 
     return {
       type: 'route',
       key: `route:${slot.name}`,
-      title: slot.label ?? navItem.title,
-      icon: navItem.icon?.icon,
-      to: navItem.to,
-      badgeContent: navItem.badgeContent,
-      active: route.name === navItem.to.name,
+      title: slot.label ?? navItem?.title,
+      icon: slot.icon ?? navItem?.icon?.icon,
+      to: slot.to ?? navItem?.to,
+      badgeContent: navItem?.badgeContent,
+      active: route.name === (slot.to?.name ?? navItem?.to?.name),
     }
   })
   .filter(Boolean))
+
+// Dock row dirender sebagai satu v-for, dengan sentinel { type: 'fab' } disisipkan
+// di titik tengah supaya tombol "Lainnya" muncul sebagai FAB melingkar terangkat
+// (bukan lagi item terakhir di baris) — jumlah dock item tiap bucket saat ini
+// selalu genap (4), jadi split selalu rata 2 kiri/2 kanan.
+const dockItemsWithFab = computed(() => {
+  const items = resolvedDockItems.value
+  const midpoint = Math.ceil(items.length / 2)
+
+  return [
+    ...items.slice(0, midpoint),
+    { type: 'fab', key: 'fab' },
+    ...items.slice(midpoint),
+  ]
+})
 
 // Turn the flat heading/item list into { heading, items[] } groups so "Lainnya"
 // can show a compact grid of group tiles first, drilling down into a group's
@@ -214,7 +240,7 @@ watch(isMoreMenuOpen, isOpen => {
       class="mobile-bottom-nav"
     >
       <template
-        v-for="item in resolvedDockItems"
+        v-for="item in dockItemsWithFab"
         :key="item.key"
       >
         <RouterLink
@@ -240,7 +266,7 @@ watch(isMoreMenuOpen, isOpen => {
         </RouterLink>
 
         <button
-          v-else
+          v-else-if="item.type === 'group'"
           type="button"
           class="mobile-bottom-nav-item"
           :class="{ active: item.active }"
@@ -261,22 +287,26 @@ watch(isMoreMenuOpen, isOpen => {
           </VBadge>
           <span class="mobile-bottom-nav-item-label">{{ item.title }}</span>
         </button>
-      </template>
 
-      <button
-        type="button"
-        class="mobile-bottom-nav-item"
-        :class="{ active: isMoreMenuOpen }"
-        @click="openMoreMenu"
-      >
-        <span class="mobile-bottom-nav-item-icon">
-          <VIcon
-            icon="ri-menu-line"
-            size="22"
-          />
-        </span>
-        <span class="mobile-bottom-nav-item-label">Lainnya</span>
-      </button>
+        <div
+          v-else
+          class="mobile-bottom-nav-fab-slot"
+        >
+          <button
+            type="button"
+            class="mobile-bottom-nav-fab"
+            :class="{ active: isMoreMenuOpen }"
+            aria-label="Buka menu"
+            @click="openMoreMenu"
+          >
+            <VIcon
+              icon="ri-add-line"
+              size="26"
+              class="mobile-bottom-nav-fab-icon"
+            />
+          </button>
+        </div>
+      </template>
     </nav>
 
     <VBottomSheet
@@ -454,6 +484,74 @@ watch(isMoreMenuOpen, isOpen => {
 .mobile-bottom-nav-item.active .mobile-bottom-nav-item-icon {
   background: rgba(var(--v-theme-primary), 0.14);
   color: rgb(var(--v-theme-primary));
+  animation: mobile-nav-icon-pop 0.3s ease;
+}
+
+@keyframes mobile-nav-icon-pop {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+// 👉 FAB tengah ("Lainnya" di-restyle) — lingkaran terangkat di atas garis dock,
+// dengan morph ikon +/× dan feedback tekan supaya terasa jadi aksi utama.
+.mobile-bottom-nav-fab-slot {
+  display: flex;
+  flex: 1 1 0;
+  align-items: flex-start;
+  justify-content: center;
+  position: relative;
+}
+
+.mobile-bottom-nav-fab {
+  position: absolute;
+  inset-block-start: -22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 52px;
+  block-size: 52px;
+  border: 3px solid rgb(var(--v-theme-surface));
+  border-radius: 50%;
+  background: rgb(var(--v-theme-primary));
+  box-shadow: 0 4px 12px rgba(var(--v-theme-primary), 0.45), 0 2px 6px rgb(0 0 0 / 15%);
+  color: rgb(var(--v-theme-on-primary));
+  cursor: pointer;
+  animation: mobile-nav-fab-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  transition: box-shadow 0.25s ease, transform 0.2s ease;
+
+  &:active {
+    transform: scale(0.9);
+  }
+
+  &.active {
+    box-shadow: 0 6px 18px rgba(var(--v-theme-primary), 0.55), 0 2px 6px rgb(0 0 0 / 15%);
+  }
+}
+
+.mobile-bottom-nav-fab-icon {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mobile-bottom-nav-fab.active .mobile-bottom-nav-fab-icon {
+  transform: rotate(45deg);
+}
+
+@keyframes mobile-nav-fab-pop {
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .mobile-bottom-nav-item-label {
