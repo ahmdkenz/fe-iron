@@ -449,7 +449,7 @@
         <VDivider />
         <BaseTable
           v-model:selected="selectedInvoices"
-          :headers="headers"
+          :headers="headersB2C"
           :items="items"
           :total="total"
           :loading="loading"
@@ -485,6 +485,12 @@
                 </div>
                 <div class="text-caption text-medium-emphasis text-truncate mt-1">
                   {{ item.klien_ar?.nama_klien ?? '-' }}
+                </div>
+                <div
+                  v-if="canSeeAll && item.resto"
+                  class="text-caption text-medium-emphasis text-truncate"
+                >
+                  {{ item.resto?.nama_resto }}
                 </div>
               </div>
               <div class="d-flex flex-column align-end gap-1 flex-shrink-0">
@@ -559,6 +565,9 @@
           </template>
           <template #item.klien_ar="{ item }">
             {{ item.klien_ar?.nama_klien ?? '-' }}
+          </template>
+          <template #item.outlet="{ item }">
+            {{ item.resto?.nama_resto ?? '-' }}
           </template>
           <template #item.tanggal_invoice="{ item }">
             <span class="text-no-wrap">{{ formatDate(item.tanggal_invoice) }}</span>
@@ -1427,6 +1436,12 @@
                 <div class="text-caption text-medium-emphasis text-truncate mt-1">
                   {{ item.klien_ar?.nama_klien ?? '-' }}
                 </div>
+                <div
+                  v-if="canSeeAll && item.resto"
+                  class="text-caption text-medium-emphasis text-truncate"
+                >
+                  {{ item.resto?.nama_resto }}
+                </div>
               </div>
               <div class="d-flex flex-column align-end gap-1 flex-shrink-0">
                 <InvoiceStatusBadge :status="item.status" />
@@ -1498,6 +1513,9 @@
           </template>
           <template #item.klien_ar="{ item }">
             {{ item.klien_ar?.nama_klien ?? '-' }}
+          </template>
+          <template #item.outlet="{ item }">
+            {{ item.resto?.nama_resto ?? '-' }}
           </template>
           <template #item.tanggal_invoice="{ item }">
             <span class="text-no-wrap">{{ formatDate(item.tanggal_invoice) }}</span>
@@ -1939,6 +1957,16 @@ const headers = [
   { title: 'Aksi', key: 'actions', sortable: false, align: 'center', width: '120px' },
 ]
 
+// B2C-only variant: adds the Outlet column, visible only to ADMIN/MANAGER/SUPERVISOR.
+// `headers` above is shared with the operator-view B2B table, which has no outlet.
+const headersB2C = canSeeAll
+  ? [
+    ...headers.slice(0, 3),
+    { title: 'Outlet', key: 'outlet', sortable: false },
+    ...headers.slice(3),
+  ]
+  : headers
+
 const approvalHeaders = [
   { title: 'No', key: 'no', sortable: false, width: '60px' },
   { title: 'No Opening Balance', key: 'no_invoice', sortable: false },
@@ -1956,6 +1984,7 @@ const dirObHeaders = [
   { title: 'No', key: 'no', sortable: false, width: '60px' },
   { title: 'No Opening Balance', key: 'no_invoice', sortable: false },
   { title: 'Klien', key: 'klien_ar', sortable: false },
+  ...(canSeeAll ? [{ title: 'Outlet', key: 'outlet', sortable: false }] : []),
   { title: 'Tanggal', key: 'tanggal_invoice', sortable: false, width: '115px' },
   { title: 'Saldo Awal', key: 'total_tagihan', sortable: false },
   { title: 'Total Terbayar', key: 'total_pembayaran', sortable: false },
