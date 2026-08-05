@@ -541,6 +541,86 @@
                 </VCard>
               </div>
             </div>
+
+            <div
+              v-if="importResult.details && importResult.details.length > 0"
+              class="mt-4"
+            >
+              <div class="text-subtitle-2 mb-1 text-info d-flex align-center ga-1">
+                <VIcon
+                  icon="ri-information-line"
+                  size="16"
+                  color="info"
+                />
+                {{ importResult.details.length }} baris diperbarui/dilewati:
+              </div>
+              <div
+                v-if="importResult.details_total > importResult.details.length"
+                class="text-caption text-medium-emphasis mb-2"
+              >
+                Menampilkan {{ importResult.details.length }} dari {{ importResult.details_total }} baris — sisanya tetap terhitung pada ringkasan di atas, tidak ditampilkan satu per satu.
+              </div>
+              <VTable
+                v-if="!xs"
+                density="compact"
+                fixed-header
+                height="180"
+              >
+                <thead>
+                  <tr>
+                    <th>Sheet</th>
+                    <th>Baris</th>
+                    <th>Pesan</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="(det, i) in importResult.details"
+                    :key="i"
+                  >
+                    <td>{{ det.sheet || '-' }}</td>
+                    <td>{{ det.row }}</td>
+                    <td>{{ det.message }}</td>
+                  </tr>
+                </tbody>
+              </VTable>
+
+              <div
+                v-else
+                class="d-flex flex-column ga-2 overflow-y-auto"
+                style="max-height: 260px;"
+              >
+                <VCard
+                  v-for="(det, i) in importResult.details"
+                  :key="i"
+                  variant="tonal"
+                  color="secondary"
+                  rounded="lg"
+                >
+                  <VCardText class="pa-2">
+                    <div class="d-flex flex-wrap ga-1 mb-1">
+                      <VChip
+                        size="x-small"
+                        color="secondary"
+                        variant="flat"
+                      >
+                        {{ det.sheet || '-' }}
+                      </VChip>
+                      <VChip
+                        size="x-small"
+                        color="secondary"
+                        variant="tonal"
+                      >
+                        Baris {{ det.row }}
+                      </VChip>
+                    </div>
+                    <div class="text-caption">
+                      {{ det.message }}
+                    </div>
+                  </VCardText>
+                </VCard>
+              </div>
+            </div>
           </div>
         </VCardText>
 
@@ -596,6 +676,7 @@ const summaryCards = [
     insKey: 'investor_inserted',
     updKey: 'investor_updated',
     failKey: 'investor_failed',
+    skipKey: 'investor_skipped',
   },
   {
     label: 'Resto',
@@ -605,6 +686,7 @@ const summaryCards = [
     insKey: 'resto_inserted',
     updKey: 'resto_updated',
     failKey: 'resto_failed',
+    skipKey: 'resto_skipped',
   },
   {
     label: 'Client AR',
@@ -634,8 +716,8 @@ const resultStats = computed(() => {
   const r = importResult.value
 
   return [
-    { label: 'Investor', icon: 'ri-money-dollar-circle-line', color: 'primary', inserted: r.investor_inserted ?? 0, updated: r.investor_updated ?? 0, skipped: 0, failed: r.investor_failed ?? 0 },
-    { label: 'Resto', icon: 'ri-store-2-line', color: 'success', inserted: r.resto_inserted ?? 0, updated: r.resto_updated ?? 0, skipped: 0, failed: r.resto_failed ?? 0 },
+    { label: 'Investor', icon: 'ri-money-dollar-circle-line', color: 'primary', inserted: r.investor_inserted ?? 0, updated: r.investor_updated ?? 0, skipped: r.investor_skipped ?? 0, failed: r.investor_failed ?? 0 },
+    { label: 'Resto', icon: 'ri-store-2-line', color: 'success', inserted: r.resto_inserted ?? 0, updated: r.resto_updated ?? 0, skipped: r.resto_skipped ?? 0, failed: r.resto_failed ?? 0 },
     { label: 'Client AR', icon: 'ri-building-4-line', color: 'warning', inserted: r.klien_inserted ?? 0, updated: r.klien_updated ?? 0, skipped: r.klien_skipped ?? 0, failed: r.klien_failed ?? 0 },
     { label: 'Barang', icon: 'ri-box-3-line', color: 'info', inserted: r.barang_inserted ?? 0, updated: r.barang_updated ?? 0, skipped: r.barang_skipped ?? 0, failed: r.barang_failed ?? 0 },
   ]
