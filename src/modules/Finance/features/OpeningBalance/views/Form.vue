@@ -148,7 +148,7 @@
                       :items="sortedKlienList"
                       item-title="display_label"
                       item-value="id"
-                      :filter-keys="['display_label', 'display_subtitle']"
+                      :filter-keys="['raw.display_label', 'raw.display_subtitle']"
                       :rules="[v => !!v || 'Klien wajib dipilih']"
                       :error-messages="errors.klien_ar_id"
                       :loading="klienLoading"

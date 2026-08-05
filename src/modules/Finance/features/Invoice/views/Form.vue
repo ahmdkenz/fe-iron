@@ -208,7 +208,7 @@
                     :items="klienList"
                     item-title="display_label"
                     item-value="id"
-                    :filter-keys="['display_label', 'display_subtitle']"
+                    :filter-keys="['raw.display_label', 'raw.display_subtitle']"
                     prepend-inner-icon="ri-user-3-line"
                     :rules="[v => !!v || 'Klien wajib dipilih']"
                     :loading="klienLoading"
