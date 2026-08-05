@@ -42,6 +42,7 @@
             class="ps-4 mt-2"
           >
             <li>Untuk mengisi <strong>saldo awal piutang klien</strong> secara massal — cocok untuk "import pertama kali" (backfill data historis) yang biasanya tidak punya rincian invoice per baris.</li>
+            <li>Setiap baris wajib menyatakan <strong>tipe_klien</strong>: <strong>PT/B2B</strong> (saldo konsolidasi head office, tanpa resto spesifik) atau <strong>RESTO/B2C</strong> (saldo per outlet — <strong>kode_resto</strong> wajib diisi &amp; divalidasi ke MASTER DATA Resto).</li>
             <li>Rincian Invoice Asal &amp; Item per invoice historis bersifat <strong>opsional</strong> — didukung oleh <strong>kedua template</strong> (XLSX maupun CSV). Boleh dikosongkan sepenuhnya jika data Anda hanya saldo agregat.</li>
             <li>Gunakan <strong>Template CSV</strong> untuk volume data besar (dengan maupun tanpa rincian) — mendukung baris jauh lebih banyak dari XLSX.</li>
             <li>Gunakan <strong>Template XLSX</strong> untuk volume kecil-menengah — rincian & item ditulis di sheet terpisah, lebih mudah dibaca manual di Excel.</li>
@@ -109,7 +110,16 @@
                 <code>tipe_baris</code>). Gunakan <strong>XLSX</strong> untuk volume kecil-menengah — rincian &amp; item
                 ditulis di sheet terpisah, kapasitas realistis lebih kecil dari CSV.
               </li>
-              <li>kode_klien (opsional) lebih disarankan diisi daripada mengandalkan nama_klien — lebih stabil jika ada nama klien yang mirip/kembar.</li>
+              <li>
+                Isi <strong>tipe_klien</strong>: <code>PT</code> atau <code>B2B</code> (sinonim, kode_resto WAJIB
+                DIKOSONGKAN, resolve via nama_klien — harus unik/tidak kembar) atau <code>RESTO</code> atau
+                <code>B2C</code> (sinonim, <strong>kode_resto</strong> WAJIB diisi, harus sudah terdaftar di Master Resto
+                &amp; punya Client AR aktif tipe RESTO — tidak ada pembuatan otomatis).
+              </li>
+              <li>
+                <strong>Template versi lama (tanpa kolom tipe_klien) tidak lagi didukung</strong> — download ulang
+                Template XLSX/CSV sebelum import berikutnya.
+              </li>
             </ul>
           </VAlert>
 

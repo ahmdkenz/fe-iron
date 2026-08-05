@@ -85,7 +85,7 @@
           variant="outlined"
           type="number"
           min="0"
-          :rules="[v => Number(v) > 0 || 'Qty > 0']"
+          :rules="[v => Number(v) >= 0 || 'Qty >= 0']"
           hide-details="auto"
           @update:model-value="v => updateNumberField('qty', v)"
         />
