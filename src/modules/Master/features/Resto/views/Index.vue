@@ -379,7 +379,7 @@
       v-if="showDelete"
       v-model="showDelete"
       title="Hapus Resto"
-      :loading="loading"
+      :disabled="loading"
       confirm-action="hapus"
       @confirm="doDelete"
     >

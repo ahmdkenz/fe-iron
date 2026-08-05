@@ -117,8 +117,7 @@
           />
           <AppActionButton
             action="custom"
-            :loading="uploading"
-            :disabled="!form.file"
+            :disabled="!form.file || uploading"
             @click="doUpload"
           >
             Upload & Proses
@@ -306,7 +305,7 @@
           <AppActionButton
             action="custom"
             color="warning"
-            :loading="confirming"
+            :disabled="confirming"
             @click="confirmReplace"
           >
             Ganti dengan File Baru
@@ -320,12 +319,14 @@
 <script setup>
 import { computed, markRaw, onBeforeUnmount, reactive, ref } from 'vue'
 import { useDisplay } from 'vuetify'
+import { useSweetAlert } from '@/composables/useSweetAlert'
 import api from '@/utils/axios'
 import writeXlsxFile from 'write-excel-file/browser'
 
 const emit = defineEmits(['imported'])
 
 const { xs } = useDisplay()
+const { showLoading, closeAlert } = useSweetAlert()
 
 const dialog      = ref(false)
 const uploading   = ref(false)
@@ -432,6 +433,7 @@ function closeDialog() {
 async function doUpload() {
   uploadError.value = ''
   uploading.value   = true
+  showLoading({ title: 'Mengunggah File', text: 'Mohon tunggu sebentar...' })
   try {
     const fd = new FormData()
 
@@ -449,6 +451,7 @@ async function doUpload() {
   } catch (err) {
     uploadError.value = err?.response?.data?.message ?? 'Upload gagal. Pastikan format file sesuai.'
   } finally {
+    closeAlert({ onlyLoading: true })
     uploading.value = false
   }
 }
@@ -521,6 +524,7 @@ function onImportNeedsConfirmation() {
 
 async function confirmReplace() {
   confirming.value = true
+  showLoading({ title: 'Melanjutkan Import', text: 'Mohon tunggu sebentar...' })
   try {
     await api.post(`/finance/rekonsiliasi-bank/imports/${batchId.value}/confirm-replace`)
     overlapDialog.value = false
@@ -534,6 +538,7 @@ async function confirmReplace() {
     }
     progressDialog.value = true
   } finally {
+    closeAlert({ onlyLoading: true })
     confirming.value = false
   }
 }

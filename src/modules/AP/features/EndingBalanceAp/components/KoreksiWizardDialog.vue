@@ -544,7 +544,7 @@
           v-else
           action="ajukan"
           label="Ajukan Koreksi"
-          :loading="submittingKoreksi"
+          :disabled="submittingKoreksi"
           @click="submitKoreksiDialog"
         />
       </VCardActions>
@@ -554,7 +554,10 @@
 
 <script setup>
 import { computed, reactive, ref, watch } from 'vue'
+import { useSweetAlert } from '@/composables/useSweetAlert'
 import api from '@/utils/axios'
+
+const { showLoading, closeAlert } = useSweetAlert()
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
@@ -722,6 +725,7 @@ async function submitKoreksiDialog() {
   }
 
   submittingKoreksi.value = true
+  showLoading({ title: 'Mengajukan Koreksi', text: 'Mohon tunggu sebentar...' })
   try {
     await api.post(`/ap/ending-balance/${props.eb.id}/koreksi`, payload)
     emit('update:modelValue', false)
@@ -729,6 +733,7 @@ async function submitKoreksiDialog() {
   } catch (e) {
     koreksiError.value = e?.response?.data?.message ?? 'Gagal mengajukan koreksi.'
   } finally {
+    closeAlert({ onlyLoading: true })
     submittingKoreksi.value = false
   }
 }

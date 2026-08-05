@@ -265,8 +265,7 @@
         />
         <AppActionButton
           action="cocokkan"
-          :loading="saving"
-          :disabled="!canSubmit"
+          :disabled="!canSubmit || saving"
           @click="doSubmit"
         />
       </VCardActions>
@@ -286,8 +285,11 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { useFormatter } from '@/composables/useFormatter'
+import { useSweetAlert } from '@/composables/useSweetAlert'
 import api from '@/utils/axios'
 import TagihanApMultiPickerDialog from '@/modules/AP/features/PembayaranAp/components/TagihanApMultiPickerDialog.vue'
+
+const { showLoading, closeAlert } = useSweetAlert()
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
@@ -434,6 +436,7 @@ async function doSubmit() {
   }
 
   saving.value = true
+  showLoading({ title: 'Mencocokkan Transaksi', text: 'Pembayaran sedang diproses...' })
   try {
     const payload = new FormData()
 
@@ -465,6 +468,7 @@ async function doSubmit() {
     else if (errors?.kategori_voucher) kategoriError.value = errors.kategori_voucher[0]
     else matchError.value = err?.response?.data?.message ?? 'Gagal mencatat voucher, coba lagi.'
   } finally {
+    closeAlert({ onlyLoading: true })
     saving.value = false
   }
 }

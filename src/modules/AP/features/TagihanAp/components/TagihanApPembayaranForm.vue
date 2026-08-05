@@ -2,7 +2,7 @@
   <BaseModal
     :model-value="modelValue"
     title="Catat Pembayaran"
-    :loading="saving"
+    :disabled="saving"
     width="500"
     @update:model-value="$emit('update:modelValue', $event)"
     @confirm="handleSubmit"

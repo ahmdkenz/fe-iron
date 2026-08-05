@@ -405,7 +405,7 @@
               label="Batalkan PDM"
               icon="ri-close-circle-line"
               size="x-small"
-              :loading="pdmCanceling"
+              :disabled="pdmCanceling"
               @click="doBatalkanPdm"
             />
           </div>
@@ -416,7 +416,7 @@
               color="deep-purple"
               icon="ri-book-line"
               size="small"
-              :loading="pdmSaving"
+              :disabled="pdmSaving"
               @click="doCatatPdm"
             >
               Catat {{ formatCurrency(item.kelebihan_bayar.sisa) }} sebagai PDM
@@ -458,8 +458,7 @@
         <AppActionButton
           action="gunakan"
           label="Alokasikan"
-          :disabled="Object.keys(selectedInvoices).length === 0 || totalAlokasi <= 0 || sisaRemaining < 0 || invoiceB2CLoading || invoiceB2BLoading"
-          :loading="kelebihanSaving"
+          :disabled="Object.keys(selectedInvoices).length === 0 || totalAlokasi <= 0 || sisaRemaining < 0 || invoiceB2CLoading || invoiceB2BLoading || kelebihanSaving"
           @click="doAlokasikanKelebihan"
         />
       </VCardActions>
@@ -470,7 +469,10 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { useFormatter } from '@/composables/useFormatter'
+import { useSweetAlert } from '@/composables/useSweetAlert'
 import api from '@/utils/axios'
+
+const { showLoading, closeAlert } = useSweetAlert()
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
@@ -637,6 +639,7 @@ async function doAlokasikanKelebihan() {
 
   kelebihanSaving.value = true
   kelebihanError.value  = null
+  showLoading({ title: 'Mengalokasikan Kelebihan Bayar', text: 'Mohon tunggu sebentar...' })
   try {
     for (const [invoiceId, { jumlah, keterangan }] of entries) {
       await api.post(`/finance/rekonsiliasi-bank/detail/${itemId}/kelebihan`, {
@@ -651,6 +654,7 @@ async function doAlokasikanKelebihan() {
   } catch (err) {
     kelebihanError.value = err?.response?.data?.message ?? 'Terjadi kesalahan, coba lagi.'
   } finally {
+    closeAlert({ onlyLoading: true })
     kelebihanSaving.value = false
   }
 }
@@ -661,6 +665,7 @@ async function doCatatPdm() {
 
   pdmSaving.value = true
   pdmError.value  = null
+  showLoading({ title: 'Mencatat Pendapatan Diterima di Muka', text: 'Mohon tunggu sebentar...' })
   try {
     await api.post(`/finance/pendapatan-di-muka/detail/${itemId}/catat`, {
       jumlah: sisa,
@@ -670,6 +675,7 @@ async function doCatatPdm() {
   } catch (err) {
     pdmError.value = err?.response?.data?.message ?? 'Terjadi kesalahan saat mencatat PDM.'
   } finally {
+    closeAlert({ onlyLoading: true })
     pdmSaving.value = false
   }
 }
@@ -681,12 +687,14 @@ async function doBatalkanPdm() {
 
   pdmCanceling.value = true
   pdmError.value     = null
+  showLoading({ title: 'Membatalkan Pencatatan PDM', text: 'Mohon tunggu sebentar...' })
   try {
     await api.delete(`/finance/pendapatan-di-muka/${pdmId}/batal`)
     emit('changed', itemId)
   } catch (err) {
     pdmError.value = err?.response?.data?.message ?? 'Terjadi kesalahan saat membatalkan PDM.'
   } finally {
+    closeAlert({ onlyLoading: true })
     pdmCanceling.value = false
   }
 }

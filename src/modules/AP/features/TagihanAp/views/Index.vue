@@ -235,7 +235,7 @@
       v-if="showDelete"
       v-model="showDelete"
       title="Hapus Tagihan"
-      :loading="deleting"
+      :disabled="deleting"
       confirm-action="hapus"
       @confirm="doDelete"
     >

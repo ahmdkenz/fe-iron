@@ -692,7 +692,7 @@
       v-if="showDelete"
       v-model="showDelete"
       title="Hapus Invoice"
-      :loading="loadingB2C"
+      :disabled="loadingB2C"
       confirm-action="hapus"
       @confirm="doDelete"
     >

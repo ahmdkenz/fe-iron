@@ -529,7 +529,6 @@
                   type="submit"
                   color="primary"
                   prepend-icon="ri-send-plane-2-line"
-                  :loading="saving"
                   :disabled="saving"
                 >
                   {{ submitLabel }}

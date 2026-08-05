@@ -142,7 +142,7 @@
               icon="ri-lock-line"
               label="Tutup Periode"
               :compact="xs"
-              :loading="locking"
+              :disabled="locking"
               @click="showLockDialog = true"
             />
           </div>
@@ -184,7 +184,7 @@
               icon="ri-lock-unlock-line"
               label="Buka Periode"
               :compact="xs"
-              :loading="unlocking"
+              :disabled="unlocking"
               @click="showUnlockDialog = true"
             />
           </div>
@@ -809,7 +809,7 @@
         <AppActionButton
           action="custom"
           color="success"
-          :loading="locking"
+          :disabled="locking"
           @click="doLock"
         >
           Kunci
@@ -850,7 +850,7 @@
         <AppActionButton
           action="custom"
           color="warning"
-          :loading="unlocking"
+          :disabled="unlocking"
           @click="doUnlock"
         >
           Buka Kunci
@@ -875,6 +875,7 @@ import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useDisplay } from 'vuetify'
 import { useAuthStore } from '@/stores/auth.store'
+import { useSweetAlert } from '@/composables/useSweetAlert'
 import api from '@/utils/axios'
 import EndingBalanceStatusBadge from '@/modules/Finance/shared/components/EndingBalanceStatusBadge.vue'
 
@@ -883,6 +884,7 @@ const KoreksiWizardDialog = defineAsyncComponent(() => import('../components/Kor
 const route     = useRoute()
 const authStore = useAuthStore()
 const { xs }    = useDisplay()
+const { showLoading, closeAlert, showError } = useSweetAlert()
 
 const loading  = ref(false)
 const eb       = ref(null)
@@ -1022,28 +1024,32 @@ watch(openPanels, panels => {
 
 async function doLock() {
   locking.value = true
+  showLoading({ title: 'Mengunci Periode', text: 'Mohon tunggu sebentar...' })
   try {
     const { data } = await api.patch(`/finance/ending-balance/${eb.value.id}/lock`)
 
     eb.value = data.data
     showLockDialog.value = false
   } catch (e) {
-    alert(e?.response?.data?.message ?? 'Gagal mengunci.')
+    showError({ text: e?.response?.data?.message ?? 'Gagal mengunci.' })
   } finally {
+    closeAlert({ onlyLoading: true })
     locking.value = false
   }
 }
 
 async function doUnlock() {
   unlocking.value = true
+  showLoading({ title: 'Membuka Kunci Periode', text: 'Mohon tunggu sebentar...' })
   try {
     const { data } = await api.patch(`/finance/ending-balance/${eb.value.id}/unlock`)
 
     eb.value = data.data
     showUnlockDialog.value = false
   } catch (e) {
-    alert(e?.response?.data?.message ?? 'Gagal membuka kunci periode.')
+    showError({ text: e?.response?.data?.message ?? 'Gagal membuka kunci periode.' })
   } finally {
+    closeAlert({ onlyLoading: true })
     unlocking.value = false
   }
 }

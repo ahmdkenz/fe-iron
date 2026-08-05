@@ -1174,7 +1174,7 @@
     <BaseModal
       v-model="showUbahStatus"
       title="Ubah Status Invoice"
-      :loading="statusLoading"
+      :disabled="statusLoading"
       @confirm="doUbahStatus"
     >
       <VSelect
@@ -1191,7 +1191,7 @@
     <BaseModal
       v-model="showDeletePembayaran"
       title="Hapus Pembayaran"
-      :loading="deleteLoading"
+      :disabled="deleteLoading"
       confirm-action="hapus"
       @confirm="doDeletePembayaran"
     >
@@ -1259,7 +1259,7 @@
     <BaseModal
       v-model="showApproveModal"
       title="Setujui Opening Balance"
-      :loading="approvalLoading"
+      :disabled="approvalLoading"
       @confirm="submitApprove"
     >
       <VTextarea
@@ -1291,7 +1291,7 @@
     <BaseModal
       v-model="showRejectModal"
       title="Tolak Opening Balance"
-      :loading="approvalLoading"
+      :disabled="approvalLoading"
       @confirm="submitReject"
     >
       <VTextarea
@@ -1322,7 +1322,7 @@
     <BaseModal
       v-model="showResubmitModal"
       title="Ajukan Ulang Opening Balance"
-      :loading="approvalLoading"
+      :disabled="approvalLoading"
       @confirm="submitResubmit"
     >
       <VTextarea

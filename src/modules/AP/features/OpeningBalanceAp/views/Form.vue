@@ -301,7 +301,6 @@
                   size="large"
                   prepend-icon="ri-send-plane-line"
                   :disabled="saving"
-                  :loading="saving"
                 >
                   {{ isEditing ? 'Simpan Perubahan' : 'Ajukan Opening Balance' }}
                 </VBtn>

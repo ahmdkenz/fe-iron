@@ -2,7 +2,7 @@
   <BaseModal
     :model-value="modelValue"
     :title="isEditing ? 'Edit Resto' : 'Tambah Resto'"
-    :loading="saving"
+    :disabled="saving"
     @update:model-value="$emit('update:modelValue', $event)"
     @confirm="handleSubmit"
   >

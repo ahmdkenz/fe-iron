@@ -305,7 +305,6 @@
                   size="large"
                   prepend-icon="ri-send-plane-line"
                   :disabled="saving"
-                  :loading="saving"
                   @click="handleSubmit"
                 >
                   Simpan Payment Voucher

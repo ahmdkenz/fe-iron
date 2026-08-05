@@ -2,7 +2,7 @@
   <BaseModal
     :model-value="modelValue"
     :title="isEditing ? 'Edit Barang' : 'Tambah Barang'"
-    :loading="saving"
+    :disabled="saving"
     width="640"
     @update:model-value="$emit('update:modelValue', $event)"
     @confirm="handleSubmit"

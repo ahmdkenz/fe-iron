@@ -62,7 +62,7 @@
         />
         <AppActionButton
           action="cocokkan"
-          :loading="saving"
+          :disabled="saving"
           @click="emit('confirm')"
         />
       </VCardActions>

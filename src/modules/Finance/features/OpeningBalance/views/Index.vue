@@ -777,7 +777,7 @@
             color="success"
             size="small"
             prepend-icon="ri-check-double-line"
-            :loading="approvingAll"
+            :disabled="approvingAll"
             @click="confirmApproveAll"
           >
             Approve Semua
@@ -803,7 +803,7 @@
               <VBtn
                 color="success"
                 prepend-icon="ri-check-double-line"
-                :loading="approvingAll"
+                :disabled="approvingAll"
                 @click="confirmApproveAll"
               >
                 Approve Semua
@@ -852,7 +852,7 @@
                   size="small"
                   variant="tonal"
                   color="success"
-                  :loading="approvingId === item.id"
+                  :disabled="approvingId === item.id"
                   aria-label="Approve"
                   @click="confirmApprove(item)"
                 />
@@ -862,7 +862,7 @@
                   size="small"
                   variant="tonal"
                   color="error"
-                  :loading="rejectingId === item.id"
+                  :disabled="rejectingId === item.id"
                   aria-label="Tolak"
                   @click="confirmReject(item)"
                 />
@@ -928,7 +928,7 @@
                 size="small"
                 variant="text"
                 color="success"
-                :loading="approvingId === item.id"
+                :disabled="approvingId === item.id"
                 @click="confirmApprove(item)"
               >
                 <VIcon
@@ -945,7 +945,7 @@
                 size="small"
                 variant="text"
                 color="error"
-                :loading="rejectingId === item.id"
+                :disabled="rejectingId === item.id"
                 @click="confirmReject(item)"
               >
                 <VIcon
@@ -2377,6 +2377,7 @@ async function confirmApprove(item) {
   if (!result.isConfirmed) return
 
   approvingId.value = item.id
+  showLoading({ title: 'Menyetujui Opening Balance', text: 'Perubahan sedang diproses...' })
   try {
     await api.patch(`/finance/opening-balance/${item.id}/approve`, { note: null })
     await showSuccess({ text: `Opening Balance ${item.no_invoice} berhasil disetujui.` })
@@ -2391,6 +2392,7 @@ async function confirmApprove(item) {
 
     showError({ text: message })
   } finally {
+    closeAlert({ onlyLoading: true })
     approvingId.value = null
   }
 }
@@ -2416,6 +2418,7 @@ async function confirmReject(item) {
   if (!result.isConfirmed) return
 
   rejectingId.value = item.id
+  showLoading({ title: 'Menolak Opening Balance', text: 'Perubahan sedang diproses...' })
   try {
     await api.patch(`/finance/opening-balance/${item.id}/reject`, { note: result.value })
     await showSuccess({ text: `Opening Balance ${item.no_invoice} berhasil ditolak.` })
@@ -2426,6 +2429,7 @@ async function confirmReject(item) {
 
     showError({ text: message })
   } finally {
+    closeAlert({ onlyLoading: true })
     rejectingId.value = null
   }
 }
@@ -2454,6 +2458,7 @@ async function confirmApproveAll() {
   if (!result.isConfirmed) return
 
   approvingAll.value = true
+  showLoading({ title: 'Menyetujui Semua Opening Balance', text: 'Perubahan sedang diproses...' })
   try {
     await Promise.all(pending.map(item =>
       api.patch(`/finance/opening-balance/${item.id}/approve`, { note: null }),
@@ -2471,6 +2476,7 @@ async function confirmApproveAll() {
     showError({ text: message })
     doDirFetch()
   } finally {
+    closeAlert({ onlyLoading: true })
     approvingAll.value = false
   }
 }

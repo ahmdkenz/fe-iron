@@ -238,7 +238,7 @@
       v-if="showDelete"
       v-model="showDelete"
       title="Hapus Barang"
-      :loading="loading"
+      :disabled="loading"
       confirm-action="hapus"
       @confirm="doDelete"
     >

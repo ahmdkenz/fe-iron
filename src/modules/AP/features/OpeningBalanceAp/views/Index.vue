@@ -194,7 +194,7 @@
               size="small"
               variant="text"
               color="success"
-              :loading="approvingId === item.id"
+              :disabled="approvingId === item.id"
               @click="confirmApprove(item)"
             >
               <VIcon
@@ -211,7 +211,7 @@
               size="small"
               variant="text"
               color="error"
-              :loading="rejectingId === item.id"
+              :disabled="rejectingId === item.id"
               @click="confirmReject(item)"
             >
               <VIcon
@@ -244,7 +244,7 @@
               size="small"
               variant="text"
               color="warning"
-              :loading="resubmittingId === item.id"
+              :disabled="resubmittingId === item.id"
               @click="confirmResubmit(item)"
             >
               <VIcon
@@ -276,7 +276,7 @@ import ApSummaryInsights from '@/modules/AP/shared/components/ApSummaryInsights.
 import { getCurrentMonthRange } from '@/modules/AP/shared/utils/dateRange'
 
 const authStore = useAuthStore()
-const { showAlert, showSuccess, showError, resolveThemeTokens } = useSweetAlert()
+const { showAlert, showSuccess, showError, showLoading, closeAlert, resolveThemeTokens } = useSweetAlert()
 const { formatCurrency, formatDate } = useFormatter()
 
 const {
@@ -481,6 +481,7 @@ async function confirmApprove(item) {
   if (!result.isConfirmed) return
 
   approvingId.value = item.id
+  showLoading({ title: 'Menyetujui Opening Balance', text: 'Perubahan sedang diproses...' })
   try {
     await api.patch(`/ap/opening-balance/${item.id}/approve`, { note: null })
     await showSuccess({ text: `Opening Balance ${item.no_tagihan} berhasil disetujui.` })
@@ -488,6 +489,7 @@ async function confirmApprove(item) {
   } catch (err) {
     showError({ text: err.response?.data?.message ?? 'Gagal menyetujui Opening Balance.' })
   } finally {
+    closeAlert({ onlyLoading: true })
     approvingId.value = null
   }
 }
@@ -512,6 +514,7 @@ async function confirmReject(item) {
   if (!result.isConfirmed) return
 
   rejectingId.value = item.id
+  showLoading({ title: 'Menolak Opening Balance', text: 'Perubahan sedang diproses...' })
   try {
     await api.patch(`/ap/opening-balance/${item.id}/reject`, { note: result.value })
     await showSuccess({ text: `Opening Balance ${item.no_tagihan} berhasil ditolak.` })
@@ -519,6 +522,7 @@ async function confirmReject(item) {
   } catch (err) {
     showError({ text: err.response?.data?.message ?? 'Gagal menolak Opening Balance.' })
   } finally {
+    closeAlert({ onlyLoading: true })
     rejectingId.value = null
   }
 }
@@ -539,6 +543,7 @@ async function confirmResubmit(item) {
   if (!result.isConfirmed) return
 
   resubmittingId.value = item.id
+  showLoading({ title: 'Mengajukan Ulang Opening Balance', text: 'Perubahan sedang diproses...' })
   try {
     await api.patch(`/ap/opening-balance/${item.id}/resubmit`, { note: null })
     await showSuccess({ text: `Opening Balance ${item.no_tagihan} berhasil diajukan ulang.` })
@@ -546,6 +551,7 @@ async function confirmResubmit(item) {
   } catch (err) {
     showError({ text: err.response?.data?.message ?? 'Gagal mengajukan ulang Opening Balance.' })
   } finally {
+    closeAlert({ onlyLoading: true })
     resubmittingId.value = null
   }
 }

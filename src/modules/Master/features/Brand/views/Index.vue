@@ -220,7 +220,7 @@
       v-if="showDelete"
       v-model="showDelete"
       title="Hapus Brand"
-      :loading="loading"
+      :disabled="loading"
       confirm-action="hapus"
       @confirm="doDelete"
     >

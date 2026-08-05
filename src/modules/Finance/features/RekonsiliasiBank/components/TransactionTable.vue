@@ -243,7 +243,7 @@
             size="x-small"
             variant="text"
             color="grey"
-            :loading="abaikanLoadingId === item.id"
+            :disabled="abaikanLoadingId === item.id"
             @click="$emit('abaikan', item)"
           >
             Abaikan
@@ -255,7 +255,7 @@
             action="batalkan"
             icon="ri-link-unlink"
             size="x-small"
-            :loading="unmatchLoadingId === item.id"
+            :disabled="unmatchLoadingId === item.id"
             @click="$emit('unmatch', item)"
           />
           <VChip

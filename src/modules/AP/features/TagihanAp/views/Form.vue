@@ -283,7 +283,6 @@
                   size="large"
                   prepend-icon="ri-send-plane-line"
                   :disabled="saving"
-                  :loading="saving"
                   @click="handleSubmit"
                 >
                   {{ isEditing ? 'Simpan Perubahan' : 'Simpan Tagihan' }}

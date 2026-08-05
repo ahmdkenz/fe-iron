@@ -181,7 +181,7 @@
             variant="text"
             color="grey"
             block
-            :loading="abaikanLoadingId === item.id"
+            :disabled="abaikanLoadingId === item.id"
             @click="$emit('abaikan', item)"
           >
             Tandai Sebagai Belum Cocok (Abaikan)
@@ -194,7 +194,7 @@
             label="Batalkan Kecocokan"
             icon="ri-link-unlink"
             block
-            :loading="unmatchLoadingId === item.id"
+            :disabled="unmatchLoadingId === item.id"
             @click="$emit('unmatch', item)"
           />
           <VChip

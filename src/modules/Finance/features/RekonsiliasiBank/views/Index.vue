@@ -229,7 +229,7 @@
           <AppActionButton
             action="custom"
             color="error"
-            :loading="unmatchSaving"
+            :disabled="unmatchSaving"
             @click="doUnmatch"
           >
             Ya, Batalkan
@@ -257,7 +257,7 @@
           />
           <AppActionButton
             action="hapus"
-            :loading="deleting"
+            :disabled="deleting"
             @click="doDelete"
           />
         </VCardActions>
@@ -290,7 +290,7 @@ const authStore = useAuthStore()
 const route = useRoute()
 const router = useRouter()
 const { xs } = useDisplay()
-const { showSuccess, showError } = useSweetAlert()
+const { showSuccess, showError, showLoading, closeAlert } = useSweetAlert()
 
 const {
   items: reportItems, loading: reportsLoading, loadingMore: reportsLoadingMore,
@@ -457,6 +457,7 @@ async function doUnmatch() {
   if (!unmatchItem.value) return
   unmatchSaving.value  = true
   unmatchLoadingId.value = unmatchItem.value.id
+  showLoading({ title: 'Membatalkan Pencocokan', text: 'Mohon tunggu sebentar...' })
   try {
     await api.patch(`/finance/rekonsiliasi-bank/detail/${unmatchItem.value.id}/unmatch`)
     unmatchDialog.value  = false
@@ -473,6 +474,7 @@ async function doUnmatch() {
       showError(err?.response?.data?.message ?? 'Gagal membatalkan pencocokan, coba lagi.')
     }
   } finally {
+    closeAlert({ onlyLoading: true })
     unmatchSaving.value  = false
     unmatchLoadingId.value = null
   }
@@ -480,10 +482,12 @@ async function doUnmatch() {
 
 async function doAbaikan(item) {
   abaikanLoadingId.value = item.id
+  showLoading({ title: 'Mengabaikan Transaksi', text: 'Mohon tunggu sebentar...' })
   try {
     await api.patch(`/finance/rekonsiliasi-bank/detail/${item.id}/abaikan`)
     await refreshAfterRowChange()
   } finally {
+    closeAlert({ onlyLoading: true })
     abaikanLoadingId.value = null
   }
 }
@@ -510,6 +514,7 @@ function confirmDelete(item) {
 
 async function doDelete() {
   deleting.value = true
+  showLoading({ title: 'Menghapus Data Upload', text: 'Mohon tunggu sebentar...' })
   try {
     await api.delete(`/finance/rekonsiliasi-bank/${deleteTarget.value.id}`)
 
@@ -522,6 +527,7 @@ async function doDelete() {
       selectedReportId.value = reportItems.value[0]?.id ?? null
     }
   } finally {
+    closeAlert({ onlyLoading: true })
     deleting.value = false
   }
 }

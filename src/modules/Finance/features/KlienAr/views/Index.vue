@@ -565,7 +565,7 @@
       v-if="showDelete"
       v-model="showDelete"
       title="Hapus Client"
-      :loading="loadingB2C"
+      :disabled="loadingB2C"
       confirm-action="hapus"
       @confirm="doDelete"
     >

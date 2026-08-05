@@ -273,7 +273,7 @@
                 size="x-small"
                 variant="tonal"
                 color="success"
-                :loading="lockingId === item.id"
+                :disabled="lockingId === item.id"
                 @click="confirmLock(item)"
               >
                 <VIcon icon="ri-lock-line" />
@@ -287,7 +287,7 @@
                 size="x-small"
                 variant="tonal"
                 color="warning"
-                :loading="unlockingId === item.id"
+                :disabled="unlockingId === item.id"
                 @click="confirmUnlock(item)"
               >
                 <VIcon icon="ri-lock-unlock-line" />
@@ -541,7 +541,7 @@
                 size="x-small"
                 variant="tonal"
                 color="success"
-                :loading="lockingId === item.id"
+                :disabled="lockingId === item.id"
                 @click="confirmLock(item)"
               >
                 <VIcon icon="ri-lock-line" />
@@ -555,7 +555,7 @@
                 size="x-small"
                 variant="tonal"
                 color="warning"
-                :loading="unlockingId === item.id"
+                :disabled="unlockingId === item.id"
                 @click="confirmUnlock(item)"
               >
                 <VIcon icon="ri-lock-unlock-line" />
@@ -945,7 +945,7 @@
                 size="x-small"
                 variant="tonal"
                 color="success"
-                :loading="lockingId === item.id"
+                :disabled="lockingId === item.id"
                 @click="confirmLock(item)"
               >
                 <VIcon icon="ri-lock-line" />
@@ -959,7 +959,7 @@
                 size="x-small"
                 variant="tonal"
                 color="warning"
-                :loading="unlockingId === item.id"
+                :disabled="unlockingId === item.id"
                 @click="confirmUnlock(item)"
               >
                 <VIcon icon="ri-lock-unlock-line" />
@@ -1213,7 +1213,7 @@
                 size="x-small"
                 variant="tonal"
                 color="success"
-                :loading="lockingId === item.id"
+                :disabled="lockingId === item.id"
                 @click="confirmLock(item)"
               >
                 <VIcon icon="ri-lock-line" />
@@ -1227,7 +1227,7 @@
                 size="x-small"
                 variant="tonal"
                 color="warning"
-                :loading="unlockingId === item.id"
+                :disabled="unlockingId === item.id"
                 @click="confirmUnlock(item)"
               >
                 <VIcon icon="ri-lock-unlock-line" />
@@ -1265,7 +1265,7 @@
           <AppActionButton
             action="custom"
             color="success"
-            :loading="lockingId !== null"
+            :disabled="lockingId !== null"
             @click="doLock"
           >
             Kunci
@@ -1306,7 +1306,7 @@
           <AppActionButton
             action="custom"
             color="warning"
-            :loading="unlockingId !== null"
+            :disabled="unlockingId !== null"
             @click="doUnlock"
           >
             Buka Kunci
@@ -1322,7 +1322,7 @@
       :koreksi="approvalActionDialog.koreksi"
       :keterangan="approvalActionDialog.keterangan"
       :error="approvalActionDialog.error"
-      :loading="approvalActionDialog.loading"
+      :disabled="approvalActionDialog.loading"
       @update:keterangan="approvalActionDialog.keterangan = $event"
       @close="closeApprovalActionDialog"
       @confirm="confirmApprovalAction"
@@ -1335,11 +1335,13 @@ import { computed, ref, reactive, onMounted, onBeforeUnmount, defineComponent, h
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.store'
 import { useLoadMore } from '@/composables/useLoadMore.js'
+import { useSweetAlert } from '@/composables/useSweetAlert'
 import api from '@/utils/axios'
 import EndingBalanceStatusBadge from '@/modules/Finance/shared/components/EndingBalanceStatusBadge.vue'
 import MobileCardActions from '@/components/shared/MobileCardActions.vue'
 
 const router = useRouter()
+const { showLoading, closeAlert, showError } = useSweetAlert()
 
 // ─── Komponen inline: breakdown invoice per EB ───────────────────────────────
 const EbInvoiceBreakdown = defineComponent({
@@ -1558,13 +1560,15 @@ function confirmLock(item) {
 async function doLock() {
   if (!lockTarget.value) return
   lockingId.value = lockTarget.value.id
+  showLoading({ title: 'Mengunci Periode', text: 'Mohon tunggu sebentar...' })
   try {
     await api.patch(`/finance/ending-balance/${lockTarget.value.id}/lock`)
     showLockDialog.value = false
     refreshLists()
   } catch (e) {
-    alert(e?.response?.data?.message ?? 'Gagal mengunci.')
+    showError({ text: e?.response?.data?.message ?? 'Gagal mengunci.' })
   } finally {
+    closeAlert({ onlyLoading: true })
     lockingId.value = null
     lockTarget.value = null
   }
@@ -1578,13 +1582,15 @@ function confirmUnlock(item) {
 async function doUnlock() {
   if (!unlockTarget.value) return
   unlockingId.value = unlockTarget.value.id
+  showLoading({ title: 'Membuka Kunci Periode', text: 'Mohon tunggu sebentar...' })
   try {
     await api.patch(`/finance/ending-balance/${unlockTarget.value.id}/unlock`)
     showUnlockDialog.value = false
     refreshLists()
   } catch (e) {
-    alert(e?.response?.data?.message ?? 'Gagal membuka kunci periode.')
+    showError({ text: e?.response?.data?.message ?? 'Gagal membuka kunci periode.' })
   } finally {
+    closeAlert({ onlyLoading: true })
     unlockingId.value  = null
     unlockTarget.value = null
   }
@@ -1681,6 +1687,10 @@ async function confirmApprovalAction() {
   const k   = approvalActionDialog.koreksi
   const url = `/finance/ending-balance/koreksi/${k.id}/${approvalActionDialog.action}-manager`
 
+  showLoading({
+    title: approvalActionDialog.action === 'approve' ? 'Menyetujui Koreksi' : 'Menolak Koreksi',
+    text: 'Perubahan sedang diproses...',
+  })
   try {
     await api.patch(url, { note: approvalActionDialog.keterangan.trim() || null })
     approvalActionDialog.open = false
@@ -1689,6 +1699,7 @@ async function confirmApprovalAction() {
   } catch (e) {
     approvalActionDialog.error = e?.response?.data?.message ?? 'Terjadi kesalahan.'
   } finally {
+    closeAlert({ onlyLoading: true })
     approvalActionDialog.loading = false
   }
 }

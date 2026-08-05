@@ -676,7 +676,10 @@ import { useCrud } from '@/composables/useCrud'
 import { useFormatter } from '@/composables/useFormatter'
 import { useLazyFetchAll } from '@/composables/useLazyFetchAll'
 import { useSettleWaterfall } from '@/composables/useSettleWaterfall'
+import { useSweetAlert } from '@/composables/useSweetAlert'
 import api from '@/utils/axios'
+
+const { showLoading, closeAlert } = useSweetAlert()
 import BuktiBayarDialog from './BuktiBayarDialog.vue'
 import InvoiceArMultiPickerDialog from './InvoiceArMultiPickerDialog.vue'
 
@@ -1099,6 +1102,7 @@ async function doManualMatchMulti() {
   matchSaving.value    = true
   matchError.value     = null
   buktiBayarError.value = null
+  showLoading({ title: 'Mencocokkan Transaksi', text: 'Pembayaran sedang diproses...' })
   try {
     const payload = new FormData()
 
@@ -1121,6 +1125,7 @@ async function doManualMatchMulti() {
   } catch (err) {
     handleMatchError(err)
   } finally {
+    closeAlert({ onlyLoading: true })
     matchSaving.value = false
   }
 }
@@ -1130,6 +1135,7 @@ async function doManualMatchInvoice() {
   matchSaving.value    = true
   matchError.value     = null
   buktiBayarError.value = null
+  showLoading({ title: 'Mencocokkan Transaksi', text: 'Pembayaran sedang diproses...' })
   try {
     const payload = new FormData()
 
@@ -1151,6 +1157,7 @@ async function doManualMatchInvoice() {
   } catch (err) {
     handleMatchError(err)
   } finally {
+    closeAlert({ onlyLoading: true })
     matchSaving.value = false
   }
 }
@@ -1160,6 +1167,7 @@ async function doManualMatchPdm() {
   matchSaving.value    = true
   matchError.value     = null
   buktiBayarError.value = null
+  showLoading({ title: 'Mencocokkan Transaksi', text: 'Pembayaran sedang diproses...' })
   try {
     const payload = new FormData()
 
@@ -1179,6 +1187,7 @@ async function doManualMatchPdm() {
   } catch (err) {
     handleMatchError(err)
   } finally {
+    closeAlert({ onlyLoading: true })
     matchSaving.value = false
   }
 }

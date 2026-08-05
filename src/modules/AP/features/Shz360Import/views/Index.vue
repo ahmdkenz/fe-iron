@@ -650,11 +650,10 @@
       v-model="showMapVendor"
       title="Petakan Vendor"
       width="640"
-      :loading="mappingVendor"
       confirm-action="custom"
       confirm-label="Petakan"
       confirm-icon="ri-link-m"
-      :disabled="!canSubmitMapVendor"
+      :disabled="!canSubmitMapVendor || mappingVendor"
       @confirm="doMapVendor"
     >
       <VCard
@@ -863,7 +862,7 @@
       v-if="showConvert"
       v-model="showConvert"
       title="Buat Tagihan dari Staging"
-      :loading="converting"
+      :disabled="converting"
       confirm-action="custom"
       confirm-label="Buat Tagihan"
       confirm-icon="ri-file-add-line"
@@ -1043,7 +1042,7 @@ import Shz360SyncProgressDialog from '../components/Shz360SyncProgressDialog.vue
 import DetailRow from '@/components/shared/DetailRow.vue'
 
 const authStore = useAuthStore()
-const { showAlert, showSuccess, showError, confirmDelete: swalConfirm } = useSweetAlert()
+const { showAlert, showSuccess, showError, showLoading, closeAlert, confirmDelete: swalConfirm } = useSweetAlert()
 const { formatCurrency, formatDate } = useFormatter()
 
 const itemStatusMap = AP_ITEM_RECEIPT_STATUS_MAP
@@ -1410,6 +1409,7 @@ function openMapVendor(item) {
 async function doMapVendor() {
   if (!canSubmitMapVendor.value) return
   mappingVendor.value = true
+  showLoading({ title: 'Memetakan Vendor', text: 'Mohon tunggu sebentar...' })
   try {
     if (mapVendorMode.value === 'existing') {
       await api.post(`/ap/shz360/imports/${selectedItem.value.id}/map-vendor`, { ...existingVendorForm })
@@ -1424,6 +1424,7 @@ async function doMapVendor() {
   } catch (err) {
     await showError(err.response?.data?.message ?? 'Gagal memetakan vendor')
   } finally {
+    closeAlert({ onlyLoading: true })
     mappingVendor.value = false
   }
 }
@@ -1455,6 +1456,7 @@ function openConvert(item) {
 async function doConvert() {
   convertError.value = ''
   converting.value = true
+  showLoading({ title: 'Membuat Tagihan', text: 'Mohon tunggu sebentar...' })
   try {
     const { data } = await api.post(`/ap/shz360/imports/${selectedItem.value.id}/convert-to-tagihan`, convertForm)
 
@@ -1466,6 +1468,7 @@ async function doConvert() {
     convertError.value = err.response?.data?.message ?? 'Gagal membuat tagihan'
     await showError(convertError.value)
   } finally {
+    closeAlert({ onlyLoading: true })
     converting.value = false
   }
 }
@@ -1480,6 +1483,7 @@ async function confirmIgnore(item) {
 
   if (!isConfirmed) return
 
+  showLoading({ title: 'Mengabaikan Data', text: 'Mohon tunggu sebentar...' })
   try {
     await api.post(`/ap/shz360/imports/${item.id}/ignore`)
     fetchList()
@@ -1487,6 +1491,8 @@ async function confirmIgnore(item) {
     await showSuccess('Data staging diabaikan.')
   } catch (err) {
     await showError(err.response?.data?.message ?? 'Gagal mengabaikan data')
+  } finally {
+    closeAlert({ onlyLoading: true })
   }
 }
 

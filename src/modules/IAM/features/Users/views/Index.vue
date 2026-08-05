@@ -247,7 +247,7 @@
       v-if="showDelete"
       v-model="showDelete"
       title="Hapus User"
-      :loading="loading"
+      :disabled="loading"
       confirm-action="hapus"
       @confirm="doDelete"
     >

@@ -376,7 +376,6 @@
                     size="large"
                     prepend-icon="ri-send-plane-line"
                     :disabled="saving"
-                    :loading="saving"
                     @click="submitAs('TERKIRIM')"
                   >
                     Simpan & Kirim
@@ -399,7 +398,6 @@
                   size="large"
                   prepend-icon="ri-save-line"
                   :disabled="saving"
-                  :loading="saving"
                   @click="submitAs"
                 >
                   Simpan Perubahan

@@ -207,7 +207,7 @@
       v-if="showDelete"
       v-model="showDelete"
       title="Hapus Vendor"
-      :loading="loading"
+      :disabled="loading"
       confirm-action="hapus"
       @confirm="doDelete"
     >

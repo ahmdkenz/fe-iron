@@ -159,7 +159,7 @@
           action="custom"
           :color="action === 'approve' ? 'success' : 'error'"
           :icon="action === 'approve' ? 'ri-check-line' : 'ri-close-line'"
-          :loading="loading"
+          :disabled="loading"
           @click="$emit('confirm')"
         >
           {{ action === 'approve' ? 'Setujui' : 'Tolak' }}

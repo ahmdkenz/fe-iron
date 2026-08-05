@@ -304,7 +304,7 @@
       v-if="showDelete"
       v-model="showDelete"
       title="Hapus Entitas"
-      :loading="loading"
+      :disabled="loading"
       confirm-action="hapus"
       @confirm="doDelete"
     >

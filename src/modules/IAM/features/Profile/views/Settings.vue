@@ -147,7 +147,7 @@
             <VCardActions class="pa-4 justify-end">
               <VBtn
                 color="primary"
-                :loading="savingProfile"
+                :disabled="savingProfile"
                 type="submit"
                 variant="elevated"
                 min-width="160"
@@ -376,7 +376,7 @@
         <VCardActions class="pa-4 justify-end">
           <VBtn
             color="warning"
-            :loading="savingPassword"
+            :disabled="savingPassword"
             type="submit"
             variant="elevated"
             min-width="160"
