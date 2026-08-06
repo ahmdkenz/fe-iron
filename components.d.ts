@@ -24,6 +24,7 @@ declare module 'vue' {
     BrandForm: typeof import('./src/modules/Master/features/Brand/components/BrandForm.vue')['default']
     BuktiBayarDialog: typeof import('./src/modules/Finance/features/RekonsiliasiBank/components/BuktiBayarDialog.vue')['default']
     BulkActionBar: typeof import('./src/modules/Finance/shared/components/BulkActionBar.vue')['default']
+    BulkApproveProgressDialog: typeof import('./src/modules/Finance/features/OpeningBalance/components/BulkApproveProgressDialog.vue')['default']
     BulkDeleteBar: typeof import('./src/components/base/BulkDeleteBar.vue')['default']
     DeferredApexChart: typeof import('./src/components/shared/DeferredApexChart.vue')['default']
     DetailDialog: typeof import('./src/components/shared/DetailDialog.vue')['default']

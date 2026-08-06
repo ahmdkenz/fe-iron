@@ -676,6 +676,13 @@
       :pre-selected="shareTargetInvoices"
     />
 
+    <!-- Approve Semua: progress dialog (async job + polling) -->
+    <BulkApproveProgressDialog
+      v-model="bulkApproveDialog"
+      :status="bulkApproveStatus"
+      @close="closeBulkApproveDialog"
+    />
+
     <!-- ── Director View ──────────────────────────────────────────────────── -->
     <template v-if="authStore.canApproveOpeningBalance">
       <!-- Section 1: Approval table -->
@@ -1636,6 +1643,7 @@ import api from '@/utils/axios'
 import { readBlobError } from '@/utils/readBlobError'
 import { openLoadingPrintTab } from '@/utils/printWindow.js'
 import { waitForInvoicePrintReady } from '@/utils/invoicePrintPolling.js'
+import BulkApproveProgressDialog from '@/modules/Finance/features/OpeningBalance/components/BulkApproveProgressDialog.vue'
 import ApprovalStatusBadge from '@/modules/Finance/shared/components/ApprovalStatusBadge.vue'
 import InvoiceStatusBadge from '@/modules/Finance/shared/components/InvoiceStatusBadge.vue'
 import ShareInvoicesDialog from '@/modules/Finance/shared/components/ShareInvoicesDialog.vue'
@@ -1694,6 +1702,9 @@ const { items: dirApprovalItems, loading: dirApprovalLoading, meta: dirApprovalM
 
 dirApprovalParams.tanggal_dari = defaultDari
 dirApprovalParams.tanggal_sampai = defaultSampai
+// Tabel ini murni antrian kerja: begitu disetujui/ditolak, baris pindah keluar
+// (Disetujui -> List Opening Balance, Ditolak -> ditangani pengaju di tabelnya sendiri).
+dirApprovalParams.approval_status = 'PENDING'
 
 const dateDraftDirApproval = reactive({ tanggal_dari: defaultDari, tanggal_sampai: defaultSampai })
 
@@ -2117,6 +2128,7 @@ async function loadDirApprovalSummary() {
         search: dirApprovalParams.search,
         tanggal_dari: dirApprovalParams.tanggal_dari,
         tanggal_sampai: dirApprovalParams.tanggal_sampai,
+        approval_status: dirApprovalParams.approval_status,
       },
       signal: controller.signal,
     })
@@ -2454,7 +2466,20 @@ async function confirmReject(item) {
   }
 }
 
-// ── Approve All action ─────────────────────────────────────────────────────
+// ── Approve All action (async job + polling) ────────────────────────────────
+// Dulu sinkron dalam 1 request, sering timeout (axios 15s) untuk batch besar
+// karena tiap item memicu cascade carryover ke seluruh invoice klien
+// berikutnya — backend tetap lanjut memproses di belakang layar meski FE
+// sudah "menyerah", jadi dialog error muncul padahal sebagian data sudah
+// berubah. Sekarang backend hanya dispatch job & balas cepat; FE polling
+// status batch (mirror pola UploadFlow.vue di Rekonsiliasi Bank).
+const bulkApproveDialog = ref(false)
+const bulkApproveStatus = ref(null)
+let bulkApprovePollTimer = null
+let bulkApprovePollFailureCount = 0
+const BULK_APPROVE_MAX_POLL_FAILURES = 5
+const BULK_APPROVE_POLL_INTERVAL_MS = 2000
+
 async function confirmApproveAll() {
   const pending = pendingDirApprovalItems.value
   if (pending.length < 2) {
@@ -2478,33 +2503,74 @@ async function confirmApproveAll() {
   if (!result.isConfirmed) return
 
   approvingAll.value = true
-  showLoading({ title: 'Menyetujui Semua Opening Balance', text: 'Perubahan sedang diproses...' })
+  showLoading({ title: 'Mengirim Permintaan', text: 'Mohon tunggu sebentar...' })
   try {
     const res = await api.patch('/finance/opening-balance/bulk-approve', {
       ids: pending.map(item => item.id),
       note: null,
     })
-    const { approved, total, failed } = res.data?.data ?? {}
-    if (failed?.length) {
-      await showError({ text: `${approved} dari ${total} Opening Balance berhasil disetujui. ${failed.length} gagal — coba lagi untuk item yang tersisa.` })
-    } else {
-      await showSuccess({ text: `${approved} Opening Balance berhasil disetujui.` })
-    }
-    doDirFetch()
-    loadDirObList()
-    loadDirObListB2B()
-    loadDirObSummary()
-    loadDirObSummaryB2B()
-    financeNotificationStore.fetchPendingOpeningBalanceCount()
+    const batchId = res.data?.data?.batch_id
+
+    if (!batchId) throw new Error('batch_id tidak diterima dari server')
+
+    bulkApproveStatus.value = { status: 'queued', total: pending.length, processed: 0, approved: 0, failed: [] }
+    bulkApproveDialog.value = true
+    bulkApprovePollFailureCount = 0
+    pollBulkApprove(batchId)
   } catch (err) {
-    const message = err?.response?.data?.message ?? 'Gagal menyetujui sebagian Opening Balance.'
+    const message = err?.response?.data?.message ?? 'Gagal memulai proses approve semua.'
 
     showError({ text: message })
-    doDirFetch()
   } finally {
     closeAlert({ onlyLoading: true })
     approvingAll.value = false
   }
+}
+
+function pollBulkApprove(batchId) {
+  clearTimeout(bulkApprovePollTimer)
+  bulkApprovePollTimer = setTimeout(async () => {
+    try {
+      const res  = await api.get(`/finance/opening-balance/bulk-approve/${batchId}/status`)
+      const data = res.data?.data
+
+      bulkApprovePollFailureCount = 0
+      if (data) bulkApproveStatus.value = data
+
+      if (data?.status === 'completed' || data?.status === 'failed') {
+        onBulkApproveFinished()
+
+        return
+      }
+
+      pollBulkApprove(batchId)
+    } catch {
+      bulkApprovePollFailureCount++
+      // Error transient (mis. deadlock sesaat di DB) tidak boleh langsung
+      // menghentikan polling — job di backend mungkin tetap lanjut/selesai.
+      if (bulkApprovePollFailureCount >= BULK_APPROVE_MAX_POLL_FAILURES) {
+        bulkApproveStatus.value = { ...bulkApproveStatus.value, status: 'failed', message: 'Gagal memuat status proses approve semua.' }
+
+        return
+      }
+      pollBulkApprove(batchId)
+    }
+  }, BULK_APPROVE_POLL_INTERVAL_MS)
+}
+
+function onBulkApproveFinished() {
+  doDirFetch()
+  loadDirObList()
+  loadDirObListB2B()
+  loadDirObSummary()
+  loadDirObSummaryB2B()
+  financeNotificationStore.fetchPendingOpeningBalanceCount()
+}
+
+function closeBulkApproveDialog() {
+  clearTimeout(bulkApprovePollTimer)
+  bulkApproveDialog.value = false
+  bulkApproveStatus.value = null
 }
 
 // ── Lifecycle ──────────────────────────────────────────────────────────────
@@ -2540,11 +2606,13 @@ onDeactivated(() => {
   clearDirObDebounceTimer()
   clearDirObDebounceTimerB2B()
   abortPendingRequests()
+  clearTimeout(bulkApprovePollTimer)
 
   // Dialog teleports (VDialog) survive keep-alive deactivation, so force-close
   // them to avoid a stuck scrim on other pages.
   showShareDialog.value = false
   showExportModal.value = false
+  bulkApproveDialog.value = false
 })
 
 onBeforeUnmount(() => {
@@ -2554,5 +2622,6 @@ onBeforeUnmount(() => {
   clearDirObDebounceTimer()
   clearDirObDebounceTimerB2B()
   abortPendingRequests()
+  clearTimeout(bulkApprovePollTimer)
 })
 </script>
