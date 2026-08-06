@@ -58,7 +58,7 @@ export const useMasterOpeningBalanceImportStore = defineStore('master-opening-ba
       }
     },
 
-    async startImport(file) {
+    async startImport(file, cutoverDate) {
       if (this.importing) return
 
       useMinimizeWidgetStore().register(WIDGET_ID, {
@@ -77,6 +77,7 @@ export const useMasterOpeningBalanceImportStore = defineStore('master-opening-ba
         const form = new FormData()
 
         form.append('file', file)
+        form.append('cutover_date', cutoverDate)
 
         const res     = await api.post(BASE, form)
         const batchId = res.data?.data?.batch_id

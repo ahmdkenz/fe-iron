@@ -2460,10 +2460,16 @@ async function confirmApproveAll() {
   approvingAll.value = true
   showLoading({ title: 'Menyetujui Semua Opening Balance', text: 'Perubahan sedang diproses...' })
   try {
-    await Promise.all(pending.map(item =>
-      api.patch(`/finance/opening-balance/${item.id}/approve`, { note: null }),
-    ))
-    await showSuccess({ text: `${pending.length} Opening Balance berhasil disetujui.` })
+    const res = await api.patch('/finance/opening-balance/bulk-approve', {
+      ids: pending.map(item => item.id),
+      note: null,
+    })
+    const { approved, total, failed } = res.data?.data ?? {}
+    if (failed?.length) {
+      await showError({ text: `${approved} dari ${total} Opening Balance berhasil disetujui. ${failed.length} gagal — coba lagi untuk item yang tersisa.` })
+    } else {
+      await showSuccess({ text: `${approved} Opening Balance berhasil disetujui.` })
+    }
     doDirFetch()
     loadDirObList()
     loadDirObListB2B()

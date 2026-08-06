@@ -218,6 +218,35 @@
               sm="4"
             >
               <VTextField
+                v-model="row.kode_resto"
+                label="Kode Resto (opsional)"
+                density="compact"
+                variant="outlined"
+                placeholder="Asal resto invoice ini, kalau ada"
+                hide-details="auto"
+                @input="emitRows"
+              />
+            </VCol>
+
+            <VCol
+              cols="12"
+              sm="4"
+            >
+              <VTextField
+                v-model="row.nama_resto"
+                label="Nama Resto (opsional)"
+                density="compact"
+                variant="outlined"
+                hide-details="auto"
+                @input="emitRows"
+              />
+            </VCol>
+
+            <VCol
+              cols="12"
+              sm="4"
+            >
+              <VTextField
                 :model-value="row.items && row.items.length > 0 ? calcItemsTotal(row.items) : row.jumlah_tagihan_asal"
                 label="Jumlah Tagihan Asal (Rp)"
                 density="compact"
@@ -375,6 +404,16 @@
               label
             >
               {{ row.no_invoice_asal }}
+            </VChip>
+            <VChip
+              v-if="row.kode_resto || row.nama_resto"
+              size="small"
+              color="primary"
+              variant="tonal"
+              label
+              prepend-icon="ri-store-2-line"
+            >
+              {{ row.nama_resto || row.kode_resto }}{{ row.nama_resto && row.kode_resto ? ` (${row.kode_resto})` : '' }}
             </VChip>
             <span class="text-body-2">{{ row.deskripsi }}</span>
             <span class="text-caption text-medium-emphasis">{{ formatDate(row.tanggal_invoice_asal) }}</span>
@@ -542,6 +581,8 @@ const createRow = () => ({
   jumlah_tagihan_asal: 0,
   sisa_tagihan_asal: 0,
   keterangan: '',
+  kode_resto: '',
+  nama_resto: '',
   items: [],
 })
 

@@ -41,13 +41,13 @@
             v-show="!xs || showInfo"
             class="ps-4 mt-2"
           >
-            <li>Untuk mengisi <strong>saldo awal piutang klien</strong> secara massal — cocok untuk "import pertama kali" (backfill data historis) yang biasanya tidak punya rincian invoice per baris.</li>
-            <li>Setiap baris wajib menyatakan <strong>tipe_klien</strong>: <strong>PT/B2B</strong> (saldo konsolidasi head office, tanpa resto spesifik) atau <strong>RESTO/B2C</strong> (saldo per outlet — <strong>kode_resto</strong> wajib diisi &amp; divalidasi ke MASTER DATA Resto).</li>
-            <li>Rincian Invoice Asal &amp; Item per invoice historis bersifat <strong>opsional</strong> — didukung oleh <strong>kedua template</strong> (XLSX maupun CSV). Boleh dikosongkan sepenuhnya jika data Anda hanya saldo agregat.</li>
-            <li>Gunakan <strong>Template CSV</strong> untuk volume data besar (dengan maupun tanpa rincian) — mendukung baris jauh lebih banyak dari XLSX.</li>
-            <li>Gunakan <strong>Template XLSX</strong> untuk volume kecil-menengah — rincian & item ditulis di sheet terpisah, lebih mudah dibaca manual di Excel.</li>
-            <li>Kolom bertanda <strong>(*)</strong> hanya wajib untuk baris/sheet yang bersangkutan — mis. kolom (*) di data Opening Balance tidak berarti Rincian Invoice Asal &amp; Item ikut wajib diisi.</li>
-            <li>Baris gagal tidak menggagalkan baris lain — hasil akhir menampilkan rincian baris mana yang gagal dan alasannya.</li>
+            <li>Untuk mengisi <strong>saldo awal piutang klien</strong> secara massal — 1 baris = 1 invoice historis, baris dengan <strong>no_urut</strong> yang sama otomatis digabung jadi 1 Opening Balance (pola yang sama seperti Import Master Invoice).</li>
+            <li>Identitas klien (nama_klien, kode_resto, tipe_klien) hanya wajib diisi di <strong>baris pertama</strong> tiap no_urut. tipe_klien: <strong>PT/B2B</strong> (saldo konsolidasi head office, tanpa resto spesifik) atau <strong>RESTO/B2C</strong> (saldo per outlet — <strong>kode_resto</strong> wajib diisi &amp; divalidasi ke MASTER DATA Resto).</li>
+            <li><strong>Tanggal Saldo Awal (cutover)</strong> diisi 1x di form ini sebelum upload — berlaku untuk semua baris dalam file. Bukan tanggal invoice historisnya (itu tetap diisi per baris di kolom tanggal_invoice_asal).</li>
+            <li>Item per invoice historis bersifat <strong>opsional</strong> — didukung oleh <strong>kedua template</strong> (XLSX maupun CSV).</li>
+            <li>Gunakan <strong>Template CSV</strong> untuk volume data besar — mendukung baris jauh lebih banyak dari XLSX.</li>
+            <li>Gunakan <strong>Template XLSX</strong> untuk volume kecil-menengah — item ditulis di sheet terpisah, lebih mudah dibaca manual di Excel.</li>
+            <li>Baris/grup gagal tidak menggagalkan baris/grup lain — hasil akhir menampilkan rincian baris mana yang gagal dan alasannya.</li>
             <li>Semua Opening Balance hasil import tetap berstatus <strong>DRAFT</strong> dan menunggu persetujuan Manager/Supervisor di halaman Opening Balance.</li>
             <li>Import hanya dapat dilakukan oleh role <strong>ADMIN, MANAGER, atau SUPERVISOR</strong>.</li>
           </ul>
@@ -101,14 +101,14 @@
                 di sistem ini, sisa tagihannya sudah otomatis terbawa — tidak perlu Opening Balance.
               </li>
               <li>
-                Kedua format (XLSX &amp; CSV) mendukung Rincian Invoice Asal &amp; Item secara <strong>opsional</strong> — boleh
-                dikosongkan sepenuhnya untuk OB yang hanya berupa saldo agregat. Kolom bertanda <strong>(*)</strong> hanya
-                wajib untuk baris/sheet yang bersangkutan, bukan untuk seluruh file.
+                1 baris = 1 invoice historis. Baris dengan <strong>no_urut</strong> yang sama otomatis digabung jadi
+                1 Opening Balance (pola sama seperti Import Master Invoice) — identitas klien hanya wajib di baris
+                pertama tiap no_urut. Item per invoice bersifat <strong>opsional</strong>.
               </li>
               <li>
-                Gunakan <strong>CSV</strong> untuk volume data besar (dengan atau tanpa rincian — dibedakan kolom
-                <code>tipe_baris</code>). Gunakan <strong>XLSX</strong> untuk volume kecil-menengah — rincian &amp; item
-                ditulis di sheet terpisah, kapasitas realistis lebih kecil dari CSV.
+                Gunakan <strong>CSV</strong> untuk volume data besar (kolom <code>tipe_baris</code>: OB/ITEM). Gunakan
+                <strong>XLSX</strong> untuk volume kecil-menengah — item ditulis di sheet terpisah, kapasitas
+                realistis lebih kecil dari CSV.
               </li>
               <li>
                 Isi <strong>tipe_klien</strong>: <code>PT</code> atau <code>B2B</code> (sinonim, kode_resto WAJIB
@@ -117,8 +117,12 @@
                 &amp; punya Client AR aktif tipe RESTO — tidak ada pembuatan otomatis).
               </li>
               <li>
-                <strong>Template versi lama (tanpa kolom tipe_klien) tidak lagi didukung</strong> — download ulang
-                Template XLSX/CSV sebelum import berikutnya.
+                <strong>Tanggal Saldo Awal (cutover)</strong> di bawah berlaku untuk SEMUA baris di file ini — bukan
+                tanggal invoice historisnya masing-masing (itu tetap diisi per baris di file).
+              </li>
+              <li>
+                <strong>Template versi lama (sheet Rincian Invoice Asal terpisah) tidak lagi didukung</strong> —
+                download ulang Template XLSX/CSV sebelum import berikutnya.
               </li>
             </ul>
           </VAlert>
@@ -143,6 +147,18 @@
               Template CSV
             </VBtn>
           </div>
+
+          <VTextField
+            v-model="cutoverDate"
+            label="Tanggal Saldo Awal (Cutover)"
+            type="date"
+            variant="outlined"
+            density="compact"
+            hint="Berlaku untuk semua Opening Balance yang dihasilkan dari file ini — bukan tanggal invoice historisnya masing-masing."
+            persistent-hint
+            :disabled="importing"
+            class="mb-4"
+          />
 
           <VFileInput
             v-model="importFile"
@@ -418,7 +434,7 @@
           <VBtn
             color="primary"
             :loading="importing"
-            :disabled="!importFile || importing"
+            :disabled="!importFile || !cutoverDate || importing"
             @click="doImport"
           >
             Import
@@ -445,6 +461,7 @@ const { importing, progress: importProgress, result: importResult } = storeToRef
 const showImport = ref(false)
 const showInfo = ref(false)
 const importFile = ref(null)
+const cutoverDate = ref(null)
 const downloadingTemplate = ref({ xlsx: false, csv: false })
 
 function openImport() {
@@ -457,6 +474,7 @@ function openImport() {
   }
 
   importFile.value = null
+  cutoverDate.value = null
   importStore.reset()
   showImport.value = true
 }
@@ -492,8 +510,8 @@ async function downloadTemplate(format) {
 }
 
 async function doImport() {
-  if (!importFile.value) return
-  await importStore.startImport(importFile.value)
+  if (!importFile.value || !cutoverDate.value) return
+  await importStore.startImport(importFile.value, cutoverDate.value)
 }
 
 onMounted(() => {
