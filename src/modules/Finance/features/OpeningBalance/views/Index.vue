@@ -911,6 +911,9 @@
           <template #item.klien_ar="{ item }">
             {{ item.klien_ar?.nama_klien ?? '-' }}
           </template>
+          <template #item.outlet="{ item }">
+            {{ item.resto?.nama_resto ?? '-' }}
+          </template>
 
           <template #item.tanggal_invoice="{ item }">
             <span class="text-no-wrap">{{ formatDate(item.tanggal_invoice) }}</span>
@@ -994,7 +997,7 @@
               color="primary"
               prepend-icon="ri-file-excel-line"
               :loading="isExporting"
-              @click="exportExcel"
+              @click="showExportModal = true"
             >
               Export
             </VBtn>
@@ -1015,7 +1018,7 @@
               size="small"
               :loading="isExporting"
               aria-label="Export"
-              @click="exportExcel"
+              @click="showExportModal = true"
             >
               <VIcon icon="ri-file-excel-line" />
               <VTooltip
@@ -1605,6 +1608,7 @@
       v-if="showExportModal"
       v-model="showExportModal"
       title="Export Opening Balance"
+      confirm-label="Export"
       @confirm="exportExcel"
     >
       <VTextField
@@ -1613,14 +1617,65 @@
         label="Pilih Bulan"
         variant="outlined"
         density="compact"
+        class="mb-3"
       />
+
+      <div class="mb-2 text-caption text-medium-emphasis">
+        Format File
+      </div>
+      <div class="d-flex gap-3 mb-3">
+        <VCard
+          v-for="opt in exportFormatOptions"
+          :key="opt.value"
+          :variant="exportFormat === opt.value ? 'tonal' : 'outlined'"
+          :color="exportFormat === opt.value ? 'primary' : undefined"
+          class="cursor-pointer flex-1-1"
+          @click="exportFormat = opt.value"
+        >
+          <VCardText class="pa-4 text-center">
+            <VIcon
+              :icon="opt.icon"
+              :color="exportFormat === opt.value ? 'primary' : 'grey'"
+              size="28"
+              class="mb-2"
+            />
+            <div class="d-flex align-center justify-center gap-1">
+              <span class="text-body-2 font-weight-semibold">{{ opt.label }}</span>
+              <VIcon
+                v-if="exportFormat === opt.value"
+                icon="ri-checkbox-circle-fill"
+                color="primary"
+                size="16"
+              />
+            </div>
+            <div class="text-caption text-medium-emphasis mt-1">
+              {{ opt.caption }}
+            </div>
+          </VCardText>
+        </VCard>
+      </div>
+
+      <VAlert
+        v-if="exportFormat === 'xlsx' && exportRowCount > 13000"
+        type="warning"
+        variant="tonal"
+        density="compact"
+      >
+        Data cukup besar (&plusmn;{{ exportRowCountLabel }} baris).
+        <template v-if="exportRowCount > 50000">
+          Untuk data sebesar ini, <strong>CSV</strong> jauh lebih cepat &amp; stabil dibanding XLSX &mdash; XLSX berisiko lambat atau gagal.
+        </template>
+        <template v-else>
+          Sebaiknya gunakan <strong>CSV</strong> agar proses export lebih cepat &amp; stabil.
+        </template>
+      </VAlert>
     </BaseModal>
   </div>
 </template>
 
 <script setup>
 /* eslint-disable camelcase */
-import { computed, onActivated, onBeforeUnmount, onDeactivated, reactive, ref } from 'vue'
+import { computed, onActivated, onBeforeUnmount, onDeactivated, reactive, ref, watch } from 'vue'
 
 function getDefaultMonthRange() {
   const now = new Date()
@@ -1830,31 +1885,77 @@ async function doBulkDelete() {
 const isExporting     = ref(false)
 const showExportModal = ref(false)
 const exportMonth     = ref(new Date().toISOString().slice(0, 7))
+const exportFormat    = ref('xlsx')
+const exportFormatOptions = [
+  { value: 'xlsx', label: 'XLSX (Excel)', caption: '3 sheet: Data OB, Rincian & Item Invoice', icon: 'ri-file-excel-line' },
+  { value: 'csv', label: 'CSV', caption: '1 file, kolom berdampingan', icon: 'ri-file-text-line' },
+]
+const exportRowCount = ref(null)
+const exportRowCountLabel = computed(() => (exportRowCount.value ?? 0).toLocaleString('id-ID'))
 
 function monthToRange(ym) {
   const [year, month] = ym.split('-').map(Number)
   const lastDay = new Date(year, month, 0).getDate()
-  
+
   return {
     tanggal_dari: `${ym}-01`,
     tanggal_sampai: `${ym}-${String(lastDay).padStart(2, '0')}`,
   }
 }
 
+function buildExportParams() {
+  const { tanggal_dari, tanggal_sampai } = monthToRange(exportMonth.value)
+
+  return {
+    search: params.search      || undefined,
+    karyawan_id: params.karyawan_id || undefined,
+    tanggal_dari,
+    tanggal_sampai,
+  }
+}
+
+let exportRowCountController = null
+
+async function fetchExportRowCount() {
+  exportRowCountController?.abort()
+
+  const controller = new AbortController()
+
+  exportRowCountController = controller
+
+  try {
+    const { data } = await api.get('/finance/opening-balance/export-count', {
+      params: buildExportParams(),
+      signal: controller.signal,
+    })
+
+    if (controller.signal.aborted) return
+    exportRowCount.value = data.data?.row_count ?? null
+  } catch {
+    // Hitungan ini cuma advisory buat peringatan — kalau gagal, diamkan saja, jangan ganggu alur export.
+  } finally {
+    if (exportRowCountController === controller)
+      exportRowCountController = null
+  }
+}
+
+let exportRowCountDebounce = null
+
+function debouncedFetchExportRowCount() {
+  clearTimeout(exportRowCountDebounce)
+  exportRowCountDebounce = setTimeout(fetchExportRowCount, 300)
+}
+
+watch(showExportModal, v => { if (v) fetchExportRowCount() })
+watch(exportMonth, () => { if (showExportModal.value) debouncedFetchExportRowCount() })
+
 async function exportExcel() {
   showExportModal.value = false
   isExporting.value = true
   showLoading({ title: 'Mengeksport Data Opening Balance', text: 'Mohon tunggu sebentar...' })
   try {
-    const { tanggal_dari, tanggal_sampai } = monthToRange(exportMonth.value)
-
     const res = await api.get('/finance/opening-balance/export', {
-      params: {
-        search: params.search      || undefined,
-        karyawan_id: params.karyawan_id || undefined,
-        tanggal_dari,
-        tanggal_sampai,
-      },
+      params: { ...buildExportParams(), format: exportFormat.value },
       responseType: 'blob',
     })
 
@@ -1862,80 +1963,14 @@ async function exportExcel() {
     const a    = document.createElement('a')
 
     a.href     = url
-    a.download = `Data Opening Balance-${new Date().toISOString().slice(0, 10)}.xlsx`
+    a.download = `Data Opening Balance-${new Date().toISOString().slice(0, 10)}.${exportFormat.value}`
     a.click()
     URL.revokeObjectURL(url)
     showSuccess({ title: 'Export Berhasil!', text: 'File berhasil diunduh.' })
-  } catch {
-    await showError('Gagal mengunduh data export.')
+  } catch (err) {
+    await showError(await readBlobError(err, 'Gagal mengunduh data export.'))
   } finally {
     isExporting.value = false
-    closeAlert({ onlyLoading: true })
-  }
-}
-
-// ── Export (director OB list) ──────────────────────────────────────────────
-const isDirExporting    = ref(false)
-const isDirExportingB2B = ref(false)
-
-async function exportDirExcel() {
-  isDirExporting.value = true
-  showLoading({ title: 'Mengeksport Data Opening Balance', text: 'Mohon tunggu sebentar...' })
-  try {
-    const res = await api.get('/finance/opening-balance/export', {
-      params: {
-        search: dirObParams.search          || undefined,
-        approval_status: dirObParams.approval_status || undefined,
-        tanggal_dari: dirObParams.tanggal_dari    || undefined,
-        tanggal_sampai: dirObParams.tanggal_sampai  || undefined,
-        segment: 'B2C',
-      },
-      responseType: 'blob',
-    })
-
-    const url  = URL.createObjectURL(res.data)
-    const a    = document.createElement('a')
-
-    a.href     = url
-    a.download = `Data Opening Balance B2C-${new Date().toISOString().slice(0, 10)}.xlsx`
-    a.click()
-    URL.revokeObjectURL(url)
-    showSuccess({ title: 'Export Berhasil!', text: 'File berhasil diunduh.' })
-  } catch {
-    await showError('Gagal mengunduh data export.')
-  } finally {
-    isDirExporting.value = false
-    closeAlert({ onlyLoading: true })
-  }
-}
-
-async function exportDirExcelB2B() {
-  isDirExportingB2B.value = true
-  showLoading({ title: 'Mengeksport Data Opening Balance', text: 'Mohon tunggu sebentar...' })
-  try {
-    const res = await api.get('/finance/opening-balance/export', {
-      params: {
-        search: dirObParamsB2B.search          || undefined,
-        approval_status: dirObParamsB2B.approval_status || undefined,
-        tanggal_dari: dirObParamsB2B.tanggal_dari    || undefined,
-        tanggal_sampai: dirObParamsB2B.tanggal_sampai  || undefined,
-        segment: 'B2B',
-      },
-      responseType: 'blob',
-    })
-
-    const url  = URL.createObjectURL(res.data)
-    const a    = document.createElement('a')
-
-    a.href     = url
-    a.download = `Data Opening Balance B2B-${new Date().toISOString().slice(0, 10)}.xlsx`
-    a.click()
-    URL.revokeObjectURL(url)
-    showSuccess({ title: 'Export Berhasil!', text: 'File berhasil diunduh.' })
-  } catch {
-    await showError('Gagal mengunduh data export.')
-  } finally {
-    isDirExportingB2B.value = false
     closeAlert({ onlyLoading: true })
   }
 }
@@ -2002,7 +2037,7 @@ const approvalHeaders = [
   { title: 'No', key: 'no', sortable: false, width: '60px' },
   { title: 'No Opening Balance', key: 'no_invoice', sortable: false },
   { title: 'Klien', key: 'klien_ar', sortable: false },
-
+  ...(canSeeAll ? [{ title: 'Outlet', key: 'outlet', sortable: false }] : []),
   { title: 'Tanggal', key: 'tanggal_invoice', sortable: false, width: '115px' },
   { title: 'Nominal', key: 'total_tagihan', sortable: false },
   { title: 'Pengaju', key: 'submitted_by_name', sortable: false },
