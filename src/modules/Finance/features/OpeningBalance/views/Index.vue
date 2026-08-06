@@ -1634,6 +1634,8 @@ import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useFinanceNotificationStore } from '@/stores/finance-notification.store'
 import api from '@/utils/axios'
 import { readBlobError } from '@/utils/readBlobError'
+import { openLoadingPrintTab } from '@/utils/printWindow.js'
+import { waitForInvoicePrintReady } from '@/utils/invoicePrintPolling.js'
 import ApprovalStatusBadge from '@/modules/Finance/shared/components/ApprovalStatusBadge.vue'
 import InvoiceStatusBadge from '@/modules/Finance/shared/components/InvoiceStatusBadge.vue'
 import ShareInvoicesDialog from '@/modules/Finance/shared/components/ShareInvoicesDialog.vue'
@@ -1930,13 +1932,31 @@ async function exportDirExcelB2B() {
 // ── Print ──────────────────────────────────────────────────────────────────
 async function printInvoice(id) {
   printingId.value = id
+
+  const printWindow = openLoadingPrintTab()
   try {
-    const res = await api.get(`/finance/invoices/${id}/print`, { responseType: 'blob', timeout: 300000 })
+    let res = await api.get(`/finance/invoices/${id}/print`, { responseType: 'blob', timeout: 30000 })
+
+    // Opening Balance yang belum ada cache: backend membalas 202 sementara PDF
+    // digenerate di background job — polling sampai siap, baru ambil ulang.
+    if (res.status === 202) {
+      await waitForInvoicePrintReady(api, id)
+      res = await api.get(`/finance/invoices/${id}/print`, { responseType: 'blob', timeout: 30000 })
+    }
+
     const blobUrl = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }))
 
-    window.open(blobUrl, '_blank')
+    if (!printWindow) {
+      URL.revokeObjectURL(blobUrl)
+      await showError('Popup diblokir browser. Izinkan popup untuk membuka dokumen cetak.')
+
+      return
+    }
+
+    printWindow.location.href = blobUrl
     setTimeout(() => URL.revokeObjectURL(blobUrl), 30_000)
   } catch (err) {
+    printWindow?.close()
     await showError(await readBlobError(err, 'Gagal membuka dokumen cetak'))
   } finally {
     printingId.value = null

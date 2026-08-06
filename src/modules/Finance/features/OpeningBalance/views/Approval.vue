@@ -826,6 +826,8 @@ import { useFormatter } from '@/composables/useFormatter'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import api from '@/utils/axios'
 import { readBlobError } from '@/utils/readBlobError'
+import { openLoadingPrintTab } from '@/utils/printWindow.js'
+import { waitForInvoicePrintReady } from '@/utils/invoicePrintPolling.js'
 import { useAuthStore } from '@/stores/auth.store'
 import { useFinanceNotificationStore } from '@/stores/finance-notification.store'
 import ApprovalStatusBadge from '@/modules/Finance/shared/components/ApprovalStatusBadge.vue'
@@ -950,13 +952,30 @@ async function exportExcelB2B() {
 
 // ── Print ──────────────────────────────────────────────────────────────────
 async function printInvoice(id) {
+  const printWindow = openLoadingPrintTab()
   try {
-    const res = await api.get(`/finance/invoices/${id}/print`, { responseType: 'blob', timeout: 300000 })
+    let res = await api.get(`/finance/invoices/${id}/print`, { responseType: 'blob', timeout: 30000 })
+
+    // Opening Balance yang belum ada cache: backend membalas 202 sementara PDF
+    // digenerate di background job — polling sampai siap, baru ambil ulang.
+    if (res.status === 202) {
+      await waitForInvoicePrintReady(api, id)
+      res = await api.get(`/finance/invoices/${id}/print`, { responseType: 'blob', timeout: 30000 })
+    }
+
     const blobUrl = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }))
 
-    window.open(blobUrl, '_blank')
+    if (!printWindow) {
+      URL.revokeObjectURL(blobUrl)
+      showError('Popup diblokir browser. Izinkan popup untuk membuka dokumen cetak.')
+
+      return
+    }
+
+    printWindow.location.href = blobUrl
     setTimeout(() => URL.revokeObjectURL(blobUrl), 30_000)
   } catch (err) {
+    printWindow?.close()
     showError(await readBlobError(err, 'Gagal membuka dokumen cetak'))
   }
 }

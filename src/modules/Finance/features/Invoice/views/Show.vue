@@ -1368,6 +1368,7 @@ import { useFinanceNotificationStore } from '@/stores/finance-notification.store
 import api from '@/utils/axios'
 import { readBlobError } from '@/utils/readBlobError'
 import { openLoadingPrintTab, openPrintTab } from '@/utils/printWindow.js'
+import { waitForInvoicePrintReady } from '@/utils/invoicePrintPolling.js'
 import ApprovalStatusBadge from '@/modules/Finance/shared/components/ApprovalStatusBadge.vue'
 import InvoiceStatusBadge from '@/modules/Finance/shared/components/InvoiceStatusBadge.vue'
 import OpeningBalanceDetailTable from '@/modules/Finance/features/OpeningBalance/components/OpeningBalanceDetailTable.vue'
@@ -1910,7 +1911,15 @@ async function printInvoice() {
 
   const printWindow = openLoadingPrintTab()
   try {
-    const res = await api.get(`/finance/invoices/${id.value}/print`, { responseType: 'blob', timeout: 300000 })
+    let res = await api.get(`/finance/invoices/${id.value}/print`, { responseType: 'blob', timeout: 30000 })
+
+    // Opening Balance yang belum ada cache: backend membalas 202 sementara PDF
+    // digenerate di background job — polling sampai siap, baru ambil ulang.
+    if (res.status === 202) {
+      await waitForInvoicePrintReady(api, id.value)
+      res = await api.get(`/finance/invoices/${id.value}/print`, { responseType: 'blob', timeout: 30000 })
+    }
+
     const blobUrl = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }))
 
     if (!printWindow) {

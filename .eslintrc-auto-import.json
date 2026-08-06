@@ -379,6 +379,7 @@
     "setSessionMarker": true,
     "useLoadMore": true,
     "sanitizePhoneNumber": true,
-    "useAuthTransition": true
+    "useAuthTransition": true,
+    "waitForInvoicePrintReady": true
   }
 }
