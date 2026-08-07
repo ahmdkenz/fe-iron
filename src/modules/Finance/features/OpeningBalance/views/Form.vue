@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="opening-balance-page">
     <PageHeader
       :title="pageTitle"
@@ -66,439 +66,406 @@
                 </div>
 
                 <div class="opening-balance-hero__stats">
-                  <div class="hero-stat">
-                    <span class="hero-stat__label">Klien</span>
-                    <strong class="hero-stat__value">{{ selectedKlien?.nama_klien ?? 'Belum dipilih' }}</strong>
-                  </div>
-                  <div class="hero-stat">
-                    <span class="hero-stat__label">Saldo Awal</span>
-                    <strong class="hero-stat__value">{{ formattedSaldoAwal }}</strong>
-                  </div>
-                </div>
-              </div>
-            </VCardText>
-          </VCard>
-        </VCol>
-
-        <VCol
-          cols="12"
-          lg="8"
-        >
-          <VCard class="opening-balance-card">
-            <VCardText class="pa-6 pa-md-8">
-              <div class="section-heading mb-6">
-                <div class="section-heading__icon">
-                  <VIcon icon="ri-wallet-3-line" />
-                </div>
-                <div>
-                  <h3 class="text-h6 font-weight-bold mb-1">
-                    Detail Pengajuan
-                  </h3>
-                  <p class="text-body-2 text-medium-emphasis mb-0">
-                    Lengkapi data klien, tanggal, periode, dan saldo awal tanpa mengubah proses pengajuan yang sudah berjalan.
-                  </p>
+                  <template v-if="mode === 'single'">
+                    <div class="hero-stat">
+                      <span class="hero-stat__label">Klien</span>
+                      <strong class="hero-stat__value">{{ selectedKlien?.nama_klien ?? 'Belum dipilih' }}</strong>
+                    </div>
+                    <div class="hero-stat">
+                      <span class="hero-stat__label">Saldo Awal</span>
+                      <strong class="hero-stat__value">{{ formattedSaldoAwal }}</strong>
+                    </div>
+                  </template>
+                  <template v-else>
+                    <div class="hero-stat">
+                      <span class="hero-stat__label">Jumlah Client</span>
+                      <strong class="hero-stat__value">{{ bulkClientCount }} dari {{ bulkGroups.length }} baris</strong>
+                    </div>
+                    <div class="hero-stat">
+                      <span class="hero-stat__label">Total Saldo Awal</span>
+                      <strong class="hero-stat__value">{{ formattedBulkTotalSaldo }}</strong>
+                    </div>
+                  </template>
                 </div>
               </div>
 
-              <VAlert
-                v-if="isEditing"
-                type="info"
-                variant="tonal"
-                class="mb-6"
+              <div
+                v-if="!isEditing"
+                class="mode-select mt-6"
               >
-                Perubahan hanya menyimpan revisi data. Setelah itu, ajukan ulang opening balance dari halaman detail.
-              </VAlert>
-
-              <div class="form-section">
-                <div class="form-section__header">
-                  <div>
-                    <h4 class="text-subtitle-1 font-weight-bold mb-1">
-                      Klien dan Nilai Saldo
-                    </h4>
-                    <p class="text-body-2 text-medium-emphasis mb-0">
-                      Tentukan Client yang diajukan beserta nominal saldo awal piutangnya.
-                    </p>
-                  </div>
-                </div>
-
-                <VRow>
-                  <VCol cols="12">
-                    <VTextField
-                      v-model="form.no_invoice"
-                      label="No. Opening Balance"
-                      density="compact"
-                      variant="outlined"
-                      prepend-inner-icon="ri-hashtag"
-                      :rules="[v => !!v || 'No. Opening Balance wajib diisi']"
-                      :error-messages="errors.no_invoice"
-                      hint="Format: OB-{SINGKATAN}-{DDMMYYYYHHMMSSmmm} — Contoh PT: OB-ABB-13062026143022479 | Contoh RESTO: OB-MKS-13062026143022479"
-                      persistent-hint
-                      readonly
-                      tabindex="-1"
-                      class="readonly-locked-field"
-                    />
-                  </VCol>
-
-                  <VCol cols="12">
-                    <VAutocomplete
-                      v-model="form.klien_ar_id"
-                      label="Client"
-                      density="compact"
-                      variant="outlined"
-                      :items="sortedKlienList"
-                      item-title="display_label"
-                      item-value="id"
-                      :filter-keys="['raw.display_label', 'raw.display_subtitle']"
-                      :rules="[v => !!v || 'Klien wajib dipilih']"
-                      :error-messages="errors.klien_ar_id"
-                      :loading="klienLoading"
-                      prepend-inner-icon="ri-user-star-line"
-                      clearable
-                      placeholder="Cari nama klien, kode, atau PIC AR..."
-                      hint="Ketik nama PIC AR untuk menyaring semua klien miliknya"
-                      persistent-hint
-                      @focus="ensureKlienLoaded"
-                    >
-                      <template #item="{ props: p, item }">
-                        <VListItem
-                          v-bind="p"
-                          :title="item.raw.display_label"
-                        >
-                          <template #subtitle>
-                            <div class="d-flex align-center flex-wrap gap-1 mt-1">
-                              <VChip
-                                size="x-small"
-                                color="primary"
-                                variant="tonal"
-                                label
-                              >
-                                {{ item.raw.kode_klien }}
-                              </VChip>
-                              <VChip
-                                size="x-small"
-                                :color="klienTipeColor(item.raw.tipe_klien)"
-                                variant="tonal"
-                                label
-                              >
-                                {{ item.raw.tipe_klien }}
-                              </VChip>
-                              <span
-                                v-if="item.raw.karyawan_ar?.nama_karyawan"
-                                class="text-caption text-medium-emphasis"
-                              >
-                                PIC: {{ item.raw.karyawan_ar.nama_karyawan }}
-                              </span>
-                            </div>
-                            <div
-                              v-if="item.raw.resto?.nama_resto"
-                              class="text-caption text-medium-emphasis mt-1"
-                            >
-                              {{ item.raw.resto.nama_resto }}
-                            </div>
-                          </template>
-                        </VListItem>
-                      </template>
-                    </VAutocomplete>
-                  </VCol>
-
-                  <VCol
-                    cols="12"
-                    md="4"
-                  >
-                    <VTextField
-                      :model-value="selectedCompanyName"
-                      label="Entitas Bisnis"
-                      density="compact"
-                      variant="outlined"
-                      prepend-inner-icon="ri-building-4-line"
-                      readonly
-                    />
-                  </VCol>
-
-                  <VCol
-                    cols="12"
-                    md="4"
-                  >
-                    <VTextField
-                      :model-value="selectedPicArName"
-                      label="PIC AR"
-                      density="compact"
-                      variant="outlined"
-                      prepend-inner-icon="ri-user-line"
-                      readonly
-                    />
-                  </VCol>
-
-                  <VCol
-                    cols="12"
-                    md="4"
-                  >
-                    <VTextField
-                      v-model.number="form.saldo_awal"
-                      label="Saldo Awal (Rp)"
-                      density="compact"
-                      variant="outlined"
-                      type="number"
-                      min="0"
-                      prefix="Rp"
-                      prepend-inner-icon="ri-money-dollar-circle-line"
-                      :rules="[v => v > 0 || 'Saldo harus lebih dari 0']"
-                      :error-messages="errors.saldo_awal"
-                      readonly
-                      tabindex="-1"
-                      class="readonly-locked-field"
-                      hint="Dihitung otomatis dari total sisa tagihan rincian"
-                      persistent-hint
-                    />
-                  </VCol>
-                </VRow>
-              </div>
-
-              <div class="form-section">
-                <div class="form-section__header">
-                  <div>
-                    <h4 class="text-subtitle-1 font-weight-bold mb-1">
-                      Tanggal
-                    </h4>
-                    <p class="text-body-2 text-medium-emphasis mb-0">
-                      Isi <strong>Tanggal</strong> dengan tanggal pengajuan hari ini.
-                    </p>
-                  </div>
-                </div>
-
-                <VAlert
-                  type="info"
-                  variant="tonal"
-                  density="compact"
-                  class="mb-4"
-                  icon="ri-information-line"
+                <button
+                  v-for="option in modeOptions"
+                  :key="option.value"
+                  type="button"
+                  class="mode-select-card"
+                  :class="{ 'mode-select-card--active': mode === option.value }"
+                  @click="mode = option.value"
                 >
-                  <div class="text-body-2">
-                    <strong>Kapan menggunakan Opening Balance?</strong>
-                    Hanya untuk piutang <em>historis</em> yang berasal dari luar sistem (spreadsheet, sistem lama, atau manual).
-                    Jika invoice sudah pernah diinput di sistem ini, sisa tagihan sudah otomatis terbawa — tidak perlu Opening Balance.
-                  </div>
-                </VAlert>
-
-                <VRow>
-                  <VCol
-                    cols="12"
-                    md="4"
-                  >
-                    <VTextField
-                      v-model="form.tanggal"
-                      label="Tanggal"
-                      density="compact"
-                      variant="outlined"
-                      type="date"
-                      prepend-inner-icon="ri-calendar-line"
-                      :rules="[v => !!v || 'Tanggal wajib diisi']"
-                      :error-messages="errors.tanggal"
-                      hint="Tanggal pengajuan Opening Balance (hari ini)"
-                      persistent-hint
+                  <span class="mode-select-card__check">
+                    <VIcon
+                      icon="ri-checkbox-circle-fill"
+                      size="18"
                     />
-                  </VCol>
-                </VRow>
-              </div>
-
-              <div class="form-section">
-                <div class="form-section__header">
-                  <div>
-                    <h4 class="text-subtitle-1 font-weight-bold mb-1">
-                      Catatan Pengajuan
-                    </h4>
-                    <p class="text-body-2 text-medium-emphasis mb-0">
-                      Tambahkan keterangan bila ada informasi tambahan yang perlu diketahui reviewer.
-                    </p>
-                  </div>
-                </div>
-
-                <VTextarea
-                  v-model="form.keterangan"
-                  label="Keterangan"
-                  density="compact"
-                  variant="outlined"
-                  rows="3"
-                  auto-grow
-                  :error-messages="errors.keterangan"
-                />
+                  </span>
+                  <span class="mode-select-card__icon">
+                    <VIcon
+                      :icon="option.icon"
+                      size="22"
+                    />
+                  </span>
+                  <span class="mode-select-card__body">
+                    <strong class="mode-select-card__title">{{ option.title }}</strong>
+                    <span class="mode-select-card__desc">{{ option.description }}</span>
+                  </span>
+                </button>
               </div>
             </VCardText>
           </VCard>
-        </VCol>
-
-        <VCol
-          cols="12"
-          lg="4"
-        >
-          <VCard class="opening-balance-sidebar-card mb-4">
-            <VCardText class="pa-6">
-              <div class="section-heading section-heading--compact mb-5">
-                <div class="section-heading__icon section-heading__icon--soft">
-                  <VIcon icon="ri-file-chart-line" />
-                </div>
-                <div>
-                  <h3 class="text-subtitle-1 font-weight-bold mb-1">
-                    Ringkasan
-                  </h3>
-                  <p class="text-body-2 text-medium-emphasis mb-0">
-                    Preview data pengajuan yang sedang diisi.
-                  </p>
-                </div>
-              </div>
-
-              <div class="summary-amount mb-5">
-                <span class="summary-amount__label">Saldo awal saat ini</span>
-                <div class="summary-amount__value">
-                  {{ formattedSaldoAwal }}
-                </div>
-              </div>
-
-              <div class="summary-list">
-                <div class="summary-list__item">
-                  <span class="summary-list__label">Mode</span>
-                  <VChip
-                    size="small"
-                    :color="isEditing ? 'warning' : 'primary'"
-                    variant="tonal"
-                    label
-                  >
-                    {{ isEditing ? 'Edit data' : 'Pengajuan baru' }}
-                  </VChip>
-                </div>
-
-                <div class="summary-list__item">
-                  <span class="summary-list__label">Client</span>
-                  <strong class="summary-list__value">{{ selectedKlien?.nama_klien ?? '-' }}</strong>
-                  <span class="summary-list__hint">{{ selectedKlienMeta }}</span>
-                </div>
-
-                <div class="summary-list__item">
-                  <span class="summary-list__label">Entitas</span>
-                  <strong class="summary-list__value">{{ selectedCompanyName || '-' }}</strong>
-                </div>
-
-                <div class="summary-list__item">
-                  <span class="summary-list__label">PIC AR</span>
-                  <strong class="summary-list__value">{{ selectedPicArName || '-' }}</strong>
-                </div>
-
-                <div class="summary-list__item">
-                  <span class="summary-list__label">Tanggal</span>
-                  <strong class="summary-list__value">{{ formattedTanggal }}</strong>
-                </div>
-              </div>
-            </VCardText>
-          </VCard>
-
-          <VCard class="opening-balance-sidebar-card mb-4">
-            <VCardText class="pa-6">
-              <div class="section-heading section-heading--compact mb-4">
-                <div class="section-heading__icon section-heading__icon--soft">
-                  <VIcon icon="ri-task-line" />
-                </div>
-                <div>
-                  <h3 class="text-subtitle-1 font-weight-bold mb-1">
-                    Checklist Form
-                  </h3>
-                  <p class="text-body-2 text-medium-emphasis mb-0">
-                    Pastikan komponen utama pengajuan sudah lengkap.
-                  </p>
-                </div>
-              </div>
-
-              <div class="checklist-list">
-                <div
-                  v-for="item in checklistItems"
-                  :key="item.label"
-                  class="checklist-list__item"
-                >
-                  <VAvatar
-                    :color="item.done ? 'success' : 'secondary'"
-                    variant="tonal"
-                    size="36"
-                  >
-                    <VIcon :icon="item.done ? 'ri-check-line' : 'ri-time-line'" />
-                  </VAvatar>
-
-                  <div class="flex-grow-1">
-                    <div class="text-body-2 font-weight-medium">
-                      {{ item.label }}
-                    </div>
-                    <div class="text-caption text-medium-emphasis">
-                      {{ item.done ? 'Sudah terisi' : 'Belum lengkap' }}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </VCardText>
-          </VCard>
-
-          <VAlert
-            type="info"
-            variant="tonal"
-            class="opening-balance-tip"
-          >
-            Gunakan periode yang sesuai dengan saldo awal piutang agar approval lebih mudah diverifikasi.
-          </VAlert>
         </VCol>
 
         <VCol cols="12">
-          <VCard class="opening-balance-card">
-            <VCardText class="pa-6 pa-md-8">
-              <div class="form-section">
-                <div class="form-section__header">
-                  <div class="d-flex align-center gap-2 flex-wrap">
-                    <div>
-                      <h4 class="text-subtitle-1 font-weight-bold mb-1">
-                        Rincian Invoice Asal
-                        <VChip
-                          size="x-small"
-                          color="secondary"
-                          variant="tonal"
-                          label
-                          class="ms-1"
-                        >
-                          Opsional
-                        </VChip>
-                      </h4>
-                      <p class="text-body-2 text-medium-emphasis mb-0">
-                        Daftarkan invoice-invoice asli yang membentuk saldo ini untuk keperluan audit dan aging per dokumen.
-                      </p>
-                    </div>
+          <VAlert
+            type="info"
+            variant="tonal"
+            density="compact"
+            icon="ri-information-line"
+          >
+            <div class="text-body-2">
+              <strong>Kapan menggunakan Opening Balance?</strong>
+              Hanya untuk piutang <em>historis</em> yang berasal dari luar sistem (spreadsheet, sistem lama, atau manual).
+              Jika invoice sudah pernah diinput di sistem ini, sisa tagihan sudah otomatis terbawa — tidak perlu Opening Balance.
+            </div>
+          </VAlert>
+        </VCol>
+
+        <!-- SINGLE MODE -->
+        <template v-if="mode === 'single'">
+          <VCol
+            cols="12"
+            lg="8"
+          >
+            <OpeningBalanceGroupFields
+              v-model:group="form"
+              :klien-list="klienList"
+              :klien-loading="klienLoading"
+              :is-editing="isEditing"
+              show-no-invoice
+              :errors="errors"
+              @focus-klien="ensureKlienLoaded"
+            />
+          </VCol>
+
+          <VCol
+            cols="12"
+            lg="4"
+          >
+            <VCard class="opening-balance-sidebar-card mb-4">
+              <VCardText class="pa-6">
+                <div class="section-heading section-heading--compact mb-5">
+                  <div class="section-heading__icon section-heading__icon--soft">
+                    <VIcon icon="ri-file-chart-line" />
+                  </div>
+                  <div>
+                    <h3 class="text-subtitle-1 font-weight-bold mb-1">
+                      Ringkasan
+                    </h3>
+                    <p class="text-body-2 text-medium-emphasis mb-0">
+                      Preview data pengajuan yang sedang diisi.
+                    </p>
                   </div>
                 </div>
 
-                <VCard
-                  variant="outlined"
-                  rounded="lg"
-                  class="ob-detail-wrapper"
-                >
-                  <OpeningBalanceDetailTable
-                    :details="form.details"
-                    :saldo-awal="Number(form.saldo_awal) || 0"
-                    :outstanding-invoices="outstandingInvoices"
-                    :loading-outstanding="loadingOutstanding"
-                    @update:details="form.details = $event"
-                  />
-                </VCard>
+                <div class="summary-amount mb-5">
+                  <span class="summary-amount__label">Saldo awal saat ini</span>
+                  <div class="summary-amount__value">
+                    {{ formattedSaldoAwal }}
+                  </div>
+                </div>
 
-                <VAlert
-                  v-if="errors.details?.length"
-                  type="error"
-                  variant="tonal"
-                  density="compact"
-                  class="mt-2"
-                >
-                  {{ errors.details[0] }}
-                </VAlert>
+                <div class="summary-list">
+                  <div class="summary-list__item">
+                    <span class="summary-list__label">Mode</span>
+                    <VChip
+                      size="small"
+                      :color="isEditing ? 'warning' : 'primary'"
+                      variant="tonal"
+                      label
+                    >
+                      {{ isEditing ? 'Edit data' : 'Pengajuan baru' }}
+                    </VChip>
+                  </div>
+
+                  <div class="summary-list__item">
+                    <span class="summary-list__label">Client</span>
+                    <strong class="summary-list__value">{{ selectedKlien?.nama_klien ?? '-' }}</strong>
+                    <span class="summary-list__hint">{{ selectedKlienMeta }}</span>
+                  </div>
+
+                  <div class="summary-list__item">
+                    <span class="summary-list__label">Entitas</span>
+                    <strong class="summary-list__value">{{ selectedCompanyName || '-' }}</strong>
+                  </div>
+
+                  <div class="summary-list__item">
+                    <span class="summary-list__label">PIC AR</span>
+                    <strong class="summary-list__value">{{ selectedPicArName || '-' }}</strong>
+                  </div>
+
+                  <div class="summary-list__item">
+                    <span class="summary-list__label">Tanggal</span>
+                    <strong class="summary-list__value">{{ formattedTanggal }}</strong>
+                  </div>
+                </div>
+              </VCardText>
+            </VCard>
+
+            <VCard class="opening-balance-sidebar-card mb-4">
+              <VCardText class="pa-6">
+                <div class="section-heading section-heading--compact mb-4">
+                  <div class="section-heading__icon section-heading__icon--soft">
+                    <VIcon icon="ri-task-line" />
+                  </div>
+                  <div>
+                    <h3 class="text-subtitle-1 font-weight-bold mb-1">
+                      Checklist Form
+                    </h3>
+                    <p class="text-body-2 text-medium-emphasis mb-0">
+                      Pastikan komponen utama pengajuan sudah lengkap.
+                    </p>
+                  </div>
+                </div>
+
+                <div class="checklist-list">
+                  <div
+                    v-for="item in checklistItems"
+                    :key="item.label"
+                    class="checklist-list__item"
+                  >
+                    <VAvatar
+                      :color="item.done ? 'success' : 'secondary'"
+                      variant="tonal"
+                      size="36"
+                    >
+                      <VIcon :icon="item.done ? 'ri-check-line' : 'ri-time-line'" />
+                    </VAvatar>
+
+                    <div class="flex-grow-1">
+                      <div class="text-body-2 font-weight-medium">
+                        {{ item.label }}
+                      </div>
+                      <div class="text-caption text-medium-emphasis">
+                        {{ item.done ? 'Sudah terisi' : 'Belum lengkap' }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </VCardText>
+            </VCard>
+
+            <VAlert
+              type="info"
+              variant="tonal"
+              class="opening-balance-tip"
+            >
+              Gunakan periode yang sesuai dengan saldo awal piutang agar approval lebih mudah diverifikasi.
+            </VAlert>
+          </VCol>
+        </template>
+
+        <!-- BULK MODE -->
+        <template v-else>
+          <VCol
+            cols="12"
+            lg="8"
+          >
+            <div class="bulk-groups-list">
+              <VCard
+                class="opening-balance-card muat-client-card mb-6"
+                variant="outlined"
+              >
+                <VCardText class="pa-4 d-flex align-center gap-4 flex-wrap">
+                  <div class="muat-client-card__icon">
+                    <VIcon
+                      icon="ri-download-2-line"
+                      size="20"
+                    />
+                  </div>
+                  <div class="flex-grow-1">
+                    <div class="text-body-2 font-weight-bold">
+                      {{ authStore.isPicArOnly ? 'Muat Semua Client Saya' : 'Muat Client per PIC AR' }}
+                    </div>
+                    <div class="text-caption text-medium-emphasis">
+                      {{ authStore.isPicArOnly
+                        ? 'Ambil semua Client yang menjadi tanggung jawab Anda tanpa memilih satu per satu.'
+                        : 'Pilih PIC AR untuk memuat daftar Client miliknya, lalu pilih Client yang ingin diajukan.' }}
+                    </div>
+                  </div>
+                  <VBtn
+                    size="small"
+                    color="success"
+                    variant="tonal"
+                    prepend-icon="ri-download-2-line"
+                    :disabled="bulkGroups.length >= BULK_MAX_GROUPS"
+                    @click="openKlienPicker"
+                  >
+                    Muat Client
+                  </VBtn>
+                </VCardText>
+              </VCard>
+
+              <OpeningBalanceGroupFields
+                v-for="(group, i) in bulkGroups"
+                :key="group._localId"
+                v-model:group="bulkGroups[i]"
+                :klien-list="klienList"
+                :klien-loading="klienLoading"
+                :group-index="i"
+                :removable="bulkGroups.length > 1"
+                :errors="groupErrors[i] || {}"
+                :initial-outstanding-invoices="group._initialInvoices ?? null"
+                class="mb-6"
+                @focus-klien="ensureKlienLoaded"
+                @remove="removeGroup(i)"
+              />
+
+              <VBtn
+                variant="tonal"
+                color="primary"
+                prepend-icon="ri-add-line"
+                :disabled="bulkGroups.length >= BULK_MAX_GROUPS"
+                @click="addGroup"
+              >
+                Tambah Client
+              </VBtn>
+              <div
+                v-if="bulkGroups.length >= BULK_MAX_GROUPS"
+                class="text-caption text-medium-emphasis mt-2"
+              >
+                Batas maksimum {{ BULK_MAX_GROUPS }} Client per pengajuan massal.
               </div>
+            </div>
 
+            <KlienArPickerDialog
+              v-model="klienPickerOpen"
+              :klien-list="klienList"
+              :loading="klienLoading"
+              :preselected-ids="bulkGroups.map(g => g.klien_ar_id).filter(Boolean)"
+              :show-pic-ar-filter="!authStore.isPicArOnly"
+              :saving="klienPickerSaving"
+              @confirm="handleLoadClients"
+            />
+          </VCol>
+
+          <VCol
+            cols="12"
+            lg="4"
+          >
+            <VCard class="opening-balance-sidebar-card mb-4">
+              <VCardText class="pa-6">
+                <div class="section-heading section-heading--compact mb-5">
+                  <div class="section-heading__icon section-heading__icon--soft">
+                    <VIcon icon="ri-file-chart-line" />
+                  </div>
+                  <div>
+                    <h3 class="text-subtitle-1 font-weight-bold mb-1">
+                      Ringkasan
+                    </h3>
+                    <p class="text-body-2 text-medium-emphasis mb-0">
+                      Preview seluruh pengajuan yang sedang diisi.
+                    </p>
+                  </div>
+                </div>
+
+                <div class="summary-amount mb-5">
+                  <span class="summary-amount__label">Total saldo awal</span>
+                  <div class="summary-amount__value">
+                    {{ formattedBulkTotalSaldo }}
+                  </div>
+                </div>
+
+                <div class="summary-list">
+                  <div class="summary-list__item">
+                    <span class="summary-list__label">Mode</span>
+                    <VChip
+                      size="small"
+                      color="primary"
+                      variant="tonal"
+                      label
+                    >
+                      Massal ({{ bulkGroups.length }} baris)
+                    </VChip>
+                  </div>
+
+                  <div class="summary-list__item">
+                    <span class="summary-list__label">Client terisi</span>
+                    <strong class="summary-list__value">{{ bulkClientCount }} dari {{ bulkGroups.length }}</strong>
+                  </div>
+                </div>
+              </VCardText>
+            </VCard>
+
+            <VCard class="opening-balance-sidebar-card mb-4">
+              <VCardText class="pa-6">
+                <div class="section-heading section-heading--compact mb-4">
+                  <div class="section-heading__icon section-heading__icon--soft">
+                    <VIcon icon="ri-task-line" />
+                  </div>
+                  <div>
+                    <h3 class="text-subtitle-1 font-weight-bold mb-1">
+                      Checklist per Client
+                    </h3>
+                    <p class="text-body-2 text-medium-emphasis mb-0">
+                      Pastikan setiap baris sudah lengkap sebelum diajukan.
+                    </p>
+                  </div>
+                </div>
+
+                <div class="checklist-list">
+                  <div
+                    v-for="item in bulkGroupSummaries"
+                    :key="item.index"
+                    class="checklist-list__item"
+                  >
+                    <VAvatar
+                      :color="item.complete ? 'success' : 'secondary'"
+                      variant="tonal"
+                      size="36"
+                    >
+                      <VIcon :icon="item.complete ? 'ri-check-line' : 'ri-time-line'" />
+                    </VAvatar>
+
+                    <div class="flex-grow-1">
+                      <div class="text-body-2 font-weight-medium">
+                        Client #{{ item.index + 1 }}
+                      </div>
+                      <div class="text-caption text-medium-emphasis">
+                        {{ item.klienName ?? 'Belum dipilih' }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </VCardText>
+            </VCard>
+
+            <VAlert
+              type="info"
+              variant="tonal"
+              class="opening-balance-tip"
+            >
+              Semua baris diajukan dalam satu proses — jika salah satu baris gagal, seluruh pengajuan akan dibatalkan.
+            </VAlert>
+          </VCol>
+        </template>
+
+        <VCol cols="12">
+          <VCard class="opening-balance-card">
+            <VCardText
+              v-if="errorMessage"
+              class="pa-6 pa-md-8"
+            >
               <VAlert
-                v-if="errorMessage"
                 type="error"
                 variant="tonal"
-                class="mt-6"
               >
                 {{ errorMessage }}
               </VAlert>
@@ -513,7 +480,9 @@
                   size="18"
                   class="me-2"
                 />
-                Setelah berhasil, halaman akan diarahkan ke detail opening balance.
+                {{ mode === 'single'
+                  ? 'Setelah berhasil, halaman akan diarahkan ke detail opening balance.'
+                  : 'Setelah berhasil, halaman akan diarahkan ke daftar opening balance.' }}
               </div>
 
               <div class="d-flex flex-wrap gap-3">
@@ -544,18 +513,21 @@
 
 <script setup>
 /* eslint-disable camelcase */
-import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useFormatter, toISODate } from '@/composables/useFormatter'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useCrud } from '@/composables/useCrud'
 import { useLazyFetchAll } from '@/composables/useLazyFetchAll'
+import { useAuthStore } from '@/stores/auth.store'
 import { setFlashAlert } from '@/utils/flashAlert'
 import api from '@/utils/axios'
-import OpeningBalanceDetailTable from '../components/OpeningBalanceDetailTable.vue'
+import OpeningBalanceGroupFields from '../components/OpeningBalanceGroupFields.vue'
+import KlienArPickerDialog from '../components/KlienArPickerDialog.vue'
 
 const route = useRoute()
 const router = useRouter()
+const authStore = useAuthStore()
 const { formatCurrency, formatDate } = useFormatter()
 const { showError, showLoading, closeAlert } = useSweetAlert()
 const id = computed(() => route.params.id)
@@ -569,39 +541,144 @@ const pageLoading = ref(false)
 const errorMessage = ref('')
 const saving = ref(false)
 
-const outstandingInvoices = ref([])
-const loadingOutstanding  = ref(false)
+const BULK_MAX_GROUPS = 50
+const mode = ref('single')
 
-async function fetchOutstandingInvoices(klienArId) {
-  if (!klienArId) { outstandingInvoices.value = [] 
-
-    return }
-  loadingOutstanding.value = true
-  try {
-    const { data } = await api.get('/finance/invoices/outstanding', {
-      params: { klien_ar_id: klienArId, tanggal: form.tanggal },
-    })
-
-    outstandingInvoices.value = data.data ?? []
-  } catch {
-    outstandingInvoices.value = []
-  } finally {
-    loadingOutstanding.value = false
+function createEmptyGroup() {
+  return {
+    no_invoice: '',
+    klien_ar_id: null,
+    tanggal: new Date().toISOString().slice(0, 10),
+    saldo_awal: null,
+    keterangan: '',
+    details: [],
   }
 }
 
-const errors = reactive({
-  no_invoice: [], klien_ar_id: [], tanggal: [], saldo_awal: [], keterangan: [], details: [],
-})
+function emptyErrorsBucket() {
+  return { no_invoice: [], klien_ar_id: [], tanggal: [], saldo_awal: [], keterangan: [], details: [] }
+}
 
-const form = reactive({
-  no_invoice: '',
-  klien_ar_id: null,
-  tanggal: new Date().toISOString().slice(0, 10),
-  saldo_awal: null,
-  keterangan: '',
-  details: [],
-})
+const errors = reactive(emptyErrorsBucket())
+const form = reactive(createEmptyGroup())
+
+let nextGroupId = 1
+const bulkGroups = ref([{ _localId: nextGroupId++, ...createEmptyGroup() }])
+const groupErrors = ref([emptyErrorsBucket()])
+
+function addGroup() {
+  if (bulkGroups.value.length >= BULK_MAX_GROUPS) return
+  bulkGroups.value.push({ _localId: nextGroupId++, ...createEmptyGroup() })
+  groupErrors.value.push(emptyErrorsBucket())
+}
+
+function removeGroup(index) {
+  if (bulkGroups.value.length <= 1) return
+  bulkGroups.value.splice(index, 1)
+  groupErrors.value.splice(index, 1)
+}
+
+const klienPickerOpen = ref(false)
+const klienPickerSaving = ref(false)
+
+async function openKlienPicker() {
+  await ensureKlienLoaded()
+  klienPickerOpen.value = true
+}
+
+function mapOutstandingInvoiceToRow(inv) {
+  return {
+    no_invoice_asal: inv.no_invoice,
+    tanggal_invoice_asal: inv.tanggal_invoice ?? '',
+    deskripsi: `Sisa tagihan ${inv.no_invoice}`,
+    jumlah_tagihan_asal: inv.subtotal,
+    sisa_tagihan_asal: inv.sisa_tagihan,
+    keterangan: inv.keterangan ?? '',
+    kode_resto: '',
+    nama_resto: '',
+    items: (inv.items ?? []).map(item => ({
+      barang_id: item.barang_id ?? null,
+      kode_barang: item.kode_barang ?? '',
+      nama_barang: item.nama_barang ?? '',
+      qty: item.qty ?? 1,
+      satuan: item.satuan ?? 'pcs',
+      harga_satuan: item.harga_satuan ?? 0,
+      subtotal: item.subtotal ?? 0,
+      keterangan: item.keterangan ?? '',
+    })),
+  }
+}
+
+async function handleLoadClients({ klien: selectedKlien, includeLastMonth }) {
+  const selectedIds = new Set(selectedKlien.map(k => k.id))
+
+  bulkGroups.value = bulkGroups.value.filter(g => {
+    if (!g.klien_ar_id || selectedIds.has(g.klien_ar_id)) return true
+
+    const untouched = !g.saldo_awal && g.details.length === 0 && !g.keterangan
+
+    return !untouched
+  })
+
+  const already = new Set(bulkGroups.value.map(g => g.klien_ar_id).filter(Boolean))
+  const newGroups = []
+
+  selectedKlien.forEach(k => {
+    if (already.has(k.id) || bulkGroups.value.length + newGroups.length >= BULK_MAX_GROUPS) return
+    const group = { _localId: nextGroupId++, ...createEmptyGroup(), klien_ar_id: k.id }
+
+    newGroups.push(group)
+  })
+
+  bulkGroups.value.push(...newGroups)
+  groupErrors.value = bulkGroups.value.map(() => emptyErrorsBucket())
+
+  if (includeLastMonth && newGroups.length > 0) {
+    klienPickerSaving.value = true
+    try {
+      const { data } = await api.get('/finance/invoices/outstanding-bulk', {
+        params: { klien_ar_ids: newGroups.map(g => g.klien_ar_id) },
+      })
+      const grouped = data.data ?? {}
+
+      newGroups.forEach(g => {
+        const invoices = grouped[g.klien_ar_id] ?? []
+
+        // Cari objek yang benar-benar reaktif di dalam bulkGroups.value — memutasi
+        // `g` (referensi mentah dari newGroups) langsung tidak memicu re-render Vue.
+        const target = bulkGroups.value.find(x => x._localId === g._localId)
+        if (!target) return
+
+        target._initialInvoices = invoices
+        if (invoices.length === 0) return
+
+        target.details = invoices.map(mapOutstandingInvoiceToRow)
+        target.saldo_awal = target.details.reduce((sum, d) => sum + (Number(d.sisa_tagihan_asal) || 0), 0)
+      })
+    } catch {
+      // biarkan semua baris baru kosong — user tetap bisa isi manual / pakai "Muat Data" per baris
+    } finally {
+      klienPickerSaving.value = false
+    }
+  }
+
+  klienPickerOpen.value = false
+}
+
+const modeOptions = [
+  {
+    value: 'single',
+    icon: 'ri-user-line',
+    title: 'Satu Client',
+    description: 'Ajukan 1 opening balance untuk 1 Client.',
+  },
+  {
+    value: 'bulk',
+    icon: 'ri-group-line',
+    title: 'Banyak Client (Massal)',
+    description: 'Ajukan opening balance untuk banyak Client sekaligus dalam satu proses.',
+  },
+]
 
 const pageTitle = computed(() => isEditing.value ? 'Edit Opening Balance' : 'Saldo Awal (Opening Balance)')
 
@@ -612,31 +689,27 @@ const pageSubtitle = computed(() =>
 
 const breadcrumbLabel = computed(() => isEditing.value ? 'Edit Opening Balance' : 'Buat Opening Balance')
 
-const submitLabel = computed(() => isEditing.value ? 'Simpan Perubahan' : 'Ajukan Opening Balance')
+const submitLabel = computed(() => {
+  if (isEditing.value) return 'Simpan Perubahan'
 
-const heroTitle = computed(() =>
-  isEditing.value
-    ? 'Perbarui pengajuan saldo awal yang perlu direvisi'
-    : 'Buat pengajuan saldo awal dengan struktur yang lebih rapi')
+  return mode.value === 'single' ? 'Ajukan Opening Balance' : `Ajukan ${bulkGroups.value.length} Opening Balance`
+})
 
-const heroSubtitle = computed(() =>
-  isEditing.value
-    ? 'Sesuaikan kembali data opening balance yang ditolak, lalu simpan revisinya sebelum diajukan ulang.'
-    : 'Seluruh field dan proses tetap sama, hanya tampilannya dibuat lebih jelas agar lebih nyaman saat diisi.')
+const heroTitle = computed(() => {
+  if (isEditing.value) return 'Perbarui pengajuan saldo awal yang perlu direvisi'
 
-const sortedKlienList = computed(() =>
-  [...klienList.value].sort((a, b) => {
-    const picA = a.karyawan_ar?.nama_karyawan ?? ''
-    const picB = b.karyawan_ar?.nama_karyawan ?? ''
-    if (picA !== picB) return picA.localeCompare(picB, 'id')
+  return mode.value === 'single'
+    ? 'Buat pengajuan saldo awal dengan struktur yang lebih rapi'
+    : 'Ajukan saldo awal untuk banyak Client sekaligus'
+})
 
-    return (a.nama_klien ?? '').localeCompare(b.nama_klien ?? '', 'id')
-  }),
-)
+const heroSubtitle = computed(() => {
+  if (isEditing.value) return 'Sesuaikan kembali data opening balance yang ditolak, lalu simpan revisinya sebelum diajukan ulang.'
 
-function klienTipeColor(tipe) {
-  return { RESTO: 'success', PT: 'info' }[tipe] ?? 'default'
-}
+  return mode.value === 'single'
+    ? 'Seluruh field dan proses tetap sama, hanya tampilannya dibuat lebih jelas agar lebih nyaman saat diisi.'
+    : 'Tambahkan sebanyak mungkin Client yang dibutuhkan, lalu ajukan semuanya sekaligus dalam satu proses.'
+})
 
 const selectedKlien = computed(() =>
   klienList.value.find(item => item.id === form.klien_ar_id) ?? null)
@@ -658,36 +731,6 @@ const selectedKlienMeta = computed(() => {
     .join(' - ')
 })
 
-function generateObNoInvoice() {
-  const singkatan = (
-    selectedKlien.value?.perusahaan?.nama_singkatan_perusahaan
-    ?? selectedKlien.value?.kode_klien
-    ?? 'OB'
-  ).replace(/[^A-Za-z0-9]/g, '').toUpperCase()
-
-  const now  = new Date()
-  const pad  = (n, len = 2) => String(n).padStart(len, '0')
-  const dd   = pad(now.getDate())
-  const mm   = pad(now.getMonth() + 1)
-  const yyyy = now.getFullYear()
-  const hh   = pad(now.getHours())
-  const min  = pad(now.getMinutes())
-  const ss   = pad(now.getSeconds())
-  const ms   = pad(now.getMilliseconds(), 3)
-
-  return `OB-${singkatan}-${dd}${mm}${yyyy}${hh}${min}${ss}${ms}`
-}
-
-watch(() => form.klien_ar_id, newVal => {
-  if (newVal && !isEditing.value)
-    form.no_invoice = generateObNoInvoice()
-  fetchOutstandingInvoices(newVal)
-})
-
-watch(() => form.tanggal, () => {
-  if (form.klien_ar_id) fetchOutstandingInvoices(form.klien_ar_id)
-})
-
 const formattedSaldoAwal = computed(() => {
   if (form.saldo_awal === null || form.saldo_awal === undefined || form.saldo_awal === '')
     return '-'
@@ -695,13 +738,7 @@ const formattedSaldoAwal = computed(() => {
   return formatCurrency(form.saldo_awal)
 })
 
-watch(() => form.details, newDetails => {
-  if (newDetails.length > 0)
-    form.saldo_awal = newDetails.reduce((sum, d) => sum + (Number(d.sisa_tagihan_asal) || 0), 0)
-})
-
 const formattedTanggal = computed(() => form.tanggal ? formatDate(form.tanggal) : '-')
-
 
 const checklistItems = computed(() => [
   { label: 'No. Opening Balance', done: !!form.no_invoice },
@@ -709,6 +746,40 @@ const checklistItems = computed(() => [
   { label: 'Tanggal', done: !!form.tanggal },
   { label: 'Saldo awal', done: Number(form.saldo_awal) > 0 },
 ])
+
+const bulkClientCount = computed(() => bulkGroups.value.filter(g => g.klien_ar_id).length)
+
+const bulkTotalSaldo = computed(() =>
+  bulkGroups.value.reduce((sum, g) => sum + (Number(g.saldo_awal) || 0), 0))
+
+const formattedBulkTotalSaldo = computed(() => formatCurrency(bulkTotalSaldo.value))
+
+const bulkGroupSummaries = computed(() => bulkGroups.value.map((g, i) => {
+  const klien = klienList.value.find(k => k.id === g.klien_ar_id) ?? null
+
+  return {
+    index: i,
+    klienName: klien?.nama_klien ?? null,
+    complete: !!g.klien_ar_id && !!g.tanggal && Number(g.saldo_awal) > 0,
+  }
+}))
+
+const duplicateGroupIndexes = computed(() => {
+  const seenAt = new Map()
+  const dupes = new Set()
+
+  bulkGroups.value.forEach((g, i) => {
+    if (!g.klien_ar_id) return
+    if (seenAt.has(g.klien_ar_id)) {
+      dupes.add(seenAt.get(g.klien_ar_id))
+      dupes.add(i)
+    } else {
+      seenAt.set(g.klien_ar_id, i)
+    }
+  })
+
+  return dupes
+})
 
 async function loadOpeningBalance() {
   if (!isEditing.value) return
@@ -741,21 +812,18 @@ async function loadOpeningBalance() {
   }
 }
 
-async function handleSubmit() {
-  const { valid } = await formRef.value.validate()
-  if (!valid) return
-
-  errorMessage.value = ''
+async function submitSingle() {
   Object.keys(errors).forEach(k => (errors[k] = []))
 
   if (form.details.length > 0) {
     const sum = form.details.reduce((acc, d) => acc + (Number(d.sisa_tagihan_asal) || 0), 0)
     if (Math.abs(sum - Number(form.saldo_awal)) > 0.01) {
       errors.details = [`Jumlah sisa tagihan rincian (${sum.toFixed(2)}) harus sama dengan saldo awal (${Number(form.saldo_awal).toFixed(2)})`]
-      
+
       return
     }
   }
+
   saving.value = true
   showLoading({
     title: isEditing.value ? 'Menyimpan Perubahan' : 'Mengajukan Opening Balance',
@@ -791,6 +859,90 @@ async function handleSubmit() {
   }
 }
 
+async function submitBulk() {
+  groupErrors.value = bulkGroups.value.map(() => emptyErrorsBucket())
+
+  if (duplicateGroupIndexes.value.size > 0) {
+    duplicateGroupIndexes.value.forEach(i => {
+      groupErrors.value[i].klien_ar_id = ['Client ini dipilih lebih dari sekali dalam pengajuan ini']
+    })
+    errorMessage.value = 'Ada Client yang dipilih lebih dari sekali. Perbaiki dulu sebelum mengajukan.'
+
+    return
+  }
+
+  let hasSumError = false
+  bulkGroups.value.forEach((g, i) => {
+    if (g.details.length > 0) {
+      const sum = g.details.reduce((acc, d) => acc + (Number(d.sisa_tagihan_asal) || 0), 0)
+      if (Math.abs(sum - Number(g.saldo_awal)) > 0.01) {
+        groupErrors.value[i].details = [`Jumlah sisa tagihan rincian (${sum.toFixed(2)}) harus sama dengan saldo awal (${Number(g.saldo_awal).toFixed(2)})`]
+        hasSumError = true
+      }
+    }
+  })
+  if (hasSumError) {
+    errorMessage.value = 'Ada baris Client dengan rincian yang belum sesuai saldo awal. Perbaiki dulu sebelum mengajukan.'
+
+    return
+  }
+
+  saving.value = true
+  showLoading({
+    title: 'Mengajukan Opening Balance Massal',
+    text: `Memproses ${bulkGroups.value.length} pengajuan...`,
+  })
+
+  try {
+    const items = bulkGroups.value.map(g => ({
+      klien_ar_id: g.klien_ar_id,
+      tanggal: g.tanggal,
+      saldo_awal: g.saldo_awal,
+      keterangan: g.keterangan,
+      details: g.details,
+    }))
+
+    const { data } = await api.post('/finance/opening-balance/bulk', { items })
+
+    setFlashAlert({
+      icon: 'success',
+      title: 'Berhasil',
+      text: `${data.data.length} opening balance berhasil diajukan.`,
+    })
+
+    router.push({ name: 'finance-opening-balance' })
+  } catch (err) {
+    const errData = err.response?.data
+    if (errData?.errors) {
+      Object.entries(errData.errors).forEach(([key, messages]) => {
+        const match = key.match(/^items\.(\d+)\.(.+)$/)
+        if (!match) return
+        const idx = Number(match[1])
+        const rest = match[2]
+        const bucket = rest.startsWith('details') ? 'details' : rest.split('.')[0]
+
+        groupErrors.value[idx] ??= emptyErrorsBucket()
+        groupErrors.value[idx][bucket] = [...(groupErrors.value[idx][bucket] ?? []), ...messages]
+      })
+    }
+    errorMessage.value = errData?.message ?? 'Terjadi kesalahan'
+    await showError(errorMessage.value)
+  } finally {
+    closeAlert({ onlyLoading: true })
+    saving.value = false
+  }
+}
+
+async function handleSubmit() {
+  const { valid } = await formRef.value.validate()
+  if (!valid) return
+
+  errorMessage.value = ''
+
+  if (mode.value === 'single') await submitSingle()
+  else await submitBulk()
+}
+
 onMounted(async () => {
   await loadOpeningBalance()
 })
@@ -799,11 +951,6 @@ onMounted(async () => {
 <style scoped>
 .opening-balance-layout {
   row-gap: 4px;
-}
-
-.readonly-locked-field :deep(input) {
-  cursor: default;
-  pointer-events: none;
 }
 
 .opening-balance-loading-card,
@@ -862,6 +1009,83 @@ onMounted(async () => {
   z-index: 1;
 }
 
+.mode-select {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.mode-select-card {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  flex: 1 1 240px;
+  padding: 16px;
+  border: 2px solid rgba(var(--v-theme-on-surface), 0.1);
+  border-radius: 16px;
+  background: rgba(var(--v-theme-surface), 0.85);
+  cursor: pointer;
+  text-align: start;
+  font: inherit;
+  color: inherit;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+}
+
+.mode-select-card:hover {
+  border-color: rgba(var(--v-theme-primary), 0.35);
+}
+
+.mode-select-card--active {
+  border-color: rgb(var(--v-theme-primary));
+  background: rgba(var(--v-theme-primary), 0.08);
+  box-shadow: 0 8px 20px rgba(var(--v-theme-primary), 0.12);
+}
+
+.mode-select-card__check {
+  position: absolute;
+  inset-block-start: 10px;
+  inset-inline-end: 10px;
+  color: rgb(var(--v-theme-primary));
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.mode-select-card--active .mode-select-card__check {
+  opacity: 1;
+}
+
+.mode-select-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 40px;
+  block-size: 40px;
+  border-radius: 12px;
+  flex-shrink: 0;
+  background: rgba(var(--v-theme-primary), 0.12);
+  color: rgb(var(--v-theme-primary));
+}
+
+.mode-select-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mode-select-card__title {
+  font-size: 0.95rem;
+  color: rgba(var(--v-theme-on-surface), var(--v-high-emphasis-opacity));
+}
+
+.mode-select-card__desc {
+  font-size: 0.8rem;
+  color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
+  line-height: 1.4;
+}
+
 .hero-stat {
   padding: 14px 16px;
   border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
@@ -913,16 +1137,6 @@ onMounted(async () => {
   block-size: 40px;
   border-radius: 12px;
   background: rgba(var(--v-theme-primary), 0.1);
-}
-
-.form-section + .form-section {
-  margin-block-start: 28px;
-  padding-block-start: 28px;
-  border-block-start: 1px solid rgba(var(--v-theme-on-surface), 0.08);
-}
-
-.form-section__header {
-  margin-block-end: 16px;
 }
 
 .opening-balance-card__actions {
@@ -1004,9 +1218,27 @@ onMounted(async () => {
   border: 1px solid rgba(var(--v-theme-info), 0.14);
 }
 
-.ob-detail-wrapper {
-  border-color: rgba(var(--v-border-color), var(--v-border-opacity));
-  overflow: hidden;
+.bulk-groups-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.muat-client-card {
+  border-style: dashed;
+  border-color: rgba(var(--v-theme-success), 0.35);
+  background: rgba(var(--v-theme-success), 0.04);
+}
+
+.muat-client-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 40px;
+  block-size: 40px;
+  border-radius: 12px;
+  flex-shrink: 0;
+  background: rgba(var(--v-theme-success), 0.14);
+  color: rgb(var(--v-theme-success));
 }
 
 @media (max-width: 1279px) {

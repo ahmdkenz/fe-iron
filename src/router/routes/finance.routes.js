@@ -51,13 +51,13 @@ export default [
     path: '/finance/opening-balance/create',
     name: 'finance-opening-balance-create',
     component: () => import('@/modules/Finance/features/OpeningBalance/views/Form.vue'),
-    meta: { requiresAuth: true, roles: ['MANAGER', 'SUPERVISOR', 'AR'] },
+    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'] },
   },
   {
     path: '/finance/opening-balance/:id/edit',
     name: 'finance-opening-balance-edit',
     component: () => import('@/modules/Finance/features/OpeningBalance/views/Form.vue'),
-    meta: { requiresAuth: true, roles: ['MANAGER', 'SUPERVISOR', 'AR'] },
+    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'] },
   },
   { path: '/finance/opening-balance/approval', redirect: { name: 'finance-opening-balance' } },
   {
