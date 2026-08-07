@@ -10,6 +10,15 @@
       ]"
     >
       <VBtn
+        color="primary"
+        variant="flat"
+        prepend-icon="ri-download-2-line"
+        class="me-2"
+        @click="showExportModal = true"
+      >
+        Export
+      </VBtn>
+      <VBtn
         variant="text"
         prepend-icon="ri-arrow-left-line"
         :to="{ name: 'finance-laporan' }"
@@ -17,6 +26,15 @@
         Kembali
       </VBtn>
     </PageHeader>
+
+    <ExportFormatModal
+      v-model="showExportModal"
+      v-model:format="exportFormat"
+      :row-count="exportRowCount"
+      :loading="exporting"
+      title="Export Rekap Piutang per Klien"
+      @confirm="doExport"
+    />
 
     <!-- Filter -->
     <VCard class="mb-4">
@@ -374,16 +392,23 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref, watch } from 'vue'
 import { useFormatter } from '@/composables/useFormatter'
+import { useSweetAlert } from '@/composables/useSweetAlert'
+import { readBlobError } from '@/utils/readBlobError'
 import api from '@/utils/axios'
 
 const { formatCurrency, formatDate } = useFormatter()
+const { showSuccess, showError, showLoading, closeAlert } = useSweetAlert()
 
 const loading = ref(false)
 const report  = reactive({ summary: null, rows: [], meta: null })
 const segment = ref('ALL')
 const expanded = ref([])
+const exporting       = ref(false)
+const showExportModal = ref(false)
+const exportFormat    = ref('xlsx')
+const exportRowCount  = ref(null)
 
 const filters = reactive({ periode_bulan: null, periode_tahun: null })
 
@@ -456,6 +481,89 @@ function onRowClick({ item } = {}) {
   expanded.value = expanded.value.includes(key)
     ? expanded.value.filter(v => v !== key)
     : [...expanded.value, key]
+}
+
+function buildExportParams() {
+  const params = {}
+  if (filters.periode_bulan)   params.periode_bulan = filters.periode_bulan
+  if (filters.periode_tahun)   params.periode_tahun = filters.periode_tahun
+  if (segment.value !== 'ALL') params.segment       = segment.value
+
+  return params
+}
+
+let exportRowCountController = null
+
+async function fetchExportRowCount() {
+  exportRowCountController?.abort()
+
+  const controller = new AbortController()
+
+  exportRowCountController = controller
+
+  try {
+    const { data } = await api.get('/finance/invoices/rekap-klien/export-count', {
+      params: buildExportParams(),
+      signal: controller.signal,
+    })
+
+    if (controller.signal.aborted) return
+    exportRowCount.value = data.data?.row_count ?? null
+  } catch {
+    // Hitungan ini cuma advisory buat peringatan — kalau gagal, diamkan saja, jangan ganggu alur export.
+  } finally {
+    if (exportRowCountController === controller)
+      exportRowCountController = null
+  }
+}
+
+let exportRowCountDebounce = null
+
+function debouncedFetchExportRowCount() {
+  clearTimeout(exportRowCountDebounce)
+  exportRowCountDebounce = setTimeout(fetchExportRowCount, 300)
+}
+
+watch(showExportModal, v => { if (v) fetchExportRowCount() })
+watch([() => filters.periode_bulan, () => filters.periode_tahun, segment], () => {
+  if (showExportModal.value) debouncedFetchExportRowCount()
+})
+
+async function doExport() {
+  showExportModal.value = false
+  exporting.value = true
+  showLoading({ title: 'Mengeksport Rekap Piutang per Klien', text: 'Mohon tunggu sebentar...' })
+  try {
+    const params = buildExportParams()
+
+    params.format = exportFormat.value
+
+    // timeout diperpanjang (default axios 15s) — jaga-jaga meski Rekap Klien
+    // biasanya ringan (1 baris = 1 klien).
+    const response = await api.get('/finance/invoices/rekap-klien/export-excel', {
+      params,
+      responseType: 'blob',
+      timeout: 300000,
+    })
+
+    const mime = exportFormat.value === 'csv'
+      ? 'text/csv;charset=UTF-8'
+      : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+
+    const url  = URL.createObjectURL(new Blob([response.data], { type: mime }))
+    const link = document.createElement('a')
+
+    link.href     = url
+    link.download = `Rekap Piutang per Klien-${new Date().toISOString().slice(0, 10)}.${exportFormat.value}`
+    link.click()
+    URL.revokeObjectURL(url)
+    showSuccess({ title: 'Export Berhasil!', text: 'File berhasil diunduh.' })
+  } catch (err) {
+    await showError(await readBlobError(err, 'Gagal mengunduh Rekap Piutang per Klien.'))
+  } finally {
+    exporting.value = false
+    closeAlert({ onlyLoading: true })
+  }
 }
 
 async function doFetch({ resetPage = true } = {}) {

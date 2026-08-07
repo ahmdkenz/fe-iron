@@ -34,6 +34,7 @@ declare module 'vue' {
     DropZone: typeof import('./src/@core/components/DropZone.vue')['default']
     EndingBalanceStatusBadge: typeof import('./src/modules/Finance/shared/components/EndingBalanceStatusBadge.vue')['default']
     EntitasForm: typeof import('./src/modules/Master/features/Entitas/components/EntitasForm.vue')['default']
+    ExportFormatModal: typeof import('./src/components/base/ExportFormatModal.vue')['default']
     GlobalMinimizeWidgets: typeof import('./src/components/base/GlobalMinimizeWidgets.vue')['default']
     I18n: typeof import('./src/@core/components/I18n.vue')['default']
     InvestorForm: typeof import('./src/modules/Master/features/Investor/components/InvestorForm.vue')['default']

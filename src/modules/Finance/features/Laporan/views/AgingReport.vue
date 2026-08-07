@@ -13,9 +13,8 @@
         color="primary"
         variant="flat"
         prepend-icon="ri-download-2-line"
-        :loading="exporting"
         class="me-2"
-        @click="doExport"
+        @click="showExportModal = true"
       >
         Export
       </VBtn>
@@ -27,6 +26,15 @@
         Kembali
       </VBtn>
     </PageHeader>
+
+    <ExportFormatModal
+      v-model="showExportModal"
+      v-model:format="exportFormat"
+      :row-count="exportRowCount"
+      :loading="exporting"
+      title="Export Laporan Aging"
+      @confirm="doExport"
+    />
 
     <!-- Filter -->
     <VCard class="mb-4">
@@ -330,19 +338,25 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { useCrud } from '@/composables/useCrud'
 import { useLazyFetchAll } from '@/composables/useLazyFetchAll'
 import { useFormatter } from '@/composables/useFormatter'
+import { useSweetAlert } from '@/composables/useSweetAlert'
+import { readBlobError } from '@/utils/readBlobError'
 import api from '@/utils/axios'
 
 const { formatCurrency, formatDate } = useFormatter()
+const { showSuccess, showError, showLoading, closeAlert } = useSweetAlert()
 const { items: klienList, loading: klienLoading, fetchAll: fetchKlien } = useCrud('/finance/klien-ar')
 const { ensureLoaded: ensureKlienLoaded } = useLazyFetchAll(fetchKlien)
 
 const loading     = ref(false)
 const loadingMore = ref(false)
 const exporting   = ref(false)
+const showExportModal = ref(false)
+const exportFormat    = ref('xlsx')
+const exportRowCount  = ref(null)
 const rows        = ref([])
 const summary     = ref(null)
 const asOfDate    = ref(null)
@@ -496,26 +510,78 @@ function abort() {
   controller = null
 }
 
-async function doExport() {
-  exporting.value = true
+let exportRowCountController = null
+
+async function fetchExportRowCount() {
+  exportRowCountController?.abort()
+
+  const controller = new AbortController()
+
+  exportRowCountController = controller
+
   try {
-    const response = await api.get('/finance/aging-report/export-excel', {
+    const { data } = await api.get('/finance/aging-report/export-count', {
       params: buildParams(),
-      responseType: 'blob',
+      signal: controller.signal,
     })
 
-    const url  = URL.createObjectURL(new Blob([response.data], {
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    }))
+    if (controller.signal.aborted) return
+    exportRowCount.value = data.data?.row_count ?? null
+  } catch {
+    // Hitungan ini cuma advisory buat peringatan — kalau gagal, diamkan saja, jangan ganggu alur export.
+  } finally {
+    if (exportRowCountController === controller)
+      exportRowCountController = null
+  }
+}
+
+let exportRowCountDebounce = null
+
+function debouncedFetchExportRowCount() {
+  clearTimeout(exportRowCountDebounce)
+  exportRowCountDebounce = setTimeout(fetchExportRowCount, 300)
+}
+
+watch(showExportModal, v => { if (v) fetchExportRowCount() })
+watch([() => filters.as_of_date, () => filters.klien_ar_id, segment], () => {
+  if (showExportModal.value) debouncedFetchExportRowCount()
+})
+
+async function doExport() {
+  showExportModal.value = false
+  exporting.value = true
+  showLoading({ title: 'Mengeksport Laporan Aging', text: 'Mohon tunggu sebentar...' })
+  try {
+    const params = buildParams()
+
+    params.format = exportFormat.value
+
+    // timeout diperpanjang (default axios 15s terlalu pendek) — export XLSX 2-sheet
+    // untuk ratusan klien bisa memakan waktu lebih lama, terutama di server lokal.
+    const response = await api.get('/finance/aging-report/export-excel', {
+      params,
+      responseType: 'blob',
+      timeout: 300000,
+    })
+
+    const mime = exportFormat.value === 'csv'
+      ? 'text/csv;charset=UTF-8'
+      : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+
+    const url  = URL.createObjectURL(new Blob([response.data], { type: mime }))
 
     const link    = document.createElement('a')
 
     link.href     = url
-    link.download = `aging-report-${asOfDate.value ?? filters.as_of_date}.xlsx`
+    link.download = `aging-report-${asOfDate.value ?? filters.as_of_date}.${exportFormat.value}`
     link.click()
     URL.revokeObjectURL(url)
+    showSuccess({ title: 'Export Berhasil!', text: 'File berhasil diunduh.' })
+  } catch (err) {
+    await showError(await readBlobError(err, 'Gagal mengunduh Laporan Aging.'))
   } finally {
     exporting.value = false
+    closeAlert({ onlyLoading: true })
   }
 }
 
