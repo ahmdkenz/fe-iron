@@ -20,6 +20,7 @@
               color="primary"
               prepend-icon="ri-file-excel-line"
               :loading="isExporting"
+              :disabled="isExporting"
               @click="showExportModal = true"
             >
               Export
@@ -40,6 +41,7 @@
               color="primary"
               size="small"
               :loading="isExporting"
+              :disabled="isExporting"
               aria-label="Export"
               @click="showExportModal = true"
             >
@@ -997,6 +999,7 @@
               color="primary"
               prepend-icon="ri-file-excel-line"
               :loading="isExporting"
+              :disabled="isExporting"
               @click="showExportModal = true"
             >
               Export
@@ -1017,6 +1020,7 @@
               color="primary"
               size="small"
               :loading="isExporting"
+              :disabled="isExporting"
               aria-label="Export"
               @click="showExportModal = true"
             >
@@ -1887,7 +1891,7 @@ const showExportModal = ref(false)
 const exportMonth     = ref(new Date().toISOString().slice(0, 7))
 const exportFormat    = ref('xlsx')
 const exportFormatOptions = [
-  { value: 'xlsx', label: 'XLSX (Excel)', caption: '3 sheet: Data OB, Rincian & Item Invoice', icon: 'ri-file-excel-line' },
+  { value: 'xlsx', label: 'XLSX (Excel)', caption: '2 sheet: Data OB (+ rincian) & Item Invoice', icon: 'ri-file-excel-line' },
   { value: 'csv', label: 'CSV', caption: '1 file, kolom berdampingan', icon: 'ri-file-text-line' },
 ]
 const exportRowCount = ref(null)
@@ -1931,8 +1935,9 @@ async function fetchExportRowCount() {
 
     if (controller.signal.aborted) return
     exportRowCount.value = data.data?.row_count ?? null
-  } catch {
+  } catch (err) {
     // Hitungan ini cuma advisory buat peringatan — kalau gagal, diamkan saja, jangan ganggu alur export.
+    console.error(err)
   } finally {
     if (exportRowCountController === controller)
       exportRowCountController = null
@@ -1957,6 +1962,7 @@ async function exportExcel() {
     const res = await api.get('/finance/opening-balance/export', {
       params: { ...buildExportParams(), format: exportFormat.value },
       responseType: 'blob',
+      timeout: 120000, // export bisa berat untuk data besar; lebih longgar dari timeout default axios (15s)
     })
 
     const url  = URL.createObjectURL(res.data)
@@ -1968,7 +1974,11 @@ async function exportExcel() {
     URL.revokeObjectURL(url)
     showSuccess({ title: 'Export Berhasil!', text: 'File berhasil diunduh.' })
   } catch (err) {
-    await showError(await readBlobError(err, 'Gagal mengunduh data export.'))
+    console.error(err)
+    const fallback = err.code === 'ECONNABORTED'
+      ? 'Unduhan memakan waktu lama (timeout). Coba pilih format CSV atau periode yang lebih pendek.'
+      : 'Gagal mengunduh data export.'
+    await showError(await readBlobError(err, fallback))
   } finally {
     isExporting.value = false
     closeAlert({ onlyLoading: true })
