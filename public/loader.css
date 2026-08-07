@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   IRON — Initial Loading Screen (Vault Shield)
+   IRON — Initial Loading Screen (Vault Gate)
    Theme-aware: reads html[data-theme] set synchronously in index.html
    ═══════════════════════════════════════════════════════════════ */
 
@@ -49,7 +49,7 @@ html[data-theme='light'] {
 }
 
 /* ── Root overlay ───────────────────────────────────────────── */
-#loading-bg {
+#loading-container {
   position: fixed;
   inset: 0;
   z-index: 9999;
@@ -57,14 +57,42 @@ html[data-theme='light'] {
   align-items: center;
   justify-content: center;
   background: var(--iron-bg);
-  opacity: 1;
-  transition: opacity 0.65s ease;
   overflow: hidden;
+  perspective: 2000px;
 }
 
-#loading-bg.iron-fade-out {
+/* ── Gate panels ─────────────────────────────────────────────
+   Two halves that slide apart (with a slight 3D swing) once
+   loading completes, revealing the mounted app underneath. */
+.gate-panel {
+  position: absolute;
+  top: 0;
+  z-index: 0;
+  height: 100%;
+  width: 50%;
+  background: radial-gradient(circle at center, var(--iron-surface) 0%, var(--iron-bg) 100%);
+  transition: transform 1.2s cubic-bezier(0.7, 0, 0.3, 1), opacity 1s ease;
+  will-change: transform;
+}
+
+.gate-left {
+  left: 0;
+  border-right: 1px solid var(--iron-divider-color);
+}
+
+.gate-right {
+  right: 0;
+  border-left: 1px solid var(--iron-divider-color);
+}
+
+#loading-container.gates-open .gate-left {
+  transform: translateX(-101%) rotateY(-10deg);
   opacity: 0;
-  pointer-events: none;
+}
+
+#loading-container.gates-open .gate-right {
+  transform: translateX(101%) rotateY(10deg);
+  opacity: 0;
 }
 
 /* ── Content wrapper ────────────────────────────────────────── */
@@ -76,6 +104,13 @@ html[data-theme='light'] {
   align-items: center;
   text-align: center;
   width: min(680px, 90vw);
+  transition: opacity 0.5s ease, transform 0.7s cubic-bezier(0.7, 0, 0.3, 1);
+}
+
+#loading-container.gates-open .iron-content {
+  opacity: 0;
+  transform: scale(0.85);
+  pointer-events: none;
 }
 
 /* ── Vault shield ───────────────────────────────────────────── */
@@ -212,6 +247,7 @@ html[data-theme='light'] {
 
 .iron-char {
   display: inline-block;
+  white-space: pre;
   will-change: transform, opacity;
 }
 
