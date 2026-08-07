@@ -77,12 +77,10 @@ html[data-theme='light'] {
 
 .gate-left {
   left: 0;
-  border-right: 1px solid var(--iron-divider-color);
 }
 
 .gate-right {
   right: 0;
-  border-left: 1px solid var(--iron-divider-color);
 }
 
 #loading-container.gates-open .gate-left {
