@@ -441,6 +441,12 @@
                       <div class="text-caption text-medium-emphasis">
                         {{ item.klienName ?? 'Belum dipilih' }}
                       </div>
+                      <div
+                        v-if="item.restoName"
+                        class="text-caption text-medium-emphasis"
+                      >
+                        {{ item.restoName }}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -594,8 +600,8 @@ function mapOutstandingInvoiceToRow(inv) {
     jumlah_tagihan_asal: inv.subtotal,
     sisa_tagihan_asal: inv.sisa_tagihan,
     keterangan: inv.keterangan ?? '',
-    kode_resto: '',
-    nama_resto: '',
+    kode_resto: inv.kode_resto ?? '',
+    nama_resto: inv.nama_resto ?? '',
     items: (inv.items ?? []).map(item => ({
       barang_id: item.barang_id ?? null,
       kode_barang: item.kode_barang ?? '',
@@ -760,6 +766,7 @@ const bulkGroupSummaries = computed(() => bulkGroups.value.map((g, i) => {
   return {
     index: i,
     klienName: klien?.nama_klien ?? null,
+    restoName: klien?.tipe_klien === 'RESTO' ? (klien?.resto?.nama_resto ?? null) : null,
     complete: !!g.klien_ar_id && !!g.tanggal && Number(g.saldo_awal) > 0,
   }
 }))

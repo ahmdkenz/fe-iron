@@ -28,7 +28,8 @@
     <!-- Dialog Upload -->
     <VDialog
       v-model="dialog"
-      max-width="480"
+      max-width="500"
+      :fullscreen="xs"
       persistent
     >
       <VCard>
@@ -43,59 +44,110 @@
         </VCardTitle>
         <VDivider />
         <VCardText class="pt-4 d-flex flex-column gap-4">
-          <div class="d-flex align-center gap-2">
-            <VIcon
-              icon="ri-information-line"
-              size="16"
-              class="text-info"
-            />
-            <span class="text-caption text-medium-emphasis">
-              Belum punya file format yang sesuai?
-            </span>
-            <VBtn
-              variant="text"
-              color="info"
-              size="x-small"
-              density="compact"
-              prepend-icon="ri-download-line"
-              @click="doDownloadTemplate"
-            >
-              Download Template
-            </VBtn>
-          </div>
+          <VAlert
+            type="info"
+            variant="tonal"
+            density="compact"
+            icon="ri-information-line"
+            class="template-alert"
+          >
+            <div class="text-body-2 mb-2">
+              Belum punya file format yang sesuai? Unduh template di bawah.
+            </div>
+            <div class="d-flex gap-2">
+              <VBtn
+                variant="outlined"
+                color="info"
+                size="small"
+                prepend-icon="ri-file-excel-line"
+                class="template-btn"
+                @click="doDownloadTemplate"
+              >
+                Template XLSX
+              </VBtn>
+              <VBtn
+                variant="outlined"
+                color="info"
+                size="small"
+                prepend-icon="ri-file-text-line"
+                class="template-btn"
+                @click="doDownloadTemplateCsv"
+              >
+                Template CSV
+              </VBtn>
+            </div>
+          </VAlert>
 
           <div
             class="dropzone"
-            :class="{ 'dropzone--active': isDragging }"
+            :class="{ 'dropzone--active': isDragging, 'dropzone--filled': form.file }"
             @dragover.prevent="isDragging = true"
             @dragleave="isDragging = false"
             @drop.prevent="onDrop"
             @click="$refs.fileInput.click()"
           >
-            <VIcon
-              icon="ri-file-upload-line"
-              size="40"
-              class="mb-2 text-primary"
-            />
             <div
               v-if="form.file"
-              class="text-body-2 font-weight-medium text-primary"
+              class="selected-file"
             >
-              {{ form.file.name }}
-            </div>
-            <div
-              v-else
-              class="text-body-2 text-medium-emphasis text-center"
-            >
-              <div>Klik atau drag & drop file di sini</div>
-              <div class="text-caption mt-1">
-                .xlsx atau .xls
+              <VIcon
+                :icon="fileMeta(form.file.name).icon"
+                :color="fileMeta(form.file.name).color"
+                size="32"
+              />
+              <div class="selected-file__info">
+                <div class="text-body-2 font-weight-medium text-truncate">
+                  {{ form.file.name }}
+                </div>
+                <div class="text-caption text-medium-emphasis">
+                  {{ formatFileSize(form.file.size) }}
+                </div>
               </div>
+              <VBtn
+                icon="ri-close-line"
+                variant="text"
+                size="x-small"
+                aria-label="Hapus file"
+                @click.stop="clearFile"
+              />
             </div>
+            <template v-else>
+              <VIcon
+                icon="ri-file-upload-line"
+                size="40"
+                class="mb-2 text-primary"
+              />
+              <div class="text-body-2 text-medium-emphasis text-center">
+                <div>Klik atau drag & drop file di sini</div>
+                <div class="d-flex justify-center gap-1 mt-2">
+                  <VChip
+                    size="x-small"
+                    variant="outlined"
+                    label
+                  >
+                    XLSX
+                  </VChip>
+                  <VChip
+                    size="x-small"
+                    variant="outlined"
+                    label
+                  >
+                    XLS
+                  </VChip>
+                  <VChip
+                    size="x-small"
+                    variant="outlined"
+                    label
+                  >
+                    CSV
+                  </VChip>
+                </div>
+              </div>
+            </template>
             <input
               ref="fileInput"
               type="file"
-              accept=".xlsx,.xls"
+              accept=".xlsx,.xls,.csv,text/csv,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
               style="display:none"
               @change="onFileChange"
             >
@@ -423,6 +475,37 @@ function onDrop(e) {
   form.file = markRaw(e.dataTransfer.files[0] ?? null)
 }
 
+const FILE_TYPE_META = {
+  xlsx: { icon: 'ri-file-excel-line', color: 'success' },
+  xls:  { icon: 'ri-file-excel-line', color: 'success' },
+  csv:  { icon: 'ri-file-text-line',  color: 'info' },
+}
+
+function fileMeta(filename) {
+  const ext = filename?.split('.').pop()?.toLowerCase()
+
+  return FILE_TYPE_META[ext] ?? { icon: 'ri-file-line', color: 'primary' }
+}
+
+function formatFileSize(bytes) {
+  if (!bytes) return ''
+  const units = ['B', 'KB', 'MB', 'GB']
+  let size = bytes
+  let i = 0
+
+  while (size >= 1024 && i < units.length - 1) {
+    size /= 1024
+    i++
+  }
+
+  return `${size.toFixed(i > 0 && size < 10 ? 1 : 0)} ${units[i]}`
+}
+
+function clearFile() {
+  form.file = null
+  if (fileInput.value) fileInput.value.value = ''
+}
+
 function closeDialog() {
   dialog.value      = false
   form.file         = null
@@ -667,6 +750,41 @@ async function doDownloadTemplate() {
   await writeXlsxFile([templateSheet, petunjukSheet]).toFile('template-rekening-koran.xlsx')
 }
 
+function doDownloadTemplateCsv() {
+  // Delimiter ";" + BOM UTF-8 menyamakan konvensi CSV lain di app (lihat
+  // InvoiceImportTemplateService) — Excel locale Indonesia otomatis membuka
+  // file terbagi rapi per kolom tanpa perlu "Data > From Text/CSV". Parser
+  // backend membaca CSV lewat PhpSpreadsheet Csv reader yang AUTO-DETECT
+  // delimiter dari isi file (bukan ekstensi) — sengaja TIDAK menambahkan baris
+  // komentar/instruksi di sini: teks bahasa Indonesia (koma, titik dua, dst)
+  // bisa membuat delimiter-nya salah terbaca. Baris contoh juga sengaja pakai
+  // "-" bukan ":" supaya jumlah ";" per baris tetap konsisten dan tidak
+  // bersaing dengan kandidat delimiter lain.
+  const rows = [
+    ['Tanggal', 'Keterangan', 'No Referensi', 'Debit', 'Kredit', 'Saldo'],
+    ['01-01-2025', 'Contoh Transfer Masuk - Pembayaran Invoice', 'TRF202501010001', '', '5000000', '25000000'],
+    ['02-01-2025', 'Contoh Transfer Keluar - Pembayaran Vendor', 'TRF202501020002', '1500000', '', '23500000'],
+  ]
+
+  const csvBody = rows
+    .map(row => row.map(cell => {
+      const value = String(cell ?? '')
+
+      return /[";\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value
+    }).join(';'))
+    .join('\r\n')
+
+  const BOM = String.fromCharCode(0xFEFF)
+  const blob = new Blob([BOM + csvBody], { type: 'text/csv;charset=UTF-8' })
+  const url  = URL.createObjectURL(blob)
+  const a    = document.createElement('a')
+
+  a.href     = url
+  a.download = 'template-rekening-koran.csv'
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
 onBeforeUnmount(() => {
   clearTimeout(pollTimer)
   clearTimeout(completeTimer)
@@ -674,6 +792,13 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+.template-alert :deep(.v-alert__content) {
+  width: 100%;
+}
+.template-btn {
+  flex: 1 1 0;
+}
+
 .dropzone {
   border: 2px dashed rgba(var(--v-theme-primary), 0.4);
   border-radius: 8px;
@@ -688,6 +813,27 @@ onBeforeUnmount(() => {
 .dropzone--active {
   border-color: rgb(var(--v-theme-primary));
   background: rgba(var(--v-theme-primary), 0.05);
+}
+.dropzone--filled {
+  border-style: solid;
+  border-color: rgb(var(--v-theme-success));
+  background: rgba(var(--v-theme-success), 0.06);
+}
+.dropzone--filled:hover {
+  border-color: rgb(var(--v-theme-success));
+  background: rgba(var(--v-theme-success), 0.1);
+}
+
+.selected-file {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+.selected-file__info {
+  flex: 1 1 auto;
+  min-width: 0;
+  text-align: left;
 }
 
 .import-stepper {

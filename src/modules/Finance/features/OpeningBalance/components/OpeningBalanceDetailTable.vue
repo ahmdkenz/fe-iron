@@ -705,6 +705,8 @@ function handleInvoiceSelect(rowIndex, noInvoice) {
   row.sisa_tagihan_asal    = inv.sisa_tagihan
   row.deskripsi            = `Sisa tagihan ${inv.no_invoice}`
   row.keterangan           = inv.keterangan ?? ''
+  row.kode_resto           = inv.kode_resto ?? ''
+  row.nama_resto           = inv.nama_resto ?? ''
   row.items                = mapInvoiceItems(inv.items)
   emitRows()
 }
@@ -719,6 +721,8 @@ function loadSelectedOutstanding(selected) {
     jumlah_tagihan_asal: inv.subtotal,
     sisa_tagihan_asal: inv.sisa_tagihan,
     keterangan: inv.keterangan ?? '',
+    kode_resto: inv.kode_resto ?? '',
+    nama_resto: inv.nama_resto ?? '',
     items: mapInvoiceItems(inv.items),
   }))
   expandedRows.value = new Set()

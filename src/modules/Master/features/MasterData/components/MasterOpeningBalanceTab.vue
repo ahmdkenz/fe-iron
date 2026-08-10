@@ -48,7 +48,7 @@
             <li>Gunakan <strong>Template CSV</strong> untuk volume data besar — mendukung baris jauh lebih banyak dari XLSX.</li>
             <li>Gunakan <strong>Template XLSX</strong> untuk volume kecil-menengah — item ditulis di sheet terpisah, lebih mudah dibaca manual di Excel.</li>
             <li>Baris/grup gagal tidak menggagalkan baris/grup lain — hasil akhir menampilkan rincian baris mana yang gagal dan alasannya.</li>
-            <li>Semua Opening Balance hasil import tetap berstatus <strong>DRAFT</strong> dan menunggu persetujuan Manager/Supervisor di halaman Opening Balance.</li>
+            <li>Semua Opening Balance hasil import langsung berstatus <strong>APPROVED</strong> — tidak perlu persetujuan manual, karena import hanya dapat dilakukan oleh role tepercaya.</li>
             <li>Import hanya dapat dilakukan oleh role <strong>ADMIN, MANAGER, atau SUPERVISOR</strong>.</li>
           </ul>
         </VAlert>

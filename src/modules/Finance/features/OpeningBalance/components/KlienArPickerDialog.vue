@@ -192,6 +192,12 @@
                 >
                   PIC: {{ klien.karyawan_ar.nama_karyawan }}
                 </div>
+                <div
+                  v-if="klien.resto?.nama_resto"
+                  class="text-caption text-medium-emphasis"
+                >
+                  {{ klien.resto.nama_resto }}
+                </div>
               </div>
             </div>
           </div>

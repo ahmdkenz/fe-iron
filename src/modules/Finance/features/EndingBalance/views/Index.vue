@@ -48,6 +48,16 @@
         </VCardTitle>
         <VCardText class="d-flex flex-wrap align-center gap-3 pb-0">
           <VTextField
+            v-model="filtersB2B.search"
+            placeholder="Cari nama klien / outlet..."
+            clearable
+            hide-details
+            density="compact"
+            prepend-inner-icon="ri-search-line"
+            style="min-width: 220px; max-width: 280px;"
+            @update:model-value="debouncedFetchB2B"
+          />
+          <VTextField
             v-model="periodeDraftB2B.periode_awal"
             label="Dari Periode"
             type="date"
@@ -311,6 +321,16 @@
           {{ b2cTableTitle }}
         </VCardTitle>
         <VCardText class="d-flex flex-wrap align-center gap-3 pb-0">
+          <VTextField
+            v-model="filtersB2C.search"
+            placeholder="Cari nama klien / outlet..."
+            clearable
+            hide-details
+            density="compact"
+            prepend-inner-icon="ri-search-line"
+            style="min-width: 220px; max-width: 280px;"
+            @update:model-value="debouncedFetchB2C"
+          />
           <VTextField
             v-model="periodeDraftB2C.periode_awal"
             label="Dari Periode"
@@ -587,6 +607,18 @@
       </div>
 
       <VCard class="mb-6">
+        <VCardText class="d-flex flex-wrap align-center gap-3 pb-0">
+          <VTextField
+            v-model="pendingSearch"
+            placeholder="Cari nama klien / outlet..."
+            clearable
+            hide-details
+            density="compact"
+            prepend-inner-icon="ri-search-line"
+            style="min-width: 220px; max-width: 280px;"
+            @update:model-value="debouncedFetchPending"
+          />
+        </VCardText>
         <VDataTable
           :headers="pendingHeaders"
           :items="pendingRows"
@@ -719,6 +751,16 @@
           Ending Balance B2B
         </VCardTitle>
         <VCardText class="d-flex flex-wrap align-center gap-3 pb-0">
+          <VTextField
+            v-model="filtersB2B.search"
+            placeholder="Cari nama klien / outlet..."
+            clearable
+            hide-details
+            density="compact"
+            prepend-inner-icon="ri-search-line"
+            style="min-width: 220px; max-width: 280px;"
+            @update:model-value="debouncedFetchB2B"
+          />
           <VTextField
             v-model="periodeDraftB2B.periode_awal"
             label="Dari Periode"
@@ -983,6 +1025,16 @@
           Ending Balance B2C
         </VCardTitle>
         <VCardText class="d-flex flex-wrap align-center gap-3 pb-0">
+          <VTextField
+            v-model="filtersB2C.search"
+            placeholder="Cari nama klien / outlet..."
+            clearable
+            hide-details
+            density="compact"
+            prepend-inner-icon="ri-search-line"
+            style="min-width: 220px; max-width: 280px;"
+            @update:model-value="debouncedFetchB2C"
+          />
           <VTextField
             v-model="periodeDraftB2C.periode_awal"
             label="Dari Periode"
@@ -1470,12 +1522,14 @@ const filtersB2B = reactive({
   periode_awal: toDateStr(firstDay),
   periode_akhir: toDateStr(lastDay),
   status: null,
+  search: '',
 })
 
 const filtersB2C = reactive({
   periode_awal: toDateStr(firstDay),
   periode_akhir: toDateStr(lastDay),
   status: null,
+  search: '',
 })
 
 const periodeDraftB2B = reactive({
@@ -1539,6 +1593,19 @@ function applyPeriodeFiltersB2B() {
   resetB2B(filtersB2B)
 }
 
+let debounceTimerB2B = null
+let debounceTimerB2C = null
+
+function debouncedFetchB2B() {
+  clearTimeout(debounceTimerB2B)
+  debounceTimerB2B = setTimeout(() => resetB2B(filtersB2B), 400)
+}
+
+function debouncedFetchB2C() {
+  clearTimeout(debounceTimerB2C)
+  debounceTimerB2C = setTimeout(() => reset(filtersB2C), 400)
+}
+
 function onSegmentTabChange(tab) {
   activeSegmentTab.value = tab
   if (tab === 'b2b' && !b2bLoaded) {
@@ -1599,6 +1666,7 @@ async function doUnlock() {
 // ─── State & fungsi Approval Koreksi (dipindah dari Approval.vue) ────────────
 const pendingLoading = ref(false)
 const pendingRows    = ref([])
+const pendingSearch  = ref('')
 
 const ebHeroStats = computed(() => {
   const stats = [
@@ -1651,12 +1719,21 @@ function tipeLabel(tipe) {
 async function fetchPending() {
   pendingLoading.value = true
   try {
-    const { data } = await api.get('/finance/ending-balance/koreksi/pending')
+    const { data } = await api.get('/finance/ending-balance/koreksi/pending', {
+      params: { search: pendingSearch.value || undefined },
+    })
 
     pendingRows.value = data.data ?? []
   } finally {
     pendingLoading.value = false
   }
+}
+
+let debounceTimerPending = null
+
+function debouncedFetchPending() {
+  clearTimeout(debounceTimerPending)
+  debounceTimerPending = setTimeout(fetchPending, 400)
 }
 
 function openApprovalActionDialog(koreksi, action) {
@@ -1722,6 +1799,9 @@ onMounted(() => {
 onBeforeUnmount(() => {
   abort()
   abortB2B()
+  clearTimeout(debounceTimerB2B)
+  clearTimeout(debounceTimerB2C)
+  clearTimeout(debounceTimerPending)
 })
 </script>
 
