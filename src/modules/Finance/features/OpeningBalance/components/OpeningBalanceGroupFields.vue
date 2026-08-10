@@ -319,7 +319,11 @@ import api from '@/utils/axios'
 import OpeningBalanceDetailTable from './OpeningBalanceDetailTable.vue'
 
 const props = defineProps({
-  klienList: { type: Array, default: () => [] },
+  // Sudah di-sort & di-index sekali oleh parent (Form.vue) dan dibagikan ke
+  // semua Card — menghindari sort/`.find()` ulang di setiap instance saat
+  // mode Massal me-mount banyak Card sekaligus.
+  sortedKlienList: { type: Array, default: () => [] },
+  klienById: { type: Map, default: () => new Map() },
   klienLoading: { type: Boolean, default: false },
   showNoInvoice: { type: Boolean, default: true },
   isEditing: { type: Boolean, default: false },
@@ -366,22 +370,11 @@ async function fetchOutstandingInvoices(klienArId) {
   }
 }
 
-const sortedKlienList = computed(() =>
-  [...props.klienList].sort((a, b) => {
-    const picA = a.karyawan_ar?.nama_karyawan ?? ''
-    const picB = b.karyawan_ar?.nama_karyawan ?? ''
-    if (picA !== picB) return picA.localeCompare(picB, 'id')
-
-    return (a.nama_klien ?? '').localeCompare(b.nama_klien ?? '', 'id')
-  }),
-)
-
 function klienTipeColor(tipe) {
   return { RESTO: 'success', PT: 'info' }[tipe] ?? 'default'
 }
 
-const selectedKlien = computed(() =>
-  props.klienList.find(item => item.id === group.value.klien_ar_id) ?? null)
+const selectedKlien = computed(() => props.klienById.get(group.value.klien_ar_id) ?? null)
 
 const selectedCompanyName = computed(() =>
   selectedKlien.value?.perusahaan?.nama_perusahaan
@@ -437,6 +430,14 @@ watch(() => group.value.details, newDetails => {
 .opening-balance-card {
   border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
   box-shadow: 0 18px 50px rgba(15, 23, 42, 0.08);
+
+  /* Skip layout/paint saat Card di luar viewport (mis. mode Massal dengan
+     puluhan Card) — browser otomatis render normal lagi begitu di-scroll
+     mendekati viewport. `auto` pada contain-intrinsic-size membuat browser
+     mengingat tinggi asli Card setelah pernah dirender; angka fallback di
+     bawah cuma dipakai sebelum Card pernah tampil sekali. */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 640px;
 }
 
 .section-heading {

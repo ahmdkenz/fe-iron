@@ -99,6 +99,12 @@
               </span>
             </template>
           </VCheckbox>
+          <span
+            v-if="limitReached"
+            class="text-caption text-medium-emphasis ms-2"
+          >
+            Maksimum {{ maxSelectable }} Client per pengajuan massal — sisanya tidak akan dicentang.
+          </span>
         </div>
       </div>
 
@@ -157,11 +163,15 @@
               v-for="klien in visibleKlienList"
               :key="klien.id"
               class="klien-row"
-              :class="{ 'klien-row--checked': checkedIds.includes(klien.id) }"
+              :class="{
+                'klien-row--checked': checkedIds.includes(klien.id),
+                'klien-row--disabled': limitReached && !checkedIds.includes(klien.id),
+              }"
               @click="toggleCheck(klien.id)"
             >
               <VCheckbox
                 :model-value="checkedIds.includes(klien.id)"
+                :disabled="limitReached && !checkedIds.includes(klien.id)"
                 hide-details
                 density="compact"
                 color="primary"
@@ -285,6 +295,9 @@ const props = defineProps({
   preselectedIds: { type: Array, default: () => [] },
   showPicArFilter: { type: Boolean, default: false },
   saving: { type: Boolean, default: false },
+  // Batas maksimum client yang boleh dicentang sekaligus (mis. jumlah baris
+  // maksimum yang didukung form pemanggil). null = tanpa batas.
+  maxSelectable: { type: Number, default: null },
 })
 
 const emit = defineEmits(['update:modelValue', 'confirm'])
@@ -335,17 +348,33 @@ const allSelected = computed(() =>
 const someSelected = computed(() =>
   visibleKlienList.value.some(k => checkedIds.value.includes(k.id)))
 
+const limitReached = computed(() =>
+  props.maxSelectable != null && checkedIds.value.length >= props.maxSelectable)
+
 function toggleCheck(id) {
   const idx = checkedIds.value.indexOf(id)
-  if (idx === -1) checkedIds.value.push(id)
-  else checkedIds.value.splice(idx, 1)
+  if (idx === -1) {
+    if (limitReached.value) return
+    checkedIds.value.push(id)
+  } else {
+    checkedIds.value.splice(idx, 1)
+  }
 }
 
 function toggleAll(val) {
   const visibleIds = visibleKlienList.value.map(k => k.id)
   if (val) {
-    const merged = new Set([...checkedIds.value, ...visibleIds])
-    checkedIds.value = [...merged]
+    if (props.maxSelectable == null) {
+      checkedIds.value = [...new Set([...checkedIds.value, ...visibleIds])]
+
+      return
+    }
+
+    const alreadySet = new Set(checkedIds.value)
+    const additions = visibleIds.filter(id => !alreadySet.has(id))
+    const room = Math.max(props.maxSelectable - checkedIds.value.length, 0)
+
+    checkedIds.value = [...checkedIds.value, ...additions.slice(0, room)]
   } else {
     checkedIds.value = checkedIds.value.filter(id => !visibleIds.includes(id))
   }
@@ -413,6 +442,11 @@ function doConfirm() {
 .klien-row--checked {
   border-color: rgba(var(--v-theme-primary), 0.5);
   background: rgba(var(--v-theme-primary), 0.06);
+}
+
+.klien-row--disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .picker-dialog-footer {

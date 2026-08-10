@@ -146,7 +146,8 @@
           >
             <OpeningBalanceGroupFields
               v-model:group="form"
-              :klien-list="klienList"
+              :sorted-klien-list="sortedKlienList"
+              :klien-by-id="klienById"
               :klien-loading="klienLoading"
               :is-editing="isEditing"
               show-no-invoice
@@ -317,7 +318,8 @@
                 v-for="(group, i) in bulkGroups"
                 :key="group._localId"
                 v-model:group="bulkGroups[i]"
-                :klien-list="klienList"
+                :sorted-klien-list="sortedKlienList"
+                :klien-by-id="klienById"
                 :klien-loading="klienLoading"
                 :group-index="i"
                 :removable="bulkGroups.length > 1"
@@ -352,6 +354,7 @@
               :preselected-ids="bulkGroups.map(g => g.klien_ar_id).filter(Boolean)"
               :show-pic-ar-filter="!authStore.isPicArOnly"
               :saving="klienPickerSaving"
+              :max-selectable="BULK_MAX_GROUPS"
               @confirm="handleLoadClients"
             />
           </VCol>
@@ -550,6 +553,20 @@ const saving = ref(false)
 const BULK_MAX_GROUPS = 50
 const mode = ref('single')
 
+// Dihitung sekali di sini dan dibagikan ke setiap Card (bukan di-sort/di-cari
+// ulang di setiap instance OpeningBalanceGroupFields) — penting saat mode
+// Massal me-mount sampai BULK_MAX_GROUPS Card sekaligus.
+const sortedKlienList = computed(() =>
+  [...klienList.value].sort((a, b) => {
+    const picA = a.karyawan_ar?.nama_karyawan ?? ''
+    const picB = b.karyawan_ar?.nama_karyawan ?? ''
+    if (picA !== picB) return picA.localeCompare(picB, 'id')
+
+    return (a.nama_klien ?? '').localeCompare(b.nama_klien ?? '', 'id')
+  }))
+
+const klienById = computed(() => new Map(klienList.value.map(k => [k.id, k])))
+
 function createEmptyGroup() {
   return {
     no_invoice: '',
@@ -615,45 +632,68 @@ function mapOutstandingInvoiceToRow(inv) {
   }
 }
 
+function isUntouchedGroup(g) {
+  return !g.saldo_awal && g.details.length === 0 && !g.keterangan
+}
+
 async function handleLoadClients({ klien: selectedKlien, includeLastMonth }) {
   const selectedIds = new Set(selectedKlien.map(k => k.id))
 
   bulkGroups.value = bulkGroups.value.filter(g => {
     if (!g.klien_ar_id || selectedIds.has(g.klien_ar_id)) return true
 
-    const untouched = !g.saldo_awal && g.details.length === 0 && !g.keterangan
-
-    return !untouched
+    return !isUntouchedGroup(g)
   })
 
   const already = new Set(bulkGroups.value.map(g => g.klien_ar_id).filter(Boolean))
-  const newGroups = []
+  const toAssign = selectedKlien.filter(k => !already.has(k.id))
 
-  selectedKlien.forEach(k => {
-    if (already.has(k.id) || bulkGroups.value.length + newGroups.length >= BULK_MAX_GROUPS) return
-    const group = { _localId: nextGroupId++, ...createEmptyGroup(), klien_ar_id: k.id }
+  // Slot kosong/belum tersentuh (mis. Card #1 yang selalu ada sejak halaman
+  // dibuka) diisi lebih dulu, bukan dibiarkan kosong sambil tetap ikut
+  // dihitung terhadap BULK_MAX_GROUPS — itulah penyebab hanya 49/50 baris
+  // yang benar-benar terisi saat memuat client dalam jumlah besar.
+  const reusableIndexes = []
 
-    newGroups.push(group)
+  bulkGroups.value.forEach((g, idx) => {
+    if (!g.klien_ar_id && isUntouchedGroup(g)) reusableIndexes.push(idx)
   })
 
-  bulkGroups.value.push(...newGroups)
+  let reuseCursor = 0
+  let currentTotal = bulkGroups.value.length
+  const assignedLocalIds = []
+
+  for (const k of toAssign) {
+    if (reuseCursor < reusableIndexes.length) {
+      const target = bulkGroups.value[reusableIndexes[reuseCursor++]]
+
+      target.klien_ar_id = k.id
+      assignedLocalIds.push(target._localId)
+    } else {
+      if (currentTotal >= BULK_MAX_GROUPS) break
+      const group = { _localId: nextGroupId++, ...createEmptyGroup(), klien_ar_id: k.id }
+
+      bulkGroups.value.push(group)
+      currentTotal++
+      assignedLocalIds.push(group._localId)
+    }
+  }
+
   groupErrors.value = bulkGroups.value.map(() => emptyErrorsBucket())
 
-  if (includeLastMonth && newGroups.length > 0) {
+  if (includeLastMonth && assignedLocalIds.length > 0) {
     klienPickerSaving.value = true
     try {
+      const targets = assignedLocalIds
+        .map(lid => bulkGroups.value.find(g => g._localId === lid))
+        .filter(Boolean)
+
       const { data } = await api.get('/finance/invoices/outstanding-bulk', {
-        params: { klien_ar_ids: newGroups.map(g => g.klien_ar_id) },
+        params: { klien_ar_ids: targets.map(g => g.klien_ar_id) },
       })
       const grouped = data.data ?? {}
 
-      newGroups.forEach(g => {
-        const invoices = grouped[g.klien_ar_id] ?? []
-
-        // Cari objek yang benar-benar reaktif di dalam bulkGroups.value — memutasi
-        // `g` (referensi mentah dari newGroups) langsung tidak memicu re-render Vue.
-        const target = bulkGroups.value.find(x => x._localId === g._localId)
-        if (!target) return
+      targets.forEach(target => {
+        const invoices = grouped[target.klien_ar_id] ?? []
 
         target._initialInvoices = invoices
         if (invoices.length === 0) return
@@ -717,8 +757,7 @@ const heroSubtitle = computed(() => {
     : 'Tambahkan sebanyak mungkin Client yang dibutuhkan, lalu ajukan semuanya sekaligus dalam satu proses.'
 })
 
-const selectedKlien = computed(() =>
-  klienList.value.find(item => item.id === form.klien_ar_id) ?? null)
+const selectedKlien = computed(() => klienById.value.get(form.klien_ar_id) ?? null)
 
 const selectedCompanyName = computed(() =>
   selectedKlien.value?.perusahaan?.nama_perusahaan
@@ -761,7 +800,7 @@ const bulkTotalSaldo = computed(() =>
 const formattedBulkTotalSaldo = computed(() => formatCurrency(bulkTotalSaldo.value))
 
 const bulkGroupSummaries = computed(() => bulkGroups.value.map((g, i) => {
-  const klien = klienList.value.find(k => k.id === g.klien_ar_id) ?? null
+  const klien = klienById.value.get(g.klien_ar_id) ?? null
 
   return {
     index: i,
