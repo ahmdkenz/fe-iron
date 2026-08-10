@@ -178,6 +178,18 @@
             v-if="importing && importProgress"
             class="mt-5"
           >
+            <div
+              v-if="elapsedLabel"
+              class="text-caption text-medium-emphasis mb-3 d-flex align-center ga-1"
+            >
+              <VIcon
+                icon="ri-time-line"
+                size="14"
+              />
+              {{ elapsedLabel }}
+              <span v-if="etaLabel"> · {{ etaLabel }}</span>
+            </div>
+
             <div class="text-subtitle-2 mb-2 d-flex align-center ga-1">
               <VIcon
                 icon="ri-wallet-3-line"
@@ -452,11 +464,16 @@ import { useDisplay } from 'vuetify'
 import api from '@/utils/axios'
 import { useMasterOpeningBalanceImportStore, WIDGET_ID } from '@/stores/master-opening-balance-import.store'
 import { useMinimizeWidgetStore } from '@/stores/minimize-widget.store'
+import { useImportEta } from '@/composables/useImportEta'
 
 const { xs } = useDisplay()
 const importStore = useMasterOpeningBalanceImportStore()
 const minimizeStore = useMinimizeWidgetStore()
 const { importing, progress: importProgress, result: importResult } = storeToRefs(importStore)
+const { elapsedLabel, etaLabel } = useImportEta(
+  importProgress,
+  () => importing.value && !['completed', 'failed'].includes(importProgress.value?.status),
+)
 
 const showImport = ref(false)
 const showInfo = ref(false)

@@ -204,6 +204,18 @@
             v-if="busy && progress.status === 'processing'"
             class="mb-4"
           >
+            <div
+              v-if="elapsedLabel"
+              class="text-caption text-medium-emphasis mb-3 d-flex align-center ga-1"
+            >
+              <VIcon
+                icon="ri-time-line"
+                size="14"
+              />
+              {{ elapsedLabel }}
+              <span v-if="etaLabel"> · {{ etaLabel }}</span>
+            </div>
+
             <div class="text-subtitle-2 mb-2 d-flex align-center ga-1">
               <VIcon
                 icon="ri-file-list-3-line"
@@ -580,6 +592,18 @@
             v-if="busy && progress"
             class="mt-5"
           >
+            <div
+              v-if="elapsedLabel"
+              class="text-caption text-medium-emphasis mb-3 d-flex align-center ga-1"
+            >
+              <VIcon
+                icon="ri-time-line"
+                size="14"
+              />
+              {{ elapsedLabel }}
+              <span v-if="etaLabel"> · {{ etaLabel }}</span>
+            </div>
+
             <div class="text-subtitle-2 mb-2 d-flex align-center ga-1">
               <VIcon
                 icon="ri-search-line"
@@ -695,11 +719,16 @@ import api from '@/utils/axios'
 import BaseTable from '@/components/base/BaseTable.vue'
 import { useMasterInvoiceImportStore, WIDGET_ID } from '@/stores/master-invoice-import.store'
 import { useMinimizeWidgetStore } from '@/stores/minimize-widget.store'
+import { useImportEta } from '@/composables/useImportEta'
 
 const { xs } = useDisplay()
 const store = useMasterInvoiceImportStore()
 const minimizeStore = useMinimizeWidgetStore()
 const { busy, progress, result } = storeToRefs(store)
+const { elapsedLabel, etaLabel } = useImportEta(
+  progress,
+  () => busy.value && !['completed', 'failed', 'awaiting_review'].includes(progress.value?.status),
+)
 
 const showImport = ref(false)
 const showInfo = ref(false)

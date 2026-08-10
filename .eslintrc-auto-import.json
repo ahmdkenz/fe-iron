@@ -380,6 +380,7 @@
     "useLoadMore": true,
     "sanitizePhoneNumber": true,
     "useAuthTransition": true,
-    "waitForInvoicePrintReady": true
+    "waitForInvoicePrintReady": true,
+    "useImportEta": true
   }
 }

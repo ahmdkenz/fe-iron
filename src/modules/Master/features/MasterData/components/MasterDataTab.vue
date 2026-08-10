@@ -272,6 +272,18 @@
             class="mt-5"
           >
             <div
+              v-if="elapsedLabel"
+              class="text-caption text-medium-emphasis mb-3 d-flex align-center ga-1"
+            >
+              <VIcon
+                icon="ri-time-line"
+                size="14"
+              />
+              {{ elapsedLabel }}
+              <span v-if="etaLabel"> · {{ etaLabel }}</span>
+            </div>
+
+            <div
               v-if="importProgress.master_total > 0 || importProgress.status === 'processing'"
               class="mb-4"
             >
@@ -654,11 +666,16 @@ import { useDisplay } from 'vuetify'
 import api from '@/utils/axios'
 import { useMasterDataImportStore, WIDGET_ID } from '@/stores/master-data-import.store'
 import { useMinimizeWidgetStore } from '@/stores/minimize-widget.store'
+import { useImportEta } from '@/composables/useImportEta'
 
 const { xs } = useDisplay()
 const importStore = useMasterDataImportStore()
 const minimizeStore = useMinimizeWidgetStore()
 const { importing, progress: importProgress, result: importResult } = storeToRefs(importStore)
+const { elapsedLabel, etaLabel } = useImportEta(
+  importProgress,
+  () => importing.value && !['completed', 'failed'].includes(importProgress.value?.status),
+)
 
 const showImport = ref(false)
 const showInfo = ref(false)

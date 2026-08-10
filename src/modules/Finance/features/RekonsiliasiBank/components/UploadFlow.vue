@@ -228,6 +228,18 @@
             </div>
           </template>
           <template v-else>
+            <div
+              v-if="elapsedLabel"
+              class="text-caption text-medium-emphasis mb-3 d-flex align-center justify-center ga-1"
+            >
+              <VIcon
+                icon="ri-time-line"
+                size="14"
+              />
+              {{ elapsedLabel }}
+              <span v-if="etaLabel"> · {{ etaLabel }}</span>
+            </div>
+
             <div class="import-stepper">
               <template
                 v-for="(step, i) in PHASE_STEPS"
@@ -372,6 +384,7 @@
 import { computed, markRaw, onBeforeUnmount, reactive, ref } from 'vue'
 import { useDisplay } from 'vuetify'
 import { useSweetAlert } from '@/composables/useSweetAlert'
+import { useImportEta } from '@/composables/useImportEta'
 import api from '@/utils/axios'
 import writeXlsxFile from 'write-excel-file/browser'
 
@@ -399,6 +412,11 @@ const MAX_POLL_FAILURES = 5
 
 const overlapDialog = ref(false)
 const confirming    = ref(false)
+
+const { elapsedLabel, etaLabel } = useImportEta(
+  batchStatus,
+  () => progressDialog.value && !['completed', 'failed'].includes(batchStatus.value?.status),
+)
 
 const PHASE_STEPS = [
   { key: 'queued',           icon: 'ri-time-line',            label: 'Menunggu diproses...' },
