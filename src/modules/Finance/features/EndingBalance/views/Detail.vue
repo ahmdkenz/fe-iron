@@ -1175,4 +1175,37 @@ onMounted(() => {
     display: block !important;
   }
 }
+
+/* Ringkas lagi tampilan mobile khusus halaman ini (tidak menyentuh
+   PageHeader.vue supaya halaman lain yang memakainya tidak ikut berubah). */
+@media (max-width: 599.98px) {
+  :deep(.page-header__title) {
+    font-size: 0.95rem !important;
+  }
+
+  .text-h6 {
+    font-size: 0.95rem !important;
+  }
+
+  .text-caption {
+    font-size: 0.7rem !important;
+  }
+
+  .text-body-2 {
+    font-size: 0.8125rem !important;
+  }
+
+  :deep(.v-card-text) {
+    padding: 10px !important;
+  }
+
+  .koreksi-invoice-row {
+    padding: 8px 10px;
+  }
+
+  :deep(.v-chip) {
+    font-size: 0.6rem !important;
+    --v-chip-height: 18px;
+  }
+}
 </style>

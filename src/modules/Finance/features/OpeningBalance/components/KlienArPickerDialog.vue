@@ -461,4 +461,35 @@ function doConfirm() {
   border-radius: 20px;
   padding: 4px 12px;
 }
+
+/* Ringkas lagi tampilan mobile khusus dialog ini (page-specific, aman
+   diringkas langsung). Picker & checklist TETAP tampil apa adanya, cuma
+   font/spacing yang diperkecil. */
+@media (max-width: 599.98px) {
+  .picker-dialog-header {
+    padding: 14px !important;
+  }
+
+  .text-h6 {
+    font-size: 0.95rem !important;
+  }
+
+  .text-caption {
+    font-size: 0.7rem !important;
+  }
+
+  .picker-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .klien-row {
+    padding: 8px 10px;
+  }
+
+  :deep(.v-chip) {
+    font-size: 0.6rem !important;
+    --v-chip-height: 18px;
+  }
+}
 </style>

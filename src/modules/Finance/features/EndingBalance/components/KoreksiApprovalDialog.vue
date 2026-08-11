@@ -241,4 +241,37 @@ function tipeLabel(tipe) {
   color: rgba(var(--v-theme-on-surface), 0.7);
   white-space: nowrap;
 }
+
+/* Ringkas lagi tampilan mobile khusus dialog ini (page-specific, aman
+   diringkas langsung). */
+@media (max-width: 599.98px) {
+  .action-band {
+    height: 64px;
+  }
+
+  .action-avatar {
+    inline-size: 52px !important;
+    block-size: 52px !important;
+  }
+
+  .text-h6 {
+    font-size: 0.95rem !important;
+  }
+
+  .text-body-2 {
+    font-size: 0.8125rem !important;
+  }
+
+  .info-label {
+    font-size: 0.75rem;
+  }
+
+  :deep(.v-card-text) {
+    padding: 12px !important;
+  }
+
+  .info-box {
+    padding: 10px !important;
+  }
+}
 </style>

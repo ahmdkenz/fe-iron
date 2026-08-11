@@ -627,6 +627,7 @@
           :items-per-page-options="[{ value: 10, title: '10' }, { value: 25, title: '25' }, { value: 50, title: '50' }, { value: 100, title: '100' }]"
           no-data-text="Tidak ada koreksi yang menunggu persetujuan Anda."
           density="comfortable"
+          class="pending-koreksi-table"
         >
           <template #item.segment="{ item }">
             <VChip
@@ -1865,5 +1866,58 @@ onBeforeUnmount(() => {
 
 :deep(.eb-table__row:hover) {
   background: rgba(var(--v-theme-on-surface), 0.08) !important;
+}
+
+/* Ringkas lagi tampilan mobile khusus halaman ini (tidak menyentuh
+   PageHeroHeader.vue/BaseTable.vue supaya halaman lain yang memakainya
+   tidak ikut berubah). Tabel "Menunggu Persetujuan" (VDataTable polos, tidak
+   punya mobile-card) diberi scroll horizontal supaya tidak merusak layout. */
+@media (max-width: 599.98px) {
+  :deep(.phh__title) {
+    font-size: 0.95rem !important;
+  }
+
+  :deep(.phh__stat-value) {
+    font-size: 0.85rem !important;
+  }
+
+  :deep(.phh__stat-label) {
+    font-size: 0.55rem !important;
+  }
+
+  :deep(.text-subtitle-1) {
+    font-size: 0.85rem !important;
+  }
+
+  :deep(.text-caption) {
+    font-size: 0.7rem !important;
+  }
+
+  :deep(.base-table-mobile-card__body) {
+    font-size: 0.8125rem !important;
+  }
+
+  :deep(.base-table-mobile-card) {
+    padding: 8px !important;
+  }
+
+  :deep(.v-chip) {
+    font-size: 0.65rem !important;
+    --v-chip-height: 20px;
+  }
+
+  .pending-koreksi-table :deep(.v-table__wrapper) {
+    overflow-x: auto !important;
+  }
+
+  .pending-koreksi-table :deep(table) {
+    font-size: 0.75rem !important;
+  }
+
+  .pending-koreksi-table :deep(th),
+  .pending-koreksi-table :deep(td) {
+    padding: 0 8px !important;
+    white-space: nowrap;
+  }
 }
 </style>

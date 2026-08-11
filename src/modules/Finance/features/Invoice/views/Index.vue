@@ -1232,3 +1232,49 @@ onBeforeUnmount(() => {
 })
 </script>
 
+<style scoped>
+/* Ringkas lagi tampilan mobile khusus halaman ini (tidak menyentuh
+   PageHeroHeader.vue/BaseTable.vue supaya halaman lain yang memakainya
+   tidak ikut berubah). */
+@media (max-width: 599.98px) {
+  :deep(.phh__title) {
+    font-size: 0.95rem !important;
+  }
+
+  :deep(.phh__stat-value) {
+    font-size: 0.85rem !important;
+  }
+
+  :deep(.phh__stat-label) {
+    font-size: 0.55rem !important;
+  }
+
+  :deep(.v-tab) {
+    font-size: 0.75rem !important;
+    min-width: 0 !important;
+    padding-inline: 10px !important;
+  }
+
+  .text-subtitle-1 {
+    font-size: 0.85rem !important;
+  }
+
+  .text-caption {
+    font-size: 0.7rem !important;
+  }
+
+  :deep(.base-table-mobile-card__body) {
+    font-size: 0.8125rem !important;
+  }
+
+  :deep(.base-table-mobile-card) {
+    padding: 8px !important;
+  }
+
+  :deep(.v-chip) {
+    font-size: 0.65rem !important;
+    --v-chip-height: 20px;
+  }
+}
+</style>
+

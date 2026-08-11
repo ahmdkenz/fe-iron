@@ -245,15 +245,23 @@
             </div>
           </div>
 
-          <VTextarea
-            v-model="group.keterangan"
-            label="Keterangan"
-            density="compact"
-            variant="outlined"
-            rows="3"
-            auto-grow
-            :error-messages="errors.keterangan"
-          />
+          <MobileMoreFields
+            :dense="false"
+            title="Keterangan"
+            :has-error="!!errors.keterangan?.length"
+          >
+            <VCol cols="12">
+              <VTextarea
+                v-model="group.keterangan"
+                label="Keterangan"
+                density="compact"
+                variant="outlined"
+                rows="3"
+                auto-grow
+                :error-messages="errors.keterangan"
+              />
+            </VCol>
+          </MobileMoreFields>
         </div>
       </VCardText>
     </VCard>
@@ -283,29 +291,37 @@
             </div>
           </div>
 
-          <VCard
-            variant="outlined"
-            rounded="lg"
-            class="ob-detail-wrapper"
+          <MobileMoreFields
+            :dense="false"
+            title="Rincian Invoice Asal"
+            :has-error="!!errors.details?.length"
           >
-            <OpeningBalanceDetailTable
-              :details="group.details"
-              :saldo-awal="Number(group.saldo_awal) || 0"
-              :outstanding-invoices="outstandingInvoices"
-              :loading-outstanding="loadingOutstanding"
-              @update:details="group.details = $event"
-            />
-          </VCard>
+            <VCol cols="12">
+              <VCard
+                variant="outlined"
+                rounded="lg"
+                class="ob-detail-wrapper"
+              >
+                <OpeningBalanceDetailTable
+                  :details="group.details"
+                  :saldo-awal="Number(group.saldo_awal) || 0"
+                  :outstanding-invoices="outstandingInvoices"
+                  :loading-outstanding="loadingOutstanding"
+                  @update:details="group.details = $event"
+                />
+              </VCard>
 
-          <VAlert
-            v-if="errors.details?.length"
-            type="error"
-            variant="tonal"
-            density="compact"
-            class="mt-2"
-          >
-            {{ errors.details[0] }}
-          </VAlert>
+              <VAlert
+                v-if="errors.details?.length"
+                type="error"
+                variant="tonal"
+                density="compact"
+                class="mt-2"
+              >
+                {{ errors.details[0] }}
+              </VAlert>
+            </VCol>
+          </MobileMoreFields>
         </div>
       </VCardText>
     </VCard>
@@ -316,6 +332,7 @@
 /* eslint-disable camelcase */
 import { computed, ref, watch } from 'vue'
 import api from '@/utils/axios'
+import MobileMoreFields from '@/components/shared/MobileMoreFields.vue'
 import OpeningBalanceDetailTable from './OpeningBalanceDetailTable.vue'
 
 const props = defineProps({
@@ -471,5 +488,40 @@ watch(() => group.value.details, newDetails => {
 .ob-detail-wrapper {
   border-color: rgba(var(--v-border-color), var(--v-border-opacity));
   overflow: hidden;
+}
+
+/* Ringkas lagi tampilan mobile khusus komponen ini (page-specific, aman
+   diringkas langsung). */
+@media (max-width: 599.98px) {
+  :deep(.v-card-text) {
+    padding: 16px !important;
+  }
+
+  .text-h6 {
+    font-size: 1rem !important;
+  }
+
+  .text-subtitle-1 {
+    font-size: 0.85rem !important;
+  }
+
+  .text-body-2 {
+    font-size: 0.8125rem !important;
+  }
+
+  .section-heading__icon {
+    inline-size: 36px;
+    block-size: 36px;
+  }
+
+  .form-section + .form-section {
+    margin-block-start: 18px;
+    padding-block-start: 18px;
+  }
+
+  :deep(.v-chip) {
+    font-size: 0.6rem !important;
+    --v-chip-height: 18px;
+  }
 }
 </style>

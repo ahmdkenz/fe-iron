@@ -825,3 +825,55 @@ onMounted(() => {
   loadListB2B()
 })
 </script>
+
+<style scoped>
+/* Ringkas lagi tampilan mobile khusus halaman ini (tidak menyentuh
+   PageHeroHeader.vue/BaseTable.vue/DetailRow.vue supaya halaman lain yang
+   memakainya tidak ikut berubah). */
+@media (max-width: 599.98px) {
+  :deep(.phh__title) {
+    font-size: 0.95rem !important;
+  }
+
+  :deep(.phh__stat-value) {
+    font-size: 0.85rem !important;
+  }
+
+  :deep(.phh__stat-label) {
+    font-size: 0.55rem !important;
+  }
+
+  :deep(.base-table-mobile-card__body) {
+    font-size: 0.8125rem !important;
+  }
+
+  :deep(.base-table-mobile-card) {
+    padding: 8px !important;
+  }
+
+  .text-subtitle-1 {
+    font-size: 0.85rem !important;
+  }
+
+  .text-caption {
+    font-size: 0.7rem !important;
+  }
+
+  :deep(.v-chip) {
+    font-size: 0.65rem !important;
+    --v-chip-height: 20px;
+  }
+
+  :deep(.detail-row-item) {
+    padding: 8px 12px !important;
+  }
+
+  :deep(.detail-row-item .text-body-2) {
+    font-size: 0.8125rem !important;
+  }
+
+  .text-h6 {
+    font-size: 1rem !important;
+  }
+}
+</style>

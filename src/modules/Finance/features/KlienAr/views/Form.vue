@@ -929,4 +929,44 @@ onMounted(async () => {
   gap: 6px;
   align-items: baseline;
 }
+
+/* Ringkas lagi tampilan mobile khusus halaman ini (tidak menyentuh
+   PageHeader.vue supaya halaman lain yang memakainya tidak ikut berubah). */
+@media (max-width: 599.98px) {
+  :deep(.page-header__title) {
+    font-size: 0.95rem !important;
+  }
+
+  :deep(.v-card-title) {
+    padding: 12px !important;
+    font-size: 0.9rem !important;
+  }
+
+  :deep(.v-card-text) {
+    padding: 12px !important;
+  }
+
+  .text-body-2 {
+    font-size: 0.8125rem !important;
+  }
+
+  .text-caption {
+    font-size: 0.7rem !important;
+  }
+
+  :deep(.v-chip) {
+    font-size: 0.6rem !important;
+    --v-chip-height: 18px;
+  }
+
+  .tipe-btn {
+    height: 40px !important;
+    font-size: 0.75rem !important;
+  }
+
+  .ar-notice,
+  .info-panel {
+    padding: 8px 10px;
+  }
+}
 </style>

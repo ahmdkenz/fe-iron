@@ -789,4 +789,47 @@ async function submitKoreksiDialog() {
 .cursor-pointer {
   cursor: pointer;
 }
+
+/* Ringkas lagi tampilan mobile khusus wizard ini (page-specific, aman
+   diringkas langsung). Cuma font/spacing — 2-step wizard, type-selector,
+   picker invoice, dan tabel item TETAP tampil apa adanya, tidak diubah. */
+@media (max-width: 599.98px) {
+  :deep(.v-card-title) {
+    padding: 10px 12px !important;
+    font-size: 0.85rem !important;
+  }
+
+  :deep(.v-card-text) {
+    padding: 10px 12px !important;
+  }
+
+  :deep(.v-card-actions) {
+    padding: 8px 12px !important;
+  }
+
+  .text-body-2 {
+    font-size: 0.8125rem !important;
+  }
+
+  .text-caption {
+    font-size: 0.7rem !important;
+  }
+
+  .tipe-card {
+    min-height: 64px;
+  }
+
+  .tipe-card :deep(.pa-4) {
+    padding: 10px !important;
+  }
+
+  .koreksi-invoice-row {
+    padding: 8px 10px;
+  }
+
+  :deep(.eb-item-table th),
+  :deep(.eb-item-edit-table th) {
+    font-size: 0.65rem !important;
+  }
+}
 </style>

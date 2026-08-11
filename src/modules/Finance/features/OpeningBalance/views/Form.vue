@@ -1303,4 +1303,39 @@ onMounted(async () => {
     inline-size: 100%;
   }
 }
+
+/* Ringkas lagi tampilan mobile khusus halaman ini (tidak menyentuh
+   PageHeader.vue supaya halaman lain yang memakainya tidak ikut berubah). */
+@media (max-width: 599.98px) {
+  :deep(.page-header__title) {
+    font-size: 0.95rem !important;
+  }
+
+  .opening-balance-hero .pa-6,
+  .opening-balance-hero .pa-md-8 {
+    padding: 16px !important;
+  }
+
+  .text-h5,
+  .text-md-h4 {
+    font-size: 1.15rem !important;
+  }
+
+  .text-overline {
+    font-size: 0.65rem !important;
+  }
+
+  .text-body-1 {
+    font-size: 0.875rem !important;
+  }
+
+  .text-body-2 {
+    font-size: 0.8125rem !important;
+  }
+
+  .mode-select-card {
+    padding: 12px;
+    flex: 1 1 100%;
+  }
+}
 </style>

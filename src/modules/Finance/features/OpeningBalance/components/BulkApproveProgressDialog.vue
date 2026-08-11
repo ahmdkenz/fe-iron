@@ -126,3 +126,34 @@ const resultText = computed(() => {
     </VCard>
   </VDialog>
 </template>
+
+<style scoped>
+/* Ringkas lagi tampilan mobile khusus dialog ini (page-specific, aman
+   diringkas langsung). */
+@media (max-width: 599.98px) {
+  :deep(.v-card-title) {
+    padding: 12px !important;
+    font-size: 0.9rem !important;
+  }
+
+  :deep(.v-card-text) {
+    padding: 12px !important;
+  }
+
+  :deep(.v-card-actions) {
+    padding: 10px 12px !important;
+  }
+
+  .text-body-2 {
+    font-size: 0.8125rem !important;
+  }
+
+  .text-caption {
+    font-size: 0.7rem !important;
+  }
+
+  :deep(.v-table) {
+    font-size: 0.75rem !important;
+  }
+}
+</style>
