@@ -165,14 +165,14 @@ const formattedKredit = computed(() => formatCurrency(props.report?.total_kredit
 
 @media (max-width: 599.98px) {
   .rekon-stat-row {
-    gap: 8px;
+    gap: 6px;
   }
 
   .rekon-stat {
     flex-direction: column;
     align-items: flex-start;
-    gap: 6px;
-    padding: 10px;
+    gap: 4px;
+    padding: 8px;
   }
 
   .rekon-stat__icon {
@@ -180,19 +180,24 @@ const formattedKredit = computed(() => formatCurrency(props.report?.total_kredit
   }
 
   .rekon-stat__value {
-    font-size: 1rem;
+    font-size: 0.9rem;
   }
 
   .rekon-stat__label {
-    font-size: 0.6875rem;
+    font-size: 0.6rem;
     white-space: normal;
     overflow: visible;
     text-overflow: clip;
-    line-height: 1.25;
+    line-height: 1.2;
   }
 
   .rekon-hero__value {
-    font-size: 1.15rem;
+    font-size: 1rem;
+  }
+
+  .rekon-hero__icon {
+    width: 36px;
+    height: 36px;
   }
 }
 </style>

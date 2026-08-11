@@ -58,14 +58,34 @@
         class="d-flex align-center justify-space-between mt-2"
         @click="$emit('select-row', item)"
       >
-        <span
-          v-if="item.kredit > 0"
-          class="text-subtitle-2 font-weight-bold text-success"
-        >+{{ formatCurrency(item.kredit) }}</span>
-        <span
-          v-else
-          class="text-subtitle-2 font-weight-bold text-warning"
-        >-{{ formatCurrency(item.debit) }}</span>
+        <span class="d-flex align-center gap-1">
+          <VChip
+            v-if="item.kredit > 0"
+            size="x-small"
+            color="success"
+            variant="flat"
+            label
+          >
+            K
+          </VChip>
+          <VChip
+            v-else
+            size="x-small"
+            color="warning"
+            variant="flat"
+            label
+          >
+            D
+          </VChip>
+          <span
+            v-if="item.kredit > 0"
+            class="text-subtitle-2 font-weight-bold text-success"
+          >+{{ formatCurrency(item.kredit) }}</span>
+          <span
+            v-else
+            class="text-subtitle-2 font-weight-bold text-warning"
+          >-{{ formatCurrency(item.debit) }}</span>
+        </span>
         <VIcon
           icon="ri-arrow-right-s-line"
           size="18"
@@ -407,5 +427,32 @@ defineExpose({
 }
 :deep(.tx-row--selected td:first-child) {
   border-left: 3px solid rgb(var(--v-theme-primary));
+}
+
+/* Ringkas lagi tampilan mobile-card khusus halaman ini (page-specific, aman
+   diringkas langsung). Elemen di slot #mobile-card sudah pakai util Vuetify
+   (text-caption dst) yang punya font-size sendiri, jadi dikecilkan langsung
+   di sini, bukan lewat :deep(.base-table-mobile-card__body). */
+@media (max-width: 599.98px) {
+  .text-caption {
+    font-size: 0.7rem !important;
+  }
+
+  .text-body-2 {
+    font-size: 0.8125rem !important;
+  }
+
+  .text-subtitle-2 {
+    font-size: 0.8rem !important;
+  }
+
+  :deep(.v-chip) {
+    font-size: 0.65rem !important;
+    --v-chip-height: 20px;
+  }
+
+  :deep(.base-table-mobile-card) {
+    padding: 8px !important;
+  }
 }
 </style>

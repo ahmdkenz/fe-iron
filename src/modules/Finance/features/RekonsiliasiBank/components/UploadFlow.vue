@@ -913,4 +913,52 @@ onBeforeUnmount(() => {
   opacity: 0;
   transform: translateY(-4px);
 }
+
+/* Ringkas lagi tampilan mobile khusus 3 dialog di komponen ini (page-specific,
+   aman diringkas langsung). Dialog sudah fullscreen di mobile (:fullscreen="xs"),
+   ini cuma memperketat padding & font supaya tidak terlalu longgar. */
+@media (max-width: 599.98px) {
+  :deep(.v-card-title) {
+    padding: 12px !important;
+    font-size: 0.95rem !important;
+  }
+
+  :deep(.v-card-text) {
+    padding: 12px !important;
+  }
+
+  :deep(.v-card-actions) {
+    padding: 10px 12px !important;
+  }
+
+  .text-body-2 {
+    font-size: 0.8125rem !important;
+  }
+
+  .text-caption {
+    font-size: 0.7rem !important;
+  }
+
+  .template-btn {
+    font-size: 0.75rem !important;
+  }
+
+  :deep(.v-chip) {
+    font-size: 0.6rem !important;
+    --v-chip-height: 18px;
+  }
+
+  .dropzone {
+    padding: 18px 12px;
+  }
+
+  .import-step {
+    width: 26px;
+    height: 26px;
+  }
+
+  :deep(.v-table) {
+    font-size: 0.75rem !important;
+  }
+}
 </style>

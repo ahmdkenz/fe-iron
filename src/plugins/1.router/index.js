@@ -5,9 +5,15 @@ import { useAuthStore } from '@/stores/auth.store'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
-  scrollBehavior(to) {
+  scrollBehavior(to, from, savedPosition) {
     if (to.hash)
       return { el: to.hash, behavior: 'smooth', top: 60 }
+
+    // Navigasi yang cuma mengganti query di path yang sama (mis. sinkronisasi
+    // tab/filter/id terpilih ke URL lewat router.replace) bukan perpindahan
+    // halaman — jangan lompat ke atas, biarkan posisi scroll user tetap.
+    if (to.path === from.path)
+      return savedPosition || false
 
     return { top: 0 }
   },

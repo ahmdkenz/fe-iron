@@ -548,4 +548,64 @@ async function doSubmit() {
 .allocation-table tbody tr:last-child td {
   border-bottom: none;
 }
+
+/* Ringkas lagi tampilan mobile khusus dialog ini (page-specific, aman
+   diringkas langsung). Cuma font/spacing — tabel alokasi TETAP tampil apa
+   adanya (scroll horizontal bila perlu), tidak diubah jadi kartu. */
+@media (max-width: 599.98px) {
+  :deep(.v-card-title) {
+    padding: 12px !important;
+  }
+
+  :deep(.v-card-text) {
+    padding: 12px !important;
+  }
+
+  .text-h6 {
+    font-size: 1rem !important;
+  }
+
+  .text-body-1 {
+    font-size: 0.875rem !important;
+  }
+
+  .text-body-2 {
+    font-size: 0.8125rem !important;
+  }
+
+  .text-caption {
+    font-size: 0.7rem !important;
+  }
+
+  .section-label {
+    font-size: 0.7rem;
+  }
+
+  .header-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .bank-summary-icon {
+    width: 26px;
+    height: 26px;
+  }
+
+  :deep(.v-chip) {
+    font-size: 0.6rem !important;
+    --v-chip-height: 18px;
+  }
+
+  .allocation-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .allocation-table th,
+  .allocation-table td {
+    padding: 6px 8px;
+    font-size: 0.75rem;
+  }
+}
 </style>

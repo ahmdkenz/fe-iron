@@ -579,4 +579,18 @@ onBeforeUnmount(() => {
   width: 100%;
   transition: top 0.12s ease;
 }
+
+/* Ringkas lagi tampilan mobile khusus halaman ini (tidak menyentuh
+   PageHeader.vue supaya halaman lain yang memakainya tidak ikut berubah). */
+@media (max-width: 599.98px) {
+  :deep(.page-header__title) {
+    font-size: 0.95rem !important;
+  }
+
+  :deep(.v-tab) {
+    font-size: 0.75rem !important;
+    min-width: 0 !important;
+    padding-inline: 10px !important;
+  }
+}
 </style>

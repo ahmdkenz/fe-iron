@@ -159,4 +159,26 @@ function rowProps(ctx) {
 :deep(.tx-row--selected td:first-child) {
   border-left: 3px solid rgb(var(--v-theme-primary));
 }
+
+/* Ringkas lagi tampilan mobile-card khusus halaman ini (page-specific, aman
+   diringkas langsung). nama_file/total kredit tanpa util ukuran ikut
+   base-table-mobile-card__body; text-caption & VChip dikecilkan langsung. */
+@media (max-width: 599.98px) {
+  :deep(.base-table-mobile-card__body) {
+    font-size: 0.8125rem !important;
+  }
+
+  .text-caption {
+    font-size: 0.7rem !important;
+  }
+
+  :deep(.v-chip) {
+    font-size: 0.65rem !important;
+    --v-chip-height: 20px;
+  }
+
+  :deep(.base-table-mobile-card) {
+    padding: 8px !important;
+  }
+}
 </style>

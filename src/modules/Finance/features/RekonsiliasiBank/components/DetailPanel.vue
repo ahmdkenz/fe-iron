@@ -269,4 +269,37 @@ const selisihLabel = computed(() => {
   max-height: 80vh;
   border-radius: 16px 16px 0 0;
 }
+
+/* Ringkas lagi tampilan mobile khusus panel ini (dipakai di VBottomSheet
+   mobile via Index.vue) — page-specific, aman diringkas langsung. */
+@media (max-width: 599.98px) {
+  .text-h5 {
+    font-size: 1.25rem !important;
+  }
+
+  .text-body-2 {
+    font-size: 0.8125rem !important;
+  }
+
+  .text-caption {
+    font-size: 0.7rem !important;
+  }
+
+  :deep(.v-chip) {
+    font-size: 0.65rem !important;
+    --v-chip-height: 20px;
+  }
+
+  :deep(.v-card-title) {
+    padding: 12px !important;
+  }
+
+  :deep(.v-card-text) {
+    padding: 12px !important;
+  }
+
+  :deep(.v-card-actions) {
+    padding: 10px !important;
+  }
+}
 </style>

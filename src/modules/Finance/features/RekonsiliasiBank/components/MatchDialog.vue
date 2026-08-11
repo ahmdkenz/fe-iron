@@ -1201,4 +1201,43 @@ async function doManualMatchPdm() {
 .mode-toggle-btn:hover {
   transform: translateY(-1px);
 }
+
+/* Ringkas lagi tampilan mobile khusus dialog ini (page-specific, aman
+   diringkas langsung). Cuma font/spacing — mode toggle, panel waterfall
+   settlement, dan tabel alokasi TETAP tampil apa adanya, tidak disembunyikan. */
+@media (max-width: 599.98px) {
+  :deep(.v-card-title) {
+    padding: 12px !important;
+  }
+
+  .text-h6 {
+    font-size: 1.05rem !important;
+  }
+
+  :deep(.v-card-text) {
+    padding: 12px !important;
+  }
+
+  :deep(.v-card-actions) {
+    padding: 10px 12px !important;
+  }
+
+  .text-body-2 {
+    font-size: 0.8125rem !important;
+  }
+
+  .text-caption {
+    font-size: 0.7rem !important;
+  }
+
+  :deep(.v-chip) {
+    font-size: 0.6rem !important;
+    --v-chip-height: 18px;
+  }
+
+  .mode-toggle-btn {
+    padding-inline: 10px !important;
+    font-size: 0.75rem !important;
+  }
+}
 </style>
