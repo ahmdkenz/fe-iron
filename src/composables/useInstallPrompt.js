@@ -34,6 +34,13 @@ function bindListeners() {
     .addEventListener?.('change', event => { isInstalled.value = event.matches })
 }
 
+// Bind immediately at module-evaluation time (imported eagerly from main.js,
+// before the splash-screen delay / app mount) — beforeinstallprompt fires as
+// soon as Chrome's installability check passes, which can happen before the
+// user logs in and before any component that calls useInstallPrompt() exists.
+// A listener attached lazily, from InstallAppButton.vue alone, misses it.
+bindListeners()
+
 export function useInstallPrompt() {
   bindListeners()
 

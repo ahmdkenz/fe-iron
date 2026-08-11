@@ -4,6 +4,11 @@ import { registerPlugins } from '@core/utils/plugins'
 import { store } from '@/plugins/2.pinia'
 import { ensureCsrfCookie } from '@/utils/axios'
 
+// Side-effect import: attaches the beforeinstallprompt listener the instant
+// this module evaluates, before the splash-screen delay below and before the
+// user logs in — see useInstallPrompt.js for why this must happen this early.
+import '@/composables/useInstallPrompt'
+
 // Styles
 import '@core/scss/template/index.scss'
 import '@styles/styles.scss'
