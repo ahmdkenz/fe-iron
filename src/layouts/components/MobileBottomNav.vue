@@ -58,8 +58,24 @@ const dockBucket = computed(() => {
   return 'DEFAULT'
 })
 
+// Satu-satunya state buka/tutup panel FAB (dulu sempat dipecah jadi 2 boolean
+// terpisah untuk popup kecil vs VBottomSheet "Lainnya" — setelah VBottomSheet
+// dihapus dan semuanya digabung ke satu panel mengambang, cukup satu state).
 const isMoreMenuOpen = ref(false)
 const searchQuery = ref('')
+
+// Diisi via function-ref di template (BUKAN `ref="fabSlotRef"`) karena elemen
+// ini adalah cabang v-else di dalam `<template v-for>` dockItemsWithFab —
+// Vue menandai ref apa pun di situ sebagai "ref-in-for" dan selalu membungkusnya
+// jadi array walau cuma 1 iterasi yang match. onClickOutside lalu mengecek
+// `event.composedPath().includes(el)`, yang selalu false untuk array (array
+// bukan node), jadi SETIAP klik (termasuk klik item di dalam panel sendiri)
+// kehitung "di luar" dan langsung menutup panel.
+const fabSlotRef = ref(null)
+
+onClickOutside(fabSlotRef, () => {
+  isMoreMenuOpen.value = false
+})
 
 // null = showing the top-level group grid; otherwise the heading drilled into.
 const activeGroupHeading = ref(null)
@@ -89,23 +105,15 @@ const rawGroupsByHeading = computed(() => {
 const isHeadingActive = heading => (rawGroupsByHeading.value[heading] ?? []).some(item => item.to?.name === route.name)
 const headingHasBadge = heading => (rawGroupsByHeading.value[heading] ?? []).some(item => !!item.badgeContent)
 
+// Dipakai satu tempat: slot dock bertipe 'group' (dead code hari ini, sengaja
+// dipertahankan untuk role masa depan — lihat komentar DOCK_CONFIG di atas).
 function openGroupFromDock(heading) {
-  searchQuery.value = ''
-  activeGroupHeading.value = heading
   isMoreMenuOpen.value = true
+  openGroup(heading)
 }
 
-function openMoreMenu() {
-  searchQuery.value = ''
-  isMoreMenuOpen.value = true
-}
-
-function toggleMoreMenu() {
-  if (isMoreMenuOpen.value) {
-    isMoreMenuOpen.value = false
-    return
-  }
-  openMoreMenu()
+function toggleFabMenu() {
+  isMoreMenuOpen.value = !isMoreMenuOpen.value
 }
 
 const resolvedDockItems = computed(() => DOCK_CONFIG[dockBucket.value]
@@ -200,6 +208,16 @@ const groupIcons = {
 
 const groupIcon = group => groupIcons[group.heading] ?? group.items[0]?.icon?.icon ?? 'ri-folder-2-line'
 
+// Heading mentah ('USER MANAGEMENT', dst.) datang dari navigation/vertical/index.js
+// dan sengaja tetap ALL CAPS di sana (dipakai juga sebagai key groupIcons/lookup
+// grup) — transformasi Title Case hanya untuk tampilan di sini, bukan mengubah
+// data aslinya.
+const toTitleCase = str => str
+  .toLowerCase()
+  .split(' ')
+  .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+  .join(' ')
+
 const activeGroup = computed(() => groupedNavItems.value.find(
   group => group.heading === activeGroupHeading.value,
 ) ?? null)
@@ -233,7 +251,12 @@ watch(() => route.name, () => {
   isMoreMenuOpen.value = false
 })
 
+// Kunci scroll body selagi panel terbuka — dulu ini gratis dari overlay
+// Vuetify (VBottomSheet), sekarang panel cuma <div> biasa jadi perlu manual
+// supaya halaman di belakang tidak ikut ke-scroll.
 watch(isMoreMenuOpen, isOpen => {
+  document.body.style.overflow = isOpen ? 'hidden' : ''
+
   if (!isOpen) {
     activeGroupHeading.value = null
     searchQuery.value = ''
@@ -246,7 +269,6 @@ watch(isMoreMenuOpen, isOpen => {
     <nav
       v-if="configStore.isLessThanOverlayNavBreakpoint"
       class="mobile-bottom-nav"
-      :class="{ 'mobile-bottom-nav--menu-open': isMoreMenuOpen }"
     >
       <template
         v-for="item in dockItemsWithFab"
@@ -299,14 +321,128 @@ watch(isMoreMenuOpen, isOpen => {
 
         <div
           v-else
+          :ref="el => (fabSlotRef = el)"
           class="mobile-bottom-nav-fab-slot"
         >
+          <div
+            class="mobile-fab-menu"
+            :class="{ 'mobile-fab-menu--open': isMoreMenuOpen }"
+          >
+            <div
+              v-if="!activeGroup && !isSearching"
+              class="mobile-menu-header"
+            >
+              Menu
+            </div>
+
+            <button
+              v-if="activeGroup && !isSearching"
+              type="button"
+              class="mobile-menu-back"
+              @click="closeGroup"
+            >
+              <VIcon
+                icon="ri-arrow-left-s-line"
+                size="20"
+              />
+              <span>{{ toTitleCase(activeGroup.heading) }}</span>
+            </button>
+
+            <VTextField
+              v-model="searchQuery"
+              clearable
+              hide-details
+              density="compact"
+              placeholder="Cari menu..."
+              prepend-inner-icon="ri-search-line"
+              class="mobile-menu-search"
+            />
+
+            <div class="mobile-menu-grid">
+              <template v-if="isSearching">
+                <RouterLink
+                  v-for="item in searchResults"
+                  :key="item.to.name"
+                  :to="item.to"
+                  class="mobile-menu-tile"
+                  :class="{ active: route.name === item.to.name }"
+                >
+                  <VBadge
+                    :model-value="!!item.badgeContent"
+                    :content="item.badgeContent"
+                    color="error"
+                    location="top end"
+                  >
+                    <span class="mobile-menu-tile-icon">
+                      <VIcon
+                        :icon="item.icon?.icon"
+                        size="24"
+                      />
+                    </span>
+                  </VBadge>
+                  <span class="mobile-menu-tile-heading">{{ toTitleCase(item.heading) }}</span>
+                  <span class="mobile-menu-tile-label">{{ item.title }}</span>
+                </RouterLink>
+
+                <p
+                  v-if="!searchResults.length"
+                  class="mobile-menu-empty"
+                >
+                  Menu tidak ditemukan.
+                </p>
+              </template>
+
+              <template v-else-if="!activeGroup">
+                <button
+                  v-for="group in groupedNavItems"
+                  :key="group.heading"
+                  type="button"
+                  class="mobile-menu-tile"
+                  @click="openGroup(group.heading)"
+                >
+                  <span class="mobile-menu-tile-icon">
+                    <VIcon
+                      :icon="groupIcon(group)"
+                      size="24"
+                    />
+                  </span>
+                  <span class="mobile-menu-tile-label">{{ toTitleCase(group.heading) }}</span>
+                </button>
+              </template>
+
+              <template v-else>
+                <RouterLink
+                  v-for="item in activeGroup.items"
+                  :key="item.to.name"
+                  :to="item.to"
+                  class="mobile-menu-tile"
+                  :class="{ active: route.name === item.to.name }"
+                >
+                  <VBadge
+                    :model-value="!!item.badgeContent"
+                    :content="item.badgeContent"
+                    color="error"
+                    location="top end"
+                  >
+                    <span class="mobile-menu-tile-icon">
+                      <VIcon
+                        :icon="item.icon?.icon"
+                        size="24"
+                      />
+                    </span>
+                  </VBadge>
+                  <span class="mobile-menu-tile-label">{{ item.title }}</span>
+                </RouterLink>
+              </template>
+            </div>
+          </div>
+
           <button
             type="button"
             class="mobile-bottom-nav-fab"
             :class="{ active: isMoreMenuOpen }"
             aria-label="Buka menu"
-            @click="toggleMoreMenu"
+            @click="toggleFabMenu"
           >
             <VIcon
               icon="ri-add-line"
@@ -317,126 +453,6 @@ watch(isMoreMenuOpen, isOpen => {
         </div>
       </template>
     </nav>
-
-    <VBottomSheet
-      v-if="configStore.isLessThanOverlayNavBreakpoint"
-      v-model="isMoreMenuOpen"
-      content-class="mobile-more-menu-overlay"
-    >
-      <VCard class="mobile-more-menu">
-        <div class="mobile-more-menu-handle" />
-
-        <VCardText>
-          <div
-            v-if="!activeGroup && !isSearching"
-            class="mobile-menu-header"
-          >
-            Menu
-          </div>
-
-          <button
-            v-if="activeGroup && !isSearching"
-            type="button"
-            class="mobile-menu-back"
-            @click="closeGroup"
-          >
-            <VIcon
-              icon="ri-arrow-left-s-line"
-              size="20"
-            />
-            <span>{{ activeGroup.heading }}</span>
-          </button>
-
-          <VTextField
-            v-model="searchQuery"
-            clearable
-            hide-details
-            density="compact"
-            placeholder="Cari menu..."
-            prepend-inner-icon="ri-search-line"
-            class="mobile-menu-search"
-          />
-
-          <div class="mobile-menu-grid">
-            <template v-if="isSearching">
-              <RouterLink
-                v-for="item in searchResults"
-                :key="item.to.name"
-                :to="item.to"
-                class="mobile-menu-tile"
-                :class="{ active: route.name === item.to.name }"
-              >
-                <VBadge
-                  :model-value="!!item.badgeContent"
-                  :content="item.badgeContent"
-                  color="error"
-                  location="top end"
-                >
-                  <span class="mobile-menu-tile-icon">
-                    <VIcon
-                      :icon="item.icon?.icon"
-                      size="24"
-                    />
-                  </span>
-                </VBadge>
-                <span class="mobile-menu-tile-heading">{{ item.heading }}</span>
-                <span class="mobile-menu-tile-label">{{ item.title }}</span>
-              </RouterLink>
-
-              <p
-                v-if="!searchResults.length"
-                class="mobile-menu-empty"
-              >
-                Menu tidak ditemukan.
-              </p>
-            </template>
-
-            <template v-else-if="!activeGroup">
-              <button
-                v-for="group in groupedNavItems"
-                :key="group.heading"
-                type="button"
-                class="mobile-menu-tile"
-                @click="openGroup(group.heading)"
-              >
-                <span class="mobile-menu-tile-icon">
-                  <VIcon
-                    :icon="groupIcon(group)"
-                    size="24"
-                  />
-                </span>
-                <span class="mobile-menu-tile-label">{{ group.heading }}</span>
-              </button>
-            </template>
-
-            <template v-else>
-              <RouterLink
-                v-for="item in activeGroup.items"
-                :key="item.to.name"
-                :to="item.to"
-                class="mobile-menu-tile"
-                :class="{ active: route.name === item.to.name }"
-              >
-                <VBadge
-                  :model-value="!!item.badgeContent"
-                  :content="item.badgeContent"
-                  color="error"
-                  location="top end"
-                >
-                  <span class="mobile-menu-tile-icon">
-                    <VIcon
-                      :icon="item.icon?.icon"
-                      size="24"
-                    />
-                  </span>
-                </VBadge>
-                <span class="mobile-menu-tile-label">{{ item.title }}</span>
-              </RouterLink>
-            </template>
-          </div>
-        </VCardText>
-      </VCard>
-    </VBottomSheet>
   </Teleport>
 </template>
 
@@ -448,26 +464,17 @@ watch(isMoreMenuOpen, isOpen => {
 
   // ℹ️ Teleported to <body>, so it renders after #app in DOM order and would
   // otherwise stack above ordinary content regardless of z-index ties.
-  // Vuetify's own overlays (VBottomSheet) use much higher z-indexes, so they
-  // still cover this bar correctly without any extra coordination here.
   z-index: variables.$layout-overlay-z-index;
   display: flex;
   align-items: stretch;
   background: rgb(var(--v-theme-surface));
   block-size: 64px;
-  border-block-start: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-  box-shadow: 0 -2px 8px rgb(0 0 0 / 8%);
+  border-start-end-radius: 20px;
+  border-start-start-radius: 20px;
+  box-shadow: 0 -4px 16px rgb(0 0 0 / 10%);
   inset-block-end: 0;
   inset-inline: 0;
   padding-block-end: env(safe-area-inset-bottom, 0);
-
-  // Di atas z-index VOverlay Vuetify (mulai 2000, +10/overlay yang ditumpuk)
-  // supaya dock tidak ikut diredupkan scrim & tetap tappable selagi sheet
-  // "Menu" terbuka. Kondisional, jadi tidak mengganggu stacking dialog/overlay
-  // lain di luar interaksi ini.
-  &--menu-open {
-    z-index: 2500;
-  }
 }
 
 .mobile-bottom-nav-item {
@@ -529,20 +536,20 @@ watch(isMoreMenuOpen, isOpen => {
 
 .mobile-bottom-nav-fab {
   position: absolute;
-  inset-block-start: -22px;
+  inset-block-start: -20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  inline-size: 52px;
-  block-size: 52px;
-  border: 3px solid rgb(var(--v-theme-surface));
+  inline-size: 56px;
+  block-size: 56px;
+  border: 2px solid rgb(var(--v-theme-surface));
   border-radius: 50%;
-  background: rgb(var(--v-theme-primary));
-  box-shadow: 0 4px 12px rgba(var(--v-theme-primary), 0.45), 0 2px 6px rgb(0 0 0 / 15%);
+  background: linear-gradient(135deg, rgb(var(--v-theme-primary)), color-mix(in srgb, rgb(var(--v-theme-primary)) 100%, white 30%));
+  box-shadow: 0 6px 15px rgba(var(--v-theme-primary), 0.4), 0 2px 6px rgb(0 0 0 / 15%);
   color: rgb(var(--v-theme-on-primary));
   cursor: pointer;
   animation: mobile-nav-fab-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-  transition: box-shadow 0.25s ease, transform 0.2s ease;
+  transition: box-shadow 0.25s ease, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
   &:active {
     transform: scale(0.9);
@@ -550,6 +557,7 @@ watch(isMoreMenuOpen, isOpen => {
 
   &.active {
     box-shadow: 0 6px 18px rgba(var(--v-theme-primary), 0.55), 0 2px 6px rgb(0 0 0 / 15%);
+    transform: scale(0.95);
   }
 }
 
@@ -572,6 +580,42 @@ watch(isMoreMenuOpen, isOpen => {
   }
 }
 
+// 👉 Panel gabungan FAB — dulu popup shortcut grup (kecil, absolute relatif
+// slot FAB) dan sheet "Lainnya" (VBottomSheet terpisah, isi grup/drill-down
+// item/search) adalah dua overlay berbeda. VBottomSheet-nya sering kepotong
+// di viewport pendek karena `vh` dihitung dari layout viewport, bukan visual
+// viewport yang benar-benar terlihat (beda saat address bar mobile muncul).
+// Sekarang digabung jadi satu <div> mengambang: position:fixed relatif
+// viewport (bukan lagi relatif slot FAB yang sempit) supaya bisa selebar
+// hampir layar penuh, dan max-block-size pakai dvh (dynamic viewport height,
+// pola sama dgn BaseModal.vue) supaya tidak pernah kepotong.
+.mobile-fab-menu {
+  position: fixed;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  border-radius: 20px;
+  background: rgb(var(--v-theme-surface));
+  box-shadow: 0 10px 28px rgb(0 0 0 / 20%);
+  inset-block-end: calc(64px + env(safe-area-inset-bottom, 0px) + 12px);
+  inset-inline: 16px;
+  max-block-size: min(65dvh, 520px);
+  opacity: 0;
+  overflow-y: auto;
+  padding-block-end: calc(16px + env(safe-area-inset-bottom, 0px));
+  pointer-events: none;
+  transform: translateY(16px) scale(0.96);
+  transform-origin: bottom center;
+  transition: opacity 0.22s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  &--open {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0) scale(1);
+  }
+}
+
 .mobile-bottom-nav-item-label {
   display: -webkit-box;
   overflow: hidden;
@@ -584,39 +628,6 @@ watch(isMoreMenuOpen, isOpen => {
   white-space: normal;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
-}
-
-.mobile-more-menu {
-  max-block-size: 75vh;
-  overflow-y: auto;
-  padding-block-end: env(safe-area-inset-bottom, 0);
-}
-
-// Sheet berhenti di atas dock (bukan lagi flush ke viewport bottom) supaya
-// tidak menutupi .mobile-bottom-nav — nilai sama dengan tinggi dock (64px)
-// + safe area, meniru pola padding-block-end di DefaultLayoutWithVerticalNav.vue.
-:deep(.mobile-more-menu-overlay) {
-  margin-block-end: calc(64px + env(safe-area-inset-bottom, 0px)) !important;
-}
-
-.mobile-more-menu-handle {
-  position: sticky;
-  z-index: 1;
-  display: flex;
-  justify-content: center;
-  background: inherit;
-  inset-block-start: 0;
-  padding-block: 10px 2px;
-
-  &::before {
-    display: block;
-    border-radius: 999px;
-    background: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
-    block-size: 4px;
-    content: "";
-    inline-size: 36px;
-    opacity: 0.4;
-  }
 }
 
 .mobile-menu-header {
@@ -695,7 +706,6 @@ watch(isMoreMenuOpen, isOpen => {
   color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
   font-size: 0.5625rem;
   text-overflow: ellipsis;
-  text-transform: uppercase;
   white-space: nowrap;
 }
 
