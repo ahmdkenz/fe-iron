@@ -28,8 +28,8 @@
                 {{ card.title }}
               </div>
               <div
-                class="text-h5 font-weight-bold text-truncate"
-                :class="`text-${card.color}`"
+                class="font-weight-bold text-truncate"
+                :class="[valueTextClass, `text-${card.color}`]"
               >
                 {{ loading ? '...' : card.value }}
               </div>
@@ -40,12 +40,12 @@
             <VAvatar
               :color="card.color"
               variant="tonal"
-              size="48"
+              :size="avatarSize"
               class="rounded-lg flex-shrink-0"
             >
               <VIcon
                 :icon="card.icon"
-                size="24"
+                :size="avatarIconSize"
               />
             </VAvatar>
           </VCardText>
@@ -133,7 +133,7 @@
           <VCardText>
             <DeferredApexChart
               type="line"
-              height="280"
+              :height="chartHeightTrend"
               :options="trendChartOptions"
               :series="trendChartSeries"
             />
@@ -161,7 +161,7 @@
               v-if="statusHasData"
               type="donut"
               width="100%"
-              height="240"
+              :height="chartHeightDonut"
               :delay="200"
               :options="statusChartOptions"
               :series="statusChartSeries"
@@ -197,45 +197,77 @@
             </VCardTitle>
           </VCardItem>
           <VCardText class="px-0">
-            <VTable density="compact">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Vendor</th>
-                  <th class="text-right">
-                    Outstanding
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-if="!summary.top_vendors?.length">
-                  <td
-                    colspan="3"
-                    class="text-center text-medium-emphasis py-6"
+            <div class="d-none d-sm-block">
+              <VTable density="compact">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Vendor</th>
+                    <th class="text-right">
+                      Outstanding
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-if="!summary.top_vendors?.length">
+                    <td
+                      colspan="3"
+                      class="text-center text-medium-emphasis py-6"
+                    >
+                      Tidak ada data.
+                    </td>
+                  </tr>
+                  <tr
+                    v-for="(v, idx) in summary.top_vendors"
+                    :key="v.vendor_ap_id"
                   >
-                    Tidak ada data.
-                  </td>
-                </tr>
-                <tr
-                  v-for="(v, idx) in summary.top_vendors"
-                  :key="v.vendor_ap_id"
-                >
-                  <td>{{ idx + 1 }}</td>
-                  <td
-                    class="text-truncate"
-                    style="max-width: 160px"
-                  >
-                    {{ v.nama_vendor }}
-                  </td>
-                  <td class="text-right">
-                    <div>{{ formatCurrency(v.total_outstanding) }}</div>
-                    <div class="text-caption text-medium-emphasis">
+                    <td>{{ idx + 1 }}</td>
+                    <td
+                      class="text-truncate"
+                      style="max-width: 160px"
+                    >
+                      {{ v.nama_vendor }}
+                    </td>
+                    <td class="text-right">
+                      <div>{{ formatCurrency(v.total_outstanding) }}</div>
+                      <div class="text-caption text-medium-emphasis">
+                        {{ v.percentage }}%
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </VTable>
+            </div>
+
+            <div class="d-sm-none px-4">
+              <div
+                v-if="!summary.top_vendors?.length"
+                class="text-center text-medium-emphasis py-6"
+              >
+                Tidak ada data.
+              </div>
+              <div
+                v-for="(v, idx) in summary.top_vendors"
+                v-else
+                :key="v.vendor_ap_id"
+                class="mobile-list-row"
+              >
+                <div class="d-flex justify-space-between align-center gap-2">
+                  <div class="min-width-0 d-flex align-center gap-2">
+                    <span class="text-caption font-weight-bold text-medium-emphasis">{{ idx + 1 }}</span>
+                    <span class="text-caption text-truncate">{{ v.nama_vendor }}</span>
+                  </div>
+                  <div class="text-end flex-shrink-0 mobile-badge">
+                    <div class="text-caption font-weight-medium">
+                      {{ formatCurrency(v.total_outstanding) }}
+                    </div>
+                    <div class="mobile-list-row__date text-medium-emphasis">
                       {{ v.percentage }}%
                     </div>
-                  </td>
-                </tr>
-              </tbody>
-            </VTable>
+                  </div>
+                </div>
+              </div>
+            </div>
           </VCardText>
           <VCardActions class="px-4">
             <VBtn
@@ -269,59 +301,104 @@
             </VCardTitle>
           </VCardItem>
           <VCardText class="px-0">
-            <VTable density="compact">
-              <thead>
-                <tr>
-                  <th>Tagihan</th>
-                  <th>Jatuh Tempo</th>
-                  <th class="text-right">
-                    Sisa
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-if="!summary.due_soon?.length">
-                  <td
-                    colspan="3"
-                    class="text-center text-medium-emphasis py-6"
+            <div class="d-none d-sm-block">
+              <VTable density="compact">
+                <thead>
+                  <tr>
+                    <th>Tagihan</th>
+                    <th>Jatuh Tempo</th>
+                    <th class="text-right">
+                      Sisa
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-if="!summary.due_soon?.length">
+                    <td
+                      colspan="3"
+                      class="text-center text-medium-emphasis py-6"
+                    >
+                      Tidak ada tagihan jatuh tempo.
+                    </td>
+                  </tr>
+                  <tr
+                    v-for="t in summary.due_soon"
+                    :key="t.id"
                   >
-                    Tidak ada tagihan jatuh tempo.
-                  </td>
-                </tr>
-                <tr
-                  v-for="t in summary.due_soon"
-                  :key="t.id"
-                >
-                  <td>
+                    <td>
+                      <RouterLink
+                        :to="{ name: 'ap-tagihan-show', params: { id: t.id } }"
+                        class="text-primary font-weight-medium"
+                      >
+                        {{ t.no_tagihan }}
+                      </RouterLink>
+                      <div
+                        class="text-caption text-medium-emphasis text-truncate"
+                        style="max-width: 140px"
+                      >
+                        {{ t.nama_vendor }}
+                      </div>
+                    </td>
+                    <td>
+                      <VChip
+                        :color="dueChipColor(t.hari_lagi)"
+                        size="x-small"
+                        variant="tonal"
+                        label
+                      >
+                        {{ dueChipLabel(t.hari_lagi) }}
+                      </VChip>
+                    </td>
+                    <td class="text-right">
+                      {{ formatCurrency(t.sisa_tagihan) }}
+                    </td>
+                  </tr>
+                </tbody>
+              </VTable>
+            </div>
+
+            <div class="d-sm-none px-4">
+              <div
+                v-if="!summary.due_soon?.length"
+                class="text-center text-medium-emphasis py-6"
+              >
+                Tidak ada tagihan jatuh tempo.
+              </div>
+              <div
+                v-for="t in summary.due_soon"
+                v-else
+                :key="t.id"
+                class="mobile-list-row"
+              >
+                <div class="d-flex justify-space-between align-center gap-2">
+                  <div class="min-width-0">
                     <RouterLink
                       :to="{ name: 'ap-tagihan-show', params: { id: t.id } }"
-                      class="text-primary font-weight-medium"
+                      class="text-caption font-weight-medium text-primary mobile-list-row__no"
                     >
                       {{ t.no_tagihan }}
                     </RouterLink>
-                    <div
-                      class="text-caption text-medium-emphasis text-truncate"
-                      style="max-width: 140px"
-                    >
+                    <div class="text-caption text-medium-emphasis text-truncate">
                       {{ t.nama_vendor }}
                     </div>
-                  </td>
-                  <td>
+                  </div>
+                  <div class="text-end flex-shrink-0 mobile-badge">
+                    <div class="text-caption font-weight-medium">
+                      {{ formatCurrency(t.sisa_tagihan) }}
+                    </div>
                     <VChip
                       :color="dueChipColor(t.hari_lagi)"
                       size="x-small"
                       variant="tonal"
                       label
+                      class="mt-1"
                     >
                       {{ dueChipLabel(t.hari_lagi) }}
                     </VChip>
-                  </td>
-                  <td class="text-right">
-                    {{ formatCurrency(t.sisa_tagihan) }}
-                  </td>
-                </tr>
-              </tbody>
-            </VTable>
+                  </div>
+                </div>
+              </div>
+            </div>
           </VCardText>
         </VCard>
       </VCol>
@@ -368,15 +445,23 @@
 
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
-import { useTheme } from 'vuetify'
+import { useDisplay, useTheme } from 'vuetify'
 import { useAuthStore } from '@/stores/auth.store'
 import { useFormatter } from '@/composables/useFormatter'
 import DeferredApexChart from '@/components/shared/DeferredApexChart.vue'
 import api from '@/utils/axios'
 
 const theme = useTheme()
+const display = useDisplay()
 const authStore = useAuthStore()
 const { formatCurrency } = useFormatter()
+
+const isMobile = computed(() => display.xs.value)
+const avatarSize = computed(() => isMobile.value ? 36 : 48)
+const avatarIconSize = computed(() => isMobile.value ? 18 : 24)
+const valueTextClass = computed(() => isMobile.value ? 'text-h6' : 'text-h5')
+const chartHeightTrend = computed(() => isMobile.value ? 220 : 280)
+const chartHeightDonut = computed(() => isMobile.value ? 200 : 240)
 
 const loading = ref(true)
 const error = ref('')
@@ -583,5 +668,27 @@ onMounted(async () => {
 .quick-action-btn {
   height: auto !important;
   padding-block: 8px !important;
+}
+
+.mobile-list-row {
+  padding: 12px 0;
+  border-bottom: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+.mobile-list-row:last-child {
+  border-bottom: none;
+}
+
+.mobile-list-row__date {
+  font-size: 0.6875rem;
+}
+
+.mobile-list-row__no {
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.mobile-badge :deep(.text-body-2) {
+  font-size: 0.6875rem;
 }
 </style>

@@ -47,6 +47,7 @@
         <slot name="actions">
           <AppActionButton
             action="batalkan"
+            :size="mobile ? 'small' : undefined"
             :disabled="loading"
             @click="isOpen = false"
           />
@@ -54,6 +55,7 @@
             :action="confirmAction"
             :label="confirmLabel"
             :icon="confirmIcon"
+            :size="mobile ? 'small' : undefined"
             :loading="loading"
             :disabled="disabled"
             @click="$emit('confirm')"

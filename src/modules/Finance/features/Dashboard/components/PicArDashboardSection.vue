@@ -125,7 +125,7 @@
           <VCardText class="pt-4">
             <DeferredApexChart
               type="area"
-              height="260"
+              :height="chartHeightRevenue"
               :options="revenueChartOptions"
               :series="revenueChartSeries"
             />
@@ -155,7 +155,7 @@
               <DeferredApexChart
                 type="donut"
                 width="100%"
-                height="240"
+                :height="chartHeightDonut"
                 :delay="300"
                 :options="donutChartOptions"
                 :series="donutChartSeries"
@@ -192,7 +192,7 @@
           <VCardText class="pt-4">
             <DeferredApexChart
               type="bar"
-              height="170"
+              :height="chartHeightAging"
               :delay="400"
               :options="agingChartOptions"
               :series="agingChartSeries"
@@ -556,6 +556,9 @@ const isMobile = computed(() => display.xs.value)
 const avatarSize = computed(() => isMobile.value ? 40 : 54)
 const avatarIconSize = computed(() => isMobile.value ? 20 : 30)
 const valueTextClass = computed(() => isMobile.value ? 'text-h6' : 'text-h4')
+const chartHeightRevenue = computed(() => isMobile.value ? 200 : 260)
+const chartHeightDonut = computed(() => isMobile.value ? 200 : 240)
+const chartHeightAging = computed(() => isMobile.value ? 150 : 170)
 
 const compactNumberFormatter = new Intl.NumberFormat('id-ID', {
   notation: 'compact',

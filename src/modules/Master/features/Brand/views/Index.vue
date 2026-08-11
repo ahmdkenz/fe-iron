@@ -70,7 +70,7 @@
           <div class="d-flex align-center justify-space-between gap-2">
             <VChip
               color="primary"
-              size="small"
+              size="x-small"
               variant="tonal"
               label
             >

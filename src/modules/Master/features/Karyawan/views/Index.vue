@@ -74,7 +74,7 @@
             <VChip
               v-if="item.perusahaan"
               color="secondary"
-              size="small"
+              size="x-small"
               variant="tonal"
               label
             >

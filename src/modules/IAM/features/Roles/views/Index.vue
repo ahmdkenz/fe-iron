@@ -66,7 +66,7 @@
               </div>
               <VChip
                 color="primary"
-                size="small"
+                size="x-small"
                 variant="tonal"
                 label
                 class="mt-1"

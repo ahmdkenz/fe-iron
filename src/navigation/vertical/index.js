@@ -179,5 +179,6 @@ export default [
     to: { name: 'finance-laporan' },
     icon: { icon: 'ri-file-chart-line' },
     roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'],
+    mobileNav: 'more',
   },
 ]

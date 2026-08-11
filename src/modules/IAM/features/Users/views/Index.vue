@@ -83,7 +83,7 @@
             <VChip
               v-if="item.role"
               color="primary"
-              size="small"
+              size="x-small"
               variant="tonal"
               label
             >

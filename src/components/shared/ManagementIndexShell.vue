@@ -65,7 +65,7 @@
           <div class="mis__icon-badge flex-shrink-0">
             <VIcon
               :icon="icon"
-              size="24"
+              :size="xs ? 18 : 24"
             />
           </div>
           <div class="min-width-0">
@@ -187,6 +187,10 @@
 </template>
 
 <script setup>
+import { useDisplay } from 'vuetify'
+
+const { xs } = useDisplay()
+
 defineProps({
   tone: { type: String, default: 'blue' },
   icon: { type: String, default: 'ri-database-2-line' },
@@ -540,8 +544,13 @@ function formatStat(value) {
   }
 
   .mis__icon-badge {
-    inline-size: 40px;
-    block-size: 40px;
+    inline-size: 32px;
+    block-size: 32px;
+  }
+
+  .mis__status-radio :deep(.v-selection-control-group) {
+    flex-wrap: wrap;
+    gap: 8px;
   }
 
   /* Opt-in (compactActions): tombol aksi mengecil ke lebar konten & rata kanan

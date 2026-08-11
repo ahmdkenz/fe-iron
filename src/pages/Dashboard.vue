@@ -102,7 +102,7 @@
           <VCardText class="pt-2">
             <DeferredApexChart
               type="area"
-              height="260"
+              :height="chartHeightRevenue"
               :options="revenueChartOptions"
               :series="revenueChartSeries"
             />
@@ -130,7 +130,7 @@
               v-if="statusChartHasData"
               type="donut"
               width="100%"
-              height="240"
+              :height="chartHeightDonut"
               :delay="300"
               :options="donutChartOptions"
               :series="donutChartSeries"
@@ -307,6 +307,8 @@ const isMobile = computed(() => display.xs.value)
 const avatarSize = computed(() => isMobile.value ? 40 : 54)
 const avatarIconSize = computed(() => isMobile.value ? 20 : 30)
 const valueTextClass = computed(() => isMobile.value ? 'text-h6' : 'text-h4')
+const chartHeightRevenue = computed(() => isMobile.value ? 200 : 260)
+const chartHeightDonut = computed(() => isMobile.value ? 200 : 240)
 
 // Mirrors the template's v-if/v-else chain — only this branch fetches/renders the combined AR+AP dashboard.
 const showFullDashboard = computed(() => !authStore.isArOnly)
