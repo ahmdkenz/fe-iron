@@ -100,6 +100,14 @@ function openMoreMenu() {
   isMoreMenuOpen.value = true
 }
 
+function toggleMoreMenu() {
+  if (isMoreMenuOpen.value) {
+    isMoreMenuOpen.value = false
+    return
+  }
+  openMoreMenu()
+}
+
 const resolvedDockItems = computed(() => DOCK_CONFIG[dockBucket.value]
   .map(slot => {
     if (slot.type === 'group') {
@@ -238,6 +246,7 @@ watch(isMoreMenuOpen, isOpen => {
     <nav
       v-if="configStore.isLessThanOverlayNavBreakpoint"
       class="mobile-bottom-nav"
+      :class="{ 'mobile-bottom-nav--menu-open': isMoreMenuOpen }"
     >
       <template
         v-for="item in dockItemsWithFab"
@@ -297,7 +306,7 @@ watch(isMoreMenuOpen, isOpen => {
             class="mobile-bottom-nav-fab"
             :class="{ active: isMoreMenuOpen }"
             aria-label="Buka menu"
-            @click="openMoreMenu"
+            @click="toggleMoreMenu"
           >
             <VIcon
               icon="ri-add-line"
@@ -312,6 +321,7 @@ watch(isMoreMenuOpen, isOpen => {
     <VBottomSheet
       v-if="configStore.isLessThanOverlayNavBreakpoint"
       v-model="isMoreMenuOpen"
+      content-class="mobile-more-menu-overlay"
     >
       <VCard class="mobile-more-menu">
         <div class="mobile-more-menu-handle" />
@@ -450,6 +460,14 @@ watch(isMoreMenuOpen, isOpen => {
   inset-block-end: 0;
   inset-inline: 0;
   padding-block-end: env(safe-area-inset-bottom, 0);
+
+  // Di atas z-index VOverlay Vuetify (mulai 2000, +10/overlay yang ditumpuk)
+  // supaya dock tidak ikut diredupkan scrim & tetap tappable selagi sheet
+  // "Menu" terbuka. Kondisional, jadi tidak mengganggu stacking dialog/overlay
+  // lain di luar interaksi ini.
+  &--menu-open {
+    z-index: 2500;
+  }
 }
 
 .mobile-bottom-nav-item {
@@ -572,6 +590,13 @@ watch(isMoreMenuOpen, isOpen => {
   max-block-size: 75vh;
   overflow-y: auto;
   padding-block-end: env(safe-area-inset-bottom, 0);
+}
+
+// Sheet berhenti di atas dock (bukan lagi flush ke viewport bottom) supaya
+// tidak menutupi .mobile-bottom-nav — nilai sama dengan tinggi dock (64px)
+// + safe area, meniru pola padding-block-end di DefaultLayoutWithVerticalNav.vue.
+:deep(.mobile-more-menu-overlay) {
+  margin-block-end: calc(64px + env(safe-area-inset-bottom, 0px)) !important;
 }
 
 .mobile-more-menu-handle {

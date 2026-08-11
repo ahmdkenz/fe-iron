@@ -150,7 +150,7 @@
 
           <VTextField
             v-model="cutoverDate"
-            label="Tanggal Saldo Awal (Cutover)"
+            label="Tanggal Opening Balance dibuat (Cutover)"
             type="date"
             variant="outlined"
             density="compact"
