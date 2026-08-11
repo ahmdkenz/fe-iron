@@ -147,6 +147,12 @@
             </template>
           </VAutocomplete>
         </VCol>
+      </VRow>
+
+      <MobileMoreFields
+        title="Investor & PIC"
+        :has-error="!!(errors.investor_id?.length || errors.karyawan_id?.length)"
+      >
         <VCol
           cols="12"
           md="6"
@@ -191,7 +197,7 @@
             </template>
           </VAutocomplete>
         </VCol>
-      </VRow>
+      </MobileMoreFields>
 
       <!-- Section: Penanggung Jawab -->
       <div
@@ -204,7 +210,10 @@
         />
         Penanggung Jawab
       </div>
-      <VRow dense>
+      <MobileMoreFields
+        title="Penanggung Jawab"
+        :has-error="!!(errors.supervisor?.length || errors.no_hp_supervisor?.length || errors.stokis?.length)"
+      >
         <VCol cols="12">
           <VTextField
             v-model="form.supervisor"
@@ -241,7 +250,7 @@
             :error-messages="errors.stokis"
           />
         </VCol>
-      </VRow>
+      </MobileMoreFields>
 
       <!-- Section: Lokasi & Kontak -->
       <div
@@ -254,7 +263,10 @@
         />
         Lokasi &amp; Kontak
       </div>
-      <VRow dense>
+      <MobileMoreFields
+        title="Lokasi & Kontak"
+        :has-error="!!(errors.area?.length || errors.kota?.length || errors.alamat?.length || errors.no_telp?.length || errors.tgl_aktif?.length || errors.keterangan?.length)"
+      >
         <VCol
           cols="12"
           md="6"
@@ -328,7 +340,7 @@
             :error-messages="errors.keterangan"
           />
         </VCol>
-      </VRow>
+      </MobileMoreFields>
 
       <!-- Status Toggle -->
       <div
@@ -379,6 +391,7 @@ import { useCrud } from '@/composables/useCrud.js'
 import api from '@/utils/axios.js'
 import { BOOLEAN_STATUS_OPTIONS, normalizeBooleanStatus } from '@/utils/status.js'
 import { sanitizePhoneNumber } from '@/utils/phone.js'
+import MobileMoreFields from '@/components/shared/MobileMoreFields.vue'
 
 const props = defineProps({
   modelValue: Boolean,

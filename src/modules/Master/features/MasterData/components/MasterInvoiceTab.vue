@@ -515,7 +515,7 @@
           <span>Import Master Invoice</span>
           <div class="d-flex ga-1">
             <VBtn
-              v-if="busy"
+              v-if="busy && !xs"
               icon
               size="small"
               variant="text"
@@ -1004,3 +1004,30 @@ onMounted(() => {
   store.checkActive()
 })
 </script>
+
+<style scoped>
+/* Ringkas lagi tampilan mobile khusus tab ini (page-specific, tidak dipakai
+   modul lain — aman diringkas langsung tanpa :deep() kecuali untuk VChip/BaseTable). */
+@media (max-width: 599.98px) {
+  .text-h6 {
+    font-size: 1.05rem !important;
+  }
+
+  .text-subtitle-2 {
+    font-size: 0.8rem !important;
+  }
+
+  :deep(.v-chip) {
+    font-size: 0.65rem !important;
+    --v-chip-height: 20px;
+  }
+
+  :deep(.base-table-mobile-card__body) {
+    font-size: 0.8125rem !important;
+  }
+
+  :deep(.base-table-mobile-card) {
+    padding: 8px !important;
+  }
+}
+</style>

@@ -67,7 +67,7 @@
           <span>Import Master Opening Balance</span>
           <div class="d-flex ga-1">
             <VBtn
-              v-if="importing"
+              v-if="importing && !xs"
               icon
               size="small"
               variant="text"
@@ -543,3 +543,22 @@ onMounted(() => {
   }
 })
 </script>
+
+<style scoped>
+/* Ringkas lagi tampilan mobile khusus tab ini (page-specific, tidak dipakai
+   modul lain — aman diringkas langsung tanpa :deep() kecuali untuk VChip). */
+@media (max-width: 599.98px) {
+  .text-h6 {
+    font-size: 1.05rem !important;
+  }
+
+  .text-subtitle-2 {
+    font-size: 0.8rem !important;
+  }
+
+  :deep(.v-chip) {
+    font-size: 0.65rem !important;
+    --v-chip-height: 20px;
+  }
+}
+</style>

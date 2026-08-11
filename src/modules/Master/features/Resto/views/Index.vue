@@ -398,7 +398,7 @@
     <RestoForm
       v-model="showForm"
       :resto-data="selectedForm"
-      :minimizable="true"
+      :minimizable="!xs"
       @minimize="minimizeForm"
       @saved="onFormSaved"
     />
@@ -642,3 +642,29 @@ onMounted(() => {
   fetchList()
 })
 </script>
+
+<style scoped>
+/* Ringkas lagi tampilan mobile khusus halaman ini (tidak menyentuh
+   BaseTable.vue/ManagementIndexShell.vue supaya modul lain tidak ikut berubah). */
+@media (max-width: 599.98px) {
+  :deep(.base-table-mobile-card__body) {
+    font-size: 0.8125rem !important;
+  }
+
+  :deep(.base-table-mobile-card) {
+    padding: 8px !important;
+  }
+
+  :deep(.mis__title) {
+    font-size: 0.95rem !important;
+  }
+
+  :deep(.mis__stat-value) {
+    font-size: 0.875rem !important;
+  }
+
+  :deep(.mis__stat-label) {
+    font-size: 0.55rem !important;
+  }
+}
+</style>

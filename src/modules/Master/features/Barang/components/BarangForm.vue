@@ -111,6 +111,12 @@
             </template>
           </VCombobox>
         </VCol>
+      </VRow>
+
+      <MobileMoreFields
+        title="Detail Lainnya"
+        :has-error="!!(errors.spesifikasi?.length || errors.keterangan?.length)"
+      >
         <VCol cols="12">
           <VTextField
             v-model="form.spesifikasi"
@@ -132,7 +138,7 @@
             :error-messages="errors.keterangan"
           />
         </VCol>
-      </VRow>
+      </MobileMoreFields>
 
       <!-- Status Toggle -->
       <div
@@ -182,6 +188,7 @@ import { ref, reactive, watch, computed } from 'vue'
 import { useCrud } from '@/composables/useCrud.js'
 import { normalizeBooleanStatus } from '@/utils/status.js'
 import api from '@/utils/axios'
+import MobileMoreFields from '@/components/shared/MobileMoreFields.vue'
 
 const props = defineProps({
   modelValue: Boolean,

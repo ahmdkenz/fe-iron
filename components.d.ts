@@ -55,6 +55,7 @@ declare module 'vue' {
     MasterOpeningBalanceTab: typeof import('./src/modules/Master/features/MasterData/components/MasterOpeningBalanceTab.vue')['default']
     MatchDialog: typeof import('./src/modules/Finance/features/RekonsiliasiBank/components/MatchDialog.vue')['default']
     MobileCardActions: typeof import('./src/components/shared/MobileCardActions.vue')['default']
+    MobileMoreFields: typeof import('./src/components/shared/MobileMoreFields.vue')['default']
     MoreBtn: typeof import('./src/@core/components/MoreBtn.vue')['default']
     MutasiPiutangSection: typeof import('./src/modules/Finance/features/Laporan/components/MutasiPiutangSection.vue')['default']
     OpeningBalanceApDetailItemRow: typeof import('./src/modules/AP/features/OpeningBalanceAp/components/OpeningBalanceApDetailItemRow.vue')['default']

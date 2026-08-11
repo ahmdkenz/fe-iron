@@ -55,6 +55,22 @@
             :error-messages="errors.nama_investor"
           />
         </VCol>
+        <VCol cols="12">
+          <VTextField
+            v-model="form.no_hp"
+            label="No. HP"
+            density="compact"
+            variant="outlined"
+            prepend-inner-icon="ri-phone-line"
+            :error-messages="errors.no_hp"
+          />
+        </VCol>
+      </VRow>
+
+      <MobileMoreFields
+        title="KTP & NPWP"
+        :has-error="!!(errors.ktp?.length || errors.npwp?.length)"
+      >
         <VCol
           cols="12"
           md="6"
@@ -81,17 +97,7 @@
             :error-messages="errors.npwp"
           />
         </VCol>
-        <VCol cols="12">
-          <VTextField
-            v-model="form.no_hp"
-            label="No. HP"
-            density="compact"
-            variant="outlined"
-            prepend-inner-icon="ri-phone-line"
-            :error-messages="errors.no_hp"
-          />
-        </VCol>
-      </VRow>
+      </MobileMoreFields>
 
       <!-- Section: Data Pengelola -->
       <div
@@ -104,7 +110,10 @@
         />
         Data Pengelola
       </div>
-      <VRow dense>
+      <MobileMoreFields
+        title="Data Pengelola"
+        :has-error="!!(errors.pengelola?.length || errors.no_hp_pengelola?.length)"
+      >
         <VCol
           cols="12"
           md="6"
@@ -131,7 +140,7 @@
             :error-messages="errors.no_hp_pengelola"
           />
         </VCol>
-      </VRow>
+      </MobileMoreFields>
 
       <!-- Section: Data Cabang -->
       <div
@@ -144,7 +153,10 @@
         />
         Data Cabang
       </div>
-      <VRow dense>
+      <MobileMoreFields
+        title="Data Cabang"
+        :has-error="!!(errors.kode_cabang?.length || errors.id_cabang?.length)"
+      >
         <VCol
           cols="12"
           md="6"
@@ -171,7 +183,7 @@
             :error-messages="errors.id_cabang"
           />
         </VCol>
-      </VRow>
+      </MobileMoreFields>
 
       <!-- Status Toggle -->
       <div
@@ -221,6 +233,7 @@ import { ref, reactive, watch, computed } from 'vue'
 import { useCrud } from '@/composables/useCrud.js'
 import { BOOLEAN_STATUS_OPTIONS, normalizeBooleanStatus } from '@/utils/status.js'
 import { sanitizePhoneNumber } from '@/utils/phone.js'
+import MobileMoreFields from '@/components/shared/MobileMoreFields.vue'
 
 const props = defineProps({
   modelValue: Boolean,

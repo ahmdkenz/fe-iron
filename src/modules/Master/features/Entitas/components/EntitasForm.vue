@@ -141,6 +141,12 @@
             {{ errors.segmen[0] }}
           </div>
         </VCol>
+      </VRow>
+
+      <MobileMoreFields
+        title="Keterangan"
+        :has-error="!!errors.keterangan?.length"
+      >
         <VCol cols="12">
           <VTextField
             v-model="form.keterangan"
@@ -151,7 +157,7 @@
             :error-messages="errors.keterangan"
           />
         </VCol>
-      </VRow>
+      </MobileMoreFields>
 
       <!-- Section: Kontak & Lokasi -->
       <div
@@ -164,7 +170,10 @@
         />
         Kontak &amp; Lokasi
       </div>
-      <VRow dense>
+      <MobileMoreFields
+        title="Kontak & Lokasi"
+        :has-error="!!(errors.alamat?.length || errors.kota?.length || errors.kode_pos?.length || errors.no_telp?.length || errors.email?.length || errors.no_npwp?.length)"
+      >
         <VCol cols="12">
           <VTextField
             v-model="form.alamat"
@@ -240,7 +249,7 @@
             :error-messages="errors.no_npwp"
           />
         </VCol>
-      </VRow>
+      </MobileMoreFields>
 
       <!-- Status Toggle -->
       <div
@@ -289,6 +298,7 @@
 import { ref, reactive, watch, computed } from 'vue'
 import { useCrud } from '@/composables/useCrud.js'
 import { BOOLEAN_STATUS_OPTIONS, normalizeBooleanStatus } from '@/utils/status.js'
+import MobileMoreFields from '@/components/shared/MobileMoreFields.vue'
 
 const props = defineProps({
   modelValue: Boolean,

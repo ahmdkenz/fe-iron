@@ -85,15 +85,6 @@
             :error-messages="errors.username"
           />
         </VCol>
-        <VCol cols="12">
-          <BaseInput
-            v-model="form.email"
-            label="Email"
-            type="email"
-            prepend-inner-icon="ri-mail-line"
-            :error-messages="errors.email"
-          />
-        </VCol>
         <VCol
           cols="12"
           md="6"
@@ -122,6 +113,21 @@
           />
         </VCol>
       </VRow>
+
+      <MobileMoreFields
+        title="Email & Token WA"
+        :has-error="!!(errors.email?.length || errors.fonnte_token?.length)"
+      >
+        <VCol cols="12">
+          <BaseInput
+            v-model="form.email"
+            label="Email"
+            type="email"
+            prepend-inner-icon="ri-mail-line"
+            :error-messages="errors.email"
+          />
+        </VCol>
+      </MobileMoreFields>
 
       <!-- Section: Keamanan -->
       <div
@@ -181,7 +187,10 @@
         />
         Token Device Fonnte (WA PIC)
       </div>
-      <VRow dense>
+      <MobileMoreFields
+        title="Token Device Fonnte"
+        :has-error="!!errors.fonnte_token?.length"
+      >
         <VCol cols="12">
           <VTextField
             v-model="form.fonnte_token"
@@ -197,7 +206,7 @@
             @click:append-inner="showToken = !showToken"
           />
         </VCol>
-      </VRow>
+      </MobileMoreFields>
 
       <!-- Status Toggle -->
       <div
@@ -248,6 +257,7 @@ import { useCrud } from '@/composables/useCrud.js'
 import api from '@/utils/axios.js'
 import { BOOLEAN_STATUS_OPTIONS, normalizeBooleanStatus } from '@/utils/status.js'
 import { sanitizePhoneNumber } from '@/utils/phone.js'
+import MobileMoreFields from '@/components/shared/MobileMoreFields.vue'
 
 const props = defineProps({
   modelValue: Boolean,
