@@ -2,6 +2,14 @@ import { setupLayouts } from 'virtual:meta-layouts'
 import { createRouter, createWebHistory } from 'vue-router'
 import routes from '@/router/index'
 import { useAuthStore } from '@/stores/auth.store'
+import { layoutConfig } from '@themeConfig'
+
+// Breakpoint sama dengan yang menentukan kapan MobileBottomNav tampil
+// (lihat @layouts/stores/config.js) — dipakai langsung via matchMedia (bukan
+// Pinia store) karena guard ini bisa jalan sebelum ada komponen ter-mount.
+function isMobileViewport() {
+  return window.matchMedia(`(max-width: ${layoutConfig.app.overlayNavFromBreakpoint}px)`).matches
+}
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -70,6 +78,13 @@ router.beforeEach(async (to, _from, next) => {
     return next({ name: 'dashboard' })
 
   if (requiresAuth && routeRoles.length > 0 && !routeRoles.some(role => roles.includes(role)))
+    return next({ name: homeRouteName })
+
+  // Fitur tertentu (Laporan, Import Master Data) sengaja tidak dibuka di
+  // viewport mobile — selain hilang dari menu, akses URL langsung juga diblokir.
+  const routeDesktopOnly = to.matched.some(r => r.meta.desktopOnly)
+
+  if (requiresAuth && isLoggedIn && routeDesktopOnly && isMobileViewport())
     return next({ name: homeRouteName })
 
   next()

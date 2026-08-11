@@ -79,7 +79,7 @@ export default [
     path: '/finance/laporan',
     name: 'finance-laporan',
     component: () => import('@/modules/Finance/features/Laporan/views/Index.vue'),
-    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'] },
+    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'], desktopOnly: true },
   },
 
   // Route dedicated per laporan
@@ -87,7 +87,7 @@ export default [
     path: '/finance/laporan/jurnal-pic',
     name: 'finance-laporan-jurnal-pic',
     component: () => import('@/modules/Finance/features/Laporan/views/JurnalPic.vue'),
-    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'] },
+    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'], desktopOnly: true },
   },
   {
     path: '/finance/laporan/rekening-koran',
@@ -95,37 +95,37 @@ export default [
     component: () => import('@/modules/Finance/features/Laporan/views/RekeningKoran.vue'),
 
     // Laporan global lintas PIC — bukan untuk PIC AR murni.
-    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR'] },
+    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR'], desktopOnly: true },
   },
   {
     path: '/finance/laporan/aging',
     name: 'finance-laporan-aging',
     component: () => import('@/modules/Finance/features/Laporan/views/AgingReport.vue'),
-    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'] },
+    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'], desktopOnly: true },
   },
   {
     path: '/finance/laporan/rekap-klien',
     name: 'finance-laporan-rekap-klien',
     component: () => import('@/modules/Finance/features/Laporan/views/RekapKlien.vue'),
-    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'] },
+    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'], desktopOnly: true },
   },
   {
     path: '/finance/laporan/riwayat-bayar',
     name: 'finance-laporan-riwayat-bayar',
     component: () => import('@/modules/Finance/features/Laporan/views/PembayaranAr.vue'),
-    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'] },
+    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'], desktopOnly: true },
   },
   {
     path: '/finance/laporan/mutasi-piutang',
     name: 'finance-laporan-mutasi-piutang',
     component: () => import('@/modules/Finance/features/Laporan/views/MutasiPiutang.vue'),
-    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'] },
+    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'], desktopOnly: true },
   },
   {
     path: '/finance/laporan/rekap-pembayaran',
     name: 'finance-laporan-rekap-pembayaran',
     component: () => import('@/modules/Finance/features/Laporan/views/RekapPembayaran.vue'),
-    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'] },
+    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'], desktopOnly: true },
   },
   {
     path: '/finance/laporan/kinerja-ar',
@@ -133,7 +133,7 @@ export default [
     component: () => import('@/modules/Finance/features/Laporan/views/KinerjaAr.vue'),
 
     // Laporan komparatif lintas PIC — bukan untuk PIC AR murni.
-    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR'] },
+    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR'], desktopOnly: true },
   },
   {
     path: '/finance/laporan/pdm',
@@ -143,7 +143,7 @@ export default [
     // Dibuka untuk PIC AR — backend men-scope hasil ke klien mereka sendiri
     // (lihat PendapatanDiMukaController::applyPicArScope), supaya PIC AR bisa
     // "Gunakan" PDM kliennya sendiri untuk melunasi invoice baru.
-    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'] },
+    meta: { requiresAuth: true, roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'], desktopOnly: true },
   },
 
   // Redirect URL lama ke route dedicated masing-masing
