@@ -1,7 +1,7 @@
 <template>
   <VRow
     v-if="!xs"
-    dense
+    :dense="dense"
   >
     <slot />
   </VRow>
@@ -14,7 +14,7 @@
     <VExpansionPanel value="more">
       <VExpansionPanelTitle>{{ title }}</VExpansionPanelTitle>
       <VExpansionPanelText eager>
-        <VRow dense>
+        <VRow :dense="dense">
           <slot />
         </VRow>
       </VExpansionPanelText>
@@ -29,6 +29,9 @@ import { useDisplay } from 'vuetify'
 const props = defineProps({
   title: { type: String, default: 'Detail Lainnya' },
   hasError: { type: Boolean, default: false },
+  // false untuk form yang VRow aslinya tidak pakai `dense` (mis. Settings.vue),
+  // supaya spacing desktop tetap identik dengan sebelum dibungkus.
+  dense: { type: Boolean, default: true },
 })
 
 const { xs } = useDisplay()

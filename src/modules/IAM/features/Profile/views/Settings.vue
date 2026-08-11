@@ -108,7 +108,7 @@
                   <VTextField
                     v-model="form.username"
                     label="Username"
-                    density="comfortable"
+                    :density="xs ? 'compact' : 'comfortable'"
                     variant="outlined"
                     prepend-inner-icon="ri-user-line"
                     :rules="[v => !!v || 'Username wajib diisi', v => (v && v.length >= 3) || 'Minimal 3 karakter']"
@@ -116,12 +116,18 @@
                     @input="errors.username = []"
                   />
                 </VCol>
+              </VRow>
+
+              <MobileMoreFields
+                :dense="false"
+                :has-error="!!(errors.email?.length || errors.no_hp?.length)"
+              >
                 <VCol cols="12">
                   <VTextField
                     v-model="form.email"
                     label="Email"
                     type="email"
-                    density="comfortable"
+                    :density="xs ? 'compact' : 'comfortable'"
                     variant="outlined"
                     prepend-inner-icon="ri-mail-line"
                     :error-messages="errors.email"
@@ -132,14 +138,14 @@
                   <VTextField
                     v-model="form.no_hp"
                     label="No. HP"
-                    density="comfortable"
+                    :density="xs ? 'compact' : 'comfortable'"
                     variant="outlined"
                     prepend-inner-icon="ri-phone-line"
                     :error-messages="errors.no_hp"
                     @input="errors.no_hp = []"
                   />
                 </VCol>
-              </VRow>
+              </MobileMoreFields>
             </VCardText>
 
             <VDivider />
@@ -321,7 +327,7 @@
               <VTextField
                 v-model="passwordForm.current_password"
                 label="Password Saat Ini"
-                density="comfortable"
+                :density="xs ? 'compact' : 'comfortable'"
                 variant="outlined"
                 prepend-inner-icon="ri-lock-line"
                 :type="showCurrentPwd ? 'text' : 'password'"
@@ -339,7 +345,7 @@
               <VTextField
                 v-model="passwordForm.new_password"
                 label="Password Baru"
-                density="comfortable"
+                :density="xs ? 'compact' : 'comfortable'"
                 variant="outlined"
                 prepend-inner-icon="ri-lock-unlock-line"
                 :type="showNewPwd ? 'text' : 'password'"
@@ -357,7 +363,7 @@
               <VTextField
                 v-model="passwordForm.new_password_confirmation"
                 label="Konfirmasi Password Baru"
-                density="comfortable"
+                :density="xs ? 'compact' : 'comfortable'"
                 variant="outlined"
                 prepend-inner-icon="ri-lock-2-line"
                 :type="showConfirmPwd ? 'text' : 'password'"
@@ -395,14 +401,17 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
+import { useDisplay } from 'vuetify'
 import { useAuthStore } from '@/stores/auth.store'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import api from '@/utils/axios'
 import PageHeader from '@/components/shared/PageHeader.vue'
+import MobileMoreFields from '@/components/shared/MobileMoreFields.vue'
 import { sanitizePhoneNumber } from '@/utils/phone.js'
 
 const authStore = useAuthStore()
 const { showSuccess, showError, showLoading, closeAlert } = useSweetAlert()
+const { xs } = useDisplay()
 
 const namaKaryawan = computed(() =>
   authStore.user?.karyawan?.nama_karyawan ?? authStore.user?.username ?? '-',
@@ -607,4 +616,69 @@ async function handleUpdatePassword() {
 }
 
 .min-width-0 { min-width: 0; }
+
+/* Ringkas lagi tampilan mobile khusus halaman ini (page-specific, aman
+   diringkas langsung; PageHeader.vue dijangkau lewat :deep() supaya halaman
+   lain yang memakainya tidak ikut berubah). */
+@media (max-width: 599.98px) {
+  :deep(.page-header__title) {
+    font-size: 0.95rem !important;
+  }
+
+  .hero-content {
+    padding: 16px !important;
+    gap: 12px !important;
+  }
+
+  :deep(.avatar-inner) {
+    width: 56px !important;
+    height: 56px !important;
+  }
+
+  .hero-content .text-h5 {
+    font-size: 1.1rem !important;
+  }
+
+  .hero-username {
+    font-size: 0.75rem !important;
+  }
+
+  .hero-chip {
+    font-size: 0.65rem !important;
+    --v-chip-height: 22px;
+  }
+
+  .section-header {
+    padding: 10px 12px;
+  }
+
+  .section-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .text-subtitle-1 {
+    font-size: 0.85rem !important;
+  }
+
+  .text-caption {
+    font-size: 0.7rem !important;
+  }
+
+  .text-body-2 {
+    font-size: 0.8125rem !important;
+  }
+
+  :deep(.v-card-text) {
+    padding: 12px !important;
+  }
+
+  :deep(.v-card-actions) {
+    padding: 10px 12px !important;
+  }
+
+  .info-item {
+    padding: 8px 10px;
+  }
+}
 </style>
