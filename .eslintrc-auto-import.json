@@ -381,6 +381,8 @@
     "sanitizePhoneNumber": true,
     "useAuthTransition": true,
     "waitForInvoicePrintReady": true,
-    "useImportEta": true
+    "useImportEta": true,
+    "useInstallPrompt": true,
+    "usePwaUpdate": true
   }
 }

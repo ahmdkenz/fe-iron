@@ -4,6 +4,7 @@ import vueJsx from '@vitejs/plugin-vue-jsx'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import { defineConfig, loadEnv } from 'vite'
+import { VitePWA } from 'vite-plugin-pwa'
 import VueDevTools from 'vite-plugin-vue-devtools'
 import MetaLayouts from 'vite-plugin-vue-meta-layouts'
 import vuetify from 'vite-plugin-vuetify'
@@ -69,6 +70,40 @@ export default defineConfig(({ mode }) => {
         },
       }),
       svgLoader(),
+
+      // Docs: https://vite-pwa-org.netlify.app/
+      // registerType 'prompt' + injectRegister false: registration is manual,
+      // from src/composables/usePwaUpdate.js only — a new SW never activates
+      // on its own, so a background deploy can't wipe an in-progress form.
+      VitePWA({
+        registerType: 'prompt',
+        injectRegister: false,
+        manifest: {
+          name: 'IRON - Intelligent Record of Organization Number',
+          short_name: 'IRON',
+          description: 'IRON — aplikasi internal finance/ERP untuk pencatatan dan rekonsiliasi keuangan.',
+          theme_color: '#666CFF',
+          background_color: '#FFFFFF',
+          display: 'standalone',
+          start_url: '/',
+          scope: '/',
+          icons: [
+            { src: '/images/iron/pwa-192x192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+            { src: '/images/iron/pwa-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+            { src: '/images/iron/maskable-icon-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          ],
+        },
+        workbox: {
+          globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp}'],
+          // No runtimeCaching entry: /api and /sanctum calls must always hit
+          // the network untouched — this is a finance app, never serve stale
+          // financial data from a cache.
+          navigateFallbackDenylist: [/^\/api\//, /^\/sanctum\//],
+        },
+        devOptions: {
+          enabled: false,
+        },
+      }),
     ].filter(Boolean),
     define: { 'process.env': {} },
     resolve: {

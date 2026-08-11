@@ -9,6 +9,7 @@ import {
   useConfigStore,
 } from '@core/stores/config'
 import AuthTransitionOverlay from '@/components/AuthTransitionOverlay.vue'
+import PwaUpdateToast from '@/components/PwaUpdateToast.vue'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { consumeFlashAlert } from '@/utils/flashAlert'
 import { hexToRgb } from '@core/utils/colorConverter'
@@ -49,6 +50,7 @@ onMounted(() => {
 
       <AuthTransitionOverlay />
       <ScrollToTop />
+      <PwaUpdateToast />
     </VApp>
   </VLocaleProvider>
 </template>

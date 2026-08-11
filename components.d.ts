@@ -71,6 +71,7 @@ declare module 'vue' {
     PendapatanDiMukaSection: typeof import('./src/modules/Finance/features/Laporan/components/PendapatanDiMukaSection.vue')['default']
     PicArDashboardSection: typeof import('./src/modules/Finance/features/Dashboard/components/PicArDashboardSection.vue')['default']
     ProgressCard: typeof import('./src/modules/Finance/features/RekonsiliasiBank/components/ProgressCard.vue')['default']
+    PwaUpdateToast: typeof import('./src/components/PwaUpdateToast.vue')['default']
     RekapKlienSection: typeof import('./src/modules/Finance/features/Laporan/components/RekapKlienSection.vue')['default']
     RekapPembayaranSection: typeof import('./src/modules/Finance/features/Laporan/components/RekapPembayaranSection.vue')['default']
     RekeningKoranSection: typeof import('./src/modules/Finance/features/Laporan/components/RekeningKoranSection.vue')['default']

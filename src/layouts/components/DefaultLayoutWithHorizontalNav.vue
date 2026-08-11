@@ -6,6 +6,7 @@ import { themeConfig } from '@themeConfig'
 
 // Components
 import Footer from '@/layouts/components/Footer.vue'
+import InstallAppButton from '@/layouts/components/InstallAppButton.vue'
 import NavbarThemeSwitcher from '@/layouts/components/NavbarThemeSwitcher.vue'
 import NotificationBell from '@/layouts/components/NotificationBell.vue'
 import UserProfile from '@/layouts/components/UserProfile.vue'
@@ -61,6 +62,7 @@ onBeforeUnmount(() => {
       />
 
       <NavbarThemeSwitcher class="me-2" />
+      <InstallAppButton />
       <NotificationBell />
       <UserProfile />
     </template>
