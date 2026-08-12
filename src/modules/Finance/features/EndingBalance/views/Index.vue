@@ -46,9 +46,10 @@
           />
           Ending Balance B2B
         </VCardTitle>
-        <VCardText class="d-flex flex-wrap align-center gap-3 pb-0">
+        <VCardText class="filter-row d-flex flex-wrap align-center gap-3 pb-0">
           <VTextField
             v-model="filtersB2B.search"
+            class="filter-row__search"
             placeholder="Cari nama klien / outlet..."
             clearable
             hide-details
@@ -57,41 +58,55 @@
             style="min-width: 220px; max-width: 280px;"
             @update:model-value="debouncedFetchB2B"
           />
-          <VTextField
-            v-model="periodeDraftB2B.periode_awal"
-            label="Dari Periode"
-            type="date"
-            density="compact"
-            hide-details
-            style="max-width: 180px"
-          />
-          <VTextField
-            v-model="periodeDraftB2B.periode_akhir"
-            label="Sampai Periode"
-            type="date"
-            density="compact"
-            hide-details
-            style="max-width: 180px"
-          />
-          <VSelect
-            v-model="filtersB2B.status"
-            label="Status"
-            density="compact"
-            hide-details
-            clearable
-            style="max-width: 160px"
-            :items="[{ title: 'Draft', value: 'DRAFT' }, { title: 'Locked', value: 'LOCKED' }]"
-            @update:model-value="resetB2B(filtersB2B)"
-          />
-          <VBtn
-            color="primary"
-            variant="tonal"
-            size="small"
-            prepend-icon="ri-filter-3-line"
-            @click="applyPeriodeFiltersB2B"
-          >
-            Filter
-          </VBtn>
+          <div class="filter-row__fields d-flex flex-wrap align-center gap-3">
+            <template v-if="!xs">
+              <VTextField
+                v-model="periodeDraftB2B.periode_awal"
+                class="filter-row__date"
+                label="Dari Periode"
+                type="date"
+                density="compact"
+                hide-details
+                style="max-width: 180px"
+              />
+              <VTextField
+                v-model="periodeDraftB2B.periode_akhir"
+                class="filter-row__date"
+                label="Sampai Periode"
+                type="date"
+                density="compact"
+                hide-details
+                style="max-width: 180px"
+              />
+            </template>
+            <DateRangeFilterSheet
+              v-else
+              v-model:dari="periodeDraftB2B.periode_awal"
+              v-model:sampai="periodeDraftB2B.periode_akhir"
+              @apply="applyPeriodeFiltersB2B"
+            />
+            <VSelect
+              v-model="filtersB2B.status"
+              class="filter-row__date"
+              label="Status"
+              density="compact"
+              hide-details
+              clearable
+              style="max-width: 160px"
+              :items="[{ title: 'Draft', value: 'DRAFT' }, { title: 'Locked', value: 'LOCKED' }]"
+              @update:model-value="resetB2B(filtersB2B)"
+            />
+            <VBtn
+              v-if="!xs"
+              color="primary"
+              variant="tonal"
+              size="small"
+              prepend-icon="ri-filter-3-line"
+              @click="applyPeriodeFiltersB2B"
+            >
+              Filter
+            </VBtn>
+          </div>
         </VCardText>
         <BaseTable
           v-model:expanded="expandedB2B"
@@ -320,9 +335,10 @@
           />
           {{ b2cTableTitle }}
         </VCardTitle>
-        <VCardText class="d-flex flex-wrap align-center gap-3 pb-0">
+        <VCardText class="filter-row d-flex flex-wrap align-center gap-3 pb-0">
           <VTextField
             v-model="filtersB2C.search"
+            class="filter-row__search"
             placeholder="Cari nama klien / outlet..."
             clearable
             hide-details
@@ -331,41 +347,55 @@
             style="min-width: 220px; max-width: 280px;"
             @update:model-value="debouncedFetchB2C"
           />
-          <VTextField
-            v-model="periodeDraftB2C.periode_awal"
-            label="Dari Periode"
-            type="date"
-            density="compact"
-            hide-details
-            style="max-width: 180px"
-          />
-          <VTextField
-            v-model="periodeDraftB2C.periode_akhir"
-            label="Sampai Periode"
-            type="date"
-            density="compact"
-            hide-details
-            style="max-width: 180px"
-          />
-          <VSelect
-            v-model="filtersB2C.status"
-            label="Status"
-            density="compact"
-            hide-details
-            clearable
-            style="max-width: 160px"
-            :items="[{ title: 'Draft', value: 'DRAFT' }, { title: 'Locked', value: 'LOCKED' }]"
-            @update:model-value="reset(filtersB2C)"
-          />
-          <VBtn
-            color="primary"
-            variant="tonal"
-            size="small"
-            prepend-icon="ri-filter-3-line"
-            @click="applyPeriodeFiltersB2C"
-          >
-            Filter
-          </VBtn>
+          <div class="filter-row__fields d-flex flex-wrap align-center gap-3">
+            <template v-if="!xs">
+              <VTextField
+                v-model="periodeDraftB2C.periode_awal"
+                class="filter-row__date"
+                label="Dari Periode"
+                type="date"
+                density="compact"
+                hide-details
+                style="max-width: 180px"
+              />
+              <VTextField
+                v-model="periodeDraftB2C.periode_akhir"
+                class="filter-row__date"
+                label="Sampai Periode"
+                type="date"
+                density="compact"
+                hide-details
+                style="max-width: 180px"
+              />
+            </template>
+            <DateRangeFilterSheet
+              v-else
+              v-model:dari="periodeDraftB2C.periode_awal"
+              v-model:sampai="periodeDraftB2C.periode_akhir"
+              @apply="applyPeriodeFiltersB2C"
+            />
+            <VSelect
+              v-model="filtersB2C.status"
+              class="filter-row__date"
+              label="Status"
+              density="compact"
+              hide-details
+              clearable
+              style="max-width: 160px"
+              :items="[{ title: 'Draft', value: 'DRAFT' }, { title: 'Locked', value: 'LOCKED' }]"
+              @update:model-value="reset(filtersB2C)"
+            />
+            <VBtn
+              v-if="!xs"
+              color="primary"
+              variant="tonal"
+              size="small"
+              prepend-icon="ri-filter-3-line"
+              @click="applyPeriodeFiltersB2C"
+            >
+              Filter
+            </VBtn>
+          </div>
         </VCardText>
         <BaseTable
           v-model:expanded="expanded"
@@ -607,9 +637,10 @@
       </div>
 
       <VCard class="mb-6">
-        <VCardText class="d-flex flex-wrap align-center gap-3 pb-0">
+        <VCardText class="filter-row d-flex flex-wrap align-center gap-3 pb-0">
           <VTextField
             v-model="pendingSearch"
+            class="filter-row__search"
             placeholder="Cari nama klien / outlet..."
             clearable
             hide-details
@@ -751,9 +782,10 @@
           />
           Ending Balance B2B
         </VCardTitle>
-        <VCardText class="d-flex flex-wrap align-center gap-3 pb-0">
+        <VCardText class="filter-row d-flex flex-wrap align-center gap-3 pb-0">
           <VTextField
             v-model="filtersB2B.search"
+            class="filter-row__search"
             placeholder="Cari nama klien / outlet..."
             clearable
             hide-details
@@ -762,41 +794,55 @@
             style="min-width: 220px; max-width: 280px;"
             @update:model-value="debouncedFetchB2B"
           />
-          <VTextField
-            v-model="periodeDraftB2B.periode_awal"
-            label="Dari Periode"
-            type="date"
-            density="compact"
-            hide-details
-            style="max-width: 180px"
-          />
-          <VTextField
-            v-model="periodeDraftB2B.periode_akhir"
-            label="Sampai Periode"
-            type="date"
-            density="compact"
-            hide-details
-            style="max-width: 180px"
-          />
-          <VSelect
-            v-model="filtersB2B.status"
-            label="Status"
-            density="compact"
-            hide-details
-            clearable
-            style="max-width: 160px"
-            :items="[{ title: 'Draft', value: 'DRAFT' }, { title: 'Locked', value: 'LOCKED' }]"
-            @update:model-value="resetB2B(filtersB2B)"
-          />
-          <VBtn
-            color="primary"
-            variant="tonal"
-            size="small"
-            prepend-icon="ri-filter-3-line"
-            @click="applyPeriodeFiltersB2B"
-          >
-            Filter
-          </VBtn>
+          <div class="filter-row__fields d-flex flex-wrap align-center gap-3">
+            <template v-if="!xs">
+              <VTextField
+                v-model="periodeDraftB2B.periode_awal"
+                class="filter-row__date"
+                label="Dari Periode"
+                type="date"
+                density="compact"
+                hide-details
+                style="max-width: 180px"
+              />
+              <VTextField
+                v-model="periodeDraftB2B.periode_akhir"
+                class="filter-row__date"
+                label="Sampai Periode"
+                type="date"
+                density="compact"
+                hide-details
+                style="max-width: 180px"
+              />
+            </template>
+            <DateRangeFilterSheet
+              v-else
+              v-model:dari="periodeDraftB2B.periode_awal"
+              v-model:sampai="periodeDraftB2B.periode_akhir"
+              @apply="applyPeriodeFiltersB2B"
+            />
+            <VSelect
+              v-model="filtersB2B.status"
+              class="filter-row__date"
+              label="Status"
+              density="compact"
+              hide-details
+              clearable
+              style="max-width: 160px"
+              :items="[{ title: 'Draft', value: 'DRAFT' }, { title: 'Locked', value: 'LOCKED' }]"
+              @update:model-value="resetB2B(filtersB2B)"
+            />
+            <VBtn
+              v-if="!xs"
+              color="primary"
+              variant="tonal"
+              size="small"
+              prepend-icon="ri-filter-3-line"
+              @click="applyPeriodeFiltersB2B"
+            >
+              Filter
+            </VBtn>
+          </div>
         </VCardText>
         <BaseTable
           v-model:expanded="expandedB2B"
@@ -1025,9 +1071,10 @@
           />
           Ending Balance B2C
         </VCardTitle>
-        <VCardText class="d-flex flex-wrap align-center gap-3 pb-0">
+        <VCardText class="filter-row d-flex flex-wrap align-center gap-3 pb-0">
           <VTextField
             v-model="filtersB2C.search"
+            class="filter-row__search"
             placeholder="Cari nama klien / outlet..."
             clearable
             hide-details
@@ -1036,41 +1083,55 @@
             style="min-width: 220px; max-width: 280px;"
             @update:model-value="debouncedFetchB2C"
           />
-          <VTextField
-            v-model="periodeDraftB2C.periode_awal"
-            label="Dari Periode"
-            type="date"
-            density="compact"
-            hide-details
-            style="max-width: 180px"
-          />
-          <VTextField
-            v-model="periodeDraftB2C.periode_akhir"
-            label="Sampai Periode"
-            type="date"
-            density="compact"
-            hide-details
-            style="max-width: 180px"
-          />
-          <VSelect
-            v-model="filtersB2C.status"
-            label="Status"
-            density="compact"
-            hide-details
-            clearable
-            style="max-width: 160px"
-            :items="[{ title: 'Draft', value: 'DRAFT' }, { title: 'Locked', value: 'LOCKED' }]"
-            @update:model-value="reset(filtersB2C)"
-          />
-          <VBtn
-            color="primary"
-            variant="tonal"
-            size="small"
-            prepend-icon="ri-filter-3-line"
-            @click="applyPeriodeFiltersB2C"
-          >
-            Filter
-          </VBtn>
+          <div class="filter-row__fields d-flex flex-wrap align-center gap-3">
+            <template v-if="!xs">
+              <VTextField
+                v-model="periodeDraftB2C.periode_awal"
+                class="filter-row__date"
+                label="Dari Periode"
+                type="date"
+                density="compact"
+                hide-details
+                style="max-width: 180px"
+              />
+              <VTextField
+                v-model="periodeDraftB2C.periode_akhir"
+                class="filter-row__date"
+                label="Sampai Periode"
+                type="date"
+                density="compact"
+                hide-details
+                style="max-width: 180px"
+              />
+            </template>
+            <DateRangeFilterSheet
+              v-else
+              v-model:dari="periodeDraftB2C.periode_awal"
+              v-model:sampai="periodeDraftB2C.periode_akhir"
+              @apply="applyPeriodeFiltersB2C"
+            />
+            <VSelect
+              v-model="filtersB2C.status"
+              class="filter-row__date"
+              label="Status"
+              density="compact"
+              hide-details
+              clearable
+              style="max-width: 160px"
+              :items="[{ title: 'Draft', value: 'DRAFT' }, { title: 'Locked', value: 'LOCKED' }]"
+              @update:model-value="reset(filtersB2C)"
+            />
+            <VBtn
+              v-if="!xs"
+              color="primary"
+              variant="tonal"
+              size="small"
+              prepend-icon="ri-filter-3-line"
+              @click="applyPeriodeFiltersB2C"
+            >
+              Filter
+            </VBtn>
+          </div>
         </VCardText>
         <BaseTable
           v-model:expanded="expanded"
@@ -1386,14 +1447,17 @@
 <script setup>
 import { computed, ref, reactive, onMounted, onBeforeUnmount, defineComponent, h } from 'vue'
 import { useRouter } from 'vue-router'
+import { useDisplay } from 'vuetify'
 import { useAuthStore } from '@/stores/auth.store'
 import { useLoadMore } from '@/composables/useLoadMore.js'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import api from '@/utils/axios'
 import EndingBalanceStatusBadge from '@/modules/Finance/shared/components/EndingBalanceStatusBadge.vue'
+import DateRangeFilterSheet from '@/modules/Finance/shared/components/DateRangeFilterSheet.vue'
 import MobileCardActions from '@/components/shared/MobileCardActions.vue'
 
 const router = useRouter()
+const { xs } = useDisplay()
 const { showLoading, closeAlert, showError } = useSweetAlert()
 
 // ─── Komponen inline: breakdown invoice per EB ───────────────────────────────
@@ -1904,6 +1968,25 @@ onBeforeUnmount(() => {
   :deep(.v-chip) {
     font-size: 0.65rem !important;
     --v-chip-height: 20px;
+  }
+
+  .filter-row {
+    gap: 8px !important;
+  }
+
+  .filter-row__search {
+    flex: 1 1 100% !important;
+    max-width: 100% !important;
+  }
+
+  .filter-row__fields {
+    width: 100%;
+    gap: 8px !important;
+  }
+
+  .filter-row__date {
+    flex: 1 1 140px !important;
+    max-width: 100% !important;
   }
 
   .pending-koreksi-table :deep(.v-table__wrapper) {

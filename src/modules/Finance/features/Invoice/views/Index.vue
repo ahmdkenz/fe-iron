@@ -111,8 +111,11 @@
         </VBtn>
       </div>
       <VDivider />
-      <div class="d-flex flex-wrap align-center gap-4 px-4 py-3">
-        <div style="min-width: 200px; flex: 1; max-width: 280px;">
+      <div class="filter-row d-flex flex-wrap align-center gap-4 px-4 py-3">
+        <div
+          class="filter-row__search"
+          style="min-width: 200px; flex: 1; max-width: 280px;"
+        >
           <div class="text-caption text-medium-emphasis mb-2">
             Pencarian
           </div>
@@ -131,40 +134,50 @@
           style="height: 40px; align-self: flex-end;"
           class="d-none d-sm-block"
         />
-        <div>
-          <div class="text-caption text-medium-emphasis mb-2">
-            Dari
-          </div>
-          <VTextField
-            v-model="dateFiltersB2B.tanggal_dari"
-            type="date"
-            hide-details
-            density="compact"
-            style="min-width: 150px; max-width: 170px;"
+        <div class="filter-row__fields d-flex flex-wrap align-center gap-4">
+          <template v-if="!xs">
+            <div class="filter-row__date">
+              <div class="text-caption text-medium-emphasis mb-2">
+                Dari
+              </div>
+              <VTextField
+                v-model="dateFiltersB2B.tanggal_dari"
+                type="date"
+                hide-details
+                density="compact"
+                style="min-width: 150px; max-width: 170px;"
+              />
+            </div>
+            <div class="filter-row__date">
+              <div class="text-caption text-medium-emphasis mb-2">
+                Sampai
+              </div>
+              <VTextField
+                v-model="dateFiltersB2B.tanggal_sampai"
+                type="date"
+                hide-details
+                density="compact"
+                style="min-width: 150px; max-width: 170px;"
+              />
+            </div>
+            <VBtn
+              color="primary"
+              variant="tonal"
+              size="small"
+              prepend-icon="ri-filter-3-line"
+              style="align-self: flex-end;"
+              @click="applyDateFiltersB2B"
+            >
+              Filter
+            </VBtn>
+          </template>
+          <DateRangeFilterSheet
+            v-else
+            v-model:dari="dateFiltersB2B.tanggal_dari"
+            v-model:sampai="dateFiltersB2B.tanggal_sampai"
+            @apply="applyDateFiltersB2B"
           />
         </div>
-        <div>
-          <div class="text-caption text-medium-emphasis mb-2">
-            Sampai
-          </div>
-          <VTextField
-            v-model="dateFiltersB2B.tanggal_sampai"
-            type="date"
-            hide-details
-            density="compact"
-            style="min-width: 150px; max-width: 170px;"
-          />
-        </div>
-        <VBtn
-          color="primary"
-          variant="tonal"
-          size="small"
-          prepend-icon="ri-filter-3-line"
-          style="align-self: flex-end;"
-          @click="applyDateFiltersB2B"
-        >
-          Filter
-        </VBtn>
       </div>
       <VDivider />
       <BaseTable
@@ -408,8 +421,11 @@
         </VBtn>
       </div>
       <VDivider />
-      <div class="d-flex flex-wrap align-center gap-4 px-4 py-3">
-        <div style="min-width: 200px; flex: 1; max-width: 280px;">
+      <div class="filter-row d-flex flex-wrap align-center gap-4 px-4 py-3">
+        <div
+          class="filter-row__search"
+          style="min-width: 200px; flex: 1; max-width: 280px;"
+        >
           <div class="text-caption text-medium-emphasis mb-2">
             Pencarian
           </div>
@@ -428,40 +444,50 @@
           style="height: 40px; align-self: flex-end;"
           class="d-none d-sm-block"
         />
-        <div>
-          <div class="text-caption text-medium-emphasis mb-2">
-            Dari
-          </div>
-          <VTextField
-            v-model="dateFiltersB2C.tanggal_dari"
-            type="date"
-            hide-details
-            density="compact"
-            style="min-width: 150px; max-width: 170px;"
+        <div class="filter-row__fields d-flex flex-wrap align-center gap-4">
+          <template v-if="!xs">
+            <div class="filter-row__date">
+              <div class="text-caption text-medium-emphasis mb-2">
+                Dari
+              </div>
+              <VTextField
+                v-model="dateFiltersB2C.tanggal_dari"
+                type="date"
+                hide-details
+                density="compact"
+                style="min-width: 150px; max-width: 170px;"
+              />
+            </div>
+            <div class="filter-row__date">
+              <div class="text-caption text-medium-emphasis mb-2">
+                Sampai
+              </div>
+              <VTextField
+                v-model="dateFiltersB2C.tanggal_sampai"
+                type="date"
+                hide-details
+                density="compact"
+                style="min-width: 150px; max-width: 170px;"
+              />
+            </div>
+            <VBtn
+              color="primary"
+              variant="tonal"
+              size="small"
+              prepend-icon="ri-filter-3-line"
+              style="align-self: flex-end;"
+              @click="applyDateFiltersB2C"
+            >
+              Filter
+            </VBtn>
+          </template>
+          <DateRangeFilterSheet
+            v-else
+            v-model:dari="dateFiltersB2C.tanggal_dari"
+            v-model:sampai="dateFiltersB2C.tanggal_sampai"
+            @apply="applyDateFiltersB2C"
           />
         </div>
-        <div>
-          <div class="text-caption text-medium-emphasis mb-2">
-            Sampai
-          </div>
-          <VTextField
-            v-model="dateFiltersB2C.tanggal_sampai"
-            type="date"
-            hide-details
-            density="compact"
-            style="min-width: 150px; max-width: 170px;"
-          />
-        </div>
-        <VBtn
-          color="primary"
-          variant="tonal"
-          size="small"
-          prepend-icon="ri-filter-3-line"
-          style="align-self: flex-end;"
-          @click="applyDateFiltersB2C"
-        >
-          Filter
-        </VBtn>
       </div>
       <VDivider />
       <BaseTable
@@ -824,6 +850,7 @@ import { openLoadingPrintTab, openPrintTab } from '@/utils/printWindow.js'
 import InvoiceStatusBadge from '@/modules/Finance/shared/components/InvoiceStatusBadge.vue'
 import ShareInvoicesDialog from '@/modules/Finance/shared/components/ShareInvoicesDialog.vue'
 import BulkActionBar from '@/modules/Finance/shared/components/BulkActionBar.vue'
+import DateRangeFilterSheet from '@/modules/Finance/shared/components/DateRangeFilterSheet.vue'
 import MobileCardActions from '@/components/shared/MobileCardActions.vue'
 import { useRouter } from 'vue-router'
 import { useDisplay } from 'vuetify'
@@ -1274,6 +1301,20 @@ onBeforeUnmount(() => {
   :deep(.v-chip) {
     font-size: 0.65rem !important;
     --v-chip-height: 20px;
+  }
+
+  .filter-row {
+    gap: 8px !important;
+  }
+
+  .filter-row__search {
+    flex: 1 1 100% !important;
+    max-width: 100% !important;
+  }
+
+  .filter-row__fields {
+    width: 100%;
+    gap: 8px !important;
   }
 }
 </style>
