@@ -494,7 +494,7 @@
                   : 'Setelah berhasil, halaman akan diarahkan ke daftar opening balance.' }}
               </div>
 
-              <div class="d-flex flex-wrap gap-3">
+              <div class="action-buttons d-flex flex-wrap gap-3">
                 <VBtn
                   variant="tonal"
                   color="secondary"
@@ -1296,11 +1296,20 @@ onMounted(async () => {
 
 @media (max-width: 767px) {
   .opening-balance-card__actions {
+    flex-direction: column;
     align-items: stretch;
   }
 
   .action-note {
     inline-size: 100%;
+  }
+
+  .action-buttons {
+    inline-size: 100%;
+  }
+
+  .action-buttons .v-btn {
+    flex: 1 1 0;
   }
 }
 

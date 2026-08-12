@@ -134,7 +134,7 @@
 
         <!-- Detail Fields -->
         <VCardText class="pa-3">
-          <VRow dense>
+          <VRow>
             <VCol
               cols="12"
               sm="4"
@@ -218,35 +218,6 @@
               sm="4"
             >
               <VTextField
-                v-model="row.kode_resto"
-                label="Kode Resto (opsional)"
-                density="compact"
-                variant="outlined"
-                placeholder="Asal resto invoice ini, kalau ada"
-                hide-details="auto"
-                @input="emitRows"
-              />
-            </VCol>
-
-            <VCol
-              cols="12"
-              sm="4"
-            >
-              <VTextField
-                v-model="row.nama_resto"
-                label="Nama Resto (opsional)"
-                density="compact"
-                variant="outlined"
-                hide-details="auto"
-                @input="emitRows"
-              />
-            </VCol>
-
-            <VCol
-              cols="12"
-              sm="4"
-            >
-              <VTextField
                 :model-value="row.items && row.items.length > 0 ? calcItemsTotal(row.items) : row.jumlah_tagihan_asal"
                 label="Jumlah Tagihan Asal (Rp)"
                 density="compact"
@@ -279,6 +250,41 @@
                 @input="emitRows"
               />
             </VCol>
+          </VRow>
+
+          <MobileMoreFields
+            :dense="false"
+            title="Detail Lainnya (opsional)"
+            class="mt-1"
+          >
+            <VCol
+              cols="12"
+              sm="4"
+            >
+              <VTextField
+                v-model="row.kode_resto"
+                label="Kode Resto (opsional)"
+                density="compact"
+                variant="outlined"
+                placeholder="Asal resto invoice ini, kalau ada"
+                hide-details="auto"
+                @input="emitRows"
+              />
+            </VCol>
+
+            <VCol
+              cols="12"
+              sm="4"
+            >
+              <VTextField
+                v-model="row.nama_resto"
+                label="Nama Resto (opsional)"
+                density="compact"
+                variant="outlined"
+                hide-details="auto"
+                @input="emitRows"
+              />
+            </VCol>
 
             <VCol
               cols="12"
@@ -293,7 +299,7 @@
                 @input="emitRows"
               />
             </VCol>
-          </VRow>
+          </MobileMoreFields>
         </VCardText>
 
         <!-- Items Section -->
@@ -545,6 +551,7 @@
 /* eslint-disable camelcase */
 import { computed, ref, watch } from 'vue'
 import { useFormatter } from '@/composables/useFormatter'
+import MobileMoreFields from '@/components/shared/MobileMoreFields.vue'
 import OpeningBalanceDetailItemRow from './OpeningBalanceDetailItemRow.vue'
 import OutstandingInvoicePickerDialog from '@/modules/Finance/shared/components/OutstandingInvoicePickerDialog.vue'
 
@@ -849,5 +856,13 @@ function emitRows() {
   padding: 12px 16px;
   background: rgba(var(--v-theme-primary), 0.06);
   border-top: 2px solid rgba(var(--v-theme-primary), 0.2);
+}
+
+/* Beri jarak lebih lega antar field di mobile supaya tidak berdempetan
+   (file ini sebelumnya belum punya breakpoint khusus mobile sama sekali). */
+@media (max-width: 599.98px) {
+  .ob-detail-row .v-col {
+    padding-block: 10px;
+  }
 }
 </style>

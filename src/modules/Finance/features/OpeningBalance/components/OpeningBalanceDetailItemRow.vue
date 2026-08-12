@@ -1,156 +1,167 @@
 <template>
-  <div class="ob-item-row">
-    <VRow
-      dense
-      align="center"
-    >
-      <!-- Baris 1: Kode Barang + Barang -->
-      <VCol
-        cols="12"
-        sm="3"
-      >
-        <VTextField
-          :model-value="localItem.kode_barang"
-          label="Kode Barang"
-          density="compact"
-          variant="outlined"
-          readonly
-          hide-details
-          placeholder="-"
-          :bg-color="localItem.kode_barang ? undefined : 'surface'"
+  <VCard
+    class="ob-item-row"
+    variant="outlined"
+    rounded="lg"
+  >
+    <div class="ob-item-row__header">
+      <div class="d-flex align-center gap-2">
+        <VIcon
+          icon="ri-list-unordered"
+          size="15"
+          class="text-medium-emphasis"
         />
-      </VCol>
-
-      <VCol
-        cols="12"
-        sm="7"
+        <span class="text-caption text-medium-emphasis font-weight-semibold text-uppercase">
+          Item Barang
+        </span>
+      </div>
+      <VBtn
+        icon
+        size="x-small"
+        variant="text"
+        color="error"
+        @click="$emit('remove')"
       >
-        <VCombobox
-          :model-value="localItem.nama_barang"
-          label="Barang / Jasa"
-          density="compact"
-          variant="outlined"
-          :items="barangList"
-          item-title="nama_barang"
-          item-value="nama_barang"
-          :loading="barangLoading"
-          no-filter
-          clearable
-          hide-details
-          @focus="() => barangList.length === 0 && searchBarangNow()"
-          @update:search="searchBarang"
-          @update:model-value="onNamaBarangChange"
-        >
-          <template #item="{ props: p, item }">
-            <VListItem
-              v-bind="p"
-              :title="item.raw.nama_barang"
-              :subtitle="item.raw.kode_barang"
-            />
-          </template>
-        </VCombobox>
-      </VCol>
+        <VIcon
+          icon="ri-delete-bin-line"
+          size="16"
+        />
+        <VTooltip activator="parent">
+          Hapus Item
+        </VTooltip>
+      </VBtn>
+    </div>
 
-      <VCol
-        cols="12"
-        sm="2"
-        class="d-flex justify-end"
-      >
-        <VBtn
-          icon
-          size="x-small"
-          variant="text"
-          color="error"
-          @click="$emit('remove')"
+    <VDivider />
+
+    <VCardText class="pa-3">
+      <VRow align="center">
+        <!-- Baris 1: Kode Barang + Barang -->
+        <VCol
+          cols="12"
+          sm="3"
         >
-          <VIcon
-            icon="ri-delete-bin-line"
-            size="16"
+          <VTextField
+            :model-value="localItem.kode_barang"
+            label="Kode Barang"
+            density="compact"
+            variant="outlined"
+            readonly
+            hide-details
+            placeholder="-"
+            :bg-color="localItem.kode_barang ? undefined : 'surface'"
           />
-          <VTooltip activator="parent">
-            Hapus Item
-          </VTooltip>
-        </VBtn>
-      </VCol>
+        </VCol>
 
-      <!-- Baris 2: Qty + Satuan + Harga + Subtotal -->
-      <VCol
-        cols="6"
-        sm="2"
-      >
-        <VTextField
-          :model-value="localItem.qty"
-          label="Qty"
-          density="compact"
-          variant="outlined"
-          type="number"
-          min="0"
-          :rules="[v => Number(v) >= 0 || 'Qty >= 0']"
-          hide-details="auto"
-          @update:model-value="v => updateNumberField('qty', v)"
-        />
-      </VCol>
+        <VCol
+          cols="12"
+          sm="9"
+        >
+          <VCombobox
+            :model-value="localItem.nama_barang"
+            label="Barang / Jasa"
+            density="compact"
+            variant="outlined"
+            :items="barangList"
+            item-title="nama_barang"
+            item-value="nama_barang"
+            :loading="barangLoading"
+            no-filter
+            clearable
+            hide-details
+            @focus="() => barangList.length === 0 && searchBarangNow()"
+            @update:search="searchBarang"
+            @update:model-value="onNamaBarangChange"
+          >
+            <template #item="{ props: p, item }">
+              <VListItem
+                v-bind="p"
+                :title="item.raw.nama_barang"
+                :subtitle="item.raw.kode_barang"
+              />
+            </template>
+          </VCombobox>
+        </VCol>
 
-      <VCol
-        cols="6"
-        sm="2"
-      >
-        <VTextField
-          :model-value="localItem.satuan"
-          label="Satuan"
-          density="compact"
-          variant="outlined"
-          hide-details
-          @update:model-value="v => updateField('satuan', v)"
-        />
-      </VCol>
+        <!-- Baris 2: Qty + Satuan + Harga + Subtotal -->
+        <VCol
+          cols="6"
+          sm="2"
+        >
+          <VTextField
+            :model-value="localItem.qty"
+            label="Qty"
+            density="compact"
+            variant="outlined"
+            type="number"
+            min="0"
+            :rules="[v => Number(v) >= 0 || 'Qty >= 0']"
+            hide-details="auto"
+            @update:model-value="v => updateNumberField('qty', v)"
+          />
+        </VCol>
 
-      <VCol
-        cols="12"
-        sm="4"
-      >
-        <VTextField
-          :model-value="localItem.harga_satuan"
-          label="Harga Satuan"
-          density="compact"
-          variant="outlined"
-          type="number"
-          min="0"
-          prefix="Rp"
-          :rules="[v => Number(v) >= 0 || 'Harga >= 0']"
-          hide-details="auto"
-          @update:model-value="v => updateNumberField('harga_satuan', v)"
-        />
-      </VCol>
+        <VCol
+          cols="6"
+          sm="2"
+        >
+          <VTextField
+            :model-value="localItem.satuan"
+            label="Satuan"
+            density="compact"
+            variant="outlined"
+            hide-details
+            @update:model-value="v => updateField('satuan', v)"
+          />
+        </VCol>
 
-      <VCol
-        cols="12"
-        sm="4"
-      >
-        <VTextField
-          :model-value="formatNumber(localItem.subtotal)"
-          label="Subtotal"
-          density="compact"
-          variant="outlined"
-          prefix="Rp"
-          readonly
-          hide-details
-        />
-      </VCol>
+        <VCol
+          cols="12"
+          sm="4"
+        >
+          <VTextField
+            :model-value="localItem.harga_satuan"
+            label="Harga Satuan"
+            density="compact"
+            variant="outlined"
+            type="number"
+            min="0"
+            prefix="Rp"
+            :rules="[v => Number(v) >= 0 || 'Harga >= 0']"
+            hide-details="auto"
+            @update:model-value="v => updateNumberField('harga_satuan', v)"
+          />
+        </VCol>
 
-      <!-- Baris 3: Keterangan -->
-      <VCol cols="12">
-        <VTextField
-          :model-value="localItem.keterangan"
-          label="Keterangan (opsional)"
-          density="compact"
-          variant="outlined"
-          hide-details
-          @update:model-value="v => updateField('keterangan', v)"
-        />
-      </VCol>
-    </VRow>
-  </div>
+        <VCol
+          cols="12"
+          sm="4"
+        >
+          <VTextField
+            :model-value="formatNumber(localItem.subtotal)"
+            label="Subtotal"
+            density="compact"
+            variant="outlined"
+            prefix="Rp"
+            readonly
+            hide-details
+          />
+        </VCol>
+
+        <!-- Baris 3: Keterangan -->
+        <VCol cols="12">
+          <VTextField
+            :model-value="localItem.keterangan"
+            label="Keterangan (opsional)"
+            density="compact"
+            variant="outlined"
+            hide-details
+            @update:model-value="v => updateField('keterangan', v)"
+          />
+        </VCol>
+      </VRow>
+    </VCardText>
+  </VCard>
 </template>
 
 <script setup>
@@ -253,9 +264,25 @@ function formatNumber(v) {
 
 <style scoped>
 .ob-item-row {
-  padding: 10px 12px;
-  border-radius: 8px;
-  background: rgba(var(--v-theme-on-surface), 0.02);
-  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  border-color: rgba(var(--v-border-color), var(--v-border-opacity));
+  transition: border-color 0.2s;
+}
+
+.ob-item-row:hover {
+  border-color: rgba(var(--v-theme-primary), 0.4);
+}
+
+.ob-item-row__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: rgba(var(--v-theme-on-surface), 0.03);
+}
+
+@media (max-width: 599.98px) {
+  .ob-item-row .v-col {
+    padding-block: 10px;
+  }
 }
 </style>
