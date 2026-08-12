@@ -7,6 +7,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  pageMode: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const emit = defineEmits(['close'])
@@ -83,7 +87,7 @@ function openAppUpdate(update) {
 
         <VList
           class="notification-list"
-          :class="{ 'notification-list--compact': compact }"
+          :class="{ 'notification-list--compact': compact, 'notification-list--page': pageMode }"
           density="compact"
         >
           <template v-if="store.financeLoading">
@@ -147,7 +151,7 @@ function openAppUpdate(update) {
 
         <VList
           class="notification-list"
-          :class="{ 'notification-list--compact': compact }"
+          :class="{ 'notification-list--compact': compact, 'notification-list--page': pageMode }"
           density="compact"
         >
           <template v-if="!store.appUpdates.length">
@@ -209,6 +213,11 @@ function openAppUpdate(update) {
 
 .notification-list--compact {
   max-block-size: 48vh;
+}
+
+.notification-list--page {
+  max-block-size: none;
+  overflow-y: visible;
 }
 
 .notification-item {

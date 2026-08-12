@@ -10,6 +10,12 @@ export default [
     component: () => import('@/pages/Dashboard.vue'),
     meta: { requiresAuth: true },
   },
+  {
+    path: '/notifications',
+    name: 'notifications',
+    component: () => import('@/pages/Notifications.vue'),
+    meta: { requiresAuth: true },
+  },
   ...iamRoutes,
   ...masterRoutes,
   ...financeRoutes,

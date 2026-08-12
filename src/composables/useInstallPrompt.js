@@ -7,6 +7,23 @@ const deferredPrompt = ref(null)
 const isInstalled = ref(false)
 let listenersBound = false
 
+const DISMISS_STORAGE_KEY = 'iron:install-prompt:v1:dismissed-until'
+const DISMISS_DURATION_MS = 14 * 24 * 60 * 60 * 1000 // 14 hari
+
+function loadDismissedUntil() {
+  try {
+    const raw = window.localStorage.getItem(DISMISS_STORAGE_KEY)
+
+    return raw ? Number(raw) : 0
+  }
+  catch {
+    // localStorage tidak tersedia (privasi/kuota) - abaikan
+    return 0
+  }
+}
+
+const dismissedUntil = ref(0)
+
 function checkStandalone() {
   const mql = window.matchMedia?.('(display-mode: standalone)')
 
@@ -19,6 +36,7 @@ function bindListeners() {
 
   listenersBound = true
   isInstalled.value = checkStandalone()
+  dismissedUntil.value = loadDismissedUntil()
 
   window.addEventListener('beforeinstallprompt', event => {
     event.preventDefault()
@@ -38,8 +56,19 @@ function bindListeners() {
 // before the splash-screen delay / app mount) — beforeinstallprompt fires as
 // soon as Chrome's installability check passes, which can happen before the
 // user logs in and before any component that calls useInstallPrompt() exists.
-// A listener attached lazily, from InstallAppButton.vue alone, misses it.
+// A listener attached lazily, from InstallAppToast.vue alone, misses it.
 bindListeners()
+
+function dismissInstallPrompt() {
+  dismissedUntil.value = Date.now() + DISMISS_DURATION_MS
+
+  try {
+    window.localStorage.setItem(DISMISS_STORAGE_KEY, String(dismissedUntil.value))
+  }
+  catch {
+    // localStorage tidak tersedia (privasi/kuota) - abaikan
+  }
+}
 
 export function useInstallPrompt() {
   bindListeners()
@@ -47,6 +76,12 @@ export function useInstallPrompt() {
   const isIos = computed(() => /iphone|ipad|ipod/i.test(window.navigator.userAgent) && !window.MSStream)
   const canInstall = computed(() => !!deferredPrompt.value && !isInstalled.value)
   const showIosInstructions = computed(() => isIos.value && !isInstalled.value && !canInstall.value)
+
+  // Boleh ditawarkan lagi 14 hari setelah user terakhir menutup/menolak saran install.
+  const canShowPrompt = computed(() =>
+    (canInstall.value || showIosInstructions.value)
+    && Date.now() > dismissedUntil.value,
+  )
 
   async function promptInstall() {
     if (!deferredPrompt.value)
@@ -58,6 +93,10 @@ export function useInstallPrompt() {
 
     deferredPrompt.value = null
 
+    // User menolak lewat dialog native browser - snooze juga, sama seperti menutup banner.
+    if (choice?.outcome === 'dismissed')
+      dismissInstallPrompt()
+
     return choice
   }
 
@@ -66,6 +105,8 @@ export function useInstallPrompt() {
     isInstalled,
     isIos,
     showIosInstructions,
+    canShowPrompt,
     promptInstall,
+    dismissInstallPrompt,
   }
 }

@@ -38,6 +38,7 @@ declare module 'vue' {
     ExportFormatModal: typeof import('./src/components/base/ExportFormatModal.vue')['default']
     GlobalMinimizeWidgets: typeof import('./src/components/base/GlobalMinimizeWidgets.vue')['default']
     I18n: typeof import('./src/@core/components/I18n.vue')['default']
+    InstallAppToast: typeof import('./src/components/InstallAppToast.vue')['default']
     InvestorForm: typeof import('./src/modules/Master/features/Investor/components/InvestorForm.vue')['default']
     InvoiceArMultiPickerDialog: typeof import('./src/modules/Finance/features/RekonsiliasiBank/components/InvoiceArMultiPickerDialog.vue')['default']
     InvoiceItemRow: typeof import('./src/modules/Finance/features/Invoice/components/InvoiceItemRow.vue')['default']

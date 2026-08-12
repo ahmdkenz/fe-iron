@@ -59,6 +59,13 @@ export const useSystemNotificationStore = defineStore('system-notification', {
   },
 
   actions: {
+    async ensureLoaded() {
+      if (!this.financeLoaded)
+        await this.fetchFinanceList()
+      if (!this.appUpdatesLoaded)
+        await this.fetchAppUpdates()
+    },
+
     // ─── Aktivitas Finance (realtime) ────────────────────────────────────────
 
     async fetchFinanceList() {
