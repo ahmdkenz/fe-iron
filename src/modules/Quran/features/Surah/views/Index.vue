@@ -57,15 +57,6 @@
               Lanjutkan
             </VTooltip>
           </VBtn>
-
-          <audio
-            ref="widgetAudioEl"
-            :src="widgetAudioSrc"
-            preload="none"
-            @play="isWidgetPlaying = true"
-            @pause="isWidgetPlaying = false"
-            @ended="isWidgetPlaying = false"
-          />
         </div>
       </div>
 
@@ -200,6 +191,7 @@
           <VListItem
             v-for="row in bookmarkList"
             :key="row.id"
+            :to="{ name: 'quran-baca', params: { nomor: row.nomorSurah }, query: { ayat: row.ayatNumber } }"
           >
             <template #prepend>
               <VAvatar color="warning" variant="tonal">
@@ -211,31 +203,18 @@
               {{ row.catatan || 'Tanpa catatan' }} &middot; {{ formatDate(row.createdAt) }}
             </VListItemSubtitle>
             <template #append>
-              <div class="d-flex gap-1">
-                <VBtn
-                  icon
-                  size="small"
-                  variant="text"
-                  :to="{ name: 'quran-baca', params: { nomor: row.nomorSurah }, query: { ayat: row.ayatNumber } }"
-                >
-                  <VIcon icon="ri-arrow-right-line" />
-                  <VTooltip activator="parent">
-                    Buka
-                  </VTooltip>
-                </VBtn>
-                <VBtn
-                  icon
-                  size="small"
-                  variant="text"
-                  color="error"
-                  @click="onRemoveBookmark(row.id)"
-                >
-                  <VIcon icon="ri-delete-bin-line" />
-                  <VTooltip activator="parent">
-                    Hapus
-                  </VTooltip>
-                </VBtn>
-              </div>
+              <VBtn
+                icon
+                size="small"
+                variant="text"
+                color="error"
+                @click.stop.prevent="onRemoveBookmark(row.id)"
+              >
+                <VIcon icon="ri-delete-bin-line" />
+                <VTooltip activator="parent">
+                  Hapus
+                </VTooltip>
+              </VBtn>
             </template>
           </VListItem>
         </VList>
@@ -250,12 +229,13 @@
 </template>
 
 <script setup>
-import { computed, onUnmounted, ref } from 'vue'
+import { computed, ref } from 'vue'
 import api from '@/utils/axios'
 import PageHeroHeader from '@/components/shared/PageHeroHeader.vue'
-import { DEFAULT_QARI_KODE } from '@/constants/qari'
+import { useQuranPlayerStore } from '@/stores/quran-player.store'
 import { useQuranLocalStore } from '../../../composables/useQuranLocalStore'
 
+const quranPlayer = useQuranPlayerStore()
 const { listProgress, listBookmarks, removeBookmark } = useQuranLocalStore()
 
 const surahList = ref([])
@@ -280,9 +260,6 @@ function formatDate(iso) {
   return new Date(iso).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })
 }
 
-const widgetAudioEl = ref(null)
-const isWidgetPlaying = ref(false)
-
 const lastReadSurah = computed(() =>
   surahList.value.find(s => s.nomor === lastRead.value?.nomorSurah) ?? null,
 )
@@ -291,18 +268,22 @@ const widgetAudioSrc = computed(() => {
   const audioFull = lastReadSurah.value?.audioFull
   if (!audioFull) return ''
 
-  return audioFull[DEFAULT_QARI_KODE] ?? Object.values(audioFull)[0] ?? ''
+  return audioFull[quranPlayer.qariKode] ?? Object.values(audioFull)[0] ?? ''
 })
 
+const isWidgetPlaying = computed(() =>
+  quranPlayer.mode === 'santai'
+  && quranPlayer.surah?.nomor === lastReadSurah.value?.nomor
+  && quranPlayer.playing,
+)
+
 function toggleWidgetPlay() {
-  const el = widgetAudioEl.value
-  if (!el || !widgetAudioSrc.value) return
+  if (!widgetAudioSrc.value || !lastReadSurah.value) return
 
-  if (isWidgetPlaying.value) el.pause()
-  else el.play()
+  const isThisWidgetLoaded = quranPlayer.mode === 'santai' && quranPlayer.surah?.nomor === lastReadSurah.value.nomor
+  if (isThisWidgetLoaded) quranPlayer.togglePlayPause()
+  else quranPlayer.playFull(lastReadSurah.value, quranPlayer.qariKode)
 }
-
-onUnmounted(() => widgetAudioEl.value?.pause())
 
 const filteredSurah = computed(() => {
   const keyword = search.value.trim().toLowerCase()

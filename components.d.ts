@@ -37,6 +37,7 @@ declare module 'vue' {
     EntitasForm: typeof import('./src/modules/Master/features/Entitas/components/EntitasForm.vue')['default']
     ExportFormatModal: typeof import('./src/components/base/ExportFormatModal.vue')['default']
     GlobalMinimizeWidgets: typeof import('./src/components/base/GlobalMinimizeWidgets.vue')['default']
+    GlobalQuranPlayer: typeof import('./src/components/GlobalQuranPlayer.vue')['default']
     I18n: typeof import('./src/@core/components/I18n.vue')['default']
     InstallAppToast: typeof import('./src/components/InstallAppToast.vue')['default']
     InvestorForm: typeof import('./src/modules/Master/features/Investor/components/InvestorForm.vue')['default']

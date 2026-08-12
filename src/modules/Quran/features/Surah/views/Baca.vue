@@ -107,9 +107,13 @@
             </div>
             <div v-else>
               <QuranAudioPlayer
-                ref="fullPlayerRef"
-                :src="fullAudioSrc"
+                :playing="isFullPlaying"
+                :current-time="isThisSurahActive ? quranPlayer.currentTime : 0"
+                :duration="isThisSurahActive ? quranPlayer.duration : 0"
+                :disabled="!fullAudioSrc"
                 label="Audio Utuh — tanpa sorotan ayat"
+                @toggle="toggleFullPlayback"
+                @seek="quranPlayer.seek"
               />
             </div>
           </VCardText>
@@ -188,12 +192,6 @@
             </VCardText>
           </VCard>
         </div>
-
-        <audio
-          ref="ayatAudioEl"
-          @ended="onAyatAudioEnded"
-          @timeupdate="onAyatTimeUpdate"
-        />
       </div>
     </div>
 
@@ -246,12 +244,13 @@ import { computed, nextTick, onUnmounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import api from '@/utils/axios'
 import { useSweetAlert } from '@/composables/useSweetAlert'
-import { DEFAULT_QARI_KODE } from '@/constants/qari'
+import { useQuranPlayerStore } from '@/stores/quran-player.store'
 import { useQuranLocalStore } from '../../../composables/useQuranLocalStore'
 import QariSelector from '../../../components/QariSelector.vue'
 import QuranAudioPlayer from '../../../components/QuranAudioPlayer.vue'
 
 const route = useRoute()
+const quranPlayer = useQuranPlayerStore()
 const { showSuccess } = useSweetAlert()
 const { getProgress, upsertProgress, addBookmark, isBookmarked } = useQuranLocalStore()
 
@@ -259,19 +258,34 @@ const surah = ref(null)
 const loading = ref(false)
 const error = ref('')
 
-const qariKode = ref(localStorage.getItem('quran:qari') || DEFAULT_QARI_KODE)
+// Passthrough ke store: qari adalah preferensi device-level yang dipakai
+// bareng oleh semua UI playback (widget Index.vue, mode ikuti & santai).
+const qariKode = computed({
+  get: () => quranPlayer.qariKode,
+  set: v => quranPlayer.setQari(v),
+})
+
 const fullAudioSrc = computed(() => surah.value?.audioFull?.[qariKode.value] ?? '')
-const fullPlayerRef = ref(null)
 
 const prevNomor = computed(() => (surah.value && surah.value.nomor > 1) ? surah.value.nomor - 1 : null)
 const nextNomor = computed(() => (surah.value && surah.value.nomor < 114) ? surah.value.nomor + 1 : null)
 
 const playbackMode = ref('ikuti')
 
-const ayatAudioEl = ref(null)
-const sequentialPlaying = ref(false)
-const currentPlayingAyat = ref(null)
-const currentWordIndex = ref(-1)
+// Surah yang lagi dibuka di halaman ini belum tentu sama dengan surah yang
+// lagi diputar secara global (mis. user buka /quran/2 sementara surah 1
+// masih main di background) — semua state playback di bawah ini WAJIB
+// digerbang lewat flag ini supaya tidak menampilkan progress/highlight milik
+// surah lain.
+const isThisSurahActive = computed(() => quranPlayer.surah?.nomor === surah.value?.nomor)
+
+const sequentialPlaying = computed(() => isThisSurahActive.value && quranPlayer.mode === 'ikuti' && quranPlayer.playing)
+const currentPlayingAyat = computed(() => (isThisSurahActive.value && quranPlayer.mode === 'ikuti' ? quranPlayer.currentAyatNumber : null))
+
+// Dipakai untuk membedakan "lanjutkan track yang sudah dimuat" vs "mulai baru".
+const isSameSurahLoaded = computed(() => isThisSurahActive.value && quranPlayer.mode === 'ikuti' && quranPlayer.currentAyatNumber != null)
+
+const isFullPlaying = computed(() => isThisSurahActive.value && quranPlayer.mode === 'santai' && quranPlayer.playing)
 
 const wordsByAyat = computed(() => {
   const map = {}
@@ -302,9 +316,22 @@ const wordThresholdsByAyat = computed(() => {
   return map
 })
 
+const currentWordIndex = computed(() => {
+  if (!currentPlayingAyat.value || !quranPlayer.duration) return -1
+
+  const words = wordsByAyat.value[currentPlayingAyat.value]
+  const thresholds = wordThresholdsByAyat.value[currentPlayingAyat.value]
+  if (!words?.length || !thresholds?.length) return -1
+
+  const progress = quranPlayer.currentTime / quranPlayer.duration
+  const idx = thresholds.findIndex(t => progress <= t)
+
+  return idx === -1 ? words.length - 1 : idx
+})
+
 const playButtonLabel = computed(() => {
-  if (sequentialPlaying.value) return 'Jeda Putar'
-  if (currentPlayingAyat.value) return `Lanjut Ayat ${currentPlayingAyat.value}`
+  if (isSameSurahLoaded.value && quranPlayer.playing) return 'Jeda Putar'
+  if (isSameSurahLoaded.value) return `Lanjut Ayat ${quranPlayer.currentAyatNumber}`
 
   const progress = surah.value ? getProgress(surah.value.nomor) : null
   if (progress?.ayatNumber) return `Lanjut Ayat ${progress.ayatNumber}`
@@ -312,88 +339,40 @@ const playButtonLabel = computed(() => {
   return 'Putar dari Awal'
 })
 
-function startSequential(nomorAyat) {
-  const ayat = surah.value?.ayat.find(a => a.nomorAyat === nomorAyat)
-  const src = ayat?.audio?.[qariKode.value]
-  if (!ayat || !src || !ayatAudioEl.value) return
-
-  currentPlayingAyat.value = nomorAyat
-  currentWordIndex.value = 0
-  ayatAudioEl.value.src = src
-  ayatAudioEl.value.play()
-  sequentialPlaying.value = true
-}
-
-function onAyatTimeUpdate() {
-  const el = ayatAudioEl.value
-  if (!el || !el.duration || !currentPlayingAyat.value) return
-
-  const words = wordsByAyat.value[currentPlayingAyat.value]
-  const thresholds = wordThresholdsByAyat.value[currentPlayingAyat.value]
-  if (!words?.length || !thresholds?.length) return
-
-  const progress = el.currentTime / el.duration
-  const idx = thresholds.findIndex(t => progress <= t)
-
-  currentWordIndex.value = idx === -1 ? words.length - 1 : idx
-}
-
-function pauseSequential() {
-  ayatAudioEl.value?.pause()
-  sequentialPlaying.value = false
-}
-
 function toggleSequential() {
   if (!surah.value) return
 
-  if (sequentialPlaying.value) {
-    pauseSequential()
-    return
-  }
-
-  if (currentPlayingAyat.value && ayatAudioEl.value?.src) {
-    ayatAudioEl.value.play()
-    sequentialPlaying.value = true
+  if (isSameSurahLoaded.value) {
+    quranPlayer.togglePlayPause()
     return
   }
 
   const startAyat = getProgress(surah.value.nomor)?.ayatNumber || surah.value.ayat[0]?.nomorAyat || 1
-  startSequential(startAyat)
+  quranPlayer.playAyat(surah.value, startAyat, qariKode.value)
 }
 
 function playFromAyat(ayat) {
   if (playbackMode.value !== 'ikuti') playbackMode.value = 'ikuti'
 
-  if (currentPlayingAyat.value === ayat.nomorAyat && sequentialPlaying.value) {
-    pauseSequential()
+  if (isSameSurahLoaded.value && quranPlayer.currentAyatNumber === ayat.nomorAyat && quranPlayer.playing) {
+    quranPlayer.togglePlayPause()
     return
   }
 
-  startSequential(ayat.nomorAyat)
+  quranPlayer.playAyat(surah.value, ayat.nomorAyat, qariKode.value)
 }
 
-function onAyatAudioEnded() {
-  const idx = surah.value?.ayat.findIndex(a => a.nomorAyat === currentPlayingAyat.value) ?? -1
-  const next = idx >= 0 ? surah.value.ayat[idx + 1] : null
-
-  if (next) {
-    startSequential(next.nomorAyat)
+function toggleFullPlayback() {
+  if (isThisSurahActive.value && quranPlayer.mode === 'santai') {
+    quranPlayer.togglePlayPause()
     return
   }
 
-  sequentialPlaying.value = false
-  currentPlayingAyat.value = null
-  currentWordIndex.value = -1
-  showSuccess('Selesai membaca surah ini.')
+  quranPlayer.playFull(surah.value, qariKode.value)
 }
 
-watch(qariKode, () => {
-  if (currentPlayingAyat.value != null) startSequential(currentPlayingAyat.value)
-})
-
-watch(playbackMode, mode => {
-  if (mode === 'santai') pauseSequential()
-  else fullPlayerRef.value?.pause()
+watch(playbackMode, () => {
+  if (isThisSurahActive.value && quranPlayer.playing) quranPlayer.togglePlayPause()
 })
 
 watch(currentPlayingAyat, nomorAyat => {
@@ -471,8 +450,9 @@ async function fetchSurah() {
   ayatElRefs = {}
   visibleAyat.clear()
   observer.disconnect()
-  pauseSequential()
-  currentPlayingAyat.value = null
+  // Sengaja TIDAK menghentikan playback global di sini — pindah surah
+  // (tombol prev/next atau route param berubah) tidak boleh menghentikan
+  // track yang sedang diputar secara global (lihat isThisSurahActive).
 
   try {
     const { data } = await api.get(`/quran/surah/${route.params.nomor}`)

@@ -9,6 +9,7 @@ import {
   useConfigStore,
 } from '@core/stores/config'
 import AuthTransitionOverlay from '@/components/AuthTransitionOverlay.vue'
+import GlobalQuranPlayer from '@/components/GlobalQuranPlayer.vue'
 import InstallAppToast from '@/components/InstallAppToast.vue'
 import PwaUpdateToast from '@/components/PwaUpdateToast.vue'
 import { useSweetAlert } from '@/composables/useSweetAlert'
@@ -53,6 +54,7 @@ onMounted(() => {
       <ScrollToTop />
       <PwaUpdateToast />
       <InstallAppToast />
+      <GlobalQuranPlayer />
     </VApp>
   </VLocaleProvider>
 </template>
