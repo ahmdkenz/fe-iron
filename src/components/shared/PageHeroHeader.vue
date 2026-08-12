@@ -166,6 +166,11 @@ function formatStat(value) {
   --phh-c2: 148, 163, 184;
 }
 
+.phh--emerald {
+  --phh-c1: 5, 150, 105;
+  --phh-c2: 110, 231, 183;
+}
+
 /* ─── Breadcrumb (mirrors PageHeader.vue / ManagementIndexShell.vue) ───── */
 .modern-breadcrumb-wrapper {
   background: rgba(var(--v-theme-surface), 0.3);

@@ -179,4 +179,19 @@ export default [
     icon: { icon: 'ri-file-chart-line' },
     roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'],
   },
+  { heading: 'LAINNYA' },
+  {
+    title: 'Al-Qur\'an',
+    to: { name: 'quran-index' },
+    icon: { icon: 'ri-book-open-line' },
+    roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR', 'AP'],
+    mobileNav: 'more',
+  },
+  {
+    title: 'Riwayat Baca',
+    to: { name: 'quran-riwayat' },
+    icon: { icon: 'ri-history-line' },
+    roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR', 'AP'],
+    mobileNav: 'more',
+  },
 ]

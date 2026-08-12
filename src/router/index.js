@@ -2,6 +2,7 @@ import iamRoutes from './routes/iam.routes.js'
 import masterRoutes from './routes/master.routes.js'
 import financeRoutes from './routes/finance.routes.js'
 import apRoutes from './routes/ap.routes.js'
+import quranRoutes from './routes/quran.routes.js'
 
 export default [
   {
@@ -20,6 +21,7 @@ export default [
   ...masterRoutes,
   ...financeRoutes,
   ...apRoutes,
+  ...quranRoutes,
   {
     path: '/:pathMatch(.*)*',
     name: 'not-found',
