@@ -383,6 +383,8 @@
     "waitForInvoicePrintReady": true,
     "useImportEta": true,
     "useInstallPrompt": true,
-    "usePwaUpdate": true
+    "usePwaUpdate": true,
+    "useWibClock": true,
+    "useUserLocation": true
   }
 }

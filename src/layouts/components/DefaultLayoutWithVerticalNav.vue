@@ -13,6 +13,7 @@ import NavbarThemeSwitcher from '@/layouts/components/NavbarThemeSwitcher.vue'
 import NavSidebarProfile from '@/layouts/components/NavSidebarProfile.vue'
 import NotificationBell from '@/layouts/components/NotificationBell.vue'
 import UserProfile from '@/layouts/components/UserProfile.vue'
+import WibClock from '@/layouts/components/WibClock.vue'
 import NavBarI18n from '@core/components/I18n.vue'
 import GlobalMinimizeWidgets from '@/components/base/GlobalMinimizeWidgets.vue'
 
@@ -197,6 +198,8 @@ watch([
         <NavbarThemeSwitcher />
 
         <VSpacer />
+
+        <WibClock />
 
         <NavBarI18n
           v-if="themeConfig.app.i18n.enable && themeConfig.app.i18n.langConfig?.length"
