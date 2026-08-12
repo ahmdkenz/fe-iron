@@ -6,12 +6,6 @@ export default [
     meta: { requiresAuth: true },
   },
   {
-    path: '/quran/riwayat',
-    name: 'quran-riwayat',
-    component: () => import('@/modules/Quran/features/Riwayat/views/Index.vue'),
-    meta: { requiresAuth: true },
-  },
-  {
     path: '/quran/:nomor',
     name: 'quran-baca',
     component: () => import('@/modules/Quran/features/Surah/views/Baca.vue'),

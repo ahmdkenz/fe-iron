@@ -64,7 +64,7 @@ router.beforeEach(async (to, _from, next) => {
   const homeRouteName = authStore.isApOnly ? 'ap-dashboard' : 'dashboard'
 
   if (requiresAuth && !isLoggedIn)
-    return next({ name: 'login' })
+    return next({ name: 'login', query: { redirect: to.fullPath } })
 
   if (requiresGuest && isLoggedIn)
     return next({ name: homeRouteName })

@@ -739,12 +739,13 @@ import {
   reactive,
   ref,
 } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useTheme } from 'vuetify'
 import { useAuthTransition } from '@/composables/useAuthTransition.js'
 import { useAuthStore } from '@/stores/auth.store.js'
 import { useConfigStore } from '@core/stores/config'
 
+const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 const configStore = useConfigStore()
@@ -936,6 +937,18 @@ onUnmounted(() => {
 // ─────────────────────────────────────────────────────────
 // Login Handler
 // ─────────────────────────────────────────────────────────
+
+// Cegah open-redirect: hanya terima path relatif yang diawali satu '/'
+// (tolak URL absolut dan path protokol-relatif seperti '//evil.com').
+function resolveRedirectTarget() {
+  const target = route.query.redirect
+
+  if (typeof target !== 'string' || !target.startsWith('/') || target.startsWith('//'))
+    return null
+
+  return target
+}
+
 async function handleLogin() {
   if (isLocked.value) {
     return
@@ -975,8 +988,11 @@ async function handleLogin() {
       statusText: 'Memverifikasi kredensial...',
     })
 
+    const redirectTarget = resolveRedirectTarget()
+
     setTimeout(() => {
-      router.push({ name: authStore.isApOnly ? 'ap-dashboard' : 'dashboard' })
+      if (redirectTarget) router.push(redirectTarget)
+      else router.push({ name: authStore.isApOnly ? 'ap-dashboard' : 'dashboard' })
     }, 750)
 
     setTimeout(() => {

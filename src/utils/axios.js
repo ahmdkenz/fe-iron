@@ -94,7 +94,22 @@ api.interceptors.response.use(
         // Untuk /auth/me, biarkan store yang menangani state "belum login" —
         // redirect paksa di sini bisa memicu loop saat bootstrap awal.
         if (!isAuthMe) {
-          window.location.href = '/login'
+          // Dynamic import, bukan import statis di top-level: 1.router/index.js
+          // meng-import auth.store.js yang meng-import file ini sendiri (axios.js).
+          // Import statis router di sini akan menutup circular dependency 3-node.
+          // Callback ini hanya jalan saat request beneran gagal, jadi kedua modul
+          // sudah selesai dievaluasi lewat main.js — resolve instan dari cache.
+          const { router } = await import('@/plugins/1.router')
+          const { useAuthStore } = await import('@/stores/auth.store')
+
+          useAuthStore().clearAuthState()
+
+          if (router.currentRoute.value.name !== 'login') {
+            router.push({
+              name: 'login',
+              query: { redirect: router.currentRoute.value.fullPath },
+            })
+          }
         }
         
         return Promise.reject(refreshError)

@@ -166,5 +166,13 @@ export const useAuthStore = defineStore('auth', {
       clearFetchAllCache()
       this.user = null
     },
+
+    // Dipakai axios.js saat silent refresh gagal total (sesi sudah benar-benar
+    // habis) — reset state user di memori tanpa memanggil /auth/logout lagi,
+    // karena request itu sendiri baru saja gagal lewat jalur refresh.
+    clearAuthState() {
+      clearFetchAllCache()
+      this.user = null
+    },
   },
 })
