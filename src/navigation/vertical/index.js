@@ -12,6 +12,13 @@ export default [
     roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'],
   },
   {
+    title: 'Al-Qur\'an',
+    to: { name: 'quran-index' },
+    icon: { icon: 'ri-book-open-line' },
+    roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR', 'AP'],
+    mobileNav: 'more',
+  },
+  {
     title: 'Export Data',
     to: { name: 'finance-export-data' },
     icon: { icon: 'ri-download-2-line' },
@@ -178,13 +185,5 @@ export default [
     to: { name: 'finance-laporan' },
     icon: { icon: 'ri-file-chart-line' },
     roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR'],
-  },
-  { heading: 'LAINNYA' },
-  {
-    title: 'Al-Qur\'an',
-    to: { name: 'quran-index' },
-    icon: { icon: 'ri-book-open-line' },
-    roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AR', 'AP'],
-    mobileNav: 'more',
   },
 ]

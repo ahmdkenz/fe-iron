@@ -598,4 +598,13 @@ fetchSurah()
     border-right: 1px solid rgba(var(--v-theme-on-surface), 0.1);
   }
 }
+
+@media (max-width: 768px) {
+  .quran-arabic-text {
+    font-size: clamp(1.5rem, 5.5vw, 1.9rem);
+    line-height: 2;
+  }
+  .transliteration { font-size: 0.9rem; }
+  .translation { font-size: 0.95rem; line-height: 1.55; }
+}
 </style>

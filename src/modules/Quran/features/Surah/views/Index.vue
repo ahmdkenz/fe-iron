@@ -34,7 +34,8 @@
             <div class="widget-text">
               <span class="label">Terakhir Dibaca</span>
               <h3 class="surah-name">
-                {{ lastRead.namaSurah }} <span class="ayat-badge">Ayat {{ lastRead.ayatNumber }}</span>
+                <span class="surah-name-text">{{ lastRead.namaSurah }}</span>
+                <span class="ayat-badge">Ayat {{ lastRead.ayatNumber }}</span>
               </h3>
             </div>
           </div>
@@ -69,15 +70,18 @@
       </div>
 
       <!-- Tab: Daftar Surah / Riwayat Baca / Bookmark -->
-      <VTabs v-model="activeTab" class="mb-8 relative-z">
+      <VTabs v-model="activeTab" class="mb-8 relative-z quran-nav-tabs">
         <VTab value="daftar">
-          Daftar Surah
+          <span class="tab-label-full">Daftar Surah</span>
+          <span class="tab-label-short">Surah</span>
         </VTab>
         <VTab value="riwayat">
-          Riwayat Baca
+          <span class="tab-label-full">Riwayat Baca</span>
+          <span class="tab-label-short">Riwayat</span>
         </VTab>
         <VTab value="bookmark">
-          Bookmark
+          <span class="tab-label-full">Bookmark</span>
+          <span class="tab-label-short">Bookmark</span>
         </VTab>
       </VTabs>
 
@@ -545,10 +549,36 @@ fetchSurahList()
   100% { background-position: -200% 0; }
 }
 
+.tab-label-short { display: none; }
+
 @media (max-width: 768px) {
-  .floating-player-widget { padding: 8px 16px; border-radius: 24px; flex-direction: column; align-items: flex-start;}
-  .widget-content { flex-direction: column; align-items: flex-start; gap: 16px;}
+  .floating-player-widget { padding: 6px 6px 6px 16px; }
+  .widget-content { gap: 10px; }
+  .widget-content > .d-flex.align-center.gap-4 { gap: 10px !important; min-width: 0; flex: 1 1 auto; }
+  .play-btn-pulse { width: 40px; height: 40px; }
+  .widget-text { min-width: 0; }
+  .widget-text .label { font-size: 0.65rem; letter-spacing: 1px; margin-bottom: 1px; }
+  .surah-name { font-size: 0.95rem; gap: 6px; }
+  .surah-name-text { display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ayat-badge { display: none; }
+  .premium-continue-btn-icon { width: 40px !important; height: 40px !important; flex-shrink: 0; }
+
   .minimalist-input { font-size: 1.1rem; padding: 16px 16px 16px 40px; }
   .search-icon-left { font-size: 22px !important; }
+
+  .surah-number-chip { width: 32px; height: 32px; font-size: 0.8rem; }
+  .arabic-text-main { font-size: 1.5rem; font-weight: 600; }
+  .surah-latin { font-size: 1.05rem; }
+  .surah-translation { font-size: 0.85rem; }
+
+  .tab-label-full { display: none; }
+  .tab-label-short { display: inline; }
+
+  .quran-nav-tabs { --v-tabs-height: 40px !important; }
+  .quran-nav-tabs :deep(.v-tab) {
+    min-width: 0 !important;
+    padding: 0 10px !important;
+    font-size: 0.78rem !important;
+  }
 }
 </style>
