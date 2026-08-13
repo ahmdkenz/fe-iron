@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="export-data-page">
     <PageHeader
       title="Export Data"
       subtitle="Pilih laporan dan export ke file Excel"
@@ -9,8 +9,11 @@
       ]"
     />
 
-    <VCard class="mb-4">
-      <VCardText>
+    <VRow>
+      <VCol
+        cols="12"
+        lg="8"
+      >
         <div class="d-flex flex-column flex-sm-row justify-sm-space-between align-start align-sm-center gap-3 mb-4">
           <div>
             <div class="text-h6 font-weight-bold">
@@ -31,492 +34,426 @@
           </VBtn>
         </div>
 
-        <VExpansionPanels
-          v-model="openGroups"
-          multiple
-          variant="accordion"
+        <VCard
+          v-for="grp in groupedReports"
+          :key="grp.key"
+          class="mb-4 group-card"
         >
-          <VExpansionPanel
-            v-for="grp in groupedReports"
-            :key="grp.key"
-            :value="grp.key"
-          >
-            <VExpansionPanelTitle>
-              <div class="d-flex align-center gap-2">
-                <VIcon
-                  :icon="grp.icon"
-                  :color="grp.color"
-                  size="20"
-                />
-                <span class="font-weight-medium">{{ grp.label }}</span>
-                <VChip
-                  size="x-small"
-                  :color="grp.selectedCount > 0 ? 'primary' : undefined"
-                  :variant="grp.selectedCount > 0 ? 'flat' : 'tonal'"
+          <VCardText>
+            <div class="d-flex align-center gap-2 mb-4">
+              <VIcon
+                :icon="grp.icon"
+                :color="grp.color"
+                size="20"
+              />
+              <span class="font-weight-bold text-body-1">{{ grp.label }}</span>
+              <VChip
+                size="x-small"
+                :color="grp.selectedCount > 0 ? 'primary' : undefined"
+                :variant="grp.selectedCount > 0 ? 'flat' : 'tonal'"
+              >
+                {{ grp.selectedCount }}/{{ grp.reports.length }}
+              </VChip>
+            </div>
+
+            <div class="report-grid">
+              <div
+                v-for="rpt in grp.reports"
+                :key="rpt.key"
+                class="report-tile"
+                :class="{ 'report-tile--selected': isSelected(rpt.key) }"
+                :style="accentStyle(rpt.color)"
+                role="checkbox"
+                :aria-checked="isSelected(rpt.key)"
+                :aria-label="`${rpt.label} — ${rpt.description}`"
+                tabindex="0"
+                @click="toggleReport(rpt.key)"
+                @keydown.enter.prevent="toggleReport(rpt.key)"
+                @keydown.space.prevent="toggleReport(rpt.key)"
+              >
+                <span
+                  class="check-circle"
+                  aria-hidden="true"
                 >
-                  {{ grp.selectedCount }}/{{ grp.reports.length }}
-                </VChip>
-              </div>
-            </VExpansionPanelTitle>
-            <VExpansionPanelText>
-              <VRow>
-                <VCol
-                  v-for="rpt in grp.reports"
-                  :key="rpt.key"
-                  cols="12"
-                  sm="6"
+                  <VIcon
+                    icon="ri-check-line"
+                    size="14"
+                  />
+                </span>
+                <VAvatar
+                  :color="rpt.color"
+                  variant="tonal"
+                  size="42"
                 >
-                  <div
-                    class="report-tile"
-                    :class="{ 'report-tile--selected': isSelected(rpt.key) }"
-                    @click="toggleReport(rpt.key)"
-                  >
-                    <VCheckbox
-                      :model-value="isSelected(rpt.key)"
-                      hide-details
-                      density="compact"
-                      :color="rpt.color"
-                      @click.stop
-                      @update:model-value="toggleReport(rpt.key)"
-                    />
-                    <VAvatar
-                      :color="rpt.color"
-                      variant="tonal"
-                      size="42"
-                    >
-                      <VIcon
-                        :icon="rpt.icon"
-                        size="22"
-                      />
-                    </VAvatar>
-                    <div class="min-width-0">
-                      <div class="font-weight-semibold text-body-1">
-                        {{ rpt.label }}
-                      </div>
-                      <div class="text-caption text-medium-emphasis mt-1">
-                        {{ rpt.description }}
-                      </div>
-                    </div>
+                  <VIcon
+                    :icon="rpt.icon"
+                    size="22"
+                  />
+                </VAvatar>
+                <div class="min-width-0">
+                  <div class="font-weight-semibold text-body-1">
+                    {{ rpt.label }}
                   </div>
-                </VCol>
-              </VRow>
-            </VExpansionPanelText>
-          </VExpansionPanel>
-        </VExpansionPanels>
-      </VCardText>
-    </VCard>
-
-    <VCard
-      v-if="selectedKeys.length > 0"
-      class="mb-4"
-    >
-      <VCardTitle class="px-5 pt-5 pb-0 text-subtitle-2 text-uppercase text-medium-emphasis font-weight-bold">
-        Filter Export
-      </VCardTitle>
-      <VCardText class="pa-5">
-        <VRow dense>
-          <VCol
-            v-if="showSegmentFilter"
-            cols="12"
-            sm="auto"
-          >
-            <VBtnToggle
-              v-model="filters.segment"
-              color="primary"
-              variant="outlined"
-              mandatory
-              divided
-              density="compact"
-            >
-              <VBtn
-                value="ALL"
-                size="small"
-                style="min-width: 80px"
-              >
-                Semua
-              </VBtn>
-              <VBtn
-                value="B2C"
-                size="small"
-                style="min-width: 70px"
-              >
-                B2C
-              </VBtn>
-              <VBtn
-                value="B2B"
-                size="small"
-                style="min-width: 70px"
-              >
-                B2B
-              </VBtn>
-            </VBtnToggle>
-          </VCol>
-
-          <VCol
-            v-if="showPeriodFilter"
-            cols="6"
-            sm="auto"
-          >
-            <VTextField
-              v-model="filters.tanggal_dari"
-              label="Dari Tanggal"
-              type="date"
-              density="compact"
-              variant="outlined"
-              hide-details
-              style="min-width: 150px"
-            />
-          </VCol>
-
-          <VCol
-            v-if="showPeriodFilter"
-            cols="6"
-            sm="auto"
-          >
-            <VTextField
-              v-model="filters.tanggal_sampai"
-              label="Sampai Tanggal"
-              type="date"
-              density="compact"
-              variant="outlined"
-              hide-details
-              style="min-width: 150px"
-            />
-          </VCol>
-
-          <VCol
-            v-if="showClientFilter"
-            cols="12"
-            sm
-          >
-            <VAutocomplete
-              v-model="filters.klien_ar_id"
-              label="Klien"
-              placeholder="Semua Klien"
-              variant="outlined"
-              clearable
-              hide-details
-              density="compact"
-              prepend-inner-icon="ri-search-line"
-              :items="klienList"
-              item-title="display_label"
-              item-value="id"
-              :loading="klienLoading"
-              @focus="ensureKlienLoaded"
-            />
-          </VCol>
-
-          <VCol
-            v-if="showPaymentMethodFilter"
-            cols="12"
-            sm="auto"
-          >
-            <VSelect
-              v-model="filters.metode_pembayaran"
-              label="Metode"
-              placeholder="Semua Metode"
-              clearable
-              hide-details
-              density="compact"
-              variant="outlined"
-              style="min-width: 170px"
-              :items="metodeOptions"
-              item-title="label"
-              item-value="value"
-            />
-          </VCol>
-        </VRow>
-
-        <VDivider
-          v-if="showSpecialFilters"
-          class="my-4"
-        />
-
-        <VRow
-          v-if="showSpecialFilters"
-          dense
-        >
-          <VCol
-            v-if="isSelected('aging_report')"
-            cols="12"
-            md="4"
-          >
-            <div class="filter-group">
-              <div class="d-flex align-center gap-2 mb-3">
-                <VIcon
-                  icon="ri-bar-chart-grouped-line"
-                  size="16"
-                  color="primary"
-                />
-                <span class="text-subtitle-2 font-weight-semibold">Aging Report</span>
+                  <div class="text-caption text-medium-emphasis mt-1">
+                    {{ rpt.description }}
+                  </div>
+                </div>
               </div>
-              <VTextField
-                v-model="agingFilter.as_of_date"
-                label="Per Tanggal"
-                type="date"
+            </div>
+          </VCardText>
+        </VCard>
+      </VCol>
+
+      <VCol
+        cols="12"
+        lg="4"
+      >
+        <div class="export-sidebar">
+          <VCard
+            v-if="selectedKeys.length > 0"
+            class="mb-4"
+          >
+            <VCardTitle class="px-5 pt-5 pb-0 text-subtitle-2 text-uppercase text-medium-emphasis font-weight-bold">
+              Filter Export
+            </VCardTitle>
+            <VCardText class="pa-5 d-flex flex-column gap-4">
+              <VBtnToggle
+                v-if="showSegmentFilter"
+                v-model="filters.segment"
+                color="primary"
+                variant="outlined"
+                mandatory
+                divided
+                density="compact"
+                class="w-100"
+              >
+                <VBtn
+                  value="ALL"
+                  size="small"
+                  class="flex-grow-1"
+                >
+                  Semua
+                </VBtn>
+                <VBtn
+                  value="B2C"
+                  size="small"
+                  class="flex-grow-1"
+                >
+                  B2C
+                </VBtn>
+                <VBtn
+                  value="B2B"
+                  size="small"
+                  class="flex-grow-1"
+                >
+                  B2B
+                </VBtn>
+              </VBtnToggle>
+
+              <div
+                v-if="showPeriodFilter"
+                class="d-flex gap-3"
+              >
+                <VTextField
+                  v-model="filters.tanggal_dari"
+                  label="Dari Tanggal"
+                  type="date"
+                  density="compact"
+                  variant="outlined"
+                  hide-details
+                />
+                <VTextField
+                  v-model="filters.tanggal_sampai"
+                  label="Sampai Tanggal"
+                  type="date"
+                  density="compact"
+                  variant="outlined"
+                  hide-details
+                />
+              </div>
+
+              <VAutocomplete
+                v-if="showClientFilter"
+                v-model="filters.klien_ar_id"
+                label="Klien"
+                placeholder="Semua Klien"
+                variant="outlined"
+                clearable
+                hide-details
+                density="compact"
+                prepend-inner-icon="ri-search-line"
+                :items="klienList"
+                item-title="display_label"
+                item-value="id"
+                :loading="klienLoading"
+                @focus="ensureKlienLoaded"
+              />
+
+              <VSelect
+                v-if="showPaymentMethodFilter"
+                v-model="filters.metode_pembayaran"
+                label="Metode"
+                placeholder="Semua Metode"
+                clearable
+                hide-details
                 density="compact"
                 variant="outlined"
-                hide-details
+                :items="metodeOptions"
+                item-title="label"
+                item-value="value"
               />
-            </div>
-          </VCol>
 
-          <VCol
-            v-if="isSelected('rekap_klien')"
-            cols="12"
-            md="4"
-          >
-            <div class="filter-group">
-              <div class="d-flex align-center gap-2 mb-3">
-                <VIcon
-                  icon="ri-pie-chart-2-line"
-                  size="16"
-                  color="secondary"
-                />
-                <span class="text-subtitle-2 font-weight-semibold">Rekap Klien</span>
-              </div>
-              <div class="d-flex gap-3">
-                <VSelect
-                  v-model="rekapKlienFilter.periode_bulan"
-                  placeholder="Semua Bulan"
-                  clearable
-                  hide-details
-                  density="compact"
-                  variant="outlined"
-                  :items="bulanOptions"
-                  item-title="label"
-                  item-value="value"
-                />
-                <VTextField
-                  v-model="rekapKlienFilter.periode_tahun"
-                  placeholder="Tahun"
-                  hide-details
-                  density="compact"
-                  variant="outlined"
-                  type="number"
-                  style="max-width: 110px"
-                />
-              </div>
-            </div>
-          </VCol>
+              <VDivider v-if="showSpecialFilters" />
 
-          <VCol
-            v-if="isSelected('jurnal_pic')"
-            cols="12"
-            md="4"
-          >
-            <div class="filter-group">
-              <div class="d-flex align-center gap-2 mb-3">
-                <VIcon
-                  icon="ri-file-list-3-line"
-                  size="16"
-                  color="warning"
-                />
-                <span class="text-subtitle-2 font-weight-semibold">Jurnal PIC</span>
-              </div>
-              <div class="d-flex flex-column gap-3">
-                <VTextField
-                  v-model="jurnalPicFilter.no_referensi"
-                  label="No Referensi"
-                  density="compact"
-                  variant="outlined"
-                  hide-details
-                  clearable
-                />
-                <VAutocomplete
-                  v-model="jurnalPicFilter.karyawan_id"
-                  label="PIC"
-                  placeholder="Semua PIC"
-                  clearable
-                  density="compact"
-                  variant="outlined"
-                  hide-details
-                  :items="karyawanOptions"
-                  item-title="nama_karyawan"
-                  item-value="id"
-                  :loading="karyawanLoading"
-                  @focus="ensureKaryawanLoaded"
-                />
-                <VSelect
-                  v-model="jurnalPicFilter.status_rekonsiliasi"
-                  label="Status Rekon"
-                  placeholder="Semua Status"
-                  clearable
-                  density="compact"
-                  variant="outlined"
-                  hide-details
-                  :items="rekonStatusOptions"
-                  item-title="label"
-                  item-value="value"
-                />
-              </div>
-            </div>
-          </VCol>
-
-          <VCol
-            v-if="isSelected('pendapatan_di_muka')"
-            cols="12"
-            md="4"
-          >
-            <div class="filter-group">
-              <div class="d-flex align-center gap-2 mb-3">
-                <VIcon
-                  icon="ri-time-line"
-                  size="16"
-                  color="deep-purple"
-                />
-                <span class="text-subtitle-2 font-weight-semibold">Pendapatan di Muka</span>
-              </div>
-              <div class="d-flex flex-column gap-3">
-                <VSelect
-                  v-model="pdmFilter.status"
-                  label="Status"
-                  placeholder="Semua Status"
-                  clearable
-                  density="compact"
-                  variant="outlined"
-                  hide-details
-                  :items="pdmStatusOptions"
-                  item-title="label"
-                  item-value="value"
-                />
-              </div>
-            </div>
-          </VCol>
-
-          <VCol
-            v-if="isSelected('rekening_koran')"
-            cols="12"
-            md="8"
-          >
-            <div class="filter-group">
-              <div class="d-flex align-center gap-2 mb-3">
-                <VIcon
-                  icon="ri-book-open-line"
-                  size="16"
-                  color="info"
-                />
-                <span class="text-subtitle-2 font-weight-semibold">Rekening Koran</span>
-              </div>
-              <VRow dense>
-                <VCol
-                  cols="12"
-                  sm="6"
+              <div
+                v-if="showSpecialFilters"
+                class="d-flex flex-column gap-4"
+              >
+                <div
+                  v-if="isSelected('aging_report')"
+                  class="special-filter-box"
                 >
-                  <VAutocomplete
-                    v-model="rekeningKoranFilter.pic_ar_id"
-                    label="PIC AR"
-                    placeholder="Semua PIC AR"
-                    clearable
+                  <div class="d-flex align-center gap-2 mb-3">
+                    <VIcon
+                      icon="ri-bar-chart-grouped-line"
+                      size="16"
+                      color="primary"
+                    />
+                    <span class="text-subtitle-2 font-weight-semibold">Aging Report</span>
+                  </div>
+                  <VTextField
+                    v-model="agingFilter.as_of_date"
+                    label="Per Tanggal"
+                    type="date"
                     density="compact"
                     variant="outlined"
                     hide-details
-                    :items="picArList"
-                    item-title="name"
-                    item-value="id"
-                    :loading="picArLoading"
-                    @focus="ensurePicArLoaded"
                   />
-                </VCol>
-                <VCol
-                  cols="12"
-                  sm="6"
+                </div>
+
+                <div
+                  v-if="isSelected('rekap_klien')"
+                  class="special-filter-box"
                 >
+                  <div class="d-flex align-center gap-2 mb-3">
+                    <VIcon
+                      icon="ri-pie-chart-2-line"
+                      size="16"
+                      color="secondary"
+                    />
+                    <span class="text-subtitle-2 font-weight-semibold">Rekap Klien</span>
+                  </div>
+                  <div class="d-flex gap-3">
+                    <VSelect
+                      v-model="rekapKlienFilter.periode_bulan"
+                      placeholder="Semua Bulan"
+                      clearable
+                      hide-details
+                      density="compact"
+                      variant="outlined"
+                      :items="bulanOptions"
+                      item-title="label"
+                      item-value="value"
+                    />
+                    <VTextField
+                      v-model="rekapKlienFilter.periode_tahun"
+                      placeholder="Tahun"
+                      hide-details
+                      density="compact"
+                      variant="outlined"
+                      type="number"
+                      style="max-width: 110px"
+                    />
+                  </div>
+                </div>
+
+                <div
+                  v-if="isSelected('jurnal_pic')"
+                  class="special-filter-box"
+                >
+                  <div class="d-flex align-center gap-2 mb-3">
+                    <VIcon
+                      icon="ri-file-list-3-line"
+                      size="16"
+                      color="warning"
+                    />
+                    <span class="text-subtitle-2 font-weight-semibold">Jurnal PIC</span>
+                  </div>
+                  <div class="d-flex flex-column gap-3">
+                    <VTextField
+                      v-model="jurnalPicFilter.no_referensi"
+                      label="No Referensi"
+                      density="compact"
+                      variant="outlined"
+                      hide-details
+                      clearable
+                    />
+                    <VAutocomplete
+                      v-model="jurnalPicFilter.karyawan_id"
+                      label="PIC"
+                      placeholder="Semua PIC"
+                      clearable
+                      density="compact"
+                      variant="outlined"
+                      hide-details
+                      :items="karyawanOptions"
+                      item-title="nama_karyawan"
+                      item-value="id"
+                      :loading="karyawanLoading"
+                      @focus="ensureKaryawanLoaded"
+                    />
+                    <VSelect
+                      v-model="jurnalPicFilter.status_rekonsiliasi"
+                      label="Status Rekon"
+                      placeholder="Semua Status"
+                      clearable
+                      density="compact"
+                      variant="outlined"
+                      hide-details
+                      :items="rekonStatusOptions"
+                      item-title="label"
+                      item-value="value"
+                    />
+                  </div>
+                </div>
+
+                <div
+                  v-if="isSelected('pendapatan_di_muka')"
+                  class="special-filter-box"
+                >
+                  <div class="d-flex align-center gap-2 mb-3">
+                    <VIcon
+                      icon="ri-time-line"
+                      size="16"
+                      color="deep-purple"
+                    />
+                    <span class="text-subtitle-2 font-weight-semibold">Pendapatan di Muka</span>
+                  </div>
                   <VSelect
-                    v-model="rekeningKoranFilter.bank_type"
-                    label="Bank"
-                    placeholder="Semua Bank"
+                    v-model="pdmFilter.status"
+                    label="Status"
+                    placeholder="Semua Status"
                     clearable
                     density="compact"
                     variant="outlined"
                     hide-details
-                    :items="bankTypeOptions"
-                  />
-                </VCol>
-                <VCol
-                  cols="12"
-                  sm="4"
-                >
-                  <VSelect
-                    v-model="rekeningKoranFilter.dk"
-                    label="D/K"
-                    placeholder="Semua"
-                    clearable
-                    density="compact"
-                    variant="outlined"
-                    hide-details
-                    :items="dkOptions"
+                    :items="pdmStatusOptions"
                     item-title="label"
                     item-value="value"
                   />
-                </VCol>
-                <VCol
-                  cols="12"
-                  sm="4"
-                >
-                  <VSelect
-                    v-model="rekeningKoranFilter.status_posting_1"
-                    label="Status Posting 1"
-                    placeholder="Semua"
-                    clearable
-                    density="compact"
-                    variant="outlined"
-                    hide-details
-                    :items="statusPosting1Options"
-                  />
-                </VCol>
-                <VCol
-                  cols="12"
-                  sm="4"
-                >
-                  <VSelect
-                    v-model="rekeningKoranFilter.status_posting_2"
-                    label="Status Posting 2"
-                    placeholder="Semua"
-                    clearable
-                    density="compact"
-                    variant="outlined"
-                    hide-details
-                    :items="statusPosting2Options"
-                  />
-                </VCol>
-              </VRow>
-            </div>
-          </VCol>
-        </VRow>
-      </VCardText>
-    </VCard>
+                </div>
 
-    <VCard class="export-footer">
-      <VCardText class="d-flex align-center justify-space-between gap-3 py-3">
-        <div class="d-flex align-center gap-2 min-width-0">
-          <VChip
-            v-if="selectedKeys.length > 0"
-            size="small"
-            color="primary"
-          >
-            {{ selectedKeys.length }}
-          </VChip>
-          <span class="text-body-2 text-medium-emphasis text-truncate">
-            <template v-if="exporting">
-              Menyiapkan {{ selectedKeys.length }} sheet di server...
-            </template>
-            <template v-else>
-              {{ selectedKeys.length > 0 ? selectedDefs.map(r => r.label).join(', ') : 'Pilih minimal satu laporan' }}
-            </template>
-          </span>
+                <div
+                  v-if="isSelected('rekening_koran')"
+                  class="special-filter-box"
+                >
+                  <div class="d-flex align-center gap-2 mb-3">
+                    <VIcon
+                      icon="ri-book-open-line"
+                      size="16"
+                      color="info"
+                    />
+                    <span class="text-subtitle-2 font-weight-semibold">Rekening Koran</span>
+                  </div>
+                  <div class="d-flex flex-column gap-3">
+                    <VAutocomplete
+                      v-model="rekeningKoranFilter.pic_ar_id"
+                      label="PIC AR"
+                      placeholder="Semua PIC AR"
+                      clearable
+                      density="compact"
+                      variant="outlined"
+                      hide-details
+                      :items="picArList"
+                      item-title="name"
+                      item-value="id"
+                      :loading="picArLoading"
+                      @focus="ensurePicArLoaded"
+                    />
+                    <VSelect
+                      v-model="rekeningKoranFilter.bank_type"
+                      label="Bank"
+                      placeholder="Semua Bank"
+                      clearable
+                      density="compact"
+                      variant="outlined"
+                      hide-details
+                      :items="bankTypeOptions"
+                    />
+                    <VSelect
+                      v-model="rekeningKoranFilter.dk"
+                      label="D/K"
+                      placeholder="Semua"
+                      clearable
+                      density="compact"
+                      variant="outlined"
+                      hide-details
+                      :items="dkOptions"
+                      item-title="label"
+                      item-value="value"
+                    />
+                    <VSelect
+                      v-model="rekeningKoranFilter.status_posting_1"
+                      label="Status Posting 1"
+                      placeholder="Semua"
+                      clearable
+                      density="compact"
+                      variant="outlined"
+                      hide-details
+                      :items="statusPosting1Options"
+                    />
+                    <VSelect
+                      v-model="rekeningKoranFilter.status_posting_2"
+                      label="Status Posting 2"
+                      placeholder="Semua"
+                      clearable
+                      density="compact"
+                      variant="outlined"
+                      hide-details
+                      :items="statusPosting2Options"
+                    />
+                  </div>
+                </div>
+              </div>
+            </VCardText>
+          </VCard>
+
+          <VCard class="action-card">
+            <VCardText class="d-flex flex-column gap-3">
+              <div class="d-flex align-center gap-2 min-width-0">
+                <VChip
+                  v-if="selectedKeys.length > 0"
+                  size="small"
+                  color="primary"
+                >
+                  {{ selectedKeys.length }}
+                </VChip>
+                <span class="text-body-2 text-medium-emphasis">
+                  <template v-if="exporting">
+                    Menyiapkan {{ selectedKeys.length }} sheet di server...
+                  </template>
+                  <template v-else>
+                    {{ selectedKeys.length > 0 ? selectedDefs.map(r => r.label).join(', ') : 'Pilih minimal satu laporan' }}
+                  </template>
+                </span>
+              </div>
+              <VBtn
+                block
+                size="large"
+                class="export-action-btn"
+                color="primary"
+                :loading="exporting"
+                :disabled="selectedKeys.length === 0"
+                prepend-icon="ri-download-2-line"
+                @click="doExport"
+              >
+                Export
+              </VBtn>
+            </VCardText>
+          </VCard>
         </div>
-        <VBtn
-          color="primary"
-          :loading="exporting"
-          :disabled="selectedKeys.length === 0"
-          prepend-icon="ri-download-2-line"
-          @click="doExport"
-        >
-          Export
-        </VBtn>
-      </VCardText>
-    </VCard>
+      </VCol>
+    </VRow>
   </div>
 </template>
 
@@ -587,8 +524,6 @@ const GROUPS = [
   { key: 'kas', label: 'Kas & Rekening', icon: 'ri-bank-line', color: 'info' },
   { key: 'kinerja', label: 'Kinerja & Aktivitas PIC', icon: 'ri-user-star-line', color: 'deep-purple' },
 ]
-
-const openGroups = ref(['piutang'])
 
 // Katalog ini harus sama persis dengan whitelist backend
 // (ExportDataWorkbookService::REPORTS) dan dengan halaman Laporan.
@@ -778,6 +713,10 @@ function toggleSelectAll() {
   selectedKeys.value = allSelected.value ? [] : reportDefs.map(report => report.key)
 }
 
+function accentStyle(color) {
+  return { '--card-accent': `var(--v-theme-${color})` }
+}
+
 function toDateInput(date) {
   const year = date.getFullYear()
   const month = String(date.getMonth() + 1).padStart(2, '0')
@@ -877,41 +816,109 @@ async function doExport() {
 </script>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+.export-data-page {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.group-card {
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+  border-radius: 12px;
+}
+
+.report-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+}
+
 .report-tile {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 12px;
   min-height: 112px;
   padding: 16px;
-  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-  border-radius: 8px;
+  border: 2px solid rgba(var(--v-theme-on-surface), 0.08);
+  border-radius: 12px;
   cursor: pointer;
-  transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+  transition: border-color 0.15s ease, background-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .report-tile:hover {
-  border-color: rgba(var(--v-theme-primary), 0.55);
+  border-color: rgba(var(--card-accent), 0.55);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px -12px rgba(0, 0, 0, 0.35);
+}
+
+.report-tile:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-primary));
+  outline-offset: 2px;
 }
 
 .report-tile--selected {
-  border-color: rgb(var(--v-theme-primary));
-  background: rgba(var(--v-theme-primary), 0.06);
-  box-shadow: inset 0 0 0 1px rgba(var(--v-theme-primary), 0.25);
+  border-color: rgb(var(--card-accent));
+  background: rgba(var(--card-accent), 0.06);
 }
 
-.filter-group {
-  min-height: 100%;
+.report-tile--selected::before {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: 4px;
+  border-radius: 12px 0 0 12px;
+  background: rgb(var(--card-accent));
+}
+
+.check-circle {
+  position: absolute;
+  inset-block-start: 10px;
+  inset-inline-end: 10px;
+  inline-size: 22px;
+  block-size: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid rgba(var(--v-theme-on-surface), 0.15);
+  background: rgb(var(--v-theme-surface));
+  color: transparent;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.report-tile--selected .check-circle {
+  background: rgb(var(--v-theme-primary));
+  border-color: rgb(var(--v-theme-primary));
+  color: rgb(var(--v-theme-on-primary));
+}
+
+.special-filter-box {
   padding: 14px;
-  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  border: 1px dashed rgba(var(--v-theme-on-surface), 0.16);
   border-radius: 8px;
   background: rgba(var(--v-theme-on-surface), 0.015);
 }
 
-.export-footer {
+.export-sidebar {
   position: sticky;
-  bottom: 0;
-  z-index: 5;
-  box-shadow: 0 -2px 8px rgba(var(--v-theme-on-surface), 0.08);
+  top: 80px;
+}
+
+.action-card {
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+}
+
+.export-action-btn {
+  background: linear-gradient(135deg, rgb(var(--v-theme-primary)) 0%, rgb(var(--v-theme-primary-darken-1)) 100%) !important;
+  color: rgb(var(--v-theme-on-primary)) !important;
+}
+
+@media (max-width: 1279.98px) {
+  .export-sidebar {
+    position: static;
+  }
 }
 
 @media (max-width: 599.98px) {
