@@ -1,12 +1,15 @@
 <template>
   <div class="export-data-page">
-    <PageHeader
+    <PageHeroHeader
+      tone="sky"
+      icon="ri-download-2-line"
       title="Export Data"
       subtitle="Pilih laporan dan export ke file Excel"
       :breadcrumbs="[
         { title: 'Dashboard', to: { name: 'dashboard' } },
         { title: 'Export Data', disabled: true },
       ]"
+      :stats="headerStats"
     />
 
     <VRow>
@@ -637,6 +640,28 @@ const groupedReports = computed(() => GROUPS.map(grp => {
     selectedCount: reports.filter(report => selectedKeys.value.includes(report.key)).length,
   }
 }))
+
+const headerStats = computed(() => [
+  {
+    key: 'total',
+    icon: 'ri-file-list-3-line',
+    label: 'Laporan Tersedia',
+    value: reportDefs.length,
+  },
+  {
+    key: 'kategori',
+    icon: 'ri-folder-2-line',
+    label: 'Kategori',
+    value: GROUPS.length,
+  },
+  {
+    key: 'dipilih',
+    icon: 'ri-checkbox-circle-line',
+    label: 'Dipilih',
+    value: selectedKeys.value.length,
+    color: 'primary',
+  },
+])
 
 const showSegmentFilter = computed(() => selectedDefs.value.some(report => report.supportsSegment))
 const showClientFilter = computed(() => selectedDefs.value.some(report => report.supportsClient))
