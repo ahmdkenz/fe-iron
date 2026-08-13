@@ -68,7 +68,7 @@
             icon="ri-exchange-line"
             label="Ubah Status"
             :compact="mobile"
-            @click="showUbahStatus = true"
+            @click="openUbahStatus"
           />
           <AppActionButton
             v-if="invoice?.can_print"
@@ -1472,10 +1472,10 @@ async function openKoreksiPrint(k) {
   }
 }
 
-const statusTransitions = {
-  TERKIRIM: [{ label: 'Lunas', value: 'LUNAS' }],
-  SEBAGIAN: [{ label: 'Lunas', value: 'LUNAS' }],
-}
+const statusOptions = [
+  { label: 'Draft', value: 'DRAFT' },
+  { label: 'Terkirim', value: 'TERKIRIM' },
+]
 
 const isOpeningBalance = computed(() => invoice.value?.is_opening_balance === true)
 const isB2B = computed(() => invoice.value?.klien_ar?.tipe_klien === 'PT')
@@ -1502,7 +1502,9 @@ const isOverdue = computed(() => {
 const canManagePayments = computed(() => !!invoice.value && invoice.value.can_record_payment)
 
 const canChangeStatus = computed(() =>
-  !!invoice.value && invoice.value.status !== 'DRAFT' && invoice.value.can_record_payment)
+  !!invoice.value
+  && ['DRAFT', 'TERKIRIM'].includes(invoice.value.status)
+  && invoice.value.can_record_payment)
 
 const listRoute = computed(() => {
   return isOpeningBalance.value
@@ -1545,7 +1547,7 @@ const editRoute = computed(() =>
     ? { name: 'finance-opening-balance-edit', params: { id: id.value } }
     : { name: 'finance-invoice-edit', params: { id: id.value } })
 
-const nextStatuses = computed(() => canChangeStatus.value ? (statusTransitions[invoice.value?.status] ?? []) : [])
+const nextStatuses = computed(() => canChangeStatus.value ? statusOptions : [])
 
 const approvalNotice = computed(() => {
   if (!isOpeningBalance.value) return null
@@ -1762,6 +1764,11 @@ watch(openPanels, panels => {
   if (panels.includes('koreksi')) ensureKoreksiLoaded()
   if (panels.includes('ob-details')) ensureObDetailsLoaded()
 })
+
+function openUbahStatus() {
+  newStatus.value = invoice.value?.status === 'DRAFT' ? 'TERKIRIM' : 'DRAFT'
+  showUbahStatus.value = true
+}
 
 async function doUbahStatus() {
   if (!newStatus.value) return

@@ -759,10 +759,22 @@ onMounted(async () => {
 
   invoice.value = data
   ensureKlienItem(data.klien_ar)
-  noInvoiceResto.value = data.items?.[0]?.no_invoice_resto ?? ''
-  if (data.klien_ar?.tipe_klien === 'PT' && data.klien_ar?.perusahaan_id) {
-    await loadRestoByPerusahaan(data.klien_ar.perusahaan_id)
-  }
+
+  const itemsPromise = api.get(`/finance/invoices/${id}/items`, { params: { all: true } })
+    .then(({ data: res }) => res.data ?? [])
+    .catch(() => {
+      errorMessage.value = 'Gagal memuat item tagihan invoice.'
+
+      return []
+    })
+
+  const restoPromise = (data.klien_ar?.tipe_klien === 'PT' && data.klien_ar?.perusahaan_id)
+    ? loadRestoByPerusahaan(data.klien_ar.perusahaan_id)
+    : Promise.resolve()
+
+  const [invoiceItems] = await Promise.all([itemsPromise, restoPromise])
+
+  noInvoiceResto.value = invoiceItems[0]?.no_invoice_resto ?? ''
 
   Object.assign(form, {
     no_invoice: data.no_invoice,
@@ -773,7 +785,7 @@ onMounted(async () => {
     no_surat_jalan: data.no_surat_jalan ?? '',
     tagihan_periode_sebelumnya: data.tagihan_periode_sebelumnya ?? 0,
     keterangan: data.keterangan ?? '',
-    items: (data.items ?? []).map(it => ({
+    items: invoiceItems.map(it => ({
       id: it.id,
       barang_id: it.barang_id,
       kode_barang: it.barang?.kode_barang ?? it.kode_barang ?? '',
