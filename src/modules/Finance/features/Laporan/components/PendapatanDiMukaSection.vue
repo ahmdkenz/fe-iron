@@ -1,5 +1,14 @@
 <template>
   <div>
+    <ExportFormatModal
+      v-model="showExportModal"
+      v-model:format="exportFormat"
+      :row-count="exportRowCount"
+      :loading="exporting"
+      title="Export Pendapatan di Muka"
+      @confirm="doExport"
+    />
+
     <!-- Filter -->
     <VCard class="mb-4">
       <VCardText class="d-flex flex-wrap gap-3 align-center">
@@ -53,7 +62,7 @@
           prepend-icon="ri-download-2-line"
           size="small"
           :loading="exporting"
-          @click="doExport"
+          @click="showExportModal = true"
         >
           Export
         </VBtn>
@@ -428,12 +437,13 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useCrud } from '@/composables/useCrud'
 import { useLazyFetchAll } from '@/composables/useLazyFetchAll'
 import { useFormatter } from '@/composables/useFormatter'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import api from '@/utils/axios'
+import { readBlobError } from '@/utils/readBlobError'
 
 const { formatCurrency, formatDate } = useFormatter()
 const { showError, showSuccess } = useSweetAlert()
@@ -443,6 +453,10 @@ const { ensureLoaded: ensureKlienLoaded } = useLazyFetchAll(fetchKlien)
 
 const loading  = ref(false)
 const exporting = ref(false)
+
+const showExportModal = ref(false)
+const exportFormat    = ref('xlsx')
+const exportRowCount  = ref(null)
 
 const filters = reactive({
   tanggal_dari: null,
@@ -517,24 +531,71 @@ async function doFetch() {
   }
 }
 
-async function doExport() {
-  exporting.value = true
+let exportRowCountController = null
+
+async function fetchExportRowCount() {
+  exportRowCountController?.abort()
+
+  const controller = new AbortController()
+
+  exportRowCountController = controller
+
   try {
-    const response = await api.get('/finance/pendapatan-di-muka/export-excel', {
+    const { data } = await api.get('/finance/pendapatan-di-muka/export-count', {
       params: buildParams(),
-      responseType: 'blob',
+      signal: controller.signal,
     })
 
-    const url  = URL.createObjectURL(new Blob([response.data], {
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    }))
+    if (controller.signal.aborted) return
+    exportRowCount.value = data.data?.row_count ?? null
+  } catch {
+    // Hitungan ini cuma advisory buat peringatan — kalau gagal, diamkan saja, jangan ganggu alur export.
+  } finally {
+    if (exportRowCountController === controller)
+      exportRowCountController = null
+  }
+}
+
+let exportRowCountDebounce = null
+
+function debouncedFetchExportRowCount() {
+  clearTimeout(exportRowCountDebounce)
+  exportRowCountDebounce = setTimeout(fetchExportRowCount, 300)
+}
+
+watch(showExportModal, v => { if (v) fetchExportRowCount() })
+watch(filters, () => {
+  if (showExportModal.value) debouncedFetchExportRowCount()
+}, { deep: true })
+
+async function doExport() {
+  showExportModal.value = false
+  exporting.value = true
+  try {
+    const params = buildParams()
+
+    params.format = exportFormat.value
+
+    const response = await api.get('/finance/pendapatan-di-muka/export-excel', {
+      params,
+      responseType: 'blob',
+      timeout: 300000,
+    })
+
+    const mime = exportFormat.value === 'csv'
+      ? 'text/csv;charset=UTF-8'
+      : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+
+    const url  = URL.createObjectURL(new Blob([response.data], { type: mime }))
 
     const link    = document.createElement('a')
 
     link.href     = url
-    link.download = `PENDAPATAN-DI-MUKA-${buildTimestamp()}.xlsx`
+    link.download = `PENDAPATAN-DI-MUKA-${buildTimestamp()}.${exportFormat.value}`
     link.click()
     URL.revokeObjectURL(url)
+  } catch (err) {
+    showError({ text: await readBlobError(err, 'Gagal mengekspor Pendapatan di Muka.') })
   } finally {
     exporting.value = false
   }

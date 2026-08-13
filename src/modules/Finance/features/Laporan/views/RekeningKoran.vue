@@ -15,7 +15,7 @@
         prepend-icon="ri-download-2-line"
         :loading="exporting"
         class="me-2"
-        @click="doExport"
+        @click="showExportModal = true"
       >
         Export
       </VBtn>
@@ -27,6 +27,15 @@
         Kembali
       </VBtn>
     </PageHeader>
+
+    <ExportFormatModal
+      v-model="showExportModal"
+      v-model:format="exportFormat"
+      :row-count="exportRowCount"
+      :loading="exporting"
+      title="Export Rekening Koran"
+      @confirm="doExport"
+    />
 
     <!-- Filter -->
     <VCard class="mb-4">
@@ -389,7 +398,7 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref, watch } from 'vue'
 import { useCrud } from '@/composables/useCrud'
 import { useLazyFetchAll } from '@/composables/useLazyFetchAll'
 import { useFormatter } from '@/composables/useFormatter'
@@ -420,6 +429,10 @@ const { ensureLoaded: ensurePicArLoaded } = useLazyFetchAll(fetchPicAr)
 const loading   = ref(false)
 const exporting = ref(false)
 const rows      = ref([])
+
+const showExportModal = ref(false)
+const exportFormat    = ref('xlsx')
+const exportRowCount  = ref(null)
 
 const summary = reactive({
   total_matched: 0,
@@ -505,12 +518,53 @@ function onTableOptions({ page, itemsPerPage }) {
   doFetch(false)
 }
 
+let exportRowCountController = null
+
+async function fetchExportRowCount() {
+  exportRowCountController?.abort()
+
+  const controller = new AbortController()
+
+  exportRowCountController = controller
+
+  try {
+    const { page, per_page: perPage, ...exportParams } = buildParams()
+    const { data } = await api.get('/finance/rekening-koran/export-count', {
+      params: exportParams,
+      signal: controller.signal,
+    })
+
+    if (controller.signal.aborted) return
+    exportRowCount.value = data.data?.row_count ?? null
+  } catch {
+    // Hitungan ini cuma advisory buat peringatan — kalau gagal, diamkan saja, jangan ganggu alur export.
+  } finally {
+    if (exportRowCountController === controller)
+      exportRowCountController = null
+  }
+}
+
+let exportRowCountDebounce = null
+
+function debouncedFetchExportRowCount() {
+  clearTimeout(exportRowCountDebounce)
+  exportRowCountDebounce = setTimeout(fetchExportRowCount, 300)
+}
+
+watch(showExportModal, v => { if (v) fetchExportRowCount() })
+watch(filters, () => {
+  if (showExportModal.value) debouncedFetchExportRowCount()
+}, { deep: true })
+
 async function doExport() {
+  showExportModal.value = false
   exporting.value = true
   try {
     // Export mengikuti filter yang aktif, bukan halaman tabel yang terlihat —
     // parameter paginasi sengaja tidak dikirim.
     const { page, per_page: perPage, ...exportParams } = buildParams()
+
+    exportParams.format = exportFormat.value
 
     const response = await api.get('/finance/rekening-koran/export-excel', {
       params: exportParams,
@@ -518,14 +572,16 @@ async function doExport() {
       timeout: 300000,
     })
 
-    const url = URL.createObjectURL(new Blob([response.data], {
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    }))
+    const mime = exportFormat.value === 'csv'
+      ? 'text/csv;charset=UTF-8'
+      : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+
+    const url = URL.createObjectURL(new Blob([response.data], { type: mime }))
 
     const link = document.createElement('a')
 
     link.href = url
-    link.download = `rekening-koran-${filters.periode_awal ?? 'semua'}-sd-${filters.periode_akhir ?? 'semua'}.xlsx`
+    link.download = `rekening-koran-${filters.periode_awal ?? 'semua'}-sd-${filters.periode_akhir ?? 'semua'}.${exportFormat.value}`
     link.click()
     URL.revokeObjectURL(url)
   } catch (err) {
