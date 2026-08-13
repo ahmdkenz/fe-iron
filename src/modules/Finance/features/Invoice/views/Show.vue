@@ -1547,7 +1547,10 @@ const editRoute = computed(() =>
     ? { name: 'finance-opening-balance-edit', params: { id: id.value } }
     : { name: 'finance-invoice-edit', params: { id: id.value } })
 
-const nextStatuses = computed(() => canChangeStatus.value ? statusOptions : [])
+const nextStatuses = computed(() =>
+  canChangeStatus.value
+    ? statusOptions.filter(o => o.value !== invoice.value.status)
+    : [])
 
 const approvalNotice = computed(() => {
   if (!isOpeningBalance.value) return null
@@ -1788,6 +1791,7 @@ async function doUbahStatus() {
     await loadInvoice()
   } catch (err) {
     actionErrorMessage.value = err.response?.data?.message ?? 'Gagal mengubah status invoice'
+    await showError(actionErrorMessage.value)
   } finally {
     closeAlert({ onlyLoading: true })
     statusLoading.value = false
