@@ -970,6 +970,7 @@ async function handleLogin() {
     await authStore.login(
       form.username,
       form.password,
+      rememberMe.value,
     )
 
     clearLockState()

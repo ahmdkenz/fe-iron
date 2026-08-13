@@ -110,8 +110,8 @@ export const useAuthStore = defineStore('auth', {
       return _initPromise
     },
 
-    async login(username, password) {
-      const { data } = await api.post('/auth/login', { username, password })
+    async login(username, password, remember = false) {
+      const { data } = await api.post('/auth/login', { username, password, remember })
 
       clearFetchAllCache()
       this.user = data.data.user
