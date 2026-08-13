@@ -1,52 +1,26 @@
 <template>
   <div class="mb-4">
-    <div class="rekon-stat-row">
-      <div
-        v-for="card in trioCards"
-        :key="card.key"
-        class="rekon-stat"
-      >
-        <div
-          class="rekon-stat__icon"
-          :class="`rekon-stat__icon--${card.color}`"
-        >
-          <VIcon
-            :icon="card.icon"
-            size="18"
-          />
+    <StatCard :cards="trioCards" />
+
+    <div class="rekon-hero mt-3 d-flex align-center gap-3">
+      <div class="rekon-hero__icon">
+        <VIcon
+          icon="ri-money-dollar-circle-line"
+          size="22"
+        />
+      </div>
+      <div class="min-width-0 flex-grow-1">
+        <div class="text-caption text-medium-emphasis">
+          Total Kredit
         </div>
-        <div class="min-width-0">
-          <div class="rekon-stat__value">
-            {{ card.value }}
-          </div>
-          <div class="rekon-stat__label">
-            {{ card.label }}
-          </div>
+        <div class="rekon-hero__value">
+          {{ formattedKredit }}
+        </div>
+        <div class="text-caption text-medium-emphasis">
+          Total mutasi masuk
         </div>
       </div>
     </div>
-
-    <VCard class="rekon-hero mt-3">
-      <VCardText class="d-flex align-center gap-3">
-        <div class="rekon-hero__icon">
-          <VIcon
-            icon="ri-money-dollar-circle-line"
-            size="22"
-          />
-        </div>
-        <div class="min-width-0 flex-grow-1">
-          <div class="text-caption text-medium-emphasis">
-            Total Kredit
-          </div>
-          <div class="rekon-hero__value">
-            {{ formattedKredit }}
-          </div>
-          <div class="text-caption text-medium-emphasis">
-            Total mutasi masuk
-          </div>
-        </div>
-      </VCardText>
-    </VCard>
   </div>
 </template>
 
@@ -98,60 +72,34 @@ const formattedKredit = computed(() => formatCurrency(props.report?.total_kredit
 </script>
 
 <style scoped>
-.rekon-stat-row {
-  display: flex;
-  gap: 10px;
-}
-
-.rekon-stat {
-  flex: 1 1 0;
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 14px;
-  border-radius: 12px;
-  background: rgb(var(--v-theme-surface));
+/* Trio cards (Total Transaksi/Sudah Cocok/Belum Cocok) pakai <StatCard>
+   shared (glass Dark Aurora). Kartu "Total Kredit" tetap bespoke di sini
+   (full-width, nilai currency panjang) tapi di-reskin ke gaya glass yang
+   sama: rounded 16px, border tipis, backdrop-filter, icon circular glow. */
+.rekon-hero {
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: rgba(var(--v-theme-surface), 0.6);
   border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+  backdrop-filter: blur(6px);
 }
 
-.rekon-stat__icon {
-  flex-shrink: 0;
-  width: 36px;
-  height: 36px;
-  border-radius: 9px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.rekon-stat__icon--primary { background: rgba(var(--v-theme-primary), 0.12); color: rgb(var(--v-theme-primary)); }
-.rekon-stat__icon--success { background: rgba(var(--v-theme-success), 0.12); color: rgb(var(--v-theme-success)); }
-.rekon-stat__icon--warning { background: rgba(var(--v-theme-warning), 0.12); color: rgb(var(--v-theme-warning)); }
-
-.rekon-stat__value {
-  font-size: 1.125rem;
-  font-weight: 700;
-  line-height: 1.2;
-}
-
-.rekon-stat__label {
-  font-size: 0.75rem;
-  color: rgba(var(--v-theme-on-surface), 0.6);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.v-theme--dark .rekon-hero {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.08);
 }
 
 .rekon-hero__icon {
   flex-shrink: 0;
   width: 44px;
   height: 44px;
-  border-radius: 12px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(var(--v-theme-info), 0.12);
+  background: rgba(var(--v-theme-info), 0.16);
   color: rgb(var(--v-theme-info));
+  box-shadow: 0 0 0 1px rgba(var(--v-theme-info), 0.15), 0 0 16px rgba(var(--v-theme-info), 0.35);
 }
 
 .rekon-hero__value {
@@ -164,33 +112,6 @@ const formattedKredit = computed(() => formatCurrency(props.report?.total_kredit
 }
 
 @media (max-width: 599.98px) {
-  .rekon-stat-row {
-    gap: 6px;
-  }
-
-  .rekon-stat {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
-    padding: 8px;
-  }
-
-  .rekon-stat__icon {
-    display: none;
-  }
-
-  .rekon-stat__value {
-    font-size: 0.9rem;
-  }
-
-  .rekon-stat__label {
-    font-size: 0.6rem;
-    white-space: normal;
-    overflow: visible;
-    text-overflow: clip;
-    line-height: 1.2;
-  }
-
   .rekon-hero__value {
     font-size: 1rem;
   }

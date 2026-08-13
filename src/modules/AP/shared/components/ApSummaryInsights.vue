@@ -1,49 +1,6 @@
 <template>
   <div>
-    <VRow class="mb-4">
-      <VCol
-        v-for="card in cards"
-        :key="card.key"
-        cols="12"
-        sm="6"
-        md="3"
-      >
-        <VCard
-          variant="tonal"
-          :color="card.color ?? 'primary'"
-        >
-          <VCardText>
-            <div class="d-flex align-center gap-3">
-              <VAvatar
-                :color="card.color ?? 'primary'"
-                variant="flat"
-                size="44"
-              >
-                <VIcon
-                  :icon="card.icon ?? 'ri-file-list-3-line'"
-                  color="white"
-                />
-              </VAvatar>
-              <div>
-                <div class="text-caption text-medium-emphasis">
-                  {{ card.label }}
-                </div>
-                <div class="text-h6 font-weight-bold">
-                  {{ card.value ?? '-' }}
-                </div>
-                <div
-                  v-if="card.sub"
-                  class="text-caption font-weight-medium"
-                  :class="card.subColor ? `text-${card.subColor}` : 'text-medium-emphasis'"
-                >
-                  {{ card.sub }}
-                </div>
-              </div>
-            </div>
-          </VCardText>
-        </VCard>
-      </VCol>
-    </VRow>
+    <StatCard :cards="cards" />
 
     <VRow
       v-if="summary.overdue_count || summary.due_soon_count"
@@ -297,6 +254,13 @@ const { formatCurrency, formatDate } = useFormatter()
 
 .insight-card {
   border-inline-start: 3px solid transparent;
+  border-radius: 14px;
+  background: rgba(var(--v-theme-surface), 0.6);
+  backdrop-filter: blur(6px);
+}
+
+.v-theme--dark .insight-card {
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .insight-card--primary {

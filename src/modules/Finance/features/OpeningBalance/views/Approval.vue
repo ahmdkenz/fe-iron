@@ -9,116 +9,7 @@
       ]"
     />
 
-    <VRow class="mb-4">
-      <VCol
-        cols="12"
-        sm="6"
-        md="3"
-      >
-        <VCard>
-          <VCardText>
-            <div class="d-flex align-center gap-3">
-              <VAvatar
-                color="warning"
-                variant="tonal"
-                size="44"
-              >
-                <VIcon icon="ri-timer-line" />
-              </VAvatar>
-              <div>
-                <div class="text-caption text-medium-emphasis">
-                  Total Data
-                </div>
-                <div class="text-h6 font-weight-bold">
-                  {{ summary.total_invoice ?? '-' }}
-                </div>
-              </div>
-            </div>
-          </VCardText>
-        </VCard>
-      </VCol>
-      <VCol
-        cols="12"
-        sm="6"
-        md="3"
-      >
-        <VCard>
-          <VCardText>
-            <div class="d-flex align-center gap-3">
-              <VAvatar
-                color="primary"
-                variant="tonal"
-                size="44"
-              >
-                <VIcon icon="ri-wallet-3-line" />
-              </VAvatar>
-              <div>
-                <div class="text-caption text-medium-emphasis">
-                  Total Nominal
-                </div>
-                <div class="text-h6 font-weight-bold">
-                  {{ formatCurrency(summary.total_tagihan) }}
-                </div>
-              </div>
-            </div>
-          </VCardText>
-        </VCard>
-      </VCol>
-      <VCol
-        cols="12"
-        sm="6"
-        md="3"
-      >
-        <VCard>
-          <VCardText>
-            <div class="d-flex align-center gap-3">
-              <VAvatar
-                color="success"
-                variant="tonal"
-                size="44"
-              >
-                <VIcon icon="ri-checkbox-circle-line" />
-              </VAvatar>
-              <div>
-                <div class="text-caption text-medium-emphasis">
-                  Total Terbayar
-                </div>
-                <div class="text-h6 font-weight-bold">
-                  {{ formatCurrency(summary.total_pembayaran) }}
-                </div>
-              </div>
-            </div>
-          </VCardText>
-        </VCard>
-      </VCol>
-      <VCol
-        cols="12"
-        sm="6"
-        md="3"
-      >
-        <VCard>
-          <VCardText>
-            <div class="d-flex align-center gap-3">
-              <VAvatar
-                color="error"
-                variant="tonal"
-                size="44"
-              >
-                <VIcon icon="ri-error-warning-line" />
-              </VAvatar>
-              <div>
-                <div class="text-caption text-medium-emphasis">
-                  Sisa Piutang
-                </div>
-                <div class="text-h6 font-weight-bold">
-                  {{ formatCurrency(summary.total_sisa) }}
-                </div>
-              </div>
-            </div>
-          </VCardText>
-        </VCard>
-      </VCol>
-    </VRow>
+    <StatCard :cards="summaryStatCards" />
 
     <VCard>
       <VCardText class="d-flex flex-wrap gap-3 pb-0">
@@ -281,116 +172,7 @@
       <VDivider />
     </div>
 
-    <VRow class="mb-4">
-      <VCol
-        cols="12"
-        sm="6"
-        md="3"
-      >
-        <VCard>
-          <VCardText>
-            <div class="d-flex align-center gap-3">
-              <VAvatar
-                color="primary"
-                variant="tonal"
-                size="44"
-              >
-                <VIcon icon="ri-history-line" />
-              </VAvatar>
-              <div>
-                <div class="text-caption text-medium-emphasis">
-                  Total Data
-                </div>
-                <div class="text-h6 font-weight-bold">
-                  {{ obSummary.total_invoice ?? '-' }}
-                </div>
-              </div>
-            </div>
-          </VCardText>
-        </VCard>
-      </VCol>
-      <VCol
-        cols="12"
-        sm="6"
-        md="3"
-      >
-        <VCard>
-          <VCardText>
-            <div class="d-flex align-center gap-3">
-              <VAvatar
-                color="warning"
-                variant="tonal"
-                size="44"
-              >
-                <VIcon icon="ri-wallet-3-line" />
-              </VAvatar>
-              <div>
-                <div class="text-caption text-medium-emphasis">
-                  Total Saldo Awal
-                </div>
-                <div class="text-h6 font-weight-bold">
-                  {{ formatCurrency(obSummary.total_tagihan) }}
-                </div>
-              </div>
-            </div>
-          </VCardText>
-        </VCard>
-      </VCol>
-      <VCol
-        cols="12"
-        sm="6"
-        md="3"
-      >
-        <VCard>
-          <VCardText>
-            <div class="d-flex align-center gap-3">
-              <VAvatar
-                color="success"
-                variant="tonal"
-                size="44"
-              >
-                <VIcon icon="ri-money-cny-circle-line" />
-              </VAvatar>
-              <div>
-                <div class="text-caption text-medium-emphasis">
-                  Total Terbayar
-                </div>
-                <div class="text-h6 font-weight-bold">
-                  {{ formatCurrency(obSummary.total_pembayaran) }}
-                </div>
-              </div>
-            </div>
-          </VCardText>
-        </VCard>
-      </VCol>
-      <VCol
-        cols="12"
-        sm="6"
-        md="3"
-      >
-        <VCard>
-          <VCardText>
-            <div class="d-flex align-center gap-3">
-              <VAvatar
-                color="error"
-                variant="tonal"
-                size="44"
-              >
-                <VIcon icon="ri-error-warning-line" />
-              </VAvatar>
-              <div>
-                <div class="text-caption text-medium-emphasis">
-                  Sisa Piutang
-                </div>
-                <div class="text-h6 font-weight-bold">
-                  {{ formatCurrency(obSummary.total_sisa) }}
-                </div>
-              </div>
-            </div>
-          </VCardText>
-        </VCard>
-      </VCol>
-    </VRow>
+    <StatCard :cards="obSummaryStatCards" />
 
     <!-- B2B Table -->
     <VCard class="mb-4">
@@ -819,7 +601,7 @@
 
 <script setup>
 /* eslint-disable camelcase */
-import { onBeforeUnmount, onDeactivated, onMounted, reactive, ref } from 'vue'
+import { computed, onBeforeUnmount, onDeactivated, onMounted, reactive, ref } from 'vue'
 import { useCrud } from '@/composables/useCrud'
 import { useLazyFetchAll } from '@/composables/useLazyFetchAll'
 import { useFormatter } from '@/composables/useFormatter'
@@ -885,6 +667,20 @@ const obSummary = reactive({
   total_pembayaran: null,
   total_sisa: null,
 })
+
+const summaryStatCards = computed(() => [
+  { key: 'total', color: 'primary', icon: 'ri-timer-line', label: 'Total Data', value: summary.total_invoice ?? '-' },
+  { key: 'nominal', color: 'warning', icon: 'ri-wallet-3-line', label: 'Total Nominal', value: formatCurrency(summary.total_tagihan) },
+  { key: 'terbayar', color: 'success', icon: 'ri-checkbox-circle-line', label: 'Total Terbayar', value: formatCurrency(summary.total_pembayaran) },
+  { key: 'sisa', color: 'error', icon: 'ri-error-warning-line', label: 'Sisa Piutang', value: formatCurrency(summary.total_sisa) },
+])
+
+const obSummaryStatCards = computed(() => [
+  { key: 'total', color: 'primary', icon: 'ri-history-line', label: 'Total Data', value: obSummary.total_invoice ?? '-' },
+  { key: 'saldo-awal', color: 'warning', icon: 'ri-wallet-3-line', label: 'Total Saldo Awal', value: formatCurrency(obSummary.total_tagihan) },
+  { key: 'terbayar', color: 'success', icon: 'ri-money-cny-circle-line', label: 'Total Terbayar', value: formatCurrency(obSummary.total_pembayaran) },
+  { key: 'sisa', color: 'error', icon: 'ri-error-warning-line', label: 'Sisa Piutang', value: formatCurrency(obSummary.total_sisa) },
+])
 
 // ── Export ─────────────────────────────────────────────────────────────────
 const isExporting    = ref(false)

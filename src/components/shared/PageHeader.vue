@@ -1,5 +1,5 @@
 <template>
-  <div class="mb-4">
+  <div class="mb-4 page-header">
     <!-- Modern 3D Finance Breadcrumbs -->
     <div
       v-if="breadcrumbs && breadcrumbs.length"
@@ -83,61 +83,13 @@ const { xs } = useDisplay()
 </script>
 
 <style scoped>
-.modern-breadcrumb-wrapper {
-  background: rgba(var(--v-theme-surface), 0.3);
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
-  padding: 5px 8px;
-  border-radius: 10px;
-  width: max-content;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1), 0 4px 15px rgba(0, 0, 0, 0.05);
-  backdrop-filter: blur(12px);
-  position: relative;
-  overflow: hidden;
-}
-
-.modern-breadcrumb-wrapper::after {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
-}
-
-.breadcrumb-pill {
-  padding: 6px 14px;
-  font-size: 0.85rem;
-  border-radius: 8px;
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  text-decoration: none;
-  font-weight: 500;
-  letter-spacing: 0.3px;
-  position: relative;
-  z-index: 1;
-}
-
-.breadcrumb-link {
-  color: rgba(var(--v-theme-on-surface), 0.65);
-  background: transparent;
-}
-
-.breadcrumb-link:hover {
-  color: rgb(var(--v-theme-primary));
-  background: rgba(var(--v-theme-primary), 0.1);
-  box-shadow: 0 4px 12px rgba(var(--v-theme-primary), 0.15);
-  transform: translateY(-1px);
-}
-
-.breadcrumb-active {
-  background: linear-gradient(135deg, rgb(var(--v-theme-primary)), rgb(var(--v-theme-info, 30, 136, 229)));
-  color: white;
-  box-shadow: 0 4px 15px rgba(var(--v-theme-primary), 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.3);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-}
-
-.separator {
-  display: flex;
-  align-items: center;
-  color: rgba(var(--v-theme-on-surface), 0.3);
+/* Breadcrumb glass (.modern-breadcrumb-wrapper dst) dikonsolidasi di
+   assets/styles/styles.scss. PageHeader tidak punya konsep tone per-halaman
+   (beda dari PageHeroHeader/ManagementIndexShell), jadi breadcrumb aktif
+   pakai gradient primary→info tetap. */
+.page-header {
+  --tone-1: var(--v-theme-primary);
+  --tone-2: var(--v-theme-info);
 }
 
 @media (max-width: 599.98px) {

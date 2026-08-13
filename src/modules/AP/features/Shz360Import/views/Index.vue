@@ -11,8 +11,8 @@
 
     <!-- Sync Health -->
     <VCard
-      class="mb-4"
-      variant="outlined"
+      class="mb-4 sync-health-card"
+      variant="flat"
       rounded="lg"
     >
       <VCardText class="d-flex flex-wrap align-center gap-4 py-3">
@@ -1504,5 +1504,17 @@ loadSummary()
 <style scoped>
 .cursor-pointer {
   cursor: pointer;
+}
+
+.sync-health-card {
+  border-radius: 14px !important;
+  background: rgba(var(--v-theme-surface), 0.6) !important;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+  backdrop-filter: blur(6px);
+}
+
+.v-theme--dark .sync-health-card {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-color: rgba(255, 255, 255, 0.08);
 }
 </style>

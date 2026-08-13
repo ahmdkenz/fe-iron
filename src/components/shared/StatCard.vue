@@ -7,27 +7,29 @@
       sm="6"
       md="3"
     >
-      <VCard>
-        <VCardText>
-          <div class="d-flex align-center gap-3">
-            <VAvatar
-              :color="card.color ?? 'primary'"
-              variant="tonal"
-              size="44"
-            >
-              <VIcon :icon="card.icon" />
-            </VAvatar>
-            <div>
-              <div class="text-caption text-medium-emphasis">
-                {{ card.label }}
-              </div>
-              <div class="text-h6 font-weight-bold">
-                {{ card.value ?? '-' }}
-              </div>
-            </div>
+      <div
+        class="glass-stat"
+        :style="{ '--stat-c': `var(--v-theme-${card.color ?? 'primary'})` }"
+      >
+        <div class="glass-stat-icon">
+          <VIcon :icon="card.icon ?? 'ri-file-list-3-line'" />
+        </div>
+        <div class="min-width-0">
+          <div class="glass-stat-label">
+            {{ card.label }}
           </div>
-        </VCardText>
-      </VCard>
+          <div class="glass-stat-value">
+            {{ card.value ?? '-' }}
+          </div>
+          <div
+            v-if="card.sub"
+            class="text-caption"
+            :class="card.subColor ? `text-${card.subColor}` : 'text-medium-emphasis'"
+          >
+            {{ card.sub }}
+          </div>
+        </div>
+      </div>
     </VCol>
   </VRow>
 </template>

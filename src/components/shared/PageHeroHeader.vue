@@ -3,16 +3,7 @@
     class="phh"
     :class="`phh--${tone}`"
   >
-    <div class="phh__header">
-      <span
-        class="phh__glow phh__glow--a"
-        aria-hidden="true"
-      />
-      <span
-        class="phh__glow phh__glow--b"
-        aria-hidden="true"
-      />
-
+    <div class="phh__header glass-header">
       <div
         v-if="breadcrumbs.length"
         class="modern-breadcrumb-wrapper d-flex align-center mb-3"
@@ -95,10 +86,10 @@
         <div
           v-for="stat in stats"
           :key="stat.key"
-          class="phh__stat"
+          class="phh__stat glass-stat"
         >
           <div
-            class="phh__stat-icon"
+            class="phh__stat-icon glass-stat-icon"
             :class="stat.color ? `phh__stat-icon--${stat.color}` : 'phh__stat-icon--tone'"
           >
             <VIcon
@@ -107,10 +98,10 @@
             />
           </div>
           <div class="min-width-0">
-            <div class="phh__stat-value">
+            <div class="phh__stat-value glass-stat-value">
               {{ statsLoading ? '…' : formatStat(stat.value) }}
             </div>
-            <div class="phh__stat-label">
+            <div class="phh__stat-label glass-stat-label">
               {{ stat.label }}
             </div>
           </div>
@@ -146,129 +137,40 @@ function formatStat(value) {
   background: rgb(var(--v-theme-background));
 }
 
+.phh--blue {
+  --tone-1: 59, 130, 246;
+  --tone-2: 34, 211, 238;
+}
+
 .phh--sky {
-  --phh-c1: 2, 132, 199;
-  --phh-c2: 125, 211, 252;
+  --tone-1: 2, 132, 199;
+  --tone-2: 125, 211, 252;
 }
 
 .phh--fuchsia {
-  --phh-c1: 192, 38, 211;
-  --phh-c2: 240, 171, 252;
+  --tone-1: 192, 38, 211;
+  --tone-2: 240, 171, 252;
 }
 
 .phh--gold {
-  --phh-c1: 161, 98, 7;
-  --phh-c2: 250, 204, 21;
+  --tone-1: 161, 98, 7;
+  --tone-2: 250, 204, 21;
 }
 
 .phh--slate {
-  --phh-c1: 71, 85, 105;
-  --phh-c2: 148, 163, 184;
+  --tone-1: 71, 85, 105;
+  --tone-2: 148, 163, 184;
 }
 
 .phh--emerald {
-  --phh-c1: 5, 150, 105;
-  --phh-c2: 110, 231, 183;
+  --tone-1: 5, 150, 105;
+  --tone-2: 110, 231, 183;
 }
 
-/* ─── Breadcrumb (mirrors PageHeader.vue / ManagementIndexShell.vue) ───── */
-.modern-breadcrumb-wrapper {
-  background: rgba(var(--v-theme-surface), 0.3);
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
-  padding: 5px 8px;
-  border-radius: 10px;
-  width: max-content;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1), 0 4px 15px rgba(0, 0, 0, 0.05);
-  backdrop-filter: blur(12px);
-  position: relative;
-  overflow: hidden;
-}
-
-.breadcrumb-pill {
-  padding: 6px 14px;
-  font-size: 0.85rem;
-  border-radius: 8px;
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  text-decoration: none;
-  font-weight: 500;
-  letter-spacing: 0.3px;
-  position: relative;
-  z-index: 1;
-}
-
-.breadcrumb-link {
-  color: rgba(var(--v-theme-on-surface), 0.65);
-  background: transparent;
-}
-
-.breadcrumb-link:hover {
-  color: rgb(var(--v-theme-primary));
-  background: rgba(var(--v-theme-primary), 0.1);
-  transform: translateY(-1px);
-}
-
-.breadcrumb-active {
-  background: linear-gradient(135deg, rgb(var(--phh-c1)), rgb(var(--phh-c2)));
-  color: white;
-  box-shadow: 0 4px 15px rgba(var(--phh-c1), 0.4);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-}
-
-.separator {
-  display: flex;
-  align-items: center;
-  color: rgba(var(--v-theme-on-surface), 0.3);
-}
-
-/* ─── Header ──────────────────────────────────────────────────────────── */
-.phh__header {
-  position: relative;
-  overflow: hidden;
-  border-radius: 20px;
-  padding: 20px 22px;
-  margin-bottom: 16px;
-  background: linear-gradient(135deg, rgba(var(--phh-c1), 0.10), rgba(var(--phh-c2), 0.04)), rgb(var(--v-theme-surface));
-  border: 1px solid rgba(var(--phh-c1), 0.16);
-}
-
-.v-theme--dark .phh__header {
-  background: linear-gradient(135deg, rgba(var(--phh-c1), 0.20), rgba(var(--phh-c2), 0.08)), rgb(var(--v-theme-surface));
-  border-color: rgba(var(--phh-c1), 0.28);
-  box-shadow: 0 20px 45px -28px rgba(var(--phh-c1), 0.65);
-}
-
-.phh__glow {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(40px);
-  pointer-events: none;
-  opacity: 0.4;
-}
-
-.phh__glow--a {
-  inline-size: 220px;
-  block-size: 220px;
-  inset-block-start: -90px;
-  inset-inline-end: -60px;
-  background: rgb(var(--phh-c1));
-}
-
-.phh__glow--b {
-  inline-size: 160px;
-  block-size: 160px;
-  inset-block-end: -70px;
-  inset-inline-start: 12%;
-  background: rgb(var(--phh-c2));
-  opacity: 0.3;
-}
-
-.v-theme--dark .phh__glow {
-  opacity: 0.65;
-}
-
-.v-theme--dark .phh__glow--b {
-  opacity: 0.4;
-}
+/* Breadcrumb glass (.modern-breadcrumb-wrapper dst) & stat-tile base
+   (.glass-stat/.glass-stat-icon) dikonsolidasi di assets/styles/styles.scss.
+   .glass-header (juga di styles.scss) sengaja polos tanpa box/glow — cuma
+   breadcrumb pill & tiap stat card yang punya kotak/glass sendiri. */
 
 .phh__head-row {
   position: relative;
@@ -288,8 +190,8 @@ function formatStat(value) {
   align-items: center;
   justify-content: center;
   color: #fff;
-  background: linear-gradient(135deg, rgb(var(--phh-c1)), rgb(var(--phh-c2)));
-  box-shadow: 0 8px 20px -6px rgba(var(--phh-c1), 0.6);
+  background: linear-gradient(135deg, rgb(var(--tone-1)), rgb(var(--tone-2)));
+  box-shadow: 0 8px 20px -6px rgba(var(--tone-1), 0.6);
 }
 
 .phh__title {
@@ -310,79 +212,36 @@ function formatStat(value) {
   margin-top: 18px;
 }
 
-.phh__stat {
-  flex: 1 1 160px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
-  border-radius: 14px;
-  background: rgba(var(--v-theme-surface), 0.6);
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
-  backdrop-filter: blur(6px);
-}
-
-.v-theme--dark .phh__stat {
-  background: rgba(255, 255, 255, 0.03);
-  border-color: rgba(255, 255, 255, 0.08);
-}
-
-.phh__stat-icon {
-  flex-shrink: 0;
-  inline-size: 36px;
-  block-size: 36px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
+/* Base visual .phh__stat/.phh__stat-icon (glass tile, circular icon glow)
+   ada di .glass-stat/.glass-stat-icon (styles.scss). Di sini cuma varian
+   warna semantik per-metric (dari field stat.color di halaman pemanggil). */
 .phh__stat-icon--tone {
-  background: rgba(var(--phh-c1), 0.16);
-  color: rgb(var(--phh-c1));
+  --stat-c: var(--tone-1);
 }
 
 .phh__stat-icon--primary {
-  background: rgba(var(--v-theme-primary), 0.16);
-  color: rgb(var(--v-theme-primary));
+  --stat-c: var(--v-theme-primary);
 }
 
 .phh__stat-icon--success {
-  background: rgba(var(--v-theme-success), 0.16);
-  color: rgb(var(--v-theme-success));
+  --stat-c: var(--v-theme-success);
 }
 
 .phh__stat-icon--error {
-  background: rgba(var(--v-theme-error), 0.14);
-  color: rgb(var(--v-theme-error));
+  --stat-c: var(--v-theme-error);
 }
 
 .phh__stat-icon--warning {
-  background: rgba(var(--v-theme-warning), 0.16);
-  color: rgb(var(--v-theme-warning));
+  --stat-c: var(--v-theme-warning);
 }
 
 .phh__stat-icon--info {
-  background: rgba(var(--v-theme-info), 0.16);
-  color: rgb(var(--v-theme-info));
-}
-
-.phh__stat-value {
-  font-size: 1.15rem;
-  font-weight: 700;
-  line-height: 1.2;
-}
-
-.phh__stat-label {
-  font-size: 0.72rem;
-  color: rgba(var(--v-theme-on-surface), 0.6);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  --stat-c: var(--v-theme-info);
 }
 
 @media (max-width: 599.98px) {
   .phh__header {
-    padding: 14px;
+    padding: 14px 0;
   }
 
   /* Ringkas header di ponsel: breadcrumb & subtitle panjang disembunyikan

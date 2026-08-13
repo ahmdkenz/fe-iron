@@ -3,16 +3,7 @@
     class="mis"
     :class="`mis--${tone}`"
   >
-    <div class="mis__header">
-      <span
-        class="mis__glow mis__glow--a"
-        aria-hidden="true"
-      />
-      <span
-        class="mis__glow mis__glow--b"
-        aria-hidden="true"
-      />
-
+    <div class="mis__header glass-header">
       <div
         v-if="breadcrumbs.length"
         class="modern-breadcrumb-wrapper d-flex align-center mb-3"
@@ -89,50 +80,50 @@
       </div>
 
       <div class="mis__stats">
-        <div class="mis__stat">
-          <div class="mis__stat-icon mis__stat-icon--total">
+        <div class="mis__stat glass-stat">
+          <div class="mis__stat-icon glass-stat-icon mis__stat-icon--total">
             <VIcon
               icon="ri-database-2-line"
               size="18"
             />
           </div>
           <div class="min-width-0">
-            <div class="mis__stat-value">
+            <div class="mis__stat-value glass-stat-value">
               {{ statsLoading ? '…' : formatStat(stats.total) }}
             </div>
-            <div class="mis__stat-label">
+            <div class="mis__stat-label glass-stat-label">
               Total Data
             </div>
           </div>
         </div>
-        <div class="mis__stat">
-          <div class="mis__stat-icon mis__stat-icon--active">
+        <div class="mis__stat glass-stat">
+          <div class="mis__stat-icon glass-stat-icon mis__stat-icon--active">
             <VIcon
               icon="ri-checkbox-circle-line"
               size="18"
             />
           </div>
           <div class="min-width-0">
-            <div class="mis__stat-value">
+            <div class="mis__stat-value glass-stat-value">
               {{ statsLoading ? '…' : formatStat(stats.aktif) }}
             </div>
-            <div class="mis__stat-label">
+            <div class="mis__stat-label glass-stat-label">
               Aktif
             </div>
           </div>
         </div>
-        <div class="mis__stat">
-          <div class="mis__stat-icon mis__stat-icon--inactive">
+        <div class="mis__stat glass-stat">
+          <div class="mis__stat-icon glass-stat-icon mis__stat-icon--inactive">
             <VIcon
               icon="ri-close-circle-line"
               size="18"
             />
           </div>
           <div class="min-width-0">
-            <div class="mis__stat-value">
+            <div class="mis__stat-value glass-stat-value">
               {{ statsLoading ? '…' : formatStat(stats.nonaktif) }}
             </div>
-            <div class="mis__stat-label">
+            <div class="mis__stat-label glass-stat-label">
               Nonaktif
             </div>
           </div>
@@ -164,17 +155,17 @@
           <VRadio
             label="Semua"
             value="all"
-            color="rgb(var(--mis-c1))"
+            color="rgb(var(--tone-1))"
           />
           <VRadio
             label="Aktif"
             :value="1"
-            color="rgb(var(--mis-c1))"
+            color="rgb(var(--tone-1))"
           />
           <VRadio
             label="Nonaktif"
             :value="0"
-            color="rgb(var(--mis-c1))"
+            color="rgb(var(--tone-1))"
           />
         </VRadioGroup>
       </div>
@@ -220,144 +211,51 @@ function formatStat(value) {
 }
 
 .mis--blue {
-  --mis-c1: 59, 130, 246;
-  --mis-c2: 34, 211, 238;
+  --tone-1: 59, 130, 246;
+  --tone-2: 34, 211, 238;
 }
 
 .mis--violet {
-  --mis-c1: 139, 92, 246;
-  --mis-c2: 232, 121, 249;
+  --tone-1: 139, 92, 246;
+  --tone-2: 232, 121, 249;
 }
 
 .mis--amber {
-  --mis-c1: 245, 158, 11;
-  --mis-c2: 251, 146, 60;
+  --tone-1: 245, 158, 11;
+  --tone-2: 251, 146, 60;
 }
 
 .mis--teal {
-  --mis-c1: 20, 184, 166;
-  --mis-c2: 52, 211, 153;
+  --tone-1: 20, 184, 166;
+  --tone-2: 52, 211, 153;
 }
 
 .mis--rose {
-  --mis-c1: 236, 72, 153;
-  --mis-c2: 244, 114, 182;
+  --tone-1: 236, 72, 153;
+  --tone-2: 244, 114, 182;
 }
 
 .mis--orange {
-  --mis-c1: 249, 115, 22;
-  --mis-c2: 250, 204, 21;
+  --tone-1: 249, 115, 22;
+  --tone-2: 250, 204, 21;
 }
 
 .mis--indigo {
-  --mis-c1: 99, 102, 241;
-  --mis-c2: 129, 140, 248;
+  --tone-1: 99, 102, 241;
+  --tone-2: 129, 140, 248;
 }
 
 .mis--emerald {
-  --mis-c1: 34, 197, 94;
-  --mis-c2: 132, 204, 22;
+  --tone-1: 34, 197, 94;
+  --tone-2: 132, 204, 22;
 }
 
-/* ─── Breadcrumb (mirrors PageHeader.vue) ────────────────────────────── */
-.modern-breadcrumb-wrapper {
-  background: rgba(var(--v-theme-surface), 0.3);
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
-  padding: 5px 8px;
-  border-radius: 10px;
-  width: max-content;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1), 0 4px 15px rgba(0, 0, 0, 0.05);
-  backdrop-filter: blur(12px);
-  position: relative;
-  overflow: hidden;
-}
-
-.breadcrumb-pill {
-  padding: 6px 14px;
-  font-size: 0.85rem;
-  border-radius: 8px;
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  text-decoration: none;
-  font-weight: 500;
-  letter-spacing: 0.3px;
-  position: relative;
-  z-index: 1;
-}
-
-.breadcrumb-link {
-  color: rgba(var(--v-theme-on-surface), 0.65);
-  background: transparent;
-}
-
-.breadcrumb-link:hover {
-  color: rgb(var(--v-theme-primary));
-  background: rgba(var(--v-theme-primary), 0.1);
-  transform: translateY(-1px);
-}
-
-.breadcrumb-active {
-  background: linear-gradient(135deg, rgb(var(--mis-c1)), rgb(var(--mis-c2)));
-  color: white;
-  box-shadow: 0 4px 15px rgba(var(--mis-c1), 0.4);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-}
-
-.separator {
-  display: flex;
-  align-items: center;
-  color: rgba(var(--v-theme-on-surface), 0.3);
-}
+/* Breadcrumb glass (.modern-breadcrumb-wrapper dst) & stat-tile base
+   (.glass-stat/.glass-stat-icon) dikonsolidasi di assets/styles/styles.scss.
+   .glass-header (juga di styles.scss) sengaja polos tanpa box/glow — cuma
+   breadcrumb pill & tiap stat card yang punya kotak/glass sendiri. */
 
 /* ─── Header ──────────────────────────────────────────────────────────── */
-.mis__header {
-  position: relative;
-  overflow: hidden;
-  border-radius: 20px;
-  padding: 20px 22px;
-  margin-bottom: 16px;
-  background: linear-gradient(135deg, rgba(var(--mis-c1), 0.10), rgba(var(--mis-c2), 0.04)), rgb(var(--v-theme-surface));
-  border: 1px solid rgba(var(--mis-c1), 0.16);
-}
-
-.v-theme--dark .mis__header {
-  background: linear-gradient(135deg, rgba(var(--mis-c1), 0.20), rgba(var(--mis-c2), 0.08)), rgb(var(--v-theme-surface));
-  border-color: rgba(var(--mis-c1), 0.28);
-  box-shadow: 0 20px 45px -28px rgba(var(--mis-c1), 0.65);
-}
-
-.mis__glow {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(40px);
-  pointer-events: none;
-  opacity: 0.4;
-}
-
-.mis__glow--a {
-  inline-size: 220px;
-  block-size: 220px;
-  inset-block-start: -90px;
-  inset-inline-end: -60px;
-  background: rgb(var(--mis-c1));
-}
-
-.mis__glow--b {
-  inline-size: 160px;
-  block-size: 160px;
-  inset-block-end: -70px;
-  inset-inline-start: 12%;
-  background: rgb(var(--mis-c2));
-  opacity: 0.3;
-}
-
-.v-theme--dark .mis__glow {
-  opacity: 0.65;
-}
-
-.v-theme--dark .mis__glow--b {
-  opacity: 0.4;
-}
-
 .mis__head-row {
   position: relative;
   z-index: 1;
@@ -376,8 +274,8 @@ function formatStat(value) {
   align-items: center;
   justify-content: center;
   color: #fff;
-  background: linear-gradient(135deg, rgb(var(--mis-c1)), rgb(var(--mis-c2)));
-  box-shadow: 0 8px 20px -6px rgba(var(--mis-c1), 0.6);
+  background: linear-gradient(135deg, rgb(var(--tone-1)), rgb(var(--tone-2)));
+  box-shadow: 0 8px 20px -6px rgba(var(--tone-1), 0.6);
 }
 
 .mis__title {
@@ -398,59 +296,20 @@ function formatStat(value) {
   margin-top: 18px;
 }
 
-.mis__stat {
-  flex: 1 1 160px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
-  border-radius: 14px;
-  background: rgba(var(--v-theme-surface), 0.6);
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
-  backdrop-filter: blur(6px);
-}
-
-.v-theme--dark .mis__stat {
-  background: rgba(255, 255, 255, 0.03);
-  border-color: rgba(255, 255, 255, 0.08);
-}
-
-.mis__stat-icon {
-  flex-shrink: 0;
-  inline-size: 36px;
-  block-size: 36px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
+/* Base visual .mis__stat/.mis__stat-icon (glass tile, circular icon glow)
+   ada di .glass-stat/.glass-stat-icon (styles.scss). Di sini cuma warna
+   semantik per-metric: Total=primary (blue/cyan), Aktif=success (green),
+   Nonaktif=error (red) — TIDAK ikut tone halaman. */
 .mis__stat-icon--total {
-  background: rgba(var(--mis-c1), 0.16);
-  color: rgb(var(--mis-c1));
+  --stat-c: var(--v-theme-primary);
 }
 
 .mis__stat-icon--active {
-  background: rgba(var(--v-theme-success), 0.16);
-  color: rgb(var(--v-theme-success));
+  --stat-c: var(--v-theme-success);
 }
 
 .mis__stat-icon--inactive {
-  background: rgba(var(--v-theme-error), 0.14);
-  color: rgb(var(--v-theme-error));
-}
-
-.mis__stat-value {
-  font-size: 1.15rem;
-  font-weight: 700;
-  line-height: 1.2;
-}
-
-.mis__stat-label {
-  font-size: 0.72rem;
-  color: rgba(var(--v-theme-on-surface), 0.6);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  --stat-c: var(--v-theme-error);
 }
 
 /* ─── Panel (toolbar + table) ─────────────────────────────────────────── */
@@ -464,8 +323,8 @@ function formatStat(value) {
 }
 
 .v-theme--dark .mis__panel {
-  background: linear-gradient(180deg, rgba(var(--mis-c1), 0.06), transparent 20%), rgb(var(--v-theme-surface));
-  border-color: rgba(var(--mis-c1), 0.18);
+  background: linear-gradient(180deg, rgba(var(--tone-1), 0.06), transparent 20%), rgb(var(--v-theme-surface));
+  border-color: rgba(var(--tone-1), 0.18);
 }
 
 .mis__toolbar {
@@ -517,7 +376,7 @@ function formatStat(value) {
 }
 
 .mis__table :deep(.v-data-table__tr:hover > td:first-child) {
-  box-shadow: inset 3px 0 0 0 rgb(var(--mis-c1));
+  box-shadow: inset 3px 0 0 0 rgb(var(--tone-1));
 }
 
 @media (max-width: 599.98px) {
@@ -526,7 +385,7 @@ function formatStat(value) {
   }
 
   .mis__header {
-    padding: 14px;
+    padding: 14px 0;
   }
 
   /* Ringkas header di ponsel: breadcrumb & subtitle panjang disembunyikan
