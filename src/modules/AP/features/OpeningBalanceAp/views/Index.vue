@@ -18,10 +18,10 @@
           variant="tonal"
           prepend-icon="ri-download-2-line"
           class="me-2"
-          :loading="exportingExcel"
-          @click="exportExcel"
+          :loading="isExporting"
+          @click="showExportModal = true"
         >
-          Export Excel
+          Export
         </VBtn>
         <template v-if="authStore.canOperateOpeningBalanceAp">
           <VBtn
@@ -411,11 +411,70 @@
         </template>
       </BaseTable>
     </VCard>
+
+    <!-- Export Modal -->
+    <BaseModal
+      v-if="showExportModal"
+      v-model="showExportModal"
+      title="Export Opening Balance AP"
+      confirm-label="Export"
+      @confirm="exportExcel"
+    >
+      <div class="mb-2 text-caption text-medium-emphasis">
+        Format File
+      </div>
+      <div class="d-flex gap-3 mb-3">
+        <VCard
+          v-for="opt in exportFormatOptions"
+          :key="opt.value"
+          :variant="exportFormat === opt.value ? 'tonal' : 'outlined'"
+          :color="exportFormat === opt.value ? 'primary' : undefined"
+          class="cursor-pointer flex-1-1"
+          @click="exportFormat = opt.value"
+        >
+          <VCardText class="pa-4 text-center">
+            <VIcon
+              :icon="opt.icon"
+              :color="exportFormat === opt.value ? 'primary' : 'grey'"
+              size="28"
+              class="mb-2"
+            />
+            <div class="d-flex align-center justify-center gap-1">
+              <span class="text-body-2 font-weight-semibold">{{ opt.label }}</span>
+              <VIcon
+                v-if="exportFormat === opt.value"
+                icon="ri-checkbox-circle-fill"
+                color="primary"
+                size="16"
+              />
+            </div>
+            <div class="text-caption text-medium-emphasis mt-1">
+              {{ opt.caption }}
+            </div>
+          </VCardText>
+        </VCard>
+      </div>
+
+      <VAlert
+        v-if="exportFormat === 'xlsx' && exportRowCount > 13000"
+        type="warning"
+        variant="tonal"
+        density="compact"
+      >
+        Data cukup besar (&plusmn;{{ exportRowCountLabel }} baris).
+        <template v-if="exportRowCount > 50000">
+          Untuk data sebesar ini, <strong>CSV</strong> jauh lebih cepat &amp; stabil dibanding XLSX &mdash; XLSX berisiko lambat atau gagal.
+        </template>
+        <template v-else>
+          Sebaiknya gunakan <strong>CSV</strong> agar proses export lebih cepat &amp; stabil.
+        </template>
+      </VAlert>
+    </BaseModal>
   </div>
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, reactive, ref } from 'vue'
+import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useDisplay } from 'vuetify'
 import { useSweetAlert } from '@/composables/useSweetAlert'
@@ -500,7 +559,44 @@ const summaryCards = computed(() => [
   },
 ])
 
-const exportingExcel = ref(false)
+// ── Export ────────────────────────────────────────────────────────────────
+const isExporting = ref(false)
+const showExportModal = ref(false)
+const exportFormat = ref('xlsx')
+const exportFormatOptions = [
+  { value: 'xlsx', label: 'XLSX (Excel)', caption: '2 sheet: Opening Balance AP & Detail', icon: 'ri-file-excel-line' },
+  { value: 'csv', label: 'CSV', caption: '1 file, kolom berdampingan', icon: 'ri-file-text-line' },
+]
+const exportRowCount = ref(null)
+const exportRowCountLabel = computed(() => (exportRowCount.value ?? 0).toLocaleString('id-ID'))
+
+let exportRowCountController = null
+
+async function fetchExportRowCount() {
+  exportRowCountController?.abort()
+
+  const controller = new AbortController()
+
+  exportRowCountController = controller
+
+  try {
+    const { data } = await api.get('/ap/opening-balance/export-count', {
+      params: activeFilterParams(),
+      signal: controller.signal,
+    })
+
+    if (controller.signal.aborted) return
+    exportRowCount.value = data.data?.row_count ?? null
+  } catch (err) {
+    // Hitungan ini cuma advisory buat peringatan — kalau gagal, diamkan saja, jangan ganggu alur export.
+    console.error(err)
+  } finally {
+    if (exportRowCountController === controller)
+      exportRowCountController = null
+  }
+}
+
+watch(showExportModal, v => { if (v) fetchExportRowCount() })
 
 const headers = [
   { title: 'No', key: 'no', sortable: false, width: '60px' },
@@ -561,28 +657,30 @@ async function loadSummary() {
 }
 
 async function exportExcel() {
-  exportingExcel.value = true
+  showExportModal.value = false
+  isExporting.value = true
   try {
-    const res = await api.get('/ap/opening-balance/export-excel', {
-      params: activeFilterParams(),
+    const res = await api.get('/ap/opening-balance/export', {
+      params: { ...activeFilterParams(), format: exportFormat.value },
       responseType: 'blob',
-      timeout: 300000,
+      timeout: 300000, // export bisa berat untuk data besar; lebih longgar dari timeout default axios (15s)
     })
 
-    const blobUrl = URL.createObjectURL(new Blob([res.data], {
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    }))
-
+    const blobUrl = URL.createObjectURL(res.data)
     const link = document.createElement('a')
 
     link.href = blobUrl
-    link.download = `opening-balance-ap-${buildTimestamp()}.xlsx`
+    link.download = `opening-balance-ap-${buildTimestamp()}.${exportFormat.value}`
     link.click()
     URL.revokeObjectURL(blobUrl)
   } catch (err) {
-    showError({ text: await readBlobError(err, 'Gagal mengekspor data') })
+    console.error(err)
+    const fallback = err.code === 'ECONNABORTED'
+      ? 'Unduhan memakan waktu lama (timeout). Coba pilih format CSV atau periode yang lebih pendek.'
+      : 'Gagal mengekspor data'
+    showError({ text: await readBlobError(err, fallback) })
   } finally {
-    exportingExcel.value = false
+    isExporting.value = false
   }
 }
 
