@@ -4,8 +4,12 @@
     max-width="720"
     scrollable
     persistent
+    :content-class="mobile ? 'picker-dialog-mobile' : undefined"
   >
-    <VCard rounded="lg">
+    <VCard
+      rounded="lg"
+      class="picker-dialog-card"
+    >
       <!-- Header -->
       <div class="picker-dialog-header pa-5 pb-4">
         <div class="d-flex align-center justify-space-between">
@@ -79,7 +83,7 @@
       <!-- Body: tagihan checklist -->
       <VCardText
         class="pa-0"
-        style="max-height: 420px; overflow-y: auto;"
+        :style="mobile ? 'overflow-y: auto;' : 'max-height: 420px; overflow-y: auto;'"
       >
         <!-- Loading -->
         <div
@@ -222,6 +226,7 @@
 <script setup>
 /* eslint-disable camelcase */
 import { computed, ref, watch } from 'vue'
+import { useDisplay } from 'vuetify'
 import { useFormatter } from '@/composables/useFormatter'
 
 const props = defineProps({
@@ -233,6 +238,7 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue', 'confirm', 'search'])
 
+const { xs: mobile } = useDisplay()
 const { formatCurrency, formatDate } = useFormatter()
 
 const isOpen = computed({
@@ -350,5 +356,14 @@ function doConfirm() {
   border: 1px solid rgba(var(--v-theme-success), 0.25);
   border-radius: 20px;
   padding: 4px 12px;
+}
+
+:deep(.picker-dialog-mobile) {
+  margin: 8px;
+  max-inline-size: calc(100% - 16px);
+}
+
+:deep(.picker-dialog-mobile) .picker-dialog-card {
+  max-block-size: 90dvh;
 }
 </style>

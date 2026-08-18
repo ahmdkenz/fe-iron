@@ -146,6 +146,9 @@
                     clearable
                   />
                 </VCol>
+              </VRow>
+
+              <MobileMoreFields title="Referensi Dokumen">
                 <VCol
                   cols="12"
                   md="6"
@@ -172,7 +175,7 @@
                     clearable
                   />
                 </VCol>
-              </VRow>
+              </MobileMoreFields>
             </VCardText>
           </VCard>
 
@@ -189,7 +192,7 @@
             </div>
             <VDivider />
             <VCardText class="pt-4">
-              <VRow>
+              <MobileMoreFields title="Rincian Pajak">
                 <VCol
                   cols="12"
                   md="6"
@@ -218,7 +221,7 @@
                     prefix="Rp"
                   />
                 </VCol>
-              </VRow>
+              </MobileMoreFields>
             </VCardText>
           </VCard>
         </VCol>
@@ -421,6 +424,7 @@ import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useFormatter, toISODate } from '@/composables/useFormatter'
 import { setFlashAlert } from '@/utils/flashAlert'
 import api from '@/utils/axios'
+import MobileMoreFields from '@/components/shared/MobileMoreFields.vue'
 import TagihanApItemRow from '../components/TagihanApItemRow.vue'
 
 const route = useRoute()
@@ -611,5 +615,45 @@ onMounted(async () => {
   align-items: center;
   justify-content: center;
   margin: 0 auto;
+}
+
+/* Ringkas lagi tampilan mobile khusus halaman ini (tidak menyentuh
+   PageHeader.vue supaya halaman lain yang memakainya tidak ikut berubah).
+   Daftar Item Tagihan (TagihanApItemRow) & sidebar ringkasan TIDAK
+   direstrukturisasi, cuma ikut mengecil lewat rule generik di bawah. */
+@media (max-width: 599.98px) {
+  :deep(.page-header__title) {
+    font-size: 0.95rem !important;
+  }
+
+  .section-header {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+
+  .text-subtitle-1 {
+    font-size: 0.85rem !important;
+  }
+
+  :deep(.v-card-text) {
+    padding: 10px !important;
+  }
+
+  .text-body-2 {
+    font-size: 0.8125rem !important;
+  }
+
+  .text-caption {
+    font-size: 0.7rem !important;
+  }
+
+  :deep(.v-chip) {
+    font-size: 0.6rem !important;
+    --v-chip-height: 18px;
+  }
+
+  .sticky-sidebar {
+    top: 12px;
+  }
 }
 </style>

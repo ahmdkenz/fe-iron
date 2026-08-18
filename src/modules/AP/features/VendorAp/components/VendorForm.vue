@@ -41,6 +41,12 @@
             :error-messages="errors.nama_vendor"
           />
         </VCol>
+      </VRow>
+
+      <MobileMoreFields
+        title="NPWP & Status"
+        :has-error="!!errors.no_npwp?.length"
+      >
         <VCol
           cols="12"
           md="6"
@@ -63,7 +69,7 @@
             item-value="value"
           />
         </VCol>
-      </VRow>
+      </MobileMoreFields>
 
       <!-- Section: Info Rekening Bank -->
       <div
@@ -83,7 +89,7 @@
           Opsional
         </VChip>
       </div>
-      <VRow dense>
+      <MobileMoreFields title="Info Rekening Bank">
         <VCol
           cols="12"
           md="4"
@@ -111,7 +117,7 @@
             label="Atas Nama"
           />
         </VCol>
-      </VRow>
+      </MobileMoreFields>
 
       <!-- Section: Relasi Internal -->
       <div
@@ -167,6 +173,7 @@ import { computed, reactive, ref, watch } from 'vue'
 import { useCrud } from '@/composables/useCrud.js'
 import { useLazyFetchAll } from '@/composables/useLazyFetchAll.js'
 import { BOOLEAN_STATUS_OPTIONS, normalizeBooleanStatus } from '@/utils/status.js'
+import MobileMoreFields from '@/components/shared/MobileMoreFields.vue'
 
 const props = defineProps({
   modelValue: Boolean,

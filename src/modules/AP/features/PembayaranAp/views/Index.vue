@@ -36,7 +36,7 @@
           clearable
           hide-details
           density="compact"
-          style="max-width: 180px"
+          :style="xs ? undefined : 'max-width: 180px'"
           :items="metodeOptions"
           item-title="label"
           item-value="value"
@@ -48,7 +48,7 @@
           clearable
           hide-details
           density="compact"
-          style="max-width: 180px"
+          :style="xs ? undefined : 'max-width: 180px'"
           :items="kategoriOptions"
           item-title="label"
           item-value="value"
@@ -61,7 +61,7 @@
           density="compact"
           variant="outlined"
           hide-details
-          style="max-width: 180px"
+          :style="xs ? undefined : 'max-width: 180px'"
         />
         <VTextField
           v-model="dateDraft.tanggal_sampai"
@@ -70,7 +70,7 @@
           density="compact"
           variant="outlined"
           hide-details
-          style="max-width: 180px"
+          :style="xs ? undefined : 'max-width: 180px'"
         />
         <VBtn
           color="primary"
@@ -103,9 +103,77 @@
         :loading-more="loadingMore"
         :loaded-count="items.length"
         show-expand
+        mobile-cards
         class="mt-2"
         @load-more="loadMore"
       >
+        <template #mobile-card="{ item }">
+          <div class="d-flex align-center justify-space-between gap-2 mb-2">
+            <span class="text-body-2">{{ item.tanggal_pembayaran }}</span>
+            <VChip
+              v-if="item.no_referensi"
+              color="primary"
+              size="small"
+              variant="tonal"
+              label
+            >
+              {{ item.no_referensi }}
+            </VChip>
+          </div>
+          <div class="d-flex align-center gap-2 mb-2">
+            <VChip
+              size="small"
+              variant="tonal"
+              :color="item.kategori_voucher === 'BB' ? 'success' : item.kategori_voucher === 'NBB' ? 'info' : 'secondary'"
+              label
+            >
+              {{ item.kategori_voucher_label }}
+            </VChip>
+            <span class="text-caption text-medium-emphasis">{{ item.metode_pembayaran }}</span>
+          </div>
+          <div class="d-flex align-center justify-space-between">
+            <div>
+              <div class="font-weight-bold">
+                {{ formatCurrency(item.jumlah_pembayaran) }}
+              </div>
+              <div class="d-flex align-center gap-2 mt-1">
+                <VChip
+                  size="x-small"
+                  variant="tonal"
+                  color="secondary"
+                  label
+                >
+                  {{ item.jumlah_tagihan }} tagihan
+                </VChip>
+                <VBtn
+                  v-if="item.bukti_url"
+                  icon
+                  size="x-small"
+                  variant="text"
+                  color="info"
+                  :href="item.bukti_url"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <VIcon
+                    icon="ri-attachment-line"
+                    size="16"
+                  />
+                </VBtn>
+              </div>
+            </div>
+            <MobileCardActions
+              :editable="false"
+              :selectable="false"
+              :deletable="authStore.canOperatePembayaranAp"
+              :show-menu="authStore.canOperatePembayaranAp"
+              detail-label="Cetak"
+              @detail="printVoucher(item)"
+              @delete="confirmDeleteItem(item)"
+            />
+          </div>
+        </template>
+
         <template #item.no="{ index }">
           {{ index + 1 }}
         </template>
@@ -304,6 +372,7 @@
 
 <script setup>
 import { nextTick, onBeforeUnmount, onDeactivated, reactive, ref } from 'vue'
+import { useDisplay } from 'vuetify'
 import { useAuthStore } from '@/stores/auth.store'
 import { useCrud } from '@/composables/useCrud'
 import { useLoadMore } from '@/composables/useLoadMore.js'
@@ -312,8 +381,10 @@ import { useSweetAlert } from '@/composables/useSweetAlert'
 import api from '@/utils/axios'
 import { openLoadingPrintTab } from '@/utils/printWindow.js'
 import { readBlobError } from '@/utils/readBlobError'
+import MobileCardActions from '@/components/shared/MobileCardActions.vue'
 import { getCurrentMonthRange } from '@/modules/AP/shared/utils/dateRange'
 
+const { xs } = useDisplay()
 const authStore = useAuthStore()
 const { remove } = useCrud('/ap/pembayaran')
 

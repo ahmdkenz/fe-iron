@@ -101,6 +101,12 @@
                     :error-messages="errors.kategori_voucher"
                   />
                 </VCol>
+              </VRow>
+
+              <MobileMoreFields
+                title="Bukti & Keterangan (Opsional)"
+                :has-error="!!(errors.bukti_pembayaran?.length || errors.keterangan?.length)"
+              >
                 <VCol
                   cols="12"
                   md="6"
@@ -127,7 +133,7 @@
                     :error-messages="errors.keterangan"
                   />
                 </VCol>
-              </VRow>
+              </MobileMoreFields>
             </VCardText>
           </VCard>
 
@@ -183,7 +189,7 @@
               </div>
 
               <table
-                v-else
+                v-else-if="!xs"
                 class="allocation-table w-100"
               >
                 <thead>
@@ -253,6 +259,59 @@
                   </tr>
                 </tbody>
               </table>
+
+              <div
+                v-else
+                class="d-flex flex-column gap-2"
+              >
+                <VCard
+                  v-for="(row, idx) in allocations"
+                  :key="row.tagihan_ap_id"
+                  variant="outlined"
+                  class="allocation-card"
+                >
+                  <VCardText class="pa-3">
+                    <div class="d-flex align-center justify-space-between mb-2">
+                      <VChip
+                        color="primary"
+                        size="small"
+                        variant="tonal"
+                        label
+                      >
+                        {{ row.no_tagihan }}
+                      </VChip>
+                      <VBtn
+                        icon
+                        size="small"
+                        variant="text"
+                        color="error"
+                        @click="removeAllocation(idx)"
+                      >
+                        <VIcon
+                          icon="ri-delete-bin-line"
+                          size="18"
+                        />
+                      </VBtn>
+                    </div>
+                    <div class="text-body-2 text-truncate mb-1">
+                      {{ row.vendor ?? '-' }}
+                    </div>
+                    <div class="text-caption text-error mb-2">
+                      Sisa Tagihan: {{ formatCurrency(row.sisa_tagihan) }}
+                    </div>
+                    <VTextField
+                      v-model.number="row.jumlah"
+                      label="Jumlah Dibayar"
+                      type="number"
+                      density="compact"
+                      variant="outlined"
+                      hide-details
+                      prefix="Rp"
+                      @update:model-value="v => clampJumlah(row, v)"
+                    />
+                  </VCardText>
+                </VCard>
+              </div>
 
               <VAlert
                 v-if="allocationsError"
@@ -330,13 +389,16 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useDisplay } from 'vuetify'
 import { useCrud } from '@/composables/useCrud'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useFormatter } from '@/composables/useFormatter'
 import { setFlashAlert } from '@/utils/flashAlert'
 import api from '@/utils/axios'
+import MobileMoreFields from '@/components/shared/MobileMoreFields.vue'
 import TagihanApMultiPickerDialog from '../components/TagihanApMultiPickerDialog.vue'
 
+const { xs } = useDisplay()
 const route = useRoute()
 const router = useRouter()
 const { showError } = useSweetAlert()
@@ -525,5 +587,48 @@ onMounted(async () => {
   font-size: 0.75rem;
   text-transform: uppercase;
   color: rgba(var(--v-theme-on-surface), 0.6);
+}
+
+.allocation-card {
+  border-inline-start: 3px solid rgb(var(--v-theme-primary));
+}
+
+/* Ringkas lagi tampilan mobile khusus halaman ini (tidak menyentuh
+   PageHeader.vue supaya halaman lain yang memakainya tidak ikut berubah).
+   Alokasi Tagihan sudah punya rendering kartu khusus mobile di atas. */
+@media (max-width: 599.98px) {
+  :deep(.page-header__title) {
+    font-size: 0.95rem !important;
+  }
+
+  .section-header {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+
+  .text-subtitle-1 {
+    font-size: 0.85rem !important;
+  }
+
+  :deep(.v-card-text) {
+    padding: 10px !important;
+  }
+
+  .text-body-2 {
+    font-size: 0.8125rem !important;
+  }
+
+  .text-caption {
+    font-size: 0.7rem !important;
+  }
+
+  :deep(.v-chip) {
+    font-size: 0.6rem !important;
+    --v-chip-height: 18px;
+  }
+
+  .sticky-sidebar {
+    top: 12px;
+  }
 }
 </style>

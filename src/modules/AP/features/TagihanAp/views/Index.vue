@@ -52,7 +52,7 @@
           clearable
           hide-details
           density="compact"
-          style="max-width: 240px"
+          :style="xs ? undefined : 'max-width: 240px'"
           prepend-inner-icon="ri-search-line"
           @update:model-value="debouncedFetch"
         />
@@ -63,7 +63,7 @@
           clearable
           hide-details
           density="compact"
-          style="max-width: 160px"
+          :style="xs ? undefined : 'max-width: 160px'"
         />
         <VTextField
           v-model="dateDraft.tanggal_sampai"
@@ -72,7 +72,7 @@
           clearable
           hide-details
           density="compact"
-          style="max-width: 160px"
+          :style="xs ? undefined : 'max-width: 160px'"
         />
         <VBtn
           color="primary"
@@ -102,10 +102,89 @@
         :loading-more="loadingMore"
         :loaded-count="items.length"
         show-select
+        mobile-cards
+        mobile-menu-select
         column-resize-key="ap-tagihan-index"
         class="mt-2"
         @load-more="loadMore"
       >
+        <template #mobile-card="{ item, selected: cardSelected, toggle }">
+          <div class="d-flex align-center justify-space-between gap-2 mb-2">
+            <div class="d-flex align-center gap-1">
+              <VChip
+                color="primary"
+                size="small"
+                variant="tonal"
+                label
+              >
+                {{ item.no_tagihan }}
+              </VChip>
+              <VIcon
+                v-if="item.is_eb_ap_locked"
+                icon="ri-lock-line"
+                size="14"
+                color="warning"
+              />
+            </div>
+            <TagihanApStatusBadge :status="item.status" />
+          </div>
+          <div class="mb-1">
+            <div class="font-weight-medium text-truncate">
+              {{ item.vendor_ap?.nama_vendor ?? '-' }}
+            </div>
+            <div
+              v-if="item.vendor_ap?.kode_vendor"
+              class="text-caption text-medium-emphasis"
+            >
+              {{ item.vendor_ap.kode_vendor }}
+            </div>
+          </div>
+          <div class="text-caption text-medium-emphasis mb-2">
+            {{ formatDate(item.tanggal_tagihan) }}
+            &middot; Jatuh tempo: {{ item.tanggal_jatuh_tempo ? formatDate(item.tanggal_jatuh_tempo) : '-' }}
+          </div>
+          <div class="d-flex align-center justify-space-between">
+            <div>
+              <div class="font-weight-bold">
+                {{ formatCurrency(item.total_tagihan) }}
+              </div>
+              <div
+                class="text-caption"
+                :class="item.sisa_tagihan > 0 ? 'text-error' : 'text-success'"
+              >
+                Sisa: {{ formatCurrency(item.sisa_tagihan) }}
+              </div>
+            </div>
+            <MobileCardActions
+              :selected="cardSelected"
+              :editable="item.can_edit && authStore.canOperateTagihanAp"
+              :deletable="item.can_edit && authStore.canOperateTagihanAp"
+              @detail="router.push({ name: 'ap-tagihan-show', params: { id: item.id } })"
+              @edit="router.push({ name: 'ap-tagihan-edit', params: { id: item.id } })"
+              @delete="confirmDeleteItem(item)"
+              @toggle-select="toggle"
+            >
+              <template
+                v-if="item.can_print"
+                #menu-extra
+              >
+                <VListItem
+                  :disabled="printingId === item.id"
+                  @click="printTagihan(item)"
+                >
+                  <template #prepend>
+                    <VIcon
+                      icon="ri-printer-line"
+                      size="18"
+                    />
+                  </template>
+                  <VListItemTitle>Cetak</VListItemTitle>
+                </VListItem>
+              </template>
+            </MobileCardActions>
+          </div>
+        </template>
+
         <template #item.no="{ index }">
           {{ index + 1 }}
         </template>
@@ -290,6 +369,7 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onDeactivated, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useDisplay } from 'vuetify'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useAuthStore } from '@/stores/auth.store'
 import { useCrud } from '@/composables/useCrud'
@@ -299,10 +379,12 @@ import api from '@/utils/axios'
 import { openLoadingPrintTab, openPrintTab } from '@/utils/printWindow.js'
 import { readBlobError } from '@/utils/readBlobError'
 import BulkDeleteBar from '@/components/base/BulkDeleteBar.vue'
+import MobileCardActions from '@/components/shared/MobileCardActions.vue'
 import ApSummaryInsights from '@/modules/AP/shared/components/ApSummaryInsights.vue'
 import { getCurrentMonthRange } from '@/modules/AP/shared/utils/dateRange'
 import TagihanApStatusBadge from '../components/TagihanApStatusBadge.vue'
 
+const { xs } = useDisplay()
 const router = useRouter()
 const authStore = useAuthStore()
 const { showSuccess, showError, showLoading, closeAlert, confirmDelete: swalConfirmDelete } = useSweetAlert()

@@ -88,6 +88,12 @@
           />
         </VCol>
 
+      </VRow>
+
+      <MobileMoreFields
+        title="Keterangan & Bukti (Opsional)"
+        :has-error="!!(errors.keterangan?.length || errors.bukti_pembayaran?.length)"
+      >
         <VCol cols="12">
           <VTextField
             v-model="form.keterangan"
@@ -115,7 +121,7 @@
             persistent-hint
           />
         </VCol>
-      </VRow>
+      </MobileMoreFields>
 
       <VAlert
         v-if="errorMessage"
@@ -134,6 +140,7 @@ import { ref, reactive, watch } from 'vue'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useFormatter } from '@/composables/useFormatter.js'
 import api from '@/utils/axios.js'
+import MobileMoreFields from '@/components/shared/MobileMoreFields.vue'
 
 const props = defineProps({
   modelValue: Boolean,

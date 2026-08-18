@@ -26,7 +26,7 @@
           clearable
           hide-details
           density="compact"
-          style="max-width: 280px"
+          :style="xs ? undefined : 'max-width: 280px'"
           prepend-inner-icon="ri-search-line"
           @update:model-value="debouncedFetch"
         />
@@ -36,7 +36,7 @@
           clearable
           hide-details
           density="compact"
-          style="max-width: 180px"
+          :style="xs ? undefined : 'max-width: 180px'"
           :items="statusOptions"
           item-title="label"
           item-value="value"
@@ -54,9 +54,46 @@
         :page="meta.current_page"
         class="mt-2"
         show-select
+        mobile-cards
+        mobile-menu-select
         column-resize-key="ap-vendor-index"
         @update:options="onTableOptions"
       >
+        <template #mobile-card="{ item, selected: cardSelected, toggle }">
+          <div class="d-flex align-center justify-space-between gap-2 mb-2">
+            <VChip
+              color="primary"
+              size="small"
+              variant="tonal"
+              label
+            >
+              {{ item.kode_vendor }}
+            </VChip>
+            <StatusChip :active="item.status" />
+          </div>
+          <div class="font-weight-medium text-truncate mb-1">
+            {{ item.nama_vendor }}
+          </div>
+          <div class="d-flex align-center justify-space-between gap-2">
+            <span class="text-caption text-medium-emphasis text-truncate">
+              <VIcon
+                icon="ri-user-line"
+                size="12"
+              />
+              {{ item.karyawan_ap?.nama_karyawan ?? '-' }}
+            </span>
+            <MobileCardActions
+              :selected="cardSelected"
+              :editable="authStore.canOperateVendorAp"
+              :deletable="authStore.canOperateVendorAp"
+              @detail="openDetail(item)"
+              @edit="openEdit(item)"
+              @delete="confirmDeleteItem(item)"
+              @toggle-select="toggle"
+            />
+          </div>
+        </template>
+
         <template #item.no="{ index }">
           {{ (meta.current_page - 1) * meta.per_page + index + 1 }}
         </template>
@@ -237,7 +274,7 @@
     <VendorForm
       v-model="showForm"
       :vendor-data="selectedForm"
-      :minimizable="true"
+      :minimizable="!xs"
       @minimize="minimizeForm"
       @saved="onFormSaved"
     />
@@ -252,6 +289,7 @@
 
 <script setup>
 import { nextTick, onActivated, onDeactivated, ref, watch } from 'vue'
+import { useDisplay } from 'vuetify'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useAuthStore } from '@/stores/auth.store'
 import { useCrud } from '@/composables/useCrud'
@@ -259,8 +297,10 @@ import { useMinimizeWidgetStore } from '@/stores/minimize-widget.store'
 import api from '@/utils/axios'
 import BulkDeleteBar from '@/components/base/BulkDeleteBar.vue'
 import DetailRow from '@/components/shared/DetailRow.vue'
+import MobileCardActions from '@/components/shared/MobileCardActions.vue'
 import VendorForm from '../components/VendorForm.vue'
 
+const { xs } = useDisplay()
 const authStore = useAuthStore()
 const { showSuccess, showError, showLoading, closeAlert, confirmDelete: swalConfirmDelete } = useSweetAlert()
 
