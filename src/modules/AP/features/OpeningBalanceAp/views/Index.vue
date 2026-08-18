@@ -23,24 +23,6 @@
         >
           Export Excel
         </VBtn>
-        <VBtn
-          v-else
-          icon
-          color="secondary"
-          variant="tonal"
-          size="small"
-          aria-label="Export Excel"
-          :loading="exportingExcel"
-          @click="exportExcel"
-        >
-          <VIcon icon="ri-download-2-line" />
-          <VTooltip
-            activator="parent"
-            location="bottom"
-          >
-            Export Excel
-          </VTooltip>
-        </VBtn>
         <template v-if="authStore.canOperateOpeningBalanceAp">
           <VBtn
             v-if="!xs"
