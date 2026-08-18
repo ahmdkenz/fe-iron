@@ -25,6 +25,7 @@ export const useMasterOpeningBalanceImportStore = defineStore('master-opening-ba
     importing: false,
     progress: null,
     result: null,
+    batchId: null,
   }),
 
   actions: {
@@ -33,6 +34,7 @@ export const useMasterOpeningBalanceImportStore = defineStore('master-opening-ba
       this.importing = false
       this.progress  = null
       this.result    = null
+      this.batchId   = null
     },
 
     /**
@@ -97,6 +99,7 @@ export const useMasterOpeningBalanceImportStore = defineStore('master-opening-ba
     },
 
     poll(batchId) {
+      this.batchId = batchId
       pollTimer = setTimeout(async () => {
         try {
           const res  = await api.get(`${BASE}/${batchId}/status`)
@@ -113,6 +116,12 @@ export const useMasterOpeningBalanceImportStore = defineStore('master-opening-ba
             return
           }
 
+          // 'needs_confirmation' bukan status terminal — berhenti polling (menunggu
+          // keputusan user lewat confirmReplace/confirmSkip/cancelImport), TAPI jangan
+          // finish() supaya dialog import tetap terbuka & merender dialog konflik alih-
+          // alih hasil akhir.
+          if (data?.status === 'needs_confirmation') return
+
           this.poll(batchId)
         } catch {
           this.finish({ ...initialProgress(), status: 'failed', message: 'Gagal memuat status import.' })
@@ -124,6 +133,26 @@ export const useMasterOpeningBalanceImportStore = defineStore('master-opening-ba
       this.importing = false
       this.result    = data
       useMinimizeWidgetStore().updateImportState(WIDGET_ID, { importing: false, progress: data, result: data })
+    },
+
+    async confirmReplace() {
+      if (!this.batchId) return
+      await api.post(`${BASE}/${this.batchId}/confirm-replace`)
+      this.progress = { ...initialProgress(), status: 'queued' }
+      this.poll(this.batchId)
+    },
+
+    async confirmSkip() {
+      if (!this.batchId) return
+      await api.post(`${BASE}/${this.batchId}/confirm-skip`)
+      this.progress = { ...initialProgress(), status: 'queued' }
+      this.poll(this.batchId)
+    },
+
+    async cancelImport() {
+      if (!this.batchId) return
+      await api.post(`${BASE}/${this.batchId}/cancel`)
+      this.reset()
     },
   },
 })

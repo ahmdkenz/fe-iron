@@ -236,9 +236,10 @@
                 <MobileCardActions
                   :selected="selected"
                   :editable="item.can_edit"
-                  :deletable="false"
+                  :deletable="item.can_delete"
                   @detail="router.push({ name: 'finance-invoice-show', params: { id: item.id } })"
                   @edit="router.push({ name: 'finance-opening-balance-edit', params: { id: item.id } })"
+                  @delete="confirmDeleteOb(item)"
                   @toggle-select="toggle"
                 >
                   <template #menu-extra>
@@ -372,6 +373,23 @@
                 />
                 <VTooltip activator="parent">
                   Edit
+                </VTooltip>
+              </VBtn>
+              <VBtn
+                v-if="item.can_delete"
+                icon
+                size="small"
+                variant="text"
+                color="error"
+                :loading="deletingObId === item.id"
+                @click="confirmDeleteOb(item)"
+              >
+                <VIcon
+                  icon="ri-delete-bin-line"
+                  size="18"
+                />
+                <VTooltip activator="parent">
+                  Hapus
                 </VTooltip>
               </VBtn>
             </div>
@@ -542,9 +560,10 @@
                 <MobileCardActions
                   :selected="selected"
                   :editable="item.can_edit"
-                  :deletable="false"
+                  :deletable="item.can_delete"
                   @detail="router.push({ name: 'finance-invoice-show', params: { id: item.id } })"
                   @edit="router.push({ name: 'finance-opening-balance-edit', params: { id: item.id } })"
+                  @delete="confirmDeleteOb(item)"
                   @toggle-select="toggle"
                 >
                   <template #menu-extra>
@@ -681,6 +700,23 @@
                 />
                 <VTooltip activator="parent">
                   Edit
+                </VTooltip>
+              </VBtn>
+              <VBtn
+                v-if="item.can_delete"
+                icon
+                size="small"
+                variant="text"
+                color="error"
+                :loading="deletingObId === item.id"
+                @click="confirmDeleteOb(item)"
+              >
+                <VIcon
+                  icon="ri-delete-bin-line"
+                  size="18"
+                />
+                <VTooltip activator="parent">
+                  Hapus
                 </VTooltip>
               </VBtn>
             </div>
@@ -1844,6 +1880,7 @@ const approvingId  = ref(null)
 const rejectingId  = ref(null)
 const approvingAll = ref(false)
 const printingId   = ref(null)
+const deletingObId = ref(null)
 
 const pendingDirApprovalItems = computed(() => dirApprovalItems.value.filter(i => i.approval_status === 'PENDING'))
 const showDirApproveAllButton = computed(() => pendingDirApprovalItems.value.length > 1)
@@ -2574,6 +2611,44 @@ async function confirmReject(item) {
   } finally {
     closeAlert({ onlyLoading: true })
     rejectingId.value = null
+  }
+}
+
+// ── Delete OB (hasil import yang salah) action ───────────────────────────────
+async function confirmDeleteOb(item) {
+  const result = await showAlert({
+    icon: 'warning',
+    title: 'Hapus Opening Balance?',
+    html: `Opening Balance <strong>${item.no_invoice}</strong> atas nama <strong>${item.klien_ar?.nama_klien ?? '-'}</strong> akan dihapus permanen. Berikan alasan penghapusan.`,
+    input: 'textarea',
+    inputPlaceholder: 'Alasan penghapusan...',
+    inputAttributes: { rows: 3 },
+    inputValidator: value => !value?.trim() ? 'Alasan penghapusan wajib diisi.' : null,
+    confirmButtonText: 'Ya, Hapus',
+    confirmButtonColor: resolveThemeTokens().error,
+    cancelButtonText: 'Batal',
+    showCancelButton: true,
+    focusCancel: true,
+    reverseButtons: true,
+  })
+
+  if (!result.isConfirmed) return
+
+  deletingObId.value = item.id
+  showLoading({ title: 'Menghapus Opening Balance', text: 'Data sedang dihapus...' })
+  try {
+    await api.delete(`/finance/opening-balance/${item.id}`, { data: { alasan: result.value } })
+    await showSuccess({ text: `Opening Balance ${item.no_invoice} berhasil dihapus.` })
+    reset()
+    if (canSeeAll) resetB2B()
+    loadSummary()
+  } catch (err) {
+    const message = err?.response?.data?.message ?? 'Gagal menghapus Opening Balance.'
+
+    showError({ text: message })
+  } finally {
+    closeAlert({ onlyLoading: true })
+    deletingObId.value = null
   }
 }
 

@@ -175,7 +175,7 @@
 
           <!-- Progress saat import berjalan -->
           <div
-            v-if="importing && importProgress"
+            v-if="importing && importProgress && importProgress.status !== 'needs_confirmation'"
             class="mt-5"
           >
             <div
@@ -241,6 +241,104 @@
                 />
                 Item: <strong>+{{ importProgress.inserted_item }}</strong>
               </span>
+            </div>
+          </div>
+
+          <!-- Konflik data — menunggu keputusan user (klien sudah punya OB di tanggal cutover yang sama) -->
+          <div
+            v-if="importing && importProgress && importProgress.status === 'needs_confirmation'"
+            class="mt-5"
+          >
+            <VAlert
+              type="warning"
+              variant="tonal"
+              class="mb-3"
+            >
+              <div class="font-weight-medium mb-1">
+                {{ importProgress.conflicts?.length ?? 0 }} klien bentrok dengan Opening Balance yang sudah ada pada tanggal cutover ini.
+              </div>
+              <div class="text-caption">
+                <strong>Ganti Data Lama</strong> — Opening Balance lama DIHAPUS PERMANEN, digantikan data dari file ini (berlaku untuk SEMUA klien yang bentrok, bukan pilih satu-satu).<br>
+                <strong>Lewati yang Bentrok</strong> — Opening Balance lama tetap dipakai apa adanya, hanya klien yang tidak bentrok yang diproses (perilaku sama seperti sebelumnya).
+              </div>
+            </VAlert>
+
+            <VTable
+              v-if="!xs"
+              density="compact"
+              fixed-header
+              height="220"
+            >
+              <thead>
+                <tr>
+                  <th>Klien</th>
+                  <th>Kode Resto</th>
+                  <th>OB Lama</th>
+                  <th>Tanggal OB Lama</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="(c, i) in importProgress.conflicts"
+                  :key="i"
+                >
+                  <td>{{ c.nama_klien || '-' }}</td>
+                  <td>{{ c.kode_resto || '-' }}</td>
+                  <td>{{ c.existing_no_invoice || '-' }}</td>
+                  <td>{{ formatConflictDate(c.existing_tanggal_invoice) }}</td>
+                </tr>
+              </tbody>
+            </VTable>
+
+            <div
+              v-else
+              class="d-flex flex-column ga-2 overflow-y-auto"
+              style="max-height: 260px;"
+            >
+              <VCard
+                v-for="(c, i) in importProgress.conflicts"
+                :key="i"
+                variant="tonal"
+                color="warning"
+                rounded="lg"
+              >
+                <VCardText class="pa-2">
+                  <div class="font-weight-medium">
+                    {{ c.nama_klien || '-' }}
+                  </div>
+                  <div class="text-caption">
+                    <template v-if="c.kode_resto">Kode Resto: {{ c.kode_resto }} · </template>OB Lama: {{ c.existing_no_invoice || '-' }} ({{ formatConflictDate(c.existing_tanggal_invoice) }})
+                  </div>
+                </VCardText>
+              </VCard>
+            </div>
+
+            <div class="d-flex flex-wrap ga-2 mt-4 justify-end">
+              <VBtn
+                variant="outlined"
+                :disabled="!!resolvingConflict"
+                :loading="resolvingConflict === 'cancel'"
+                @click="doCancelImport"
+              >
+                Batalkan
+              </VBtn>
+              <VBtn
+                color="secondary"
+                variant="tonal"
+                :disabled="!!resolvingConflict"
+                :loading="resolvingConflict === 'skip'"
+                @click="doConfirmSkip"
+              >
+                Lewati yang Bentrok
+              </VBtn>
+              <VBtn
+                color="warning"
+                :disabled="!!resolvingConflict"
+                :loading="resolvingConflict === 'replace'"
+                @click="doConfirmReplace"
+              >
+                Ganti Data Lama
+              </VBtn>
             </div>
           </div>
 
@@ -431,6 +529,114 @@
                 </VCard>
               </div>
             </div>
+
+            <div
+              v-if="importResult.skipped_details && importResult.skipped_details.length > 0"
+              class="mt-4"
+            >
+              <div class="d-flex align-center justify-space-between ga-2 mb-2">
+                <div class="text-subtitle-2 text-secondary d-flex align-center ga-1">
+                  <VIcon
+                    icon="ri-file-copy-2-line"
+                    size="16"
+                    color="secondary"
+                  />
+                  {{ importResult.skipped_details.length }} baris dilewati (klien sudah memiliki Opening Balance di tanggal cutover ini):
+                </div>
+                <VBtn
+                  variant="text"
+                  size="small"
+                  density="comfortable"
+                  color="secondary"
+                  @click="showSkippedDetail = !showSkippedDetail"
+                >
+                  {{ showSkippedDetail ? 'Sembunyikan' : 'Lihat detail' }}
+                  <VIcon
+                    :icon="showSkippedDetail ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'"
+                    end
+                  />
+                </VBtn>
+              </div>
+
+              <template v-if="showSkippedDetail">
+                <VTable
+                  v-if="!xs"
+                  density="compact"
+                  fixed-header
+                  height="180"
+                >
+                  <thead>
+                    <tr>
+                      <th>Sheet</th>
+                      <th>Baris</th>
+                      <th>No Urut</th>
+                      <th>Klien</th>
+                      <th>Kode Resto</th>
+                      <th>OB Lama</th>
+                      <th>Pesan</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      v-for="(row, i) in importResult.skipped_details"
+                      :key="i"
+                    >
+                      <td>{{ row.sheet || '-' }}</td>
+                      <td>{{ row.row }}</td>
+                      <td>{{ row.no_urut || '-' }}</td>
+                      <td>{{ row.klien || '-' }}</td>
+                      <td>{{ row.kode_resto || '-' }}</td>
+                      <td>{{ row.existing_no_invoice || '-' }}</td>
+                      <td>{{ row.message }}</td>
+                    </tr>
+                  </tbody>
+                </VTable>
+
+                <div
+                  v-else
+                  class="d-flex flex-column ga-2 overflow-y-auto"
+                  style="max-height: 260px;"
+                >
+                  <VCard
+                    v-for="(row, i) in importResult.skipped_details"
+                    :key="i"
+                    variant="tonal"
+                    color="secondary"
+                    rounded="lg"
+                  >
+                    <VCardText class="pa-2">
+                      <div class="d-flex flex-wrap ga-1 mb-1">
+                        <VChip
+                          size="x-small"
+                          color="secondary"
+                          variant="flat"
+                        >
+                          {{ row.sheet || '-' }}
+                        </VChip>
+                        <VChip
+                          size="x-small"
+                          color="secondary"
+                          variant="tonal"
+                        >
+                          Baris {{ row.row }}
+                        </VChip>
+                        <VChip
+                          v-if="row.existing_no_invoice"
+                          size="x-small"
+                          color="secondary"
+                          variant="tonal"
+                        >
+                          OB Lama: {{ row.existing_no_invoice }}
+                        </VChip>
+                      </div>
+                      <div class="text-caption">
+                        {{ row.message }}
+                      </div>
+                    </VCardText>
+                  </VCard>
+                </div>
+              </template>
+            </div>
           </div>
         </VCardText>
 
@@ -465,10 +671,12 @@ import api from '@/utils/axios'
 import { useMasterOpeningBalanceImportStore, WIDGET_ID } from '@/stores/master-opening-balance-import.store'
 import { useMinimizeWidgetStore } from '@/stores/minimize-widget.store'
 import { useImportEta } from '@/composables/useImportEta'
+import { useSweetAlert } from '@/composables/useSweetAlert'
 
 const { xs } = useDisplay()
 const importStore = useMasterOpeningBalanceImportStore()
 const minimizeStore = useMinimizeWidgetStore()
+const { showAlert, showError, resolveThemeTokens } = useSweetAlert()
 const { importing, progress: importProgress, result: importResult } = storeToRefs(importStore)
 const { elapsedLabel, etaLabel } = useImportEta(
   importProgress,
@@ -477,9 +685,66 @@ const { elapsedLabel, etaLabel } = useImportEta(
 
 const showImport = ref(false)
 const showInfo = ref(false)
+const showSkippedDetail = ref(false)
 const importFile = ref(null)
 const cutoverDate = ref(null)
 const downloadingTemplate = ref({ xlsx: false, csv: false })
+const resolvingConflict = ref(null) // null | 'replace' | 'skip' | 'cancel'
+
+function formatConflictDate(value) {
+  if (!value) return '-'
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return value
+
+  return new Intl.DateTimeFormat('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(date)
+}
+
+async function doConfirmReplace() {
+  const result = await showAlert({
+    icon: 'warning',
+    title: 'Ganti Data Lama?',
+    text: `Opening Balance lama untuk ${importProgress.value.conflicts?.length ?? 0} klien akan DIHAPUS PERMANEN dan digantikan data dari file ini.`,
+    confirmButtonText: 'Ya, Ganti',
+    confirmButtonColor: resolveThemeTokens().error,
+    cancelButtonText: 'Batal',
+    showCancelButton: true,
+    focusCancel: true,
+    reverseButtons: true,
+  })
+
+  if (!result.isConfirmed) return
+
+  resolvingConflict.value = 'replace'
+  try {
+    await importStore.confirmReplace()
+  } catch (err) {
+    showError({ text: err.response?.data?.message ?? 'Gagal melanjutkan import.' })
+  } finally {
+    resolvingConflict.value = null
+  }
+}
+
+async function doConfirmSkip() {
+  resolvingConflict.value = 'skip'
+  try {
+    await importStore.confirmSkip()
+  } catch (err) {
+    showError({ text: err.response?.data?.message ?? 'Gagal melanjutkan import.' })
+  } finally {
+    resolvingConflict.value = null
+  }
+}
+
+async function doCancelImport() {
+  resolvingConflict.value = 'cancel'
+  try {
+    await importStore.cancelImport()
+  } catch (err) {
+    showError({ text: err.response?.data?.message ?? 'Gagal membatalkan import.' })
+  } finally {
+    resolvingConflict.value = null
+  }
+}
 
 function openImport() {
   minimizeStore.setMinimizedFalse(WIDGET_ID)
