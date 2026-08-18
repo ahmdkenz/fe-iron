@@ -151,12 +151,14 @@ export default [
     to: { name: 'ap-opening-balance-index' },
     icon: { icon: 'ri-history-line' },
     roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AP'],
+    mobileNav: 'more',
   },
   {
     title: 'Ending Balance',
     to: { name: 'ap-ending-balance-index' },
     icon: { icon: 'ri-scales-2-line' },
     roles: ['ADMIN', 'MANAGER', 'SUPERVISOR', 'AP'],
+    mobileNav: 'more',
   },
   {
     title: 'Payment Voucher',

@@ -1,32 +1,74 @@
 <template>
   <div>
-    <PageHeader
+    <PageHeroHeader
+      tone="gold"
+      icon="ri-wallet-3-line"
       title="Opening Balance AP"
       subtitle="Saldo awal hutang vendor"
       :breadcrumbs="[
         { title: 'Dashboard', to: { name: 'dashboard' } },
         { title: 'Opening Balance AP', disabled: true }
       ]"
+      compact-actions
     >
-      <VBtn
-        color="secondary"
-        variant="tonal"
-        prepend-icon="ri-download-2-line"
-        class="me-2"
-        :loading="exportingExcel"
-        @click="exportExcel"
-      >
-        Export Excel
-      </VBtn>
-      <VBtn
-        v-if="authStore.canOperateOpeningBalanceAp"
-        color="primary"
-        prepend-icon="ri-add-line"
-        :to="{ name: 'ap-opening-balance-create' }"
-      >
-        Buat Opening Balance
-      </VBtn>
-    </PageHeader>
+      <template #actions>
+        <VBtn
+          v-if="!xs"
+          color="secondary"
+          variant="tonal"
+          prepend-icon="ri-download-2-line"
+          class="me-2"
+          :loading="exportingExcel"
+          @click="exportExcel"
+        >
+          Export Excel
+        </VBtn>
+        <VBtn
+          v-else
+          icon
+          color="secondary"
+          variant="tonal"
+          size="small"
+          aria-label="Export Excel"
+          :loading="exportingExcel"
+          @click="exportExcel"
+        >
+          <VIcon icon="ri-download-2-line" />
+          <VTooltip
+            activator="parent"
+            location="bottom"
+          >
+            Export Excel
+          </VTooltip>
+        </VBtn>
+        <template v-if="authStore.canOperateOpeningBalanceAp">
+          <VBtn
+            v-if="!xs"
+            color="primary"
+            prepend-icon="ri-add-line"
+            :to="{ name: 'ap-opening-balance-create' }"
+          >
+            Buat Opening Balance
+          </VBtn>
+          <VBtn
+            v-else
+            icon
+            color="primary"
+            size="small"
+            aria-label="Buat Opening Balance"
+            :to="{ name: 'ap-opening-balance-create' }"
+          >
+            <VIcon icon="ri-add-line" />
+            <VTooltip
+              activator="parent"
+              location="bottom"
+            >
+              Buat Opening Balance
+            </VTooltip>
+          </VBtn>
+        </template>
+      </template>
+    </PageHeroHeader>
 
     <ApSummaryInsights
       :cards="summaryCards"
@@ -45,36 +87,44 @@
           clearable
           hide-details
           density="compact"
-          style="max-width: 220px"
+          :style="xs ? undefined : 'max-width: 220px'"
           prepend-inner-icon="ri-search-line"
           @update:model-value="debouncedFetch"
         />
-        <VTextField
-          v-model="dateDraft.tanggal_dari"
-          label="Dari Tanggal"
-          type="date"
-          clearable
-          hide-details
-          density="compact"
-          style="max-width: 160px"
+        <template v-if="!xs">
+          <VTextField
+            v-model="dateDraft.tanggal_dari"
+            label="Dari Tanggal"
+            type="date"
+            clearable
+            hide-details
+            density="compact"
+            style="max-width: 160px"
+          />
+          <VTextField
+            v-model="dateDraft.tanggal_sampai"
+            label="Sampai Tanggal"
+            type="date"
+            clearable
+            hide-details
+            density="compact"
+            style="max-width: 160px"
+          />
+          <VBtn
+            color="primary"
+            variant="tonal"
+            prepend-icon="ri-filter-3-line"
+            @click="applyFilter"
+          >
+            Filter
+          </VBtn>
+        </template>
+        <DateRangeFilterSheet
+          v-else
+          v-model:dari="dateDraft.tanggal_dari"
+          v-model:sampai="dateDraft.tanggal_sampai"
+          @apply="applyFilter"
         />
-        <VTextField
-          v-model="dateDraft.tanggal_sampai"
-          label="Sampai Tanggal"
-          type="date"
-          clearable
-          hide-details
-          density="compact"
-          style="max-width: 160px"
-        />
-        <VBtn
-          color="primary"
-          variant="tonal"
-          prepend-icon="ri-filter-3-line"
-          @click="applyFilter"
-        >
-          Filter
-        </VBtn>
         <VBtn
           variant="text"
           prepend-icon="ri-refresh-line"
@@ -93,10 +143,130 @@
         :has-more="hasMore"
         :loading-more="loadingMore"
         :loaded-count="items.length"
+        mobile-cards
         column-resize-key="ap-opening-balance-index"
         class="mt-2"
         @load-more="loadMore"
       >
+        <template #mobile-card="{ item }">
+          <div class="d-flex align-center justify-space-between gap-2 mb-2">
+            <div class="d-flex align-center gap-1">
+              <VChip
+                color="primary"
+                size="small"
+                variant="tonal"
+                label
+              >
+                {{ item.no_tagihan }}
+              </VChip>
+              <VIcon
+                v-if="item.is_eb_ap_locked"
+                icon="ri-lock-line"
+                size="14"
+                color="warning"
+              />
+            </div>
+            <div class="d-flex flex-column align-end gap-1 flex-shrink-0">
+              <TagihanApStatusBadge :status="item.status" />
+              <ApprovalStatusBadge :status="item.approval_status" />
+            </div>
+          </div>
+          <div class="mb-1">
+            <div class="font-weight-medium text-truncate">
+              {{ item.vendor_ap?.nama_vendor ?? '-' }}
+            </div>
+            <div
+              v-if="item.vendor_ap?.kode_vendor"
+              class="text-caption text-medium-emphasis"
+            >
+              {{ item.vendor_ap.kode_vendor }}
+            </div>
+          </div>
+          <div class="text-caption text-medium-emphasis mb-2">
+            {{ formatDate(item.tanggal_tagihan) }}
+            &middot; Jatuh tempo: {{ item.tanggal_jatuh_tempo ? formatDate(item.tanggal_jatuh_tempo) : '-' }}
+          </div>
+          <div class="d-flex align-center justify-space-between">
+            <div>
+              <div class="font-weight-bold">
+                {{ formatCurrency(item.total_tagihan) }}
+              </div>
+              <div
+                class="text-caption"
+                :class="item.sisa_tagihan > 0 ? 'text-error' : 'text-success'"
+              >
+                Sisa: {{ formatCurrency(item.sisa_tagihan) }}
+              </div>
+            </div>
+            <MobileCardActions
+              :editable="item.can_edit && authStore.canOperateOpeningBalanceAp"
+              :deletable="false"
+              :selectable="false"
+              :show-menu="(item.can_edit && authStore.canOperateOpeningBalanceAp) || item.can_print || (item.approval_status === 'PENDING' && authStore.canApproveOpeningBalanceAp) || (item.can_resubmit && authStore.canOperateOpeningBalanceAp)"
+              @detail="router.push({ name: 'ap-opening-balance-show', params: { id: item.id } })"
+              @edit="router.push({ name: 'ap-opening-balance-edit', params: { id: item.id } })"
+            >
+              <template #menu-extra>
+                <VListItem
+                  v-if="item.can_print"
+                  :disabled="printingId === item.id"
+                  @click="printOpeningBalance(item.id)"
+                >
+                  <template #prepend>
+                    <VIcon
+                      icon="ri-printer-line"
+                      size="18"
+                    />
+                  </template>
+                  <VListItemTitle>Cetak</VListItemTitle>
+                </VListItem>
+                <template v-if="item.approval_status === 'PENDING' && authStore.canApproveOpeningBalanceAp">
+                  <VListItem
+                    :disabled="approvingId === item.id"
+                    base-color="success"
+                    @click="confirmApprove(item)"
+                  >
+                    <template #prepend>
+                      <VIcon
+                        icon="ri-checkbox-circle-line"
+                        size="18"
+                      />
+                    </template>
+                    <VListItemTitle>Approve</VListItemTitle>
+                  </VListItem>
+                  <VListItem
+                    :disabled="rejectingId === item.id"
+                    base-color="error"
+                    @click="confirmReject(item)"
+                  >
+                    <template #prepend>
+                      <VIcon
+                        icon="ri-close-circle-line"
+                        size="18"
+                      />
+                    </template>
+                    <VListItemTitle>Tolak</VListItemTitle>
+                  </VListItem>
+                </template>
+                <VListItem
+                  v-if="item.can_resubmit && authStore.canOperateOpeningBalanceAp"
+                  :disabled="resubmittingId === item.id"
+                  base-color="warning"
+                  @click="confirmResubmit(item)"
+                >
+                  <template #prepend>
+                    <VIcon
+                      icon="ri-send-plane-line"
+                      size="18"
+                    />
+                  </template>
+                  <VListItemTitle>Ajukan Ulang</VListItemTitle>
+                </VListItem>
+              </template>
+            </MobileCardActions>
+          </div>
+        </template>
+
         <template #item.no="{ index }">
           {{ index + 1 }}
         </template>
@@ -264,17 +434,23 @@
 
 <script setup>
 import { computed, onBeforeUnmount, reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useDisplay } from 'vuetify'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useAuthStore } from '@/stores/auth.store'
 import { useLoadMore } from '@/composables/useLoadMore.js'
 import { useFormatter } from '@/composables/useFormatter'
 import api from '@/utils/axios'
 import { readBlobError } from '@/utils/readBlobError'
+import MobileCardActions from '@/components/shared/MobileCardActions.vue'
+import DateRangeFilterSheet from '@/modules/Finance/shared/components/DateRangeFilterSheet.vue'
 import TagihanApStatusBadge from '../../TagihanAp/components/TagihanApStatusBadge.vue'
 import ApprovalStatusBadge from '@/modules/Finance/shared/components/ApprovalStatusBadge.vue'
 import ApSummaryInsights from '@/modules/AP/shared/components/ApSummaryInsights.vue'
 import { getCurrentMonthRange } from '@/modules/AP/shared/utils/dateRange'
 
+const router = useRouter()
+const { xs } = useDisplay()
 const authStore = useAuthStore()
 const { showAlert, showSuccess, showError, showLoading, closeAlert, resolveThemeTokens } = useSweetAlert()
 const { formatCurrency, formatDate } = useFormatter()
