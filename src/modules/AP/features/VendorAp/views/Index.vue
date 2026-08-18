@@ -1,22 +1,45 @@
 <template>
   <div>
-    <PageHeader
+    <PageHeroHeader
+      tone="blue"
+      icon="ri-store-2-line"
       title="Vendor"
       subtitle="Kelola data vendor/pemasok Account Payable"
       :breadcrumbs="[
         { title: 'Dashboard', to: { name: 'dashboard' } },
         { title: 'Vendor', disabled: true }
       ]"
+      compact-actions
     >
-      <VBtn
-        v-if="authStore.canOperateVendorAp"
-        color="primary"
-        prepend-icon="ri-add-line"
-        @click="openCreate"
-      >
-        Tambah Vendor
-      </VBtn>
-    </PageHeader>
+      <template #actions>
+        <template v-if="authStore.canOperateVendorAp">
+          <VBtn
+            v-if="!xs"
+            color="primary"
+            prepend-icon="ri-add-line"
+            @click="openCreate"
+          >
+            Tambah Vendor
+          </VBtn>
+          <VBtn
+            v-else
+            icon
+            color="primary"
+            size="small"
+            aria-label="Tambah Vendor"
+            @click="openCreate"
+          >
+            <VIcon icon="ri-add-line" />
+            <VTooltip
+              activator="parent"
+              location="bottom"
+            >
+              Tambah Vendor
+            </VTooltip>
+          </VBtn>
+        </template>
+      </template>
+    </PageHeroHeader>
 
     <VCard>
       <VCardText class="d-flex flex-wrap gap-3 pb-0">

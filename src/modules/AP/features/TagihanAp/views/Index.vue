@@ -1,32 +1,56 @@
 <template>
   <div>
-    <PageHeader
+    <PageHeroHeader
+      tone="gold"
+      icon="ri-file-list-3-line"
       title="Tagihan AP"
       subtitle="Pengelolaan tagihan vendor"
       :breadcrumbs="[
         { title: 'Dashboard', to: { name: 'dashboard' } },
         { title: 'Tagihan AP', disabled: true }
       ]"
+      compact-actions
     >
-      <VBtn
-        color="secondary"
-        variant="tonal"
-        prepend-icon="ri-download-2-line"
-        class="me-2"
-        :loading="exportingExcel"
-        @click="exportExcel"
-      >
-        Export Excel
-      </VBtn>
-      <VBtn
-        v-if="authStore.canOperateTagihanAp"
-        color="primary"
-        prepend-icon="ri-add-line"
-        :to="{ name: 'ap-tagihan-create' }"
-      >
-        Input Tagihan
-      </VBtn>
-    </PageHeader>
+      <template #actions>
+        <VBtn
+          v-if="!xs"
+          color="secondary"
+          variant="tonal"
+          prepend-icon="ri-download-2-line"
+          class="me-2"
+          :loading="exportingExcel"
+          @click="exportExcel"
+        >
+          Export Excel
+        </VBtn>
+        <template v-if="authStore.canOperateTagihanAp">
+          <VBtn
+            v-if="!xs"
+            color="primary"
+            prepend-icon="ri-add-line"
+            :to="{ name: 'ap-tagihan-create' }"
+          >
+            Input Tagihan
+          </VBtn>
+          <VBtn
+            v-else
+            icon
+            color="primary"
+            size="small"
+            aria-label="Input Tagihan"
+            :to="{ name: 'ap-tagihan-create' }"
+          >
+            <VIcon icon="ri-add-line" />
+            <VTooltip
+              activator="parent"
+              location="bottom"
+            >
+              Input Tagihan
+            </VTooltip>
+          </VBtn>
+        </template>
+      </template>
+    </PageHeroHeader>
 
     <!-- ── Section: List Tagihan AP ─────────────────────────────────────────── -->
     <div class="d-flex align-center gap-2 mb-4">
@@ -56,32 +80,40 @@
           prepend-inner-icon="ri-search-line"
           @update:model-value="debouncedFetch"
         />
-        <VTextField
-          v-model="dateDraft.tanggal_dari"
-          label="Dari Tanggal"
-          type="date"
-          clearable
-          hide-details
-          density="compact"
-          :style="xs ? undefined : 'max-width: 160px'"
+        <template v-if="!xs">
+          <VTextField
+            v-model="dateDraft.tanggal_dari"
+            label="Dari Tanggal"
+            type="date"
+            clearable
+            hide-details
+            density="compact"
+            style="max-width: 160px"
+          />
+          <VTextField
+            v-model="dateDraft.tanggal_sampai"
+            label="Sampai Tanggal"
+            type="date"
+            clearable
+            hide-details
+            density="compact"
+            style="max-width: 160px"
+          />
+          <VBtn
+            color="primary"
+            variant="tonal"
+            prepend-icon="ri-filter-3-line"
+            @click="applyFilter"
+          >
+            Filter
+          </VBtn>
+        </template>
+        <DateRangeFilterSheet
+          v-else
+          v-model:dari="dateDraft.tanggal_dari"
+          v-model:sampai="dateDraft.tanggal_sampai"
+          @apply="applyFilter"
         />
-        <VTextField
-          v-model="dateDraft.tanggal_sampai"
-          label="Sampai Tanggal"
-          type="date"
-          clearable
-          hide-details
-          density="compact"
-          :style="xs ? undefined : 'max-width: 160px'"
-        />
-        <VBtn
-          color="primary"
-          variant="tonal"
-          prepend-icon="ri-filter-3-line"
-          @click="applyFilter"
-        >
-          Filter
-        </VBtn>
         <VBtn
           variant="text"
           prepend-icon="ri-refresh-line"
@@ -380,6 +412,7 @@ import { openLoadingPrintTab, openPrintTab } from '@/utils/printWindow.js'
 import { readBlobError } from '@/utils/readBlobError'
 import BulkDeleteBar from '@/components/base/BulkDeleteBar.vue'
 import MobileCardActions from '@/components/shared/MobileCardActions.vue'
+import DateRangeFilterSheet from '@/modules/Finance/shared/components/DateRangeFilterSheet.vue'
 import ApSummaryInsights from '@/modules/AP/shared/components/ApSummaryInsights.vue'
 import { getCurrentMonthRange } from '@/modules/AP/shared/utils/dateRange'
 import TagihanApStatusBadge from '../components/TagihanApStatusBadge.vue'

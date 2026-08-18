@@ -1,32 +1,56 @@
 <template>
   <div>
-    <PageHeader
+    <PageHeroHeader
+      tone="emerald"
+      icon="ri-bill-line"
       title="Payment Voucher"
       subtitle="Riwayat Payment Voucher ke vendor"
       :breadcrumbs="[
         { title: 'Dashboard', to: { name: 'dashboard' } },
         { title: 'Payment Voucher', disabled: true }
       ]"
+      compact-actions
     >
-      <VBtn
-        color="secondary"
-        variant="tonal"
-        prepend-icon="ri-download-2-line"
-        class="me-2"
-        :loading="exportingExcel"
-        @click="exportExcel"
-      >
-        Export Excel
-      </VBtn>
-      <VBtn
-        v-if="authStore.canOperatePembayaranAp"
-        color="primary"
-        prepend-icon="ri-add-line"
-        :to="{ name: 'ap-pembayaran-create' }"
-      >
-        Buat Payment Voucher
-      </VBtn>
-    </PageHeader>
+      <template #actions>
+        <VBtn
+          v-if="!xs"
+          color="secondary"
+          variant="tonal"
+          prepend-icon="ri-download-2-line"
+          class="me-2"
+          :loading="exportingExcel"
+          @click="exportExcel"
+        >
+          Export Excel
+        </VBtn>
+        <template v-if="authStore.canOperatePembayaranAp">
+          <VBtn
+            v-if="!xs"
+            color="primary"
+            prepend-icon="ri-add-line"
+            :to="{ name: 'ap-pembayaran-create' }"
+          >
+            Buat Payment Voucher
+          </VBtn>
+          <VBtn
+            v-else
+            icon
+            color="primary"
+            size="small"
+            aria-label="Buat Payment Voucher"
+            :to="{ name: 'ap-pembayaran-create' }"
+          >
+            <VIcon icon="ri-add-line" />
+            <VTooltip
+              activator="parent"
+              location="bottom"
+            >
+              Buat Payment Voucher
+            </VTooltip>
+          </VBtn>
+        </template>
+      </template>
+    </PageHeroHeader>
 
     <VCard>
       <VCardText class="d-flex flex-wrap align-center gap-3 pb-0">
@@ -54,32 +78,40 @@
           item-value="value"
           @update:model-value="doFetch"
         />
-        <VTextField
-          v-model="dateDraft.tanggal_dari"
-          type="date"
-          label="Dari"
-          density="compact"
-          variant="outlined"
-          hide-details
-          :style="xs ? undefined : 'max-width: 180px'"
+        <template v-if="!xs">
+          <VTextField
+            v-model="dateDraft.tanggal_dari"
+            type="date"
+            label="Dari"
+            density="compact"
+            variant="outlined"
+            hide-details
+            style="max-width: 180px"
+          />
+          <VTextField
+            v-model="dateDraft.tanggal_sampai"
+            type="date"
+            label="Sampai"
+            density="compact"
+            variant="outlined"
+            hide-details
+            style="max-width: 180px"
+          />
+          <VBtn
+            color="primary"
+            variant="tonal"
+            prepend-icon="ri-filter-3-line"
+            @click="applyFilter"
+          >
+            Filter
+          </VBtn>
+        </template>
+        <DateRangeFilterSheet
+          v-else
+          v-model:dari="dateDraft.tanggal_dari"
+          v-model:sampai="dateDraft.tanggal_sampai"
+          @apply="applyFilter"
         />
-        <VTextField
-          v-model="dateDraft.tanggal_sampai"
-          type="date"
-          label="Sampai"
-          density="compact"
-          variant="outlined"
-          hide-details
-          :style="xs ? undefined : 'max-width: 180px'"
-        />
-        <VBtn
-          color="primary"
-          variant="tonal"
-          prepend-icon="ri-filter-3-line"
-          @click="applyFilter"
-        >
-          Filter
-        </VBtn>
         <VBtn
           variant="text"
           prepend-icon="ri-refresh-line"
@@ -382,6 +414,7 @@ import api from '@/utils/axios'
 import { openLoadingPrintTab } from '@/utils/printWindow.js'
 import { readBlobError } from '@/utils/readBlobError'
 import MobileCardActions from '@/components/shared/MobileCardActions.vue'
+import DateRangeFilterSheet from '@/modules/Finance/shared/components/DateRangeFilterSheet.vue'
 import { getCurrentMonthRange } from '@/modules/AP/shared/utils/dateRange'
 
 const { xs } = useDisplay()
