@@ -253,7 +253,7 @@
                       <VListItem
                         prepend-icon="ri-printer-line"
                         title="Cetak"
-                        @click="printInvoice(item.id)"
+                        @click="printInvoice(item)"
                       />
                     </template>
                   </template>
@@ -334,7 +334,7 @@
                 variant="text"
                 color="secondary"
                 :loading="printingId === item.id"
-                @click="printInvoice(item.id)"
+                @click="printInvoice(item)"
               >
                 <VIcon
                   icon="ri-printer-line"
@@ -577,7 +577,7 @@
                       <VListItem
                         prepend-icon="ri-printer-line"
                         title="Cetak"
-                        @click="printInvoice(item.id)"
+                        @click="printInvoice(item)"
                       />
                     </template>
                   </template>
@@ -661,7 +661,7 @@
                 variant="text"
                 color="secondary"
                 :loading="printingId === item.id"
-                @click="printInvoice(item.id)"
+                @click="printInvoice(item)"
               >
                 <VIcon
                   icon="ri-printer-line"
@@ -1310,7 +1310,7 @@
                       <VListItem
                         prepend-icon="ri-printer-line"
                         title="Cetak"
-                        @click="printInvoice(item.id)"
+                        @click="printInvoice(item)"
                       />
                     </template>
                   </template>
@@ -1391,7 +1391,7 @@
                 variant="text"
                 color="secondary"
                 :loading="printingId === item.id"
-                @click="printInvoice(item.id)"
+                @click="printInvoice(item)"
               >
                 <VIcon
                   icon="ri-printer-line"
@@ -1593,7 +1593,7 @@
                       <VListItem
                         prepend-icon="ri-printer-line"
                         title="Cetak"
-                        @click="printInvoice(item.id)"
+                        @click="printInvoice(item)"
                       />
                     </template>
                   </template>
@@ -1677,7 +1677,7 @@
                 variant="text"
                 color="secondary"
                 :loading="printingId === item.id"
-                @click="printInvoice(item.id)"
+                @click="printInvoice(item)"
               >
                 <VIcon
                   icon="ri-printer-line"
@@ -1801,7 +1801,7 @@ import { useSweetAlert } from '@/composables/useSweetAlert'
 import { useFinanceNotificationStore } from '@/stores/finance-notification.store'
 import api from '@/utils/axios'
 import { readBlobError } from '@/utils/readBlobError'
-import { openLoadingPrintTab } from '@/utils/printWindow.js'
+import { openLoadingPrintTab, openPrintTab } from '@/utils/printWindow.js'
 import { waitForInvoicePrintReady } from '@/utils/invoicePrintPolling.js'
 import BulkApproveProgressDialog from '@/modules/Finance/features/OpeningBalance/components/BulkApproveProgressDialog.vue'
 import ApprovalStatusBadge from '@/modules/Finance/shared/components/ApprovalStatusBadge.vue'
@@ -2089,7 +2089,16 @@ async function exportExcel() {
 }
 
 // ── Print ──────────────────────────────────────────────────────────────────
-async function printInvoice(id) {
+async function printInvoice(item) {
+  if (item.share_url) {
+    if (!openPrintTab(item.share_url))
+      await showError('Popup diblokir browser. Izinkan popup untuk membuka dokumen cetak.')
+
+    return
+  }
+
+  const id = item.id
+
   printingId.value = id
 
   const printWindow = openLoadingPrintTab()
