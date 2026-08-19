@@ -734,6 +734,15 @@
       @clear="selectedInvoices = []"
     />
 
+    <!-- Bulk Action Bar (director view - "List Opening Balance", share only) -->
+    <BulkActionBar
+      v-if="authStore.canApproveOpeningBalance"
+      :selected="selectedDirOb"
+      :show-delete="false"
+      @share="openShareDialog(selectedDirOb)"
+      @clear="selectedDirOb = []"
+    />
+
     <!-- Share Dialog -->
     <ShareInvoicesDialog
       v-model="showShareDialog"
@@ -1241,18 +1250,21 @@
         </div>
         <VDivider />
         <BaseTable
+          v-model:selected="selectedDirOb"
           :headers="dirObHeadersB2B"
           :items="dirObItemsB2B"
           :total="dirObMetaB2B.total"
           :loading="dirObLoadingB2B"
           :per-page="dirObMetaB2B.per_page"
           :page="dirObMetaB2B.current_page"
+          show-select
           class="mt-2"
           mobile-cards
+          mobile-menu-select
           column-resize-key="finance-opening-balance-dir-b2b"
           @update:options="onDirObTableOptionsB2B"
         >
-          <template #mobile-card="{ item }">
+          <template #mobile-card="{ item, selected, toggle }">
             <div class="d-flex align-center justify-space-between gap-2 mb-2">
               <div class="min-width-0">
                 <div class="d-flex align-center gap-1">
@@ -1294,11 +1306,12 @@
               </div>
               <div class="d-flex align-center gap-1 flex-shrink-0">
                 <MobileCardActions
+                  :selected="selected"
                   :editable="false"
                   :deletable="false"
-                  :selectable="false"
                   :show-menu="item.can_print"
                   @detail="router.push({ name: 'finance-invoice-show', params: { id: item.id } })"
+                  @toggle-select="toggle"
                 >
                   <template #menu-extra>
                     <template v-if="item.can_print">
@@ -1518,18 +1531,21 @@
         </div>
         <VDivider />
         <BaseTable
+          v-model:selected="selectedDirOb"
           :headers="dirObHeaders"
           :items="dirObItems"
           :total="dirObMeta.total"
           :loading="dirObLoading"
           :per-page="dirObMeta.per_page"
           :page="dirObMeta.current_page"
+          show-select
           class="mt-2"
           mobile-cards
+          mobile-menu-select
           column-resize-key="finance-opening-balance-dir-b2c"
           @update:options="onDirObTableOptions"
         >
-          <template #mobile-card="{ item }">
+          <template #mobile-card="{ item, selected, toggle }">
             <div class="d-flex align-center justify-space-between gap-2 mb-2">
               <div class="min-width-0">
                 <div class="d-flex align-center gap-1">
@@ -1577,11 +1593,12 @@
               </div>
               <div class="d-flex align-center gap-1 flex-shrink-0">
                 <MobileCardActions
+                  :selected="selected"
                   :editable="false"
                   :deletable="false"
-                  :selectable="false"
                   :show-menu="item.can_print"
                   @detail="router.push({ name: 'finance-invoice-show', params: { id: item.id } })"
+                  @toggle-select="toggle"
                 >
                   <template #menu-extra>
                     <template v-if="item.can_print">
@@ -1943,6 +1960,7 @@ const dirObStats = computed(() => {
 
 // ── Bulk select state ──────────────────────────────────────────────────────
 const selectedInvoices    = ref([])
+const selectedDirOb       = ref([])
 const showShareDialog     = ref(false)
 const shareTargetInvoices = ref([])
 

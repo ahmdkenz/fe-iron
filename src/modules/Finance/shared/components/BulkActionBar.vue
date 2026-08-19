@@ -77,6 +77,7 @@
           </VBtn>
 
           <AppActionButton
+            v-if="showDelete"
             action="hapus"
             size="small"
             :compact="xs"
@@ -116,6 +117,7 @@ import { useConfigStore } from '@core/stores/config'
 const props = defineProps({
   selected: { type: Array, default: () => [] },
   showInvestorBulk: { type: Boolean, default: false },
+  showDelete: { type: Boolean, default: true },
 })
 
 const emit = defineEmits(['share', 'delete', 'clear', 'investor-bulk'])
