@@ -54,24 +54,13 @@
               md="4"
             >
               <VTextField
-                v-if="isEditing"
-                :model-value="kodeResto"
-                label="Kode Resto"
-                density="compact"
-                variant="outlined"
-                readonly
-                hint="Kode tidak dapat diubah"
-                persistent-hint
-              />
-              <VTextField
-                v-else
                 v-model="form.kode_resto"
                 label="Kode Resto"
                 density="compact"
                 variant="outlined"
                 :rules="[v => !!v || 'Kode resto wajib diisi']"
                 :error-messages="errors.kode_resto"
-                hint="Isi kode resto secara manual"
+                :hint="isEditing ? 'Ubah dengan hati-hati — kode ini dipakai untuk mencocokkan data saat import' : 'Isi kode resto secara manual'"
                 persistent-hint
               />
             </VCol>
@@ -401,7 +390,6 @@ const { ensureLoaded: ensureKaryawanLoaded } = useLazyFetchAll(fetchKaryawan)
 
 const brandList    = ref([])
 const brandLoading = ref(false)
-const kodeResto    = ref('')
 
 const formRef = ref(null)
 const pageLoading = ref(!!id)
@@ -486,8 +474,8 @@ onMounted(async () => {
 
   const data = await fetchOne(id)
   if (data) {
-    kodeResto.value = data.kode_resto ?? ''
     Object.assign(form, {
+      kode_resto: data.kode_resto    ?? '',
       nama_resto: data.nama_resto    ?? '',
       perusahaan_id: data.perusahaan_id ?? null,
       brand_id: data.brand_id      ?? null,

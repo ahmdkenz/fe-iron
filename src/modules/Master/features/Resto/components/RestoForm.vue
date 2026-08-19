@@ -56,18 +56,6 @@
       <VRow dense>
         <VCol cols="12">
           <VTextField
-            v-if="isEditing"
-            :model-value="restoDataRef?.kode_resto"
-            label="Kode Resto"
-            density="compact"
-            variant="outlined"
-            prepend-inner-icon="ri-barcode-line"
-            readonly
-            hint="Kode tidak dapat diubah"
-            persistent-hint
-          />
-          <VTextField
-            v-else
             v-model="form.kode_resto"
             label="Kode Resto"
             density="compact"
@@ -75,7 +63,7 @@
             prepend-inner-icon="ri-barcode-line"
             :rules="[v => !!v || 'Kode resto wajib diisi']"
             :error-messages="errors.kode_resto"
-            hint="Isi kode resto secara manual"
+            :hint="isEditing ? 'Ubah dengan hati-hati — kode ini dipakai untuk mencocokkan data saat import' : 'Isi kode resto secara manual'"
             persistent-hint
           />
         </VCol>

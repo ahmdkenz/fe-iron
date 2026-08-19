@@ -67,7 +67,8 @@
             prepend-inner-icon="ri-barcode-line"
             :rules="[v => !!v || 'Kode barang wajib diisi']"
             :error-messages="errors.kode_barang"
-            :disabled="isEditing"
+            :hint="isEditing ? 'Ubah dengan hati-hati — kode ini dipakai untuk mencocokkan data saat import' : 'Isi kode barang secara manual'"
+            persistent-hint
             @input="form.kode_barang = form.kode_barang.toUpperCase()"
           />
         </VCol>
