@@ -189,7 +189,7 @@
       </div>
       <MobileMoreFields
         title="Konfigurasi SMTP"
-        :has-error="!!(errors.smtp_host?.length || errors.smtp_port?.length || errors.smtp_username?.length || errors.smtp_password?.length || errors.smtp_encryption?.length)"
+        :has-error="!!(errors.smtp_host?.length || errors.smtp_port?.length || errors.smtp_username?.length || errors.smtp_password?.length || errors.smtp_encryption?.length || errors.smtp_from_email?.length)"
       >
         <VCol
           cols="12"
@@ -222,10 +222,23 @@
           <VTextField
             v-model="form.smtp_username"
             label="SMTP Username"
-            placeholder="alamat email pengirim"
+            placeholder="mis. alamat email, atau API key/token dari provider"
             density="compact"
             variant="outlined"
             :error-messages="errors.smtp_username"
+          />
+        </VCol>
+        <VCol cols="12">
+          <VTextField
+            v-model="form.smtp_from_email"
+            label="Email Pengirim (From)"
+            type="email"
+            placeholder="alamat email yang tampil sebagai pengirim"
+            density="compact"
+            variant="outlined"
+            hint="Wajib diisi kalau SMTP Username BUKAN alamat email (mis. Mailtrap, SendGrid pakai token/API key sebagai username). Kosongkan hanya jika SMTP Username sudah berupa email asli (mis. Gmail)."
+            persistent-hint
+            :error-messages="errors.smtp_from_email"
           />
         </VCol>
         <VCol
@@ -326,7 +339,7 @@ const showToken = ref(false)
 const errorMessage = ref('')
 const errors = reactive({
   username: [], email: [], password: [], no_hp: [], role_id: [], karyawan_id: [],
-  smtp_host: [], smtp_port: [], smtp_username: [], smtp_password: [], smtp_encryption: [],
+  smtp_host: [], smtp_port: [], smtp_username: [], smtp_password: [], smtp_encryption: [], smtp_from_email: [],
 })
 
 // NIK autocomplete state
@@ -342,7 +355,7 @@ const statusOptions = BOOLEAN_STATUS_OPTIONS
 
 const defaultForm = () => ({
   username: '', email: '', no_hp: '', password: '', role_id: null, status: 1, karyawan_id: null,
-  smtp_host: '', smtp_port: null, smtp_username: '', smtp_password: '', smtp_encryption: null,
+  smtp_host: '', smtp_port: null, smtp_username: '', smtp_password: '', smtp_encryption: null, smtp_from_email: '',
 })
 const form = reactive(defaultForm())
 
@@ -377,7 +390,7 @@ watch([() => props.modelValue, () => props.userData], ([open]) => {
   if (!open) return
   Object.assign(errors, {
     username: [], email: [], password: [], no_hp: [], role_id: [], karyawan_id: [],
-    smtp_host: [], smtp_port: [], smtp_username: [], smtp_password: [], smtp_encryption: [],
+    smtp_host: [], smtp_port: [], smtp_username: [], smtp_password: [], smtp_encryption: [], smtp_from_email: [],
   })
   errorMessage.value = ''
   showPwd.value = false
@@ -398,6 +411,7 @@ watch([() => props.modelValue, () => props.userData], ([open]) => {
     form.smtp_username = props.userData.smtp_username ?? ''
     form.smtp_password = ''
     form.smtp_encryption = props.userData.smtp_encryption ?? null
+    form.smtp_from_email = props.userData.smtp_from_email ?? ''
 
     if (props.userData.karyawan) {
       selectedKaryawan.value = props.userData.karyawan
