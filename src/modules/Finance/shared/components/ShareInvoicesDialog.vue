@@ -22,10 +22,7 @@
                 Kirim via WhatsApp
               </div>
               <div class="text-caption text-medium-emphasis">
-                {{ isMultiClientMode ? 'Kirim ke beberapa klien sekaligus'
-                  : isMultiInvestorMode ? 'Kirim rekap ke beberapa investor sekaligus'
-                  : isInvestorBulkMode ? 'Rekap gabungan invoice investor'
-                  : 'Pilih invoice yang ingin dikirim' }}
+                Pilih invoice yang ingin dikirim
               </div>
             </div>
           </div>
@@ -45,32 +42,7 @@
 
         <!-- Client Info -->
         <div
-          v-if="isMultiClientMode || isMultiInvestorMode"
-          class="client-info-bar mt-4"
-        >
-          <VAvatar
-            color="primary"
-            variant="tonal"
-            size="36"
-            class="flex-shrink-0"
-          >
-            <VIcon
-              icon="ri-group-line"
-              size="18"
-            />
-          </VAvatar>
-          <div class="flex-grow-1 min-width-0">
-            <div class="text-body-2 font-weight-semibold">
-              {{ isMultiClientMode ? clientGroups.length : investorGroups.length }}
-              {{ isMultiClientMode ? 'klien dipilih' : 'investor dipilih' }}
-            </div>
-            <div class="text-caption text-medium-emphasis">
-              Atur nomor WhatsApp tiap penerima di bawah sebelum kirim
-            </div>
-          </div>
-        </div>
-        <div
-          v-else-if="firstInvoice"
+          v-if="firstInvoice"
           class="client-info-bar mt-4"
         >
           <VAvatar
@@ -122,215 +94,6 @@
           />
         </div>
 
-        <!-- Mode: multi-client (banyak klien berbeda, review + edit nomor per grup) -->
-        <template v-else-if="isMultiClientMode">
-          <div
-            v-if="!clientGroups.length"
-            class="d-flex flex-column align-center justify-center py-10 text-medium-emphasis"
-          >
-            <VIcon
-              icon="ri-file-unknow-line"
-              size="40"
-              class="mb-2 opacity-40"
-            />
-            <span class="text-body-2">Tidak ada invoice yang bisa dikirim</span>
-          </div>
-
-          <div
-            v-for="group in clientGroups"
-            :key="group.key"
-            class="px-4 pb-2"
-          >
-            <div class="section-label pt-3 pb-2">
-              <VIcon
-                icon="ri-user-3-line"
-                size="14"
-                color="primary"
-                class="me-1"
-              />
-              {{ group.label }}
-              <VChip
-                size="x-small"
-                color="primary"
-                variant="tonal"
-                class="ms-1"
-              >
-                {{ group.invoices.length }}
-              </VChip>
-            </div>
-            <VTextField
-              v-model="group.phone"
-              density="compact"
-              variant="outlined"
-              hide-details="auto"
-              prefix="+"
-              placeholder="62812xxxxxxxxx"
-              class="mb-2"
-              :error="!group.phone"
-              :error-messages="!group.phone ? 'Nomor WhatsApp kosong — akan dilewati saat kirim' : ''"
-            />
-            <div class="d-flex flex-column gap-2">
-              <div
-                v-for="inv in group.invoices"
-                :key="inv.id"
-                class="invoice-row"
-                style="cursor: default;"
-              >
-                <div class="flex-grow-1 min-width-0">
-                  <div class="d-flex align-center gap-2 mb-1">
-                    <VChip
-                      :color="inv.is_opening_balance ? 'warning' : 'primary'"
-                      size="x-small"
-                      variant="flat"
-                      label
-                    >
-                      {{ inv.is_opening_balance ? 'OB' : 'Reguler' }}
-                    </VChip>
-                    <span class="text-body-2 font-weight-semibold">{{ inv.no_invoice }}</span>
-                  </div>
-                  <div class="text-caption text-medium-emphasis">
-                    Total: <strong>{{ formatCurrency(inv.subtotal) }}</strong>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </template>
-
-        <!-- Mode: multi-investor (banyak investor berbeda, review + edit nomor per grup) -->
-        <template v-else-if="isMultiInvestorMode">
-          <div
-            v-if="!investorGroups.length"
-            class="d-flex flex-column align-center justify-center py-10 text-medium-emphasis"
-          >
-            <VIcon
-              icon="ri-file-unknow-line"
-              size="40"
-              class="mb-2 opacity-40"
-            />
-            <span class="text-body-2">Tidak ada invoice yang bisa digabung pada periode ini</span>
-          </div>
-
-          <div
-            v-for="group in investorGroups"
-            :key="group.key"
-            class="px-4 pb-2"
-          >
-            <div class="section-label pt-3 pb-2">
-              <VIcon
-                icon="ri-store-2-line"
-                size="14"
-                color="primary"
-                class="me-1"
-              />
-              {{ group.label }}
-              <VChip
-                size="x-small"
-                color="primary"
-                variant="tonal"
-                class="ms-1"
-              >
-                {{ group.data.total_invoice }}
-              </VChip>
-            </div>
-            <VTextField
-              v-model="group.phone"
-              density="compact"
-              variant="outlined"
-              hide-details="auto"
-              prefix="+"
-              placeholder="62812xxxxxxxxx"
-              class="mb-2"
-              :error="!group.phone"
-              :error-messages="!group.phone ? 'Nomor WhatsApp kosong — akan dilewati saat kirim' : ''"
-            />
-            <div class="text-caption text-medium-emphasis">
-              {{ group.data.total_resto }} outlet &bull; {{ formatCurrency(group.data.total_tagihan) }}
-            </div>
-          </div>
-        </template>
-
-        <!-- Mode: investor-bulk (read-only, otomatis) -->
-        <template v-else-if="isInvestorBulkMode">
-          <div
-            v-if="!bulkPreview || !bulkPreview.total_invoice"
-            class="d-flex flex-column align-center justify-center py-10 text-medium-emphasis"
-          >
-            <VIcon
-              icon="ri-file-unknow-line"
-              size="40"
-              class="mb-2 opacity-40"
-            />
-            <span class="text-body-2">Tidak ada invoice yang bisa digabung pada periode ini</span>
-          </div>
-
-          <template v-else>
-            <div class="px-5 pt-4 pb-2">
-              <div class="text-body-2 font-weight-semibold">
-                {{ bulkPreview.investor?.nama_investor }}
-              </div>
-              <div class="text-caption text-medium-emphasis">
-                Periode {{ bulkPreview.periode?.tanggal_dari }} s/d {{ bulkPreview.periode?.tanggal_sampai }}
-                &bull; {{ bulkPreview.total_invoice }} invoice &bull; {{ bulkPreview.total_resto }} outlet
-              </div>
-            </div>
-
-            <div
-              v-for="group in bulkPreview.resto_groups"
-              :key="group.resto_id ?? group.nama_resto"
-              class="px-4 pb-2"
-            >
-              <div class="section-label pt-2 pb-2">
-                <VIcon
-                  icon="ri-store-2-line"
-                  size="14"
-                  color="primary"
-                  class="me-1"
-                />
-                {{ group.nama_resto }}
-                <VChip
-                  size="x-small"
-                  color="primary"
-                  variant="tonal"
-                  class="ms-1"
-                >
-                  {{ group.invoices.length }}
-                </VChip>
-              </div>
-              <div class="d-flex flex-column gap-2">
-                <div
-                  v-for="inv in group.invoices"
-                  :key="inv.id"
-                  class="invoice-row"
-                  style="cursor: default;"
-                >
-                  <div class="flex-grow-1 min-width-0">
-                    <div class="d-flex align-center gap-2 mb-1">
-                      <VChip
-                        color="primary"
-                        size="x-small"
-                        variant="flat"
-                        label
-                      >
-                        {{ inv.status }}
-                      </VChip>
-                      <span class="text-body-2 font-weight-semibold">{{ inv.no_invoice }}</span>
-                    </div>
-                    <div class="text-caption text-medium-emphasis">
-                      Total: <strong>{{ formatCurrency(inv.subtotal) }}</strong>
-                      <span
-                        v-if="inv.sisa > 0"
-                        class="ms-2 text-error"
-                      >· Sisa: {{ formatCurrency(inv.sisa) }}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </template>
-        </template>
-
-        <!-- Mode: client (checklist manual, existing) -->
         <template v-else>
           <!-- Empty -->
           <div
@@ -494,67 +257,7 @@
         <div class="d-flex align-center justify-space-between gap-3 flex-wrap">
           <!-- Summary -->
           <div
-            v-if="isMultiClientMode"
-            class="summary-pill"
-          >
-            <VIcon
-              icon="ri-checkbox-circle-fill"
-              size="16"
-              color="success"
-              class="me-1"
-            />
-            <span class="text-body-2 font-weight-semibold">{{ clientGroups.length }} klien</span>
-            <VDivider
-              vertical
-              class="mx-2"
-              style="height: 14px; align-self: center;"
-            />
-            <span class="text-body-2 font-weight-bold text-primary">{{ formatCurrency(clientGroupsTotal) }}</span>
-          </div>
-          <div
-            v-else-if="isMultiInvestorMode"
-            class="summary-pill"
-          >
-            <VIcon
-              icon="ri-checkbox-circle-fill"
-              size="16"
-              color="success"
-              class="me-1"
-            />
-            <span class="text-body-2 font-weight-semibold">{{ investorGroups.length }} investor</span>
-            <VDivider
-              vertical
-              class="mx-2"
-              style="height: 14px; align-self: center;"
-            />
-            <span class="text-body-2 font-weight-bold text-primary">{{ formatCurrency(investorGroupsTotal) }}</span>
-          </div>
-          <div
-            v-else-if="isInvestorBulkMode"
-            class="summary-pill"
-          >
-            <template v-if="bulkPreview?.total_invoice">
-              <VIcon
-                icon="ri-checkbox-circle-fill"
-                size="16"
-                color="success"
-                class="me-1"
-              />
-              <span class="text-body-2 font-weight-semibold">{{ bulkPreview.total_invoice }} invoice</span>
-              <VDivider
-                vertical
-                class="mx-2"
-                style="height: 14px; align-self: center;"
-              />
-              <span class="text-body-2 font-weight-bold text-primary">{{ formatCurrency(bulkPreview.total_tagihan) }}</span>
-            </template>
-            <span
-              v-else
-              class="text-caption text-medium-emphasis"
-            >Tidak ada invoice untuk digabung</span>
-          </div>
-          <div
-            v-else-if="checkedIds.length"
+            v-if="checkedIds.length"
             class="summary-pill"
           >
             <VIcon
@@ -586,40 +289,6 @@
               @click="isOpen = false"
             />
             <AppActionButton
-              v-if="isMultiClientMode"
-              action="custom"
-              color="success"
-              size="small"
-              icon="ri-whatsapp-line"
-              :disabled="!clientGroups.length || loading"
-              @click="doSendMulti(clientGroups)"
-            >
-              Kirim Semua
-            </AppActionButton>
-            <AppActionButton
-              v-else-if="isMultiInvestorMode"
-              action="custom"
-              color="success"
-              size="small"
-              icon="ri-whatsapp-line"
-              :disabled="!investorGroups.length || loading"
-              @click="doSendMulti(investorGroups)"
-            >
-              Kirim Semua
-            </AppActionButton>
-            <AppActionButton
-              v-else-if="isInvestorBulkMode"
-              action="custom"
-              color="success"
-              size="small"
-              icon="ri-whatsapp-line"
-              :disabled="!bulkPreview?.total_invoice || !sendPhone || loading"
-              @click="doSendInvestorBulk"
-            >
-              Kirim WA
-            </AppActionButton>
-            <AppActionButton
-              v-else
               action="custom"
               color="success"
               size="small"
@@ -646,15 +315,12 @@ import { sanitizePhoneNumber } from '@/utils/phone.js'
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
   preSelected: { type: Array, default: () => [] },
-  mode: { type: String, default: 'client' }, // 'client' | 'investor-bulk'
-  periodeDari: { type: String, default: '' },
-  periodeSampai: { type: String, default: '' },
 })
 
 const emit = defineEmits(['update:modelValue'])
 
 const { formatCurrency } = useFormatter()
-const { showAlert, showError } = useSweetAlert()
+const { showError } = useSweetAlert()
 
 const isOpen = computed({
   get: () => props.modelValue,
@@ -673,7 +339,7 @@ const firstInvoice = computed(() => props.preSelected[0] ?? null)
 const clientName = computed(() => {
   const inv = firstInvoice.value
   if (!inv) return ''
-  
+
   return inv.klien_ar?.nama_klien ?? ''
 })
 
@@ -683,12 +349,6 @@ function resolvePhone(raw) {
   const digits = sanitizePhoneNumber(raw).replace(/^\+/, '')
 
   return digits.startsWith('0') ? '62' + digits.slice(1) : digits
-}
-
-function escapeHtml(str) {
-  return String(str ?? '').replace(/[&<>"']/g, c => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
-  }[c]))
 }
 
 // Nomor default dari data klien — dipakai sebagai seed awal saja, nilai final
@@ -726,155 +386,12 @@ function toggleAll() {
   else checkedIds.value = allInvoices.value.map(inv => inv.id)
 }
 
-const isInvestorBulkMode = computed(() => props.mode === 'investor-bulk')
-const bulkPreview = ref(null)
-
-// Selection lintas klien/investor berbeda -> jalur blast Fonnte (Bagian C),
-// selain itu tetap jalur wa.me satu penerima yang sudah ada (Bagian A).
-const isMultiClientMode = computed(() =>
-  !isInvestorBulkMode.value &&
-  new Set(props.preSelected.map(inv => inv.klien_ar_id ?? inv.klien_ar?.id).filter(Boolean)).size > 1,
-)
-const isMultiInvestorMode = computed(() => isInvestorBulkMode.value && props.preSelected.length > 1)
-
-const clientGroups = ref([])
-const investorGroups = ref([])
-
-const clientGroupsTotal = computed(() => clientGroups.value.reduce((s, g) => s + (g.total ?? 0), 0))
-const investorGroupsTotal = computed(() => investorGroups.value.reduce((s, g) => s + (g.data?.total_tagihan ?? 0), 0))
-
 watch(isOpen, async open => {
   if (!open) return
 
-  if (isInvestorBulkMode.value) {
-    if (isMultiInvestorMode.value) {
-      await buildInvestorGroups()
-    } else {
-      recipientPhone.value = defaultPhone.value
-      await fetchInvestorBulkPreview()
-    }
-  } else if (isMultiClientMode.value) {
-    buildClientGroups()
-  } else {
-    recipientPhone.value = defaultPhone.value
-    await fetchRelated()
-  }
+  recipientPhone.value = defaultPhone.value
+  await fetchRelated()
 })
-
-async function fetchInvestorBulkPreview() {
-  bulkPreview.value = null
-  if (!firstInvoice.value) return
-
-  loading.value = true
-  try {
-    const res = await api.post('/finance/invoices/bulk-b2c-investor/preview', {
-      anchor_invoice_id: firstInvoice.value.id,
-      tanggal_dari: props.periodeDari,
-      tanggal_sampai: props.periodeSampai,
-    })
-
-    bulkPreview.value = res.data?.data ?? null
-  } catch (err) {
-    await showError(err.response?.data?.message ?? 'Gagal memuat preview bulk invoice investor')
-  } finally {
-    loading.value = false
-  }
-}
-
-function buildInvestorBulkMessage(data, shareUrl) {
-  const klien = data.klien_anchor?.nama_klien ?? clientName.value
-  const totalInvoice = new Intl.NumberFormat('id-ID').format(data.total_tagihan)
-  const totalSisa = new Intl.NumberFormat('id-ID').format(data.total_sisa)
-
-  return (
-    `Yth. Bapak/Ibu *${klien}*,\n\n` +
-    `Bersama ini kami sampaikan rekap tagihan investor *${data.investor?.nama_investor ?? ''}* ` +
-    `untuk ${data.total_invoice} invoice dari ${data.total_resto} resto/outlet ` +
-    `periode ${data.periode?.tanggal_dari ?? ''} s/d ${data.periode?.tanggal_sampai ?? ''}:\n\n` +
-    `Total Tagihan: Rp ${totalInvoice}\n` +
-    `Sisa Tagihan: Rp ${totalSisa}\n\n` +
-    `Silakan akses dan unduh dokumen rekap melalui tautan berikut:\n${shareUrl}\n\n` +
-    `Mohon kesediaannya untuk melakukan pembayaran sesuai dengan total tagihan di atas. Atas perhatian dan kerja samanya, kami ucapkan terima kasih.`
-  )
-}
-
-async function doSendInvestorBulk() {
-  if (!sendPhone.value) {
-    await showError('Nomor WhatsApp tujuan belum diisi atau tidak valid.')
-
-    return
-  }
-
-  if (!firstInvoice.value) return
-
-  loading.value = true
-  try {
-    const res = await api.post('/finance/invoices/bulk-b2c-investor/link', {
-      anchor_invoice_id: firstInvoice.value.id,
-      tanggal_dari: props.periodeDari,
-      tanggal_sampai: props.periodeSampai,
-    })
-
-    const data = res.data?.data
-    if (!data?.share_url) {
-      await showError('Gagal membuat tautan bulk invoice investor')
-
-      return
-    }
-
-    const msg = buildInvestorBulkMessage(data, data.share_url)
-
-    window.open(`https://wa.me/${sendPhone.value}?text=${encodeURIComponent(msg)}`, '_blank')
-    isOpen.value = false
-  } catch (err) {
-    await showError(err.response?.data?.message ?? 'Gagal membuat tautan bulk invoice investor')
-  } finally {
-    loading.value = false
-  }
-}
-
-// Mode multi-investor: 1 call /link per anchor unik (loop Promise.all), lalu
-// dedupe berdasarkan investor.id hasil response — supaya 2 outlet berbeda yang
-// ternyata 1 investor sama tidak dikirim dobel.
-async function buildInvestorGroups() {
-  investorGroups.value = []
-  const anchors = props.preSelected
-  if (!anchors.length) return
-
-  loading.value = true
-  try {
-    const responses = await Promise.all(anchors.map(anchor =>
-      api.post('/finance/invoices/bulk-b2c-investor/link', {
-        anchor_invoice_id: anchor.id,
-        tanggal_dari: props.periodeDari,
-        tanggal_sampai: props.periodeSampai,
-      }).then(res => res.data?.data).catch(() => null),
-    ))
-
-    const seen = new Set()
-
-    investorGroups.value = responses
-      .filter(Boolean)
-      .filter(data => data.total_invoice > 0)
-      .filter(data => {
-        const id = data.investor?.id
-        if (!id || seen.has(id)) return false
-        seen.add(id)
-
-        return true
-      })
-      .map(data => ({
-        key: data.investor.id,
-        klienArId: data.klien_anchor?.id ?? null,
-        label: data.investor.nama_investor,
-        phone: resolvePhone(data.klien_anchor?.no_wa ?? ''),
-        data,
-        message: buildInvestorBulkMessage(data, data.share_url),
-      }))
-  } finally {
-    loading.value = false
-  }
-}
 
 async function fetchRelated() {
   if (!firstInvoice.value) return
@@ -912,7 +429,7 @@ async function fetchRelated() {
 
 function formatInvoiceItem(inv) {
   const t = new Intl.NumberFormat('id-ID').format(inv.subtotal)
-  
+
   return `- ${inv.no_invoice} | Rp ${t}\n  ${inv.share_url}`
 }
 
@@ -926,7 +443,7 @@ function buildMessage(selected, klienLabel) {
     const inv = selected[0]
     const t = new Intl.NumberFormat('id-ID').format(inv.subtotal)
     const label = inv.is_opening_balance ? 'Opening Balance' : 'Invoice'
-    
+
     return (
       `Yth. Bapak/Ibu *${klien}*,\n\n` +
       `Bersama ini kami sampaikan ${label} *${inv.no_invoice}* dengan rincian sebagai berikut:\n\n` +
@@ -971,96 +488,6 @@ async function doSend() {
 
   window.open(`https://wa.me/${sendPhone.value}?text=${encodeURIComponent(msg)}`, '_blank')
   isOpen.value = false
-}
-
-// Mode multi-klien: sinkron, tanpa fetch tambahan — invoice di preSelected
-// sudah punya share_url/subtotal/klien_ar.no_wa dari list API.
-function buildClientGroups() {
-  const byKlien = new Map()
-
-  for (const inv of props.preSelected) {
-    const klienId = inv.klien_ar_id ?? inv.klien_ar?.id
-    if (!klienId) continue
-
-    if (!byKlien.has(klienId)) {
-      byKlien.set(klienId, {
-        key: klienId,
-        klienArId: klienId,
-        label: inv.klien_ar?.nama_klien ?? '—',
-        phone: resolvePhone(inv.klien_ar?.no_wa ?? ''),
-        invoices: [],
-      })
-    }
-    byKlien.get(klienId).invoices.push(inv)
-  }
-
-  clientGroups.value = [...byKlien.values()].map(g => ({
-    ...g,
-    total: g.invoices.reduce((s, inv) => s + (inv.subtotal ?? 0), 0),
-    message: buildMessage(g.invoices, g.label),
-  }))
-}
-
-// Kirim blast multi-penerima lewat Fonnte (backend proxy). Grup tanpa nomor
-// WA dilewati + ditandai peringatan, sisanya tetap dikirim.
-async function doSendMulti(groups) {
-  const ready = groups.filter(g => g.phone)
-  const skipped = groups.filter(g => !g.phone)
-
-  if (!ready.length) {
-    await showError('Tidak ada penerima dengan nomor WhatsApp yang valid.')
-
-    return
-  }
-
-  loading.value = true
-  try {
-    const { data } = await api.post('/finance/invoices/share-blast', {
-      recipients: ready.map(g => ({
-        target: g.phone,
-        message: g.message,
-        label: g.label,
-        klien_ar_id: g.klienArId,
-        invoice_ids: g.invoices?.map(i => i.id)
-          ?? g.data?.resto_groups?.flatMap(rg => rg.invoices.map(i => i.id))
-          ?? [],
-      })),
-    })
-
-    isOpen.value = false
-    await showBlastResults(data.data, skipped)
-  } catch (err) {
-    await showError(err.response?.data?.message ?? 'Gagal mengirim blast WhatsApp')
-  } finally {
-    loading.value = false
-  }
-}
-
-async function showBlastResults(result, skippedGroups) {
-  const rows = result.results.map(r => {
-    const isDeviceDisconnected = r.detail?.toLowerCase().includes('disconnected device')
-    const hint = isDeviceDisconnected
-      ? '<div style="font-size:12px;">Device Fonnte terputus — sambungkan ulang (scan QR) di dashboard Fonnte, lalu coba kirim ulang.</div>'
-      : ''
-
-    return `<div style="text-align:left;padding:4px 0;">
-       ${r.success ? '✅' : '❌'} <strong>${escapeHtml(r.label ?? r.target)}</strong>
-       ${r.success ? '' : `<div style="color:#FF4C51;font-size:12px;">${escapeHtml(r.detail ?? 'Gagal')}</div>${hint}`}
-     </div>`
-  }).join('')
-
-  const skippedRows = skippedGroups.map(g =>
-    `<div style="text-align:left;padding:4px 0;color:#FF9F43;">
-       ⚠️ <strong>${escapeHtml(g.label)}</strong> dilewati — nomor WhatsApp kosong
-     </div>`,
-  ).join('')
-
-  await showAlert({
-    icon: result.failed ? 'warning' : 'success',
-    title: result.failed || skippedGroups.length ? 'Sebagian Terkirim' : 'Blast Selesai',
-    html: rows + skippedRows,
-    confirmButtonText: 'OK',
-  })
 }
 </script>
 

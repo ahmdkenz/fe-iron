@@ -807,9 +807,8 @@
     <!-- Bulk Action Bar -->
     <BulkActionBar
       :selected="selectedInvoices"
-      :show-investor-bulk="activeSegmentTab === 'b2c'"
       @share="openShareDialog(selectedInvoices)"
-      @investor-bulk="openBulkInvestorFromSelection"
+      @email="openEmailDialog(selectedInvoices)"
       @delete="doBulkDelete"
       @clear="selectedInvoices = []"
     />
@@ -818,9 +817,12 @@
     <ShareInvoicesDialog
       v-model="showShareDialog"
       :pre-selected="shareTargetInvoices"
-      :mode="shareMode"
-      :periode-dari="paramsB2C.tanggal_dari"
-      :periode-sampai="paramsB2C.tanggal_sampai"
+    />
+
+    <!-- Email Dialog -->
+    <SendEmailDialog
+      v-model="showEmailDialog"
+      :pre-selected="emailTargetInvoices"
     />
   </div>
 </template>
@@ -849,6 +851,7 @@ import { readBlobError } from '@/utils/readBlobError.js'
 import { openLoadingPrintTab, openPrintTab } from '@/utils/printWindow.js'
 import InvoiceStatusBadge from '@/modules/Finance/shared/components/InvoiceStatusBadge.vue'
 import ShareInvoicesDialog from '@/modules/Finance/shared/components/ShareInvoicesDialog.vue'
+import SendEmailDialog from '@/modules/Finance/shared/components/SendEmailDialog.vue'
 import BulkActionBar from '@/modules/Finance/shared/components/BulkActionBar.vue'
 import DateRangeFilterSheet from '@/modules/Finance/shared/components/DateRangeFilterSheet.vue'
 import MobileCardActions from '@/components/shared/MobileCardActions.vue'
@@ -905,7 +908,8 @@ const selectedInvoice  = ref(null)
 const selectedInvoices = ref([])
 const showShareDialog  = ref(false)
 const shareTargetInvoices = ref([])
-const shareMode        = ref('client')
+const showEmailDialog  = ref(false)
+const emailTargetInvoices = ref([])
 const exportingExcel   = ref(false)
 const showExportModal  = ref(false)
 const exportMonth      = ref(new Date().toISOString().slice(0, 7))
@@ -1162,29 +1166,12 @@ async function printInvoice(item) {
 
 function openShareDialog(invoices) {
   shareTargetInvoices.value = Array.isArray(invoices) ? invoices : [invoices]
-  shareMode.value = 'client'
   showShareDialog.value = true
 }
 
-function openInvestorBulkDialog(itemOrItems) {
-  shareTargetInvoices.value = Array.isArray(itemOrItems) ? itemOrItems : [itemOrItems]
-  shareMode.value = 'investor-bulk'
-  showShareDialog.value = true
-}
-
-function openBulkInvestorFromSelection() {
-  const qualifying = selectedInvoices.value.filter(inv => inv.can_print && inv.resto)
-  if (!qualifying.length) return
-
-  // Satu anchor per klien_ar_id unik (outlet) — dialog yang akan dedupe hasil
-  // per investor.id sesudah fetch, kalau beberapa outlet ternyata 1 investor sama.
-  const anchorsByKlien = new Map()
-  for (const inv of qualifying) {
-    const klienId = inv.klien_ar_id ?? inv.klien_ar?.id
-    if (klienId && !anchorsByKlien.has(klienId)) anchorsByKlien.set(klienId, inv)
-  }
-
-  openInvestorBulkDialog([...anchorsByKlien.values()])
+function openEmailDialog(invoices) {
+  emailTargetInvoices.value = Array.isArray(invoices) ? invoices : [invoices]
+  showEmailDialog.value = true
 }
 
 async function doBulkDelete() {

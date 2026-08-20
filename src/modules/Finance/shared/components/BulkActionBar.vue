@@ -35,6 +35,7 @@
             :icon="xs || undefined"
             :prepend-icon="xs ? undefined : 'ri-whatsapp-line'"
             :aria-label="xs ? 'Kirim WA' : undefined"
+            :disabled="isMultiClient"
             @click="emit('share')"
           >
             <VIcon
@@ -44,52 +45,43 @@
             />
             <span v-else>Kirim WA</span>
             <VTooltip
-              v-if="xs"
+              v-if="xs || isMultiClient"
               activator="parent"
             >
-              Kirim WA
+              {{ isMultiClient ? "Pilih invoice dari 1 klien saja untuk kirim WA. Gunakan 'Kirim Email' untuk lintas klien." : 'Kirim WA' }}
             </VTooltip>
           </VBtn>
 
           <VBtn
-            v-if="showInvestorBulk"
-            color="primary"
+            color="info"
             variant="tonal"
             size="small"
             :icon="xs || undefined"
-            :prepend-icon="xs ? undefined : 'ri-file-copy-2-line'"
-            :aria-label="xs ? 'Kirim Bulk Investor' : undefined"
-            :disabled="!canInvestorBulk"
-            @click="emit('investor-bulk')"
+            :prepend-icon="xs ? undefined : 'ri-mail-send-line'"
+            :aria-label="xs ? 'Kirim Email' : undefined"
+            @click="emit('email')"
           >
             <VIcon
               v-if="xs"
-              icon="ri-file-copy-2-line"
+              icon="ri-mail-send-line"
               size="18"
             />
-            <span v-else>Kirim Bulk Investor</span>
+            <span v-else>Kirim Email</span>
             <VTooltip
-              v-if="xs || !canInvestorBulk"
+              v-if="xs"
               activator="parent"
             >
-              {{ !canInvestorBulk ? 'Pilih minimal 1 invoice B2C untuk kirim bulk per investor' : 'Kirim Bulk per Investor' }}
+              Kirim Email
             </VTooltip>
           </VBtn>
 
           <AppActionButton
-            v-if="showDelete"
+            v-if="showDelete && hasDraft"
             action="hapus"
             size="small"
             :compact="xs"
-            hide-tooltip
-            :disabled="!hasDraft"
             @click="emit('delete')"
-          >
-            Hapus Data
-            <VTooltip activator="parent">
-              {{ hasDraft ? 'Hapus Data' : 'Tidak ada invoice DRAFT yang bisa dihapus' }}
-            </VTooltip>
-          </AppActionButton>
+          />
         </div>
 
         <VSpacer />
@@ -116,16 +108,19 @@ import { useConfigStore } from '@core/stores/config'
 
 const props = defineProps({
   selected: { type: Array, default: () => [] },
-  showInvestorBulk: { type: Boolean, default: false },
   showDelete: { type: Boolean, default: true },
 })
 
-const emit = defineEmits(['share', 'delete', 'clear', 'investor-bulk'])
+const emit = defineEmits(['share', 'email', 'delete', 'clear'])
 
 const configStore = useConfigStore()
 const { xs } = useDisplay()
 
-const canInvestorBulk = computed(() => props.selected.some(inv => inv.can_print && inv.resto))
+// "Kirim WA" (wa.me, satu penerima) tidak bisa melayani selection lintas klien —
+// itu sekarang jadi tugas "Kirim Email" (batch per PIC AR). Lihat ShareInvoicesDialog.vue.
+const isMultiClient = computed(() =>
+  new Set(props.selected.map(inv => inv.klien_ar_id ?? inv.klien_ar?.id).filter(Boolean)).size > 1,
+)
 
 const hasDraft = computed(() => props.selected.some(inv => inv.status === 'DRAFT'))
 </script>

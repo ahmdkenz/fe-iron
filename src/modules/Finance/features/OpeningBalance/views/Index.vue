@@ -730,6 +730,7 @@
       v-if="!authStore.canApproveOpeningBalance"
       :selected="selectedInvoices"
       @share="openShareDialog(selectedInvoices)"
+      @email="openEmailDialog(selectedInvoices)"
       @delete="doBulkDelete"
       @clear="selectedInvoices = []"
     />
@@ -740,6 +741,7 @@
       :selected="selectedDirOb"
       :show-delete="false"
       @share="openShareDialog(selectedDirOb)"
+      @email="openEmailDialog(selectedDirOb)"
       @clear="selectedDirOb = []"
     />
 
@@ -747,6 +749,12 @@
     <ShareInvoicesDialog
       v-model="showShareDialog"
       :pre-selected="shareTargetInvoices"
+    />
+
+    <!-- Email Dialog -->
+    <SendEmailDialog
+      v-model="showEmailDialog"
+      :pre-selected="emailTargetInvoices"
     />
 
     <!-- Approve Semua: progress dialog (async job + polling) -->
@@ -1824,6 +1832,7 @@ import BulkApproveProgressDialog from '@/modules/Finance/features/OpeningBalance
 import ApprovalStatusBadge from '@/modules/Finance/shared/components/ApprovalStatusBadge.vue'
 import InvoiceStatusBadge from '@/modules/Finance/shared/components/InvoiceStatusBadge.vue'
 import ShareInvoicesDialog from '@/modules/Finance/shared/components/ShareInvoicesDialog.vue'
+import SendEmailDialog from '@/modules/Finance/shared/components/SendEmailDialog.vue'
 import BulkActionBar from '@/modules/Finance/shared/components/BulkActionBar.vue'
 import DateRangeFilterSheet from '@/modules/Finance/shared/components/DateRangeFilterSheet.vue'
 import MobileCardActions from '@/components/shared/MobileCardActions.vue'
@@ -1963,10 +1972,17 @@ const selectedInvoices    = ref([])
 const selectedDirOb       = ref([])
 const showShareDialog     = ref(false)
 const shareTargetInvoices = ref([])
+const showEmailDialog     = ref(false)
+const emailTargetInvoices = ref([])
 
 function openShareDialog(invoices) {
   shareTargetInvoices.value = Array.isArray(invoices) ? invoices : [invoices]
   showShareDialog.value = true
+}
+
+function openEmailDialog(invoices) {
+  emailTargetInvoices.value = Array.isArray(invoices) ? invoices : [invoices]
+  showEmailDialog.value = true
 }
 
 async function doBulkDelete() {

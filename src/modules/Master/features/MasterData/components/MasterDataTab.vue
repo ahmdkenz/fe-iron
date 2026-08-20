@@ -44,6 +44,7 @@
           >
             <li>Upload <strong>1 file Excel</strong> dengan <strong>3 sheet</strong>: <strong>MASTER DATA</strong> (Investor + Resto + Client AR), <strong>MASTER BARANG</strong> (Produk/Barang), dan <strong>Petunjuk Pengisian</strong>.</li>
             <li>Sheet <strong>MASTER DATA</strong>: 1 baris = 1 outlet. Kolom <code>tipe_klien</code> boleh diisi <strong>RESTO/B2C</strong> atau <strong>PT/B2B</strong>. Untuk <code>tipe_klien = PT/B2B</code>: <strong>nama_entitas</strong> dan <strong>pic_ar</strong> wajib diisi. Untuk <code>tipe_klien = RESTO/B2C</code>: <strong>nama_pic</strong> wajib diisi (pic_ar hanya fallback jika nama_pic kosong); <strong>nama_investor boleh dikosongkan</strong> — Client AR akan pakai nama fallback "kode_resto (nama_cabang)" otomatis.</li>
+            <li>Kolom <code>email</code> (opsional, dipakai untuk fitur Kirim Email Invoice/OB): <strong>1 investor selalu memakai email yang sama</strong> di semua baris — baris kosong atau berbeda dari email yang sudah tercatat tidak akan menimpa, cukup dicatat sebagai info di hasil import.</li>
             <li>Sheet <strong>MASTER BARANG</strong>: <strong>kode_barang wajib</strong> untuk setiap baris (identitas unik barang, boleh nama sama untuk barang berbeda).</li>
             <li><strong>Invoice tidak lagi diimport di sini.</strong> Gunakan tab <strong>Import Master Invoice</strong> — di sana data dibaca &amp; diklasifikasi dulu supaya invoice yang sudah ditagih/dibayar tidak tertimpa.</li>
             <li>Import hanya dapat dilakukan oleh role <strong>ADMIN, MANAGER, atau SUPERVISOR</strong>.</li>
@@ -235,7 +236,7 @@
           >
             <ul class="ps-4">
               <li>File harus berformat <strong>.xlsx</strong> dengan sheet <strong>MASTER DATA</strong> dan <strong>MASTER BARANG</strong>.</li>
-              <li>Sheet <strong>MASTER DATA</strong>: 1 baris = Investor + Resto + Client AR. Kolom <strong>tipe_klien</strong> boleh diisi <strong>RESTO/B2C</strong> atau <strong>PT/B2B</strong>. PT/B2B wajib isi <strong>nama_entitas</strong> &amp; <strong>pic_ar</strong>; RESTO/B2C wajib isi <strong>nama_pic</strong>. <strong>nama_investor boleh dikosongkan</strong> untuk RESTO/B2C — Client AR akan pakai nama fallback "kode_resto (nama_cabang)" otomatis.</li>
+              <li>Sheet <strong>MASTER DATA</strong>: 1 baris = Investor + Resto + Client AR. Kolom <strong>tipe_klien</strong> boleh diisi <strong>RESTO/B2C</strong> atau <strong>PT/B2B</strong>. PT/B2B wajib isi <strong>nama_entitas</strong> &amp; <strong>pic_ar</strong>; RESTO/B2C wajib isi <strong>nama_pic</strong>. <strong>nama_investor boleh dikosongkan</strong> untuk RESTO/B2C — Client AR akan pakai nama fallback "kode_resto (nama_cabang)" otomatis. Kolom <strong>email</strong> opsional — 1 investor selalu memakai 1 email yang sama di semua barisnya.</li>
               <li>Sheet <strong>MASTER BARANG</strong>: kode_barang, nama_barang, spesifikasi, keterangan, status. <strong>kode_barang wajib</strong> di setiap baris.</li>
               <li>Sheet <strong>MASTER INVOICE</strong> pada file lama akan <strong>diabaikan</strong> — upload invoice lewat tab Import Master Invoice.</li>
               <li>Format XLSX cocok untuk Master Data hingga ±13.000 baris. Untuk volume lebih besar, pertimbangkan membagi jadi beberapa file upload.</li>

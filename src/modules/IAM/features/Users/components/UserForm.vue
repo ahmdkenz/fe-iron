@@ -115,8 +115,8 @@
       </VRow>
 
       <MobileMoreFields
-        title="Email & Token WA"
-        :has-error="!!(errors.email?.length || errors.fonnte_token?.length)"
+        title="Email"
+        :has-error="!!errors.email?.length"
       >
         <VCol cols="12">
           <BaseInput
@@ -176,34 +176,85 @@
         </VCol>
       </VRow>
 
-      <!-- Section: Token Device Fonnte (WA PIC) -->
+      <!-- Section: Konfigurasi SMTP Email (PIC AR) -->
       <div
         class="text-caption font-weight-bold text-uppercase d-flex align-center gap-1 mt-3 mb-2"
         style="color: rgb(var(--v-theme-primary))"
       >
         <VIcon
-          icon="ri-whatsapp-line"
+          icon="ri-mail-send-line"
           size="13"
         />
-        Token Device Fonnte (WA PIC)
+        Konfigurasi SMTP Email (PIC AR)
       </div>
       <MobileMoreFields
-        title="Token Device Fonnte"
-        :has-error="!!errors.fonnte_token?.length"
+        title="Konfigurasi SMTP"
+        :has-error="!!(errors.smtp_host?.length || errors.smtp_port?.length || errors.smtp_username?.length || errors.smtp_password?.length || errors.smtp_encryption?.length)"
       >
-        <VCol cols="12">
+        <VCol
+          cols="12"
+          md="8"
+        >
           <VTextField
-            v-model="form.fonnte_token"
-            label="Token Device Fonnte"
-            placeholder="Token dari dashboard Fonnte untuk device WA milik user ini"
+            v-model="form.smtp_host"
+            label="SMTP Host"
+            placeholder="mis. smtp.gmail.com"
             density="compact"
             variant="outlined"
-            hint="Dipakai saat kirim WA blast ke klien yang PIC AR-nya user ini. Kosongkan untuk melepas device."
+            :error-messages="errors.smtp_host"
+          />
+        </VCol>
+        <VCol
+          cols="12"
+          md="4"
+        >
+          <VTextField
+            v-model.number="form.smtp_port"
+            label="Port"
+            type="number"
+            placeholder="587"
+            density="compact"
+            variant="outlined"
+            :error-messages="errors.smtp_port"
+          />
+        </VCol>
+        <VCol cols="12">
+          <VTextField
+            v-model="form.smtp_username"
+            label="SMTP Username"
+            placeholder="alamat email pengirim"
+            density="compact"
+            variant="outlined"
+            :error-messages="errors.smtp_username"
+          />
+        </VCol>
+        <VCol
+          cols="12"
+          md="8"
+        >
+          <VTextField
+            v-model="form.smtp_password"
+            label="SMTP Password"
+            placeholder="password / app password"
+            density="compact"
+            variant="outlined"
+            hint="Dipakai saat kirim email Invoice/OB ke klien yang PIC AR-nya user ini. Kosongkan saat edit untuk tidak mengubah password."
             persistent-hint
             :append-inner-icon="showToken ? 'ri-eye-off-line' : 'ri-eye-line'"
             :type="showToken ? 'text' : 'password'"
-            :error-messages="errors.fonnte_token"
+            :error-messages="errors.smtp_password"
             @click:append-inner="showToken = !showToken"
+          />
+        </VCol>
+        <VCol
+          cols="12"
+          md="4"
+        >
+          <BaseSelect
+            v-model="form.smtp_encryption"
+            label="Enkripsi"
+            :items="[{ title: 'TLS', value: 'tls' }, { title: 'SSL', value: 'ssl' }, { title: 'Tanpa Enkripsi', value: null }]"
+            :error-messages="errors.smtp_encryption"
           />
         </VCol>
       </MobileMoreFields>
@@ -273,7 +324,10 @@ const formRef = ref(null)
 const showPwd = ref(false)
 const showToken = ref(false)
 const errorMessage = ref('')
-const errors = reactive({ username: [], email: [], password: [], no_hp: [], role_id: [], karyawan_id: [], fonnte_token: [] })
+const errors = reactive({
+  username: [], email: [], password: [], no_hp: [], role_id: [], karyawan_id: [],
+  smtp_host: [], smtp_port: [], smtp_username: [], smtp_password: [], smtp_encryption: [],
+})
 
 // NIK autocomplete state
 const nikSearch = ref('')
@@ -286,7 +340,10 @@ const isEditing = computed(() => !!props.userData)
 
 const statusOptions = BOOLEAN_STATUS_OPTIONS
 
-const defaultForm = () => ({ username: '', email: '', no_hp: '', password: '', role_id: null, status: 1, karyawan_id: null, fonnte_token: '' })
+const defaultForm = () => ({
+  username: '', email: '', no_hp: '', password: '', role_id: null, status: 1, karyawan_id: null,
+  smtp_host: '', smtp_port: null, smtp_username: '', smtp_password: '', smtp_encryption: null,
+})
 const form = reactive(defaultForm())
 
 async function onNikSearch(val) {
@@ -318,7 +375,10 @@ function onKaryawanSelect(val) {
 
 watch([() => props.modelValue, () => props.userData], ([open]) => {
   if (!open) return
-  Object.assign(errors, { username: [], email: [], password: [], no_hp: [], role_id: [], karyawan_id: [], fonnte_token: [] })
+  Object.assign(errors, {
+    username: [], email: [], password: [], no_hp: [], role_id: [], karyawan_id: [],
+    smtp_host: [], smtp_port: [], smtp_username: [], smtp_password: [], smtp_encryption: [],
+  })
   errorMessage.value = ''
   showPwd.value = false
   showToken.value = false
@@ -333,7 +393,11 @@ watch([() => props.modelValue, () => props.userData], ([open]) => {
     form.role_id = props.userData.role?.id ?? null
     form.status = normalizeBooleanStatus(props.userData.status)
     form.karyawan_id = props.userData.karyawan_id ?? null
-    form.fonnte_token = props.userData.fonnte_token ?? ''
+    form.smtp_host = props.userData.smtp_host ?? ''
+    form.smtp_port = props.userData.smtp_port ?? null
+    form.smtp_username = props.userData.smtp_username ?? ''
+    form.smtp_password = ''
+    form.smtp_encryption = props.userData.smtp_encryption ?? null
 
     if (props.userData.karyawan) {
       selectedKaryawan.value = props.userData.karyawan
@@ -356,6 +420,7 @@ async function handleSubmit() {
 
   const payload = { ...form, no_hp: sanitizePhoneNumber(form.no_hp) }
   if (isEditing.value && !payload.password) delete payload.password
+  if (isEditing.value && !payload.smtp_password) delete payload.smtp_password
 
   const res = isEditing.value
     ? await update(props.userData.id, payload)

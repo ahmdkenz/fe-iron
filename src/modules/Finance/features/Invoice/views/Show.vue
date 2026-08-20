@@ -91,6 +91,16 @@
             :compact="mobile"
             @click="shareViaWhatsapp"
           />
+          <AppActionButton
+            v-if="invoice?.can_print"
+            action="custom"
+            color="primary"
+            variant="tonal"
+            icon="ri-mail-send-line"
+            label="Kirim Email"
+            :compact="mobile"
+            @click="shareViaEmail"
+          />
         </div>
       </template>
     </PageHeader>
@@ -1354,6 +1364,12 @@
       v-model="showShareDialog"
       :pre-selected="invoice ? [invoice] : []"
     />
+
+    <!-- Email Dialog -->
+    <SendEmailDialog
+      v-model="showEmailDialog"
+      :pre-selected="invoice ? [invoice] : []"
+    />
   </div>
 </template>
 
@@ -1373,6 +1389,7 @@ import ApprovalStatusBadge from '@/modules/Finance/shared/components/ApprovalSta
 import InvoiceStatusBadge from '@/modules/Finance/shared/components/InvoiceStatusBadge.vue'
 import OpeningBalanceDetailTable from '@/modules/Finance/features/OpeningBalance/components/OpeningBalanceDetailTable.vue'
 import ShareInvoicesDialog from '@/modules/Finance/shared/components/ShareInvoicesDialog.vue'
+import SendEmailDialog from '@/modules/Finance/shared/components/SendEmailDialog.vue'
 
 const route = useRoute()
 const authStore = useAuthStore()
@@ -1386,6 +1403,7 @@ const { formatCurrency, formatDate, formatDateTime } = useFormatter()
 const invoice = shallowRef(null)
 const showUbahStatus = ref(false)
 const showShareDialog = ref(false)
+const showEmailDialog = ref(false)
 const showDeletePembayaran = ref(false)
 const showApproveModal = ref(false)
 const showRejectModal = ref(false)
@@ -1950,6 +1968,10 @@ async function printInvoice() {
 
 function shareViaWhatsapp() {
   showShareDialog.value = true
+}
+
+function shareViaEmail() {
+  showEmailDialog.value = true
 }
 
 async function refreshPendingOpeningBalanceBadge() {

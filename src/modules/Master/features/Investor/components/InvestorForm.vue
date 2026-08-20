@@ -112,7 +112,7 @@
       </div>
       <MobileMoreFields
         title="Data Pengelola"
-        :has-error="!!(errors.pengelola?.length || errors.no_hp_pengelola?.length)"
+        :has-error="!!(errors.pengelola?.length || errors.no_hp_pengelola?.length || errors.email?.length)"
       >
         <VCol
           cols="12"
@@ -138,6 +138,19 @@
             variant="outlined"
             prepend-inner-icon="ri-phone-line"
             :error-messages="errors.no_hp_pengelola"
+          />
+        </VCol>
+        <VCol cols="12">
+          <VTextField
+            v-model="form.email"
+            label="Email"
+            type="email"
+            density="compact"
+            variant="outlined"
+            prepend-inner-icon="ri-mail-line"
+            hint="Dipakai untuk kirim Invoice/OB semua resto/outlet investor ini via email"
+            persistent-hint
+            :error-messages="errors.email"
           />
         </VCol>
       </MobileMoreFields>
@@ -249,7 +262,7 @@ const errorMessage = ref('')
 
 const errors = reactive({
   nama_investor: [], ktp: [], npwp: [], no_hp: [],
-  pengelola: [], no_hp_pengelola: [], kode_cabang: [], id_cabang: [],
+  pengelola: [], no_hp_pengelola: [], email: [], kode_cabang: [], id_cabang: [],
 })
 
 const isEditing = computed(() => !!props.investorData)
@@ -263,6 +276,7 @@ const defaultForm = () => ({
   no_hp: '',
   pengelola: '',
   no_hp_pengelola: '',
+  email: '',
   kode_cabang: '',
   id_cabang: '',
   status: 1,
@@ -274,7 +288,7 @@ watch([() => props.modelValue, () => props.investorData], ([open]) => {
   if (!open) return
   Object.assign(errors, {
     nama_investor: [], ktp: [], npwp: [], no_hp: [],
-    pengelola: [], no_hp_pengelola: [], kode_cabang: [], id_cabang: [],
+    pengelola: [], no_hp_pengelola: [], email: [], kode_cabang: [], id_cabang: [],
   })
   errorMessage.value = ''
 
@@ -286,6 +300,7 @@ watch([() => props.modelValue, () => props.investorData], ([open]) => {
       no_hp: props.investorData.no_hp           ?? '',
       pengelola: props.investorData.pengelola       ?? '',
       no_hp_pengelola: props.investorData.no_hp_pengelola ?? '',
+      email: props.investorData.email          ?? '',
       kode_cabang: props.investorData.kode_cabang    ?? '',
       id_cabang: props.investorData.id_cabang      ?? '',
       status: normalizeBooleanStatus(props.investorData.status),
