@@ -138,7 +138,7 @@
                 size="12"
               />
               {{ item.pic_ar?.nama_karyawan ?? '-' }}
-              · {{ [item.area, item.kota].filter(Boolean).join(', ') || '-' }}
+              · {{ item.kota ?? '-' }}
             </div>
             <MobileCardActions
               :selected="selected"
@@ -197,15 +197,6 @@
         </template>
         <template #item.tgl_aktif="{ item }">
           {{ item.tgl_aktif ? formatDate(item.tgl_aktif) : '-' }}
-        </template>
-        <template #item.supervisor="{ item }">
-          {{ item.supervisor ?? '-' }}
-        </template>
-        <template #item.no_hp_supervisor="{ item }">
-          {{ item.no_hp_supervisor ?? '-' }}
-        </template>
-        <template #item.stokis="{ item }">
-          {{ item.stokis ?? '-' }}
         </template>
         <template #item.keterangan="{ item }">
           {{ item.keterangan ?? '-' }}
@@ -279,6 +270,12 @@
     <DetailDialog
       v-model="showDetail"
       title="Detail Resto"
+      size="lg"
+      :status="selectedResto?.status ?? null"
+      :created-by="selectedResto?.created_by_name"
+      :updated-by="selectedResto?.updated_by_name"
+      :created-at="selectedResto?.created_at"
+      :updated-at="selectedResto?.updated_at"
     >
       <template #hero>
         <VAvatar
@@ -301,77 +298,71 @@
         </VChip>
       </template>
 
-      <DetailRow
-        label="Investor"
-        :value="selectedResto?.investor?.nama_investor"
-      />
-      <DetailRow
-        label="Entitas"
-        :value="selectedResto?.perusahaan?.nama_perusahaan"
-      />
-      <DetailRow
-        label="Brand"
-        :value="selectedResto?.brand?.nama_brand"
-      />
-      <DetailRow
-        label="PIC AR"
-        :value="selectedResto?.pic_ar?.nama_karyawan"
-      />
-      <DetailRow
-        label="Supervisor"
-        :value="selectedResto?.supervisor"
-      />
-      <DetailRow
-        label="No. HP SPV"
-        :value="selectedResto?.no_hp_supervisor"
-      />
-      <DetailRow
-        label="STOKIS"
-        :value="selectedResto?.stokis"
-      />
-      <DetailRow
-        label="Area"
-        :value="selectedResto?.area"
-      />
-      <DetailRow
-        label="Kota"
-        :value="selectedResto?.kota"
-      />
-      <DetailRow
-        label="Alamat"
-        :value="selectedResto?.alamat"
-      />
-      <DetailRow
-        label="No. Telp"
-        :value="selectedResto?.no_telp"
-      />
-      <DetailRow
-        label="Tanggal Aktif"
-        :value="selectedResto?.tgl_aktif ? formatDate(selectedResto.tgl_aktif) : '-'"
-      />
-      <DetailRow
-        label="Keterangan"
-        :value="selectedResto?.keterangan"
-      />
-      <DetailRow label="Status">
-        <StatusChip :active="selectedResto?.status" />
-      </DetailRow>
-      <DetailRow
-        label="Created By"
-        :value="selectedResto?.created_by_name"
-      />
-      <DetailRow
-        label="Updated By"
-        :value="selectedResto?.updated_by_name"
-      />
-      <DetailRow
-        label="Created At"
-        :value="selectedResto?.created_at"
-      />
-      <DetailRow
-        label="Updated At"
-        :value="selectedResto?.updated_at"
-      />
+      <DetailSection
+        title="Identitas & Kepemilikan"
+        icon="ri-building-4-line"
+      >
+        <DetailField
+          label="Investor"
+          :value="selectedResto?.investor?.nama_investor"
+        />
+        <DetailField
+          label="Entitas"
+          :value="selectedResto?.perusahaan?.nama_perusahaan"
+        />
+        <DetailField
+          label="Brand"
+          :value="selectedResto?.brand?.nama_brand"
+        />
+        <DetailField
+          label="PIC AR"
+          :value="selectedResto?.pic_ar?.nama_karyawan"
+        />
+      </DetailSection>
+
+      <DetailSection
+        title="Supervisi & Lokasi"
+        icon="ri-map-pin-line"
+      >
+        <DetailField
+          label="Supervisor"
+          :value="selectedResto?.supervisor"
+        />
+        <DetailField
+          label="No. HP SPV"
+          :value="selectedResto?.no_hp_supervisor"
+        />
+        <DetailField
+          label="STOKIS"
+          :value="selectedResto?.stokis"
+        />
+        <DetailField
+          label="Area"
+          :value="selectedResto?.area"
+        />
+        <DetailField
+          label="Kota"
+          :value="selectedResto?.kota"
+        />
+        <DetailField
+          label="No. Telp"
+          :value="selectedResto?.no_telp"
+        />
+        <DetailField
+          label="Alamat"
+          :value="selectedResto?.alamat"
+          span
+        />
+        <DetailField
+          label="Tanggal Aktif"
+          :value="selectedResto?.tgl_aktif ? formatDate(selectedResto.tgl_aktif) : '-'"
+        />
+        <DetailField
+          label="Keterangan"
+          :value="selectedResto?.keterangan"
+          span
+        />
+      </DetailSection>
     </DetailDialog>
 
     <!-- Confirm Delete -->
@@ -459,12 +450,7 @@ const headers = [
   { title: 'Entitas',       key: 'perusahaan',      sortable: false },
   { title: 'Brand',         key: 'brand',           sortable: false },
   { title: 'PIC AR',        key: 'pic_ar',          sortable: false },
-  { title: 'Supervisor',    key: 'supervisor',      sortable: false },
-  { title: 'No. HP SPV',   key: 'no_hp_supervisor', sortable: false },
-  { title: 'STOKIS',       key: 'stokis',          sortable: false },
-  { title: 'Area',          key: 'area',            sortable: false },
   { title: 'Kota',          key: 'kota',            sortable: false },
-  { title: 'Alamat',        key: 'alamat',          sortable: false },
   { title: 'No. Telp',      key: 'no_telp',         sortable: false },
   { title: 'Tanggal Aktif', key: 'tgl_aktif',       sortable: false },
   { title: 'Keterangan',    key: 'keterangan',      sortable: false },

@@ -463,102 +463,84 @@
       </BaseTable>
     </VCard>
 
-    <!-- Detail Drawer -->
-    <VNavigationDrawer
-      v-if="showDetail"
+    <!-- Detail Dialog -->
+    <DetailDialog
+      v-if="selectedKlien"
       v-model="showDetail"
-      location="right"
-      width="420"
-      temporary
+      title="Detail Client"
+      size="lg"
+      :status="selectedKlien.status ?? null"
+      :created-by="selectedKlien.created_by_name"
+      :updated-by="selectedKlien.updated_by_name"
+      :created-at="selectedKlien.created_at"
+      :updated-at="selectedKlien.updated_at"
     >
-      <div class="d-flex align-center justify-space-between pa-4">
-        <span class="text-h6 font-weight-semibold">Detail Client</span>
-        <VBtn
-          icon
-          size="small"
-          variant="text"
-          @click="showDetail = false"
+      <template #hero>
+        <VAvatar
+          size="88"
+          color="primary"
+          class="mb-3"
         >
-          <VIcon icon="ri-close-line" />
-        </VBtn>
-      </div>
-      <VDivider />
-      <div
-        v-if="selectedKlien"
-        class="pa-4"
-      >
-        <div class="mb-4 text-center">
-          <VAvatar
-            size="72"
-            color="primary"
-            class="mb-3"
-          >
-            <span class="text-h5">{{ selectedKlien.nama_klien?.charAt(0)?.toUpperCase() }}</span>
-          </VAvatar>
-          <div class="text-h6 font-weight-bold">
-            {{ selectedKlien.nama_klien }}
-          </div>
-          <VChip
-            color="primary"
-            size="small"
-            variant="tonal"
-            label
-            class="mt-1"
-          >
-            {{ selectedKlien.kode_klien }}
-          </VChip>
+          <span class="text-h4 font-weight-bold text-white">{{ selectedKlien.nama_klien?.charAt(0)?.toUpperCase() }}</span>
+        </VAvatar>
+        <div class="text-h6 font-weight-bold mb-2">
+          {{ selectedKlien.nama_klien }}
         </div>
-        <VDivider class="mb-4" />
-        <DetailRow
+        <VChip
+          color="primary"
+          size="small"
+          variant="tonal"
+          label
+        >
+          {{ selectedKlien.kode_klien }}
+        </VChip>
+      </template>
+
+      <DetailSection v-if="selectedKlien.tipe_klien === 'RESTO'" title="Outlet & Investor">
+        <DetailField
           label="Outlet"
           :value="selectedKlien.resto?.nama_resto"
         />
-        <DetailRow
+        <DetailField
           label="Investor"
           :value="selectedKlien.resto?.investor?.nama_investor"
         />
-        <DetailRow
+        <DetailField
           label="HP Investor"
           :value="selectedKlien.resto?.investor?.no_hp"
         />
-        <DetailRow
+        <DetailField
           label="Pengelola"
           :value="selectedKlien.resto?.investor?.pengelola"
         />
-        <DetailRow
+        <DetailField
           label="HP Pengelola"
           :value="selectedKlien.resto?.investor?.no_hp_pengelola"
         />
-        <DetailRow
+      </DetailSection>
+
+      <DetailSection title="Kontak & PIC">
+        <DetailField
           :label="selectedKlien.client_contact_source === 'investor' ? 'No. NPWP (Investor)' : selectedKlien.client_contact_source === 'perusahaan' ? 'No. NPWP (Perusahaan)' : 'No. NPWP'"
           :value="selectedKlien.client_npwp"
         />
-        <DetailRow
+        <DetailField
           :label="selectedKlien.tipe_klien === 'RESTO' ? 'No. HP Investor' : selectedKlien.tipe_klien === 'PT' ? 'No. Telp Perusahaan' : 'No. WhatsApp'"
           :value="selectedKlien.client_contact_phone"
         />
-        <DetailRow
+        <DetailField
           v-if="selectedKlien.no_wa && selectedKlien.no_wa !== selectedKlien.client_contact_phone"
           label="No. WhatsApp (Fallback)"
           :value="selectedKlien.no_wa"
+          span
         />
-        <DetailRow
+        <DetailField
           label="PIC AR"
           :value="selectedKlien.karyawan_ar?.nama_karyawan"
+          span
         />
-        <DetailRow label="Status">
-          <StatusChip :active="selectedKlien.status" />
-        </DetailRow>
-        <DetailRow
-          label="Created By"
-          :value="selectedKlien.created_by_name"
-        />
-        <DetailRow
-          label="Updated By"
-          :value="selectedKlien.updated_by_name"
-        />
-      </div>
-    </VNavigationDrawer>
+      </DetailSection>
+    </DetailDialog>
 
     <!-- Confirm Delete -->
     <BaseModal
@@ -744,7 +726,7 @@ function openEdit(k)       { router.push({ name: 'finance-klien-ar-edit', params
 function openDetail(k)     { selectedKlien.value = k;    showDetail.value = true }
 function confirmDelete(k)  { selectedKlien.value = k;    deleteError.value = ''; showDelete.value = true }
 
-// Detail drawer / delete modal teleports (VNavigationDrawer, VDialog) survive
+// Detail dialog / delete modal teleports (VDialog) survive
 // keep-alive deactivation, so force-close them to avoid a stuck scrim on other pages.
 onDeactivated(() => {
   showDetail.value = false
@@ -828,7 +810,7 @@ onMounted(() => {
 
 <style scoped>
 /* Ringkas lagi tampilan mobile khusus halaman ini (tidak menyentuh
-   PageHeroHeader.vue/BaseTable.vue/DetailRow.vue supaya halaman lain yang
+   PageHeroHeader.vue/BaseTable.vue supaya halaman lain yang
    memakainya tidak ikut berubah). */
 @media (max-width: 599.98px) {
   :deep(.phh__title) {
@@ -862,14 +844,6 @@ onMounted(() => {
   :deep(.v-chip) {
     font-size: 0.65rem !important;
     --v-chip-height: 20px;
-  }
-
-  :deep(.detail-row-item) {
-    padding: 8px 12px !important;
-  }
-
-  :deep(.detail-row-item .text-body-2) {
-    font-size: 0.8125rem !important;
   }
 
   .text-h6 {

@@ -3,6 +3,7 @@
     :model-value="modelValue"
     :title="isEditing ? 'Edit Entitas' : 'Tambah Entitas'"
     :disabled="saving"
+    width="720"
     @update:model-value="$emit('update:modelValue', $event)"
     @confirm="handleSubmit"
   >
@@ -88,7 +89,10 @@
             @input="form.nama_singkatan_perusahaan = form.nama_singkatan_perusahaan.toUpperCase()"
           />
         </VCol>
-        <VCol cols="12">
+        <VCol
+          cols="12"
+          md="7"
+        >
           <VTextField
             v-model="form.nama_perusahaan"
             label="Nama Entitas"
@@ -99,15 +103,20 @@
             :error-messages="errors.nama_perusahaan"
           />
         </VCol>
-        <VCol cols="12">
-          <div class="text-body-2 mb-1">
-            Segmen
-          </div>
-          <div class="d-flex align-center gap-2">
+        <VCol
+          cols="12"
+          md="5"
+        >
+          <div
+            class="d-flex align-center gap-2"
+            style="block-size: 40px;"
+          >
+            <span class="text-body-2 text-medium-emphasis text-no-wrap">Segmen</span>
             <VRadioGroup
               v-model="segmenPilihan"
               inline
               hide-details
+              density="compact"
             >
               <VRadio
                 label="B2B"
@@ -297,6 +306,7 @@
 <script setup>
 import { ref, reactive, watch, computed } from 'vue'
 import { useCrud } from '@/composables/useCrud.js'
+import { useSweetAlert } from '@/composables/useSweetAlert.js'
 import { BOOLEAN_STATUS_OPTIONS, normalizeBooleanStatus } from '@/utils/status.js'
 import MobileMoreFields from '@/components/shared/MobileMoreFields.vue'
 
@@ -308,6 +318,7 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue', 'saved'])
 
 const { create, update, saving } = useCrud('/master/perusahaan')
+const { showSuccess } = useSweetAlert()
 
 const formRef = ref(null)
 const errorMessage = ref('')
@@ -375,6 +386,7 @@ async function handleSubmit() {
 
   if (res.success) {
     emit('saved')
+    showSuccess(isEditing.value ? 'Perubahan entitas berhasil disimpan.' : 'Entitas berhasil ditambahkan.')
   } else {
     if (res.errors) Object.assign(errors, res.errors)
     else errorMessage.value = 'Gagal menyimpan data'

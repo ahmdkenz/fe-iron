@@ -178,6 +178,12 @@
     <DetailDialog
       v-model="showDetail"
       title="Detail Karyawan"
+      size="md"
+      :status="selectedKaryawan?.status ?? null"
+      :created-by="selectedKaryawan?.created_by_name"
+      :updated-by="selectedKaryawan?.updated_by_name"
+      :created-at="selectedKaryawan?.created_at"
+      :updated-at="selectedKaryawan?.updated_at"
     >
       <template #hero>
         <VAvatar
@@ -200,37 +206,21 @@
         </VChip>
       </template>
 
-      <DetailRow
-        label="Entitas"
-        :value="selectedKaryawan?.perusahaan?.nama_perusahaan"
-      />
-      <DetailRow
-        label="Singkatan"
-        :value="selectedKaryawan?.perusahaan?.nama_singkatan_perusahaan"
-      />
-      <DetailRow
-        label="Keterangan"
-        :value="selectedKaryawan?.keterangan"
-      />
-      <DetailRow label="Status">
-        <StatusChip :active="selectedKaryawan?.status" />
-      </DetailRow>
-      <DetailRow
-        label="Created By"
-        :value="selectedKaryawan?.created_by_name"
-      />
-      <DetailRow
-        label="Updated By"
-        :value="selectedKaryawan?.updated_by_name"
-      />
-      <DetailRow
-        label="Created At"
-        :value="selectedKaryawan?.created_at"
-      />
-      <DetailRow
-        label="Updated At"
-        :value="selectedKaryawan?.updated_at"
-      />
+      <DetailSection title="Kepegawaian">
+        <DetailField
+          label="Entitas"
+          :value="selectedKaryawan?.perusahaan?.nama_perusahaan"
+        />
+        <DetailField
+          label="Singkatan"
+          :value="selectedKaryawan?.perusahaan?.nama_singkatan_perusahaan"
+        />
+        <DetailField
+          label="Keterangan"
+          :value="selectedKaryawan?.keterangan"
+          span
+        />
+      </DetailSection>
     </DetailDialog>
 
     <!-- Confirm Delete -->

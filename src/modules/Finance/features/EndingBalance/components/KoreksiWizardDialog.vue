@@ -393,14 +393,6 @@
                     persistent-hint
                   />
                 </VCol>
-                <VCol cols="12">
-                  <VTextField
-                    v-model="koreksiForm.dokumen_url"
-                    label="URL Dokumen Pendukung (opsional)"
-                    hint="Link Google Drive, SharePoint, atau URL lainnya"
-                    persistent-hint
-                  />
-                </VCol>
               </VRow>
             </template>
 
@@ -424,14 +416,6 @@
                     rows="3"
                     auto-grow
                     counter="1000"
-                    persistent-hint
-                  />
-                </VCol>
-                <VCol cols="12">
-                  <VTextField
-                    v-model="koreksiForm.dokumen_url"
-                    label="URL Dokumen Pendukung (opsional)"
-                    hint="Link Google Drive, SharePoint, atau URL lainnya"
                     persistent-hint
                   />
                 </VCol>

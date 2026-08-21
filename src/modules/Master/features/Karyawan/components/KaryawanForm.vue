@@ -165,6 +165,7 @@
 <script setup>
 import { ref, reactive, watch, computed } from 'vue'
 import { useCrud } from '@/composables/useCrud.js'
+import { useSweetAlert } from '@/composables/useSweetAlert.js'
 import { BOOLEAN_STATUS_OPTIONS, normalizeBooleanStatus } from '@/utils/status.js'
 
 const props = defineProps({
@@ -176,6 +177,7 @@ const emit = defineEmits(['update:modelValue', 'saved'])
 
 const { create, update, saving } = useCrud('/master/karyawan')
 const { items: entitasList, loading: entitasLoading, fetchAll: fetchEntitas } = useCrud('/master/perusahaan')
+const { showSuccess } = useSweetAlert()
 
 const formRef = ref(null)
 const errorMessage = ref('')
@@ -224,6 +226,7 @@ async function handleSubmit() {
 
   if (res.success) {
     emit('saved')
+    showSuccess(isEditing.value ? 'Perubahan karyawan berhasil disimpan.' : 'Karyawan berhasil ditambahkan.')
   } else {
     if (res.errors) Object.assign(errors, res.errors)
     else errorMessage.value = 'Gagal menyimpan data'

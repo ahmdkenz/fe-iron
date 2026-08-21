@@ -3,6 +3,7 @@
     :model-value="modelValue"
     :title="isEditing ? 'Edit User' : 'Tambah User'"
     :disabled="saving"
+    width="720"
     @update:model-value="$emit('update:modelValue', $event)"
     @confirm="handleSubmit"
   >
@@ -44,7 +45,10 @@
         Identitas Akun
       </div>
       <VRow dense>
-        <VCol cols="12">
+        <VCol
+          cols="12"
+          md="6"
+        >
           <VAutocomplete
             v-model="selectedKaryawan"
             v-model:search="nikSearch"
@@ -67,6 +71,7 @@
             <template #item="{ props: itemProps, item }">
               <VListItem
                 v-bind="itemProps"
+                :disabled="item.raw.disabled"
                 :title="item.raw.nik"
                 :subtitle="item.raw.nama_karyawan"
               />
@@ -76,7 +81,10 @@
             </template>
           </VAutocomplete>
         </VCol>
-        <VCol cols="12">
+        <VCol
+          cols="12"
+          md="6"
+        >
           <BaseInput
             v-model="form.username"
             label="Username"
@@ -218,7 +226,10 @@
             :error-messages="errors.smtp_port"
           />
         </VCol>
-        <VCol cols="12">
+        <VCol
+          cols="12"
+          md="6"
+        >
           <VTextField
             v-model="form.smtp_username"
             label="SMTP Username"
@@ -228,7 +239,10 @@
             :error-messages="errors.smtp_username"
           />
         </VCol>
-        <VCol cols="12">
+        <VCol
+          cols="12"
+          md="6"
+        >
           <VTextField
             v-model="form.smtp_from_email"
             label="Email Pengirim (From)"
@@ -236,8 +250,6 @@
             placeholder="alamat email yang tampil sebagai pengirim"
             density="compact"
             variant="outlined"
-            hint="Wajib diisi kalau SMTP Username BUKAN alamat email (mis. Mailtrap, SendGrid pakai token/API key sebagai username). Kosongkan hanya jika SMTP Username sudah berupa email asli (mis. Gmail)."
-            persistent-hint
             :error-messages="errors.smtp_from_email"
           />
         </VCol>
@@ -318,6 +330,7 @@
 <script setup>
 import { ref, reactive, watch, computed } from 'vue'
 import { useCrud } from '@/composables/useCrud.js'
+import { useSweetAlert } from '@/composables/useSweetAlert.js'
 import api from '@/utils/axios.js'
 import { BOOLEAN_STATUS_OPTIONS, normalizeBooleanStatus } from '@/utils/status.js'
 import { sanitizePhoneNumber } from '@/utils/phone.js'
@@ -332,6 +345,7 @@ const emit = defineEmits(['update:modelValue', 'saved'])
 
 const { create, update, saving, errors: crudErrors } = useCrud('/iam/users')
 const { items: roles, loading: rolesLoading, fetchAll: fetchRoles } = useCrud('/iam/roles')
+const { showSuccess } = useSweetAlert()
 
 const formRef = ref(null)
 const showPwd = ref(false)
@@ -359,27 +373,25 @@ const defaultForm = () => ({
 })
 const form = reactive(defaultForm())
 
-async function onNikSearch(val) {
-  if (!val || val.length < 1) {
-    karyawanOptions.value = []
-    
-    return
-  }
-  clearTimeout(nikDebounceTimer)
-  nikDebounceTimer = setTimeout(async () => {
-    nikLoading.value = true
-    try {
-      const params = { nik: val }
-      if (isEditing.value && props.userData?.id) params.exclude_user_id = props.userData.id
-      const res = await api.get('/master/karyawan/search', { params })
+async function fetchKaryawanOptions(nik = '') {
+  nikLoading.value = true
+  try {
+    const params = {}
+    if (nik) params.nik = nik
+    if (isEditing.value && props.userData?.id) params.exclude_user_id = props.userData.id
+    const res = await api.get('/master/karyawan/search', { params })
 
-      karyawanOptions.value = res.data?.data ?? []
-    } catch {
-      karyawanOptions.value = []
-    } finally {
-      nikLoading.value = false
-    }
-  }, 300)
+    karyawanOptions.value = (res.data?.data ?? []).map(k => ({ ...k, disabled: k.is_used }))
+  } catch {
+    karyawanOptions.value = []
+  } finally {
+    nikLoading.value = false
+  }
+}
+
+function onNikSearch(val) {
+  clearTimeout(nikDebounceTimer)
+  nikDebounceTimer = setTimeout(() => fetchKaryawanOptions(val || ''), 300)
 }
 
 function onKaryawanSelect(val) {
@@ -396,7 +408,6 @@ watch([() => props.modelValue, () => props.userData], ([open]) => {
   showPwd.value = false
   showToken.value = false
   nikSearch.value = ''
-  karyawanOptions.value = []
   fetchRoles()
   if (props.userData) {
     form.username = props.userData.username ?? ''
@@ -423,6 +434,7 @@ watch([() => props.modelValue, () => props.userData], ([open]) => {
     Object.assign(form, defaultForm())
     selectedKaryawan.value = null
   }
+  fetchKaryawanOptions()
 })
 
 async function handleSubmit() {
@@ -442,6 +454,7 @@ async function handleSubmit() {
 
   if (res.success) {
     emit('saved')
+    showSuccess(isEditing.value ? 'Perubahan user berhasil disimpan.' : 'User berhasil ditambahkan.')
   } else {
     if (res.errors) Object.assign(errors, res.errors)
     else errorMessage.value = 'Gagal menyimpan data'

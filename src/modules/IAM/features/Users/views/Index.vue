@@ -185,6 +185,12 @@
     <DetailDialog
       v-model="showDetail"
       title="Detail User"
+      size="md"
+      :status="selectedUser?.status ?? null"
+      :created-by="selectedUser?.created_by_name"
+      :updated-by="selectedUser?.updated_by_name"
+      :created-at="selectedUser?.created_at"
+      :updated-at="selectedUser?.updated_at"
     >
       <template #hero>
         <VAvatar
@@ -194,52 +200,37 @@
         >
           <span class="text-h4 font-weight-bold text-white">{{ selectedUser?.username?.charAt(0)?.toUpperCase() }}</span>
         </VAvatar>
-        <div class="text-h6 font-weight-bold mb-2">
+        <div class="text-h6 font-weight-bold">
           {{ selectedUser?.username }}
         </div>
-        <StatusChip :active="selectedUser?.status" />
       </template>
 
-      <DetailRow
-        label="Email"
-        :value="selectedUser?.email"
-      />
-      <DetailRow
-        label="No. HP"
-        :value="selectedUser?.no_hp"
-      />
-      <DetailRow
-        label="Karyawan"
-        :value="selectedUser?.karyawan?.nama_karyawan"
-      />
-      <DetailRow label="Role">
-        <VChip
-          v-if="selectedUser?.role"
-          color="primary"
-          size="small"
-          variant="tonal"
-          label
-        >
-          {{ selectedUser.role.nama_role }}
-        </VChip>
-        <span v-else>-</span>
-      </DetailRow>
-      <DetailRow
-        label="Created By"
-        :value="selectedUser?.created_by_name"
-      />
-      <DetailRow
-        label="Updated By"
-        :value="selectedUser?.updated_by_name"
-      />
-      <DetailRow
-        label="Created At"
-        :value="selectedUser?.created_at"
-      />
-      <DetailRow
-        label="Updated At"
-        :value="selectedUser?.updated_at"
-      />
+      <DetailSection title="Akun">
+        <DetailField
+          label="Email"
+          :value="selectedUser?.email"
+        />
+        <DetailField
+          label="No. HP"
+          :value="selectedUser?.no_hp"
+        />
+        <DetailField
+          label="Karyawan"
+          :value="selectedUser?.karyawan?.nama_karyawan"
+        />
+        <DetailField label="Role">
+          <VChip
+            v-if="selectedUser?.role"
+            color="primary"
+            size="small"
+            variant="tonal"
+            label
+          >
+            {{ selectedUser.role.nama_role }}
+          </VChip>
+          <span v-else>-</span>
+        </DetailField>
+      </DetailSection>
     </DetailDialog>
 
     <!-- Confirm Delete -->

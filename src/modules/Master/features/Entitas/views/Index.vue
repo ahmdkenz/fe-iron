@@ -177,6 +177,12 @@
     <DetailDialog
       v-model="showDetail"
       title="Detail Entitas"
+      size="lg"
+      :status="selectedEntitas?.status ?? null"
+      :created-by="selectedEntitas?.created_by_name"
+      :updated-by="selectedEntitas?.updated_by_name"
+      :created-at="selectedEntitas?.created_at"
+      :updated-at="selectedEntitas?.updated_at"
     >
       <template #hero>
         <VAvatar
@@ -199,104 +205,66 @@
         </VChip>
       </template>
 
-      <!-- Section: Identitas Entitas -->
-      <div class="detail-section-header">
-        <VIcon
-          icon="ri-building-4-line"
-          size="14"
-          class="detail-section-icon-primary"
+      <DetailSection
+        title="Identitas Entitas"
+        icon="ri-building-4-line"
+      >
+        <DetailField
+          label="Kode Entitas"
+          :value="selectedEntitas?.kode_perusahaan"
         />
-        <span class="detail-section-title detail-section-title-primary">Identitas Entitas</span>
-      </div>
-      <VDivider />
-      <DetailRow
-        label="Kode Entitas"
-        :value="selectedEntitas?.kode_perusahaan"
-      />
-      <DetailRow
-        label="Singkatan"
-        :value="selectedEntitas?.nama_singkatan_perusahaan"
-      />
-      <DetailRow label="Segmen">
-        <SegmenChips :segmen="selectedEntitas?.segmen" />
-      </DetailRow>
-      <DetailRow
-        label="Nama Entitas"
-        :value="selectedEntitas?.nama_perusahaan"
-      />
-      <DetailRow
-        label="Nama Direktur"
-        :value="selectedEntitas?.nama_direktur"
-      />
-      <DetailRow
-        label="Keterangan"
-        :value="selectedEntitas?.keterangan"
-      />
+        <DetailField
+          label="Singkatan"
+          :value="selectedEntitas?.nama_singkatan_perusahaan"
+        />
+        <DetailField label="Segmen">
+          <SegmenChips :segmen="selectedEntitas?.segmen" />
+        </DetailField>
+        <DetailField
+          label="Nama Entitas"
+          :value="selectedEntitas?.nama_perusahaan"
+        />
+        <DetailField
+          label="Nama Direktur"
+          :value="selectedEntitas?.nama_direktur"
+        />
+        <DetailField
+          label="Keterangan"
+          :value="selectedEntitas?.keterangan"
+          span
+        />
+      </DetailSection>
 
-      <!-- Section: Kontak & Lokasi -->
-      <div class="detail-section-header">
-        <VIcon
-          icon="ri-map-pin-line"
-          size="14"
-          class="detail-section-icon-info"
+      <DetailSection
+        title="Kontak & Lokasi"
+        icon="ri-map-pin-line"
+      >
+        <DetailField
+          label="Alamat"
+          :value="selectedEntitas?.alamat"
+          span
         />
-        <span class="detail-section-title detail-section-title-info">Kontak &amp; Lokasi</span>
-      </div>
-      <VDivider />
-      <DetailRow
-        label="Alamat"
-        :value="selectedEntitas?.alamat"
-      />
-      <DetailRow
-        label="Kota"
-        :value="selectedEntitas?.kota"
-      />
-      <DetailRow
-        label="Kode POS"
-        :value="selectedEntitas?.kode_pos"
-      />
-      <DetailRow
-        label="No. Telepon"
-        :value="selectedEntitas?.no_telp"
-      />
-      <DetailRow
-        label="Email"
-        :value="selectedEntitas?.email"
-      />
-      <DetailRow
-        label="NPWP"
-        :value="selectedEntitas?.no_npwp"
-      />
-
-      <!-- Section: Status & Audit -->
-      <div class="detail-section-header">
-        <VIcon
-          icon="ri-history-line"
-          size="14"
-          class="detail-section-icon-secondary"
+        <DetailField
+          label="Kota"
+          :value="selectedEntitas?.kota"
         />
-        <span class="detail-section-title detail-section-title-secondary">Status &amp; Audit</span>
-      </div>
-      <VDivider />
-      <DetailRow label="Status">
-        <StatusChip :active="selectedEntitas?.status" />
-      </DetailRow>
-      <DetailRow
-        label="Created By"
-        :value="selectedEntitas?.created_by_name"
-      />
-      <DetailRow
-        label="Updated By"
-        :value="selectedEntitas?.updated_by_name"
-      />
-      <DetailRow
-        label="Created At"
-        :value="selectedEntitas?.created_at"
-      />
-      <DetailRow
-        label="Updated At"
-        :value="selectedEntitas?.updated_at"
-      />
+        <DetailField
+          label="Kode POS"
+          :value="selectedEntitas?.kode_pos"
+        />
+        <DetailField
+          label="No. Telepon"
+          :value="selectedEntitas?.no_telp"
+        />
+        <DetailField
+          label="Email"
+          :value="selectedEntitas?.email"
+        />
+        <DetailField
+          label="NPWP"
+          :value="selectedEntitas?.no_npwp"
+        />
+      </DetailSection>
     </DetailDialog>
 
     <!-- Confirm Delete -->
@@ -488,36 +456,6 @@ onMounted(() => fetchList())
 </script>
 
 <style scoped>
-.detail-section-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 20px;
-  background: rgba(var(--v-theme-on-surface), 0.03);
-}
-
-.detail-section-title {
-  font-size: 0.72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.detail-section-icon-primary,
-.detail-section-title-primary {
-  color: rgb(var(--v-theme-primary));
-}
-
-.detail-section-icon-info,
-.detail-section-title-info {
-  color: rgb(var(--v-theme-info));
-}
-
-.detail-section-icon-secondary,
-.detail-section-title-secondary {
-  color: rgb(var(--v-theme-secondary));
-}
-
 /* Ringkas lagi tampilan mobile khusus halaman ini (tidak menyentuh
    BaseTable.vue/ManagementIndexShell.vue supaya modul lain tidak ikut berubah). */
 @media (max-width: 599.98px) {

@@ -3,6 +3,7 @@
     :model-value="modelValue"
     :title="isEditing ? 'Edit Investor' : 'Tambah Investor'"
     :disabled="saving"
+    width="720"
     @update:model-value="$emit('update:modelValue', $event)"
     @confirm="handleSubmit"
   >
@@ -44,7 +45,10 @@
         Data Investor
       </div>
       <VRow dense>
-        <VCol cols="12">
+        <VCol
+          cols="12"
+          md="6"
+        >
           <VTextField
             v-model="form.nama_investor"
             label="Nama Investor"
@@ -55,7 +59,10 @@
             :error-messages="errors.nama_investor"
           />
         </VCol>
-        <VCol cols="12">
+        <VCol
+          cols="12"
+          md="6"
+        >
           <VTextField
             v-model="form.no_hp"
             label="No. HP"

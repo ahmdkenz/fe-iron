@@ -170,6 +170,12 @@
     <DetailDialog
       v-model="showDetail"
       title="Detail Role"
+      size="md"
+      :status="selectedRole?.status ?? null"
+      :created-by="selectedRole?.created_by_name"
+      :updated-by="selectedRole?.updated_by_name"
+      :created-at="selectedRole?.created_at"
+      :updated-at="selectedRole?.updated_at"
     >
       <template #hero>
         <VAvatar
@@ -192,33 +198,17 @@
         </VChip>
       </template>
 
-      <DetailRow
-        label="Keterangan"
-        :value="selectedRole?.keterangan"
-      />
-      <DetailRow label="Status">
-        <StatusChip :active="selectedRole?.status" />
-      </DetailRow>
-      <DetailRow
-        label="Total User"
-        :value="selectedRole?.users_count?.toString()"
-      />
-      <DetailRow
-        label="Created By"
-        :value="selectedRole?.created_by_name"
-      />
-      <DetailRow
-        label="Updated By"
-        :value="selectedRole?.updated_by_name"
-      />
-      <DetailRow
-        label="Created At"
-        :value="selectedRole?.created_at"
-      />
-      <DetailRow
-        label="Updated At"
-        :value="selectedRole?.updated_at"
-      />
+      <DetailSection>
+        <DetailField
+          label="Keterangan"
+          :value="selectedRole?.keterangan"
+          span
+        />
+        <DetailField
+          label="Total User"
+          :value="selectedRole?.users_count?.toString()"
+        />
+      </DetailSection>
     </DetailDialog>
 
     <!-- Confirm Delete -->

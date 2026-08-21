@@ -168,6 +168,12 @@
     <DetailDialog
       v-model="showDetail"
       title="Detail Brand"
+      size="md"
+      :status="selectedBrand?.status ?? null"
+      :created-by="selectedBrand?.created_by_name"
+      :updated-by="selectedBrand?.updated_by_name"
+      :created-at="selectedBrand?.created_at"
+      :updated-at="selectedBrand?.updated_at"
     >
       <template #hero>
         <VAvatar
@@ -190,29 +196,13 @@
         </VChip>
       </template>
 
-      <DetailRow
-        label="Keterangan"
-        :value="selectedBrand?.keterangan"
-      />
-      <DetailRow label="Status">
-        <StatusChip :active="selectedBrand?.status" />
-      </DetailRow>
-      <DetailRow
-        label="Created By"
-        :value="selectedBrand?.created_by_name"
-      />
-      <DetailRow
-        label="Updated By"
-        :value="selectedBrand?.updated_by_name"
-      />
-      <DetailRow
-        label="Created At"
-        :value="selectedBrand?.created_at"
-      />
-      <DetailRow
-        label="Updated At"
-        :value="selectedBrand?.updated_at"
-      />
+      <DetailSection>
+        <DetailField
+          label="Keterangan"
+          :value="selectedBrand?.keterangan"
+          span
+        />
+      </DetailSection>
     </DetailDialog>
 
     <!-- Confirm Delete -->

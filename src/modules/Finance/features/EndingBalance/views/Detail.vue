@@ -2,7 +2,7 @@
   <div>
     <PageHeader
       :title="eb ? `Ending Balance — ${eb.nama_klien}` : 'Detail Ending Balance'"
-      :subtitle="eb ? `${formatDate(eb.periode_awal)} – ${formatDate(eb.periode_akhir)}` : ''"
+      :subtitle="eb ? `${eb.outlet ? eb.outlet + ' · ' : ''}${formatDate(eb.periode_awal)} – ${formatDate(eb.periode_akhir)}` : ''"
       :breadcrumbs="[
         { title: 'Dashboard', to: { name: 'dashboard' } },
         { title: 'Ending Balance', to: { name: 'finance-ending-balance' } },

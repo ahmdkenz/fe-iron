@@ -228,6 +228,12 @@
     <DetailDialog
       v-model="showDetail"
       title="Detail Investor"
+      size="lg"
+      :status="selectedInvestor?.status ?? null"
+      :created-by="selectedInvestor?.created_by_name"
+      :updated-by="selectedInvestor?.updated_by_name"
+      :created-at="selectedInvestor?.created_at"
+      :updated-at="selectedInvestor?.updated_at"
     >
       <template #hero>
         <VAvatar
@@ -237,56 +243,50 @@
         >
           <span class="text-h4 font-weight-bold text-white">{{ selectedInvestor?.nama_investor?.charAt(0)?.toUpperCase() }}</span>
         </VAvatar>
-        <div class="text-h6 font-weight-bold mb-2">
+        <div class="text-h6 font-weight-bold">
           {{ selectedInvestor?.nama_investor }}
         </div>
-        <StatusChip :active="selectedInvestor?.status" />
       </template>
 
-      <DetailRow
-        label="No. KTP"
-        :value="selectedInvestor?.ktp"
-      />
-      <DetailRow
-        label="NPWP"
-        :value="selectedInvestor?.npwp"
-      />
-      <DetailRow
-        label="No. HP"
-        :value="selectedInvestor?.no_hp"
-      />
-      <DetailRow
-        label="Nama Pengelola"
-        :value="selectedInvestor?.pengelola"
-      />
-      <DetailRow
-        label="No. HP Pengelola"
-        :value="selectedInvestor?.no_hp_pengelola"
-      />
-      <DetailRow
-        label="Kode Cabang"
-        :value="selectedInvestor?.kode_cabang"
-      />
-      <DetailRow
-        label="ID Cabang"
-        :value="selectedInvestor?.id_cabang"
-      />
-      <DetailRow
-        label="Created By"
-        :value="selectedInvestor?.created_by_name"
-      />
-      <DetailRow
-        label="Updated By"
-        :value="selectedInvestor?.updated_by_name"
-      />
-      <DetailRow
-        label="Created At"
-        :value="selectedInvestor?.created_at"
-      />
-      <DetailRow
-        label="Updated At"
-        :value="selectedInvestor?.updated_at"
-      />
+      <DetailSection
+        title="Identitas & Legalitas"
+        icon="ri-id-card-line"
+      >
+        <DetailField
+          label="No. KTP"
+          :value="selectedInvestor?.ktp"
+        />
+        <DetailField
+          label="NPWP"
+          :value="selectedInvestor?.npwp"
+        />
+      </DetailSection>
+
+      <DetailSection
+        title="Kontak & Pengelola"
+        icon="ri-contacts-line"
+      >
+        <DetailField
+          label="No. HP"
+          :value="selectedInvestor?.no_hp"
+        />
+        <DetailField
+          label="Nama Pengelola"
+          :value="selectedInvestor?.pengelola"
+        />
+        <DetailField
+          label="No. HP Pengelola"
+          :value="selectedInvestor?.no_hp_pengelola"
+        />
+        <DetailField
+          label="Kode Cabang"
+          :value="selectedInvestor?.kode_cabang"
+        />
+        <DetailField
+          label="ID Cabang"
+          :value="selectedInvestor?.id_cabang"
+        />
+      </DetailSection>
     </DetailDialog>
 
     <!-- Confirm Delete -->

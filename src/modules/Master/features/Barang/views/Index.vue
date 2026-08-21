@@ -182,6 +182,12 @@
     <DetailDialog
       v-model="showDetail"
       title="Detail Barang"
+      size="md"
+      :status="selectedBarang?.status ?? null"
+      :created-by="selectedBarang?.created_by_name"
+      :updated-by="selectedBarang?.updated_by_name"
+      :created-at="selectedBarang?.created_at"
+      :updated-at="selectedBarang?.updated_at"
     >
       <template #hero>
         <VAvatar
@@ -204,33 +210,18 @@
         </VChip>
       </template>
 
-      <DetailRow
-        label="Spesifikasi"
-        :value="selectedBarang?.spesifikasi"
-      />
-      <DetailRow
-        label="Keterangan"
-        :value="selectedBarang?.keterangan"
-      />
-      <DetailRow label="Status">
-        <StatusChip :active="selectedBarang?.status" />
-      </DetailRow>
-      <DetailRow
-        label="Created By"
-        :value="selectedBarang?.created_by_name"
-      />
-      <DetailRow
-        label="Updated By"
-        :value="selectedBarang?.updated_by_name"
-      />
-      <DetailRow
-        label="Created At"
-        :value="selectedBarang?.created_at"
-      />
-      <DetailRow
-        label="Updated At"
-        :value="selectedBarang?.updated_at"
-      />
+      <DetailSection>
+        <DetailField
+          label="Spesifikasi"
+          :value="selectedBarang?.spesifikasi"
+          span
+        />
+        <DetailField
+          label="Keterangan"
+          :value="selectedBarang?.keterangan"
+          span
+        />
+      </DetailSection>
     </DetailDialog>
 
     <!-- Confirm Delete -->

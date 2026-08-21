@@ -190,77 +190,59 @@
       </BaseTable>
     </VCard>
 
-    <!-- Detail Drawer -->
-    <VNavigationDrawer
-      v-if="showDetail"
+    <!-- Detail Dialog -->
+    <DetailDialog
+      v-if="selectedVendor"
       v-model="showDetail"
-      location="right"
-      width="420"
-      temporary
+      title="Detail Vendor"
+      size="md"
+      :status="selectedVendor.status ?? null"
     >
-      <div class="d-flex align-center justify-space-between pa-4">
-        <span class="text-h6 font-weight-semibold">Detail Vendor</span>
-        <VBtn
-          icon
-          size="small"
-          variant="text"
-          @click="showDetail = false"
+      <template #hero>
+        <VAvatar
+          size="88"
+          color="primary"
+          class="mb-3"
         >
-          <VIcon icon="ri-close-line" />
-        </VBtn>
-      </div>
-      <VDivider />
-      <div
-        v-if="selectedVendor"
-        class="pa-4"
-      >
-        <div class="mb-4 text-center">
-          <VAvatar
-            size="72"
-            color="primary"
-            class="mb-3"
-          >
-            <span class="text-h5">{{ selectedVendor.nama_vendor?.charAt(0)?.toUpperCase() }}</span>
-          </VAvatar>
-          <div class="text-h6 font-weight-bold">
-            {{ selectedVendor.nama_vendor }}
-          </div>
-          <VChip
-            color="primary"
-            size="small"
-            variant="tonal"
-            label
-            class="mt-1"
-          >
-            {{ selectedVendor.kode_vendor }}
-          </VChip>
+          <span class="text-h4 font-weight-bold text-white">{{ selectedVendor.nama_vendor?.charAt(0)?.toUpperCase() }}</span>
+        </VAvatar>
+        <div class="text-h6 font-weight-bold mb-2">
+          {{ selectedVendor.nama_vendor }}
         </div>
-        <VDivider class="mb-4" />
-        <DetailRow
+        <VChip
+          color="primary"
+          size="small"
+          variant="tonal"
+          label
+        >
+          {{ selectedVendor.kode_vendor }}
+        </VChip>
+      </template>
+
+      <DetailSection title="Rekening & PIC">
+        <DetailField
           label="NPWP"
           :value="selectedVendor.no_npwp"
         />
-        <DetailRow
+        <DetailField
           label="Bank"
           :value="selectedVendor.bank_nama"
         />
-        <DetailRow
+        <DetailField
           label="No. Rekening"
           :value="selectedVendor.bank_no_rekening"
         />
-        <DetailRow
+        <DetailField
           label="Atas Nama"
           :value="selectedVendor.bank_atas_nama"
         />
-        <DetailRow
+        <DetailField
           label="PIC AP"
           :value="selectedVendor.karyawan_ap?.nama_karyawan"
+          span
         />
-        <DetailRow label="Status">
-          <StatusChip :active="selectedVendor.status" />
-        </DetailRow>
-      </div>
-    </VNavigationDrawer>
+      </DetailSection>
+    </DetailDialog>
 
     <!-- Confirm Delete -->
     <BaseModal
@@ -319,7 +301,6 @@ import { useCrud } from '@/composables/useCrud'
 import { useMinimizeWidgetStore } from '@/stores/minimize-widget.store'
 import api from '@/utils/axios'
 import BulkDeleteBar from '@/components/base/BulkDeleteBar.vue'
-import DetailRow from '@/components/shared/DetailRow.vue'
 import MobileCardActions from '@/components/shared/MobileCardActions.vue'
 import VendorForm from '../components/VendorForm.vue'
 

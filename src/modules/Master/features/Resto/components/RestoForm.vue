@@ -3,6 +3,7 @@
     :model-value="modelValue"
     :title="isEditing ? 'Edit Resto' : 'Tambah Resto'"
     :disabled="saving"
+    width="760"
     @update:model-value="$emit('update:modelValue', $event)"
     @confirm="handleSubmit"
   >
@@ -54,7 +55,10 @@
         Identitas Resto
       </div>
       <VRow dense>
-        <VCol cols="12">
+        <VCol
+          cols="12"
+          md="5"
+        >
           <VTextField
             v-model="form.kode_resto"
             label="Kode Resto"
@@ -67,7 +71,10 @@
             persistent-hint
           />
         </VCol>
-        <VCol cols="12">
+        <VCol
+          cols="12"
+          md="7"
+        >
           <VTextField
             v-model="form.nama_resto"
             label="Nama Resto"
@@ -202,7 +209,10 @@
         title="Penanggung Jawab"
         :has-error="!!(errors.supervisor?.length || errors.no_hp_supervisor?.length || errors.stokis?.length)"
       >
-        <VCol cols="12">
+        <VCol
+          cols="12"
+          md="6"
+        >
           <VTextField
             v-model="form.supervisor"
             label="Supervisor"
@@ -225,10 +235,7 @@
             :error-messages="errors.no_hp_supervisor"
           />
         </VCol>
-        <VCol
-          cols="12"
-          md="6"
-        >
+        <VCol cols="12">
           <VTextField
             v-model="form.stokis"
             label="STOKIS"
