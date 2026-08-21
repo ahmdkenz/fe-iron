@@ -14,43 +14,19 @@
       <VDivider />
 
       <VCardText>
-        <VAlert
+        <CollapsibleInfoAlert
           type="info"
-          variant="tonal"
+          title="Tentang tab ini:"
           class="mb-4"
         >
-          <div class="d-flex align-center justify-space-between ga-2">
-            <div class="font-weight-medium">
-              Tentang tab ini:
-            </div>
-            <VBtn
-              v-if="xs"
-              variant="text"
-              size="small"
-              density="comfortable"
-              color="info"
-              @click="showInfo = !showInfo"
-            >
-              {{ showInfo ? 'Sembunyikan' : 'Lihat' }}
-              <VIcon
-                :icon="showInfo ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'"
-                end
-              />
-            </VBtn>
-          </div>
-          <ul
-            v-show="!xs || showInfo"
-            class="ps-4 mt-2"
-          >
-            <li>Upload <strong>1 file Excel</strong> dengan <strong>3 sheet</strong>: <strong>MASTER DATA</strong> (Investor + Resto + Client AR), <strong>MASTER BARANG</strong> (Produk/Barang), dan <strong>Petunjuk Pengisian</strong>.</li>
-            <li>Sheet <strong>MASTER DATA</strong>: 1 baris = 1 outlet. Kolom <code>tipe_klien</code> boleh diisi <strong>RESTO/B2C</strong> atau <strong>PT/B2B</strong>. Untuk <code>tipe_klien = PT/B2B</code>: <strong>nama_entitas</strong> dan <strong>pic_ar</strong> wajib diisi. Untuk <code>tipe_klien = RESTO/B2C</code>: <strong>nama_pic</strong> wajib diisi (pic_ar hanya fallback jika nama_pic kosong); <strong>nama_investor boleh dikosongkan</strong> — Client AR akan pakai nama fallback "kode_resto (nama_cabang)" otomatis.</li>
-            <li>Kolom <code>email</code> (opsional, dipakai untuk fitur Kirim Email Invoice/OB): <strong>1 investor selalu memakai email yang sama</strong> di semua baris — baris kosong atau berbeda dari email yang sudah tercatat tidak akan menimpa, cukup dicatat sebagai info di hasil import.</li>
-            <li>Sheet <strong>MASTER BARANG</strong>: <strong>kode_barang wajib</strong> untuk setiap baris (identitas unik barang, boleh nama sama untuk barang berbeda).</li>
-            <li><strong>Invoice tidak lagi diimport di sini.</strong> Gunakan tab <strong>Import Master Invoice</strong> — di sana data dibaca &amp; diklasifikasi dulu supaya invoice yang sudah ditagih/dibayar tidak tertimpa.</li>
-            <li>Import hanya dapat dilakukan oleh role <strong>ADMIN, MANAGER, atau SUPERVISOR</strong>.</li>
-            <li>Download template Excel terlebih dahulu untuk mendapatkan format yang benar.</li>
-          </ul>
-        </VAlert>
+          <li>Upload <strong>1 file Excel</strong> dengan <strong>3 sheet</strong>: <strong>MASTER DATA</strong> (Investor + Resto + Client AR), <strong>MASTER BARANG</strong> (Produk/Barang), dan <strong>Petunjuk Pengisian</strong>.</li>
+          <li>Sheet <strong>MASTER DATA</strong>: 1 baris = 1 outlet. Kolom <code>tipe_klien</code> boleh diisi <strong>RESTO/B2C</strong> atau <strong>PT/B2B</strong>. Untuk <code>tipe_klien = PT/B2B</code>: <strong>nama_entitas</strong> dan <strong>pic_ar</strong> wajib diisi. Untuk <code>tipe_klien = RESTO/B2C</code>: <strong>nama_pic</strong> wajib diisi (pic_ar hanya fallback jika nama_pic kosong); <strong>nama_investor boleh dikosongkan</strong> — Client AR akan pakai nama fallback "kode_resto (nama_cabang)" otomatis.</li>
+          <li>Kolom <code>email</code> (opsional, dipakai untuk fitur Kirim Email Invoice/OB): <strong>1 investor selalu memakai email yang sama</strong> di semua baris — baris kosong atau berbeda dari email yang sudah tercatat tidak akan menimpa, cukup dicatat sebagai info di hasil import.</li>
+          <li>Sheet <strong>MASTER BARANG</strong>: <strong>kode_barang wajib</strong> untuk setiap baris (identitas unik barang, boleh nama sama untuk barang berbeda).</li>
+          <li><strong>Invoice tidak lagi diimport di sini.</strong> Gunakan tab <strong>Import Master Invoice</strong> — di sana data dibaca &amp; diklasifikasi dulu supaya invoice yang sudah ditagih/dibayar tidak tertimpa.</li>
+          <li>Import hanya dapat dilakukan oleh role <strong>ADMIN, MANAGER, atau SUPERVISOR</strong>.</li>
+          <li>Download template Excel terlebih dahulu untuk mendapatkan format yang benar.</li>
+        </CollapsibleInfoAlert>
 
         <!-- Banner riwayat import terakhir -->
         <div class="mb-4">
@@ -229,19 +205,17 @@
         <VDivider />
 
         <VCardText class="pt-4">
-          <VAlert
+          <CollapsibleInfoAlert
             type="info"
-            variant="tonal"
+            title="Petunjuk Import"
             class="mb-4"
           >
-            <ul class="ps-4">
-              <li>File harus berformat <strong>.xlsx</strong> dengan sheet <strong>MASTER DATA</strong> dan <strong>MASTER BARANG</strong>.</li>
-              <li>Sheet <strong>MASTER DATA</strong>: 1 baris = Investor + Resto + Client AR. Kolom <strong>tipe_klien</strong> boleh diisi <strong>RESTO/B2C</strong> atau <strong>PT/B2B</strong>. PT/B2B wajib isi <strong>nama_entitas</strong> &amp; <strong>pic_ar</strong>; RESTO/B2C wajib isi <strong>nama_pic</strong>. <strong>nama_investor boleh dikosongkan</strong> untuk RESTO/B2C — Client AR akan pakai nama fallback "kode_resto (nama_cabang)" otomatis. Kolom <strong>email</strong> opsional — 1 investor selalu memakai 1 email yang sama di semua barisnya.</li>
-              <li>Sheet <strong>MASTER BARANG</strong>: kode_barang, nama_barang, spesifikasi, keterangan, status. <strong>kode_barang wajib</strong> di setiap baris.</li>
-              <li>Sheet <strong>MASTER INVOICE</strong> pada file lama akan <strong>diabaikan</strong> — upload invoice lewat tab Import Master Invoice.</li>
-              <li>Format XLSX cocok untuk Master Data hingga ±13.000 baris. Untuk volume lebih besar, pertimbangkan membagi jadi beberapa file upload.</li>
-            </ul>
-          </VAlert>
+            <li>File harus berformat <strong>.xlsx</strong> dengan sheet <strong>MASTER DATA</strong> dan <strong>MASTER BARANG</strong>.</li>
+            <li>Sheet <strong>MASTER DATA</strong>: 1 baris = Investor + Resto + Client AR. Kolom <strong>tipe_klien</strong> boleh diisi <strong>RESTO/B2C</strong> atau <strong>PT/B2B</strong>. PT/B2B wajib isi <strong>nama_entitas</strong> &amp; <strong>pic_ar</strong>; RESTO/B2C wajib isi <strong>nama_pic</strong>. <strong>nama_investor boleh dikosongkan</strong> untuk RESTO/B2C — Client AR akan pakai nama fallback "kode_resto (nama_cabang)" otomatis. Kolom <strong>email</strong> opsional — 1 investor selalu memakai 1 email yang sama di semua barisnya.</li>
+            <li>Sheet <strong>MASTER BARANG</strong>: kode_barang, nama_barang, spesifikasi, keterangan, status. <strong>kode_barang wajib</strong> di setiap baris.</li>
+            <li>Sheet <strong>MASTER INVOICE</strong> pada file lama akan <strong>diabaikan</strong> — upload invoice lewat tab Import Master Invoice.</li>
+            <li>Format XLSX cocok untuk Master Data hingga ±13.000 baris. Untuk volume lebih besar, pertimbangkan membagi jadi beberapa file upload.</li>
+          </CollapsibleInfoAlert>
 
           <VBtn
             variant="outlined"
@@ -668,6 +642,7 @@ import api from '@/utils/axios'
 import { useMasterDataImportStore, WIDGET_ID } from '@/stores/master-data-import.store'
 import { useMinimizeWidgetStore } from '@/stores/minimize-widget.store'
 import { useImportEta } from '@/composables/useImportEta'
+import CollapsibleInfoAlert from '@/components/shared/CollapsibleInfoAlert.vue'
 
 const { xs } = useDisplay()
 const importStore = useMasterDataImportStore()
@@ -679,7 +654,6 @@ const { elapsedLabel, etaLabel } = useImportEta(
 )
 
 const showImport = ref(false)
-const showInfo = ref(false)
 const importFile = ref(null)
 const downloadingTemplate = ref(false)
 const latestImport = ref(null)

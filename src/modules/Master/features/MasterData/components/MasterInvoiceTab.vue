@@ -15,41 +15,17 @@
       <VDivider />
 
       <VCardText>
-        <VAlert
+        <CollapsibleInfoAlert
           type="info"
-          variant="tonal"
+          title="Cara kerja import aman:"
           class="mb-4"
         >
-          <div class="d-flex align-center justify-space-between ga-2">
-            <div class="font-weight-medium">
-              Cara kerja import aman:
-            </div>
-            <VBtn
-              v-if="xs"
-              variant="text"
-              size="small"
-              density="comfortable"
-              color="info"
-              @click="showInfo = !showInfo"
-            >
-              {{ showInfo ? 'Sembunyikan' : 'Lihat' }}
-              <VIcon
-                :icon="showInfo ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'"
-                end
-              />
-            </VBtn>
-          </div>
-          <ul
-            v-show="!xs || showInfo"
-            class="ps-4 mt-2"
-          >
-            <li>Upload file → sistem <strong>hanya membaca &amp; mengklasifikasi</strong>. Belum ada invoice yang ditulis.</li>
-            <li>Tekan <strong>Proses Data Aman</strong> → hanya invoice <strong>baru</strong> dan <strong>update aman</strong> (belum dibayar, belum cocok rekening koran, periode belum terkunci) yang ditulis.</li>
-            <li>Invoice yang sudah ditagih/dibayar masuk ke tabel <strong>Butuh Review</strong>. Perubahan nilainya diajukan sebagai <strong>Credit Note</strong> (nilai turun) atau <strong>Debit Note</strong> (nilai naik) — bukan menimpa invoice lama.</li>
-            <li>CN/DN mengikuti alur persetujuan koreksi Ending Balance. Sisa tagihan AR baru berubah <strong>setelah disetujui</strong>.</li>
-            <li>Pastikan <strong>MASTER DATA</strong> &amp; <strong>MASTER BARANG</strong> sudah diimport lebih dulu di tab sebelah.</li>
-          </ul>
-        </VAlert>
+          <li>Upload file → sistem <strong>hanya membaca &amp; mengklasifikasi</strong>. Belum ada invoice yang ditulis.</li>
+          <li>Tekan <strong>Proses Data Aman</strong> → hanya invoice <strong>baru</strong> dan <strong>update aman</strong> (belum dibayar, belum cocok rekening koran, periode belum terkunci) yang ditulis.</li>
+          <li>Invoice yang sudah ditagih/dibayar masuk ke tabel <strong>Butuh Review</strong>. Perubahan nilainya diajukan sebagai <strong>Credit Note</strong> (nilai turun) atau <strong>Debit Note</strong> (nilai naik) — bukan menimpa invoice lama.</li>
+          <li>CN/DN mengikuti alur persetujuan koreksi Ending Balance. Sisa tagihan AR baru berubah <strong>setelah disetujui</strong>.</li>
+          <li>Pastikan <strong>MASTER DATA</strong> &amp; <strong>MASTER BARANG</strong> sudah diimport lebih dulu di tab sebelah.</li>
+        </CollapsibleInfoAlert>
 
         <!-- ── Belum ada batch aktif ───────────────────────────── -->
         <VAlert
@@ -538,22 +514,20 @@
         <VDivider />
 
         <VCardText class="pt-4">
-          <VAlert
+          <CollapsibleInfoAlert
             type="warning"
-            variant="tonal"
+            title="Petunjuk Import"
             class="mb-4"
           >
-            <ul class="ps-4">
-              <li>
-                Upload di sini <strong>tidak langsung menulis invoice</strong>. Sistem membaca &amp; mengklasifikasi dulu,
-                lalu Anda yang memutuskan mana yang diproses dan mana yang diajukan sebagai Credit/Debit Note.
-              </li>
-              <li>
-                Gunakan <strong>XLSX</strong> untuk data hingga ±13.000 baris; gunakan <strong>CSV</strong> untuk data lebih besar,
-                hingga ±50.000–100.000 baris.
-              </li>
-            </ul>
-          </VAlert>
+            <li>
+              Upload di sini <strong>tidak langsung menulis invoice</strong>. Sistem membaca &amp; mengklasifikasi dulu,
+              lalu Anda yang memutuskan mana yang diproses dan mana yang diajukan sebagai Credit/Debit Note.
+            </li>
+            <li>
+              Gunakan <strong>XLSX</strong> untuk data hingga ±13.000 baris; gunakan <strong>CSV</strong> untuk data lebih besar,
+              hingga ±50.000–100.000 baris.
+            </li>
+          </CollapsibleInfoAlert>
 
           <div class="d-flex flex-wrap ga-2 mb-4">
             <VBtn
@@ -720,6 +694,7 @@ import BaseTable from '@/components/base/BaseTable.vue'
 import { useMasterInvoiceImportStore, WIDGET_ID } from '@/stores/master-invoice-import.store'
 import { useMinimizeWidgetStore } from '@/stores/minimize-widget.store'
 import { useImportEta } from '@/composables/useImportEta'
+import CollapsibleInfoAlert from '@/components/shared/CollapsibleInfoAlert.vue'
 
 const { xs } = useDisplay()
 const store = useMasterInvoiceImportStore()
@@ -731,7 +706,6 @@ const { elapsedLabel, etaLabel } = useImportEta(
 )
 
 const showImport = ref(false)
-const showInfo = ref(false)
 const importFile = ref(null)
 const downloadingTemplate = ref({ xlsx: false, csv: false })
 const selected = ref([])

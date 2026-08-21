@@ -14,44 +14,20 @@
       <VDivider />
 
       <VCardText>
-        <VAlert
+        <CollapsibleInfoAlert
           type="info"
-          variant="tonal"
+          title="Tentang tab ini:"
         >
-          <div class="d-flex align-center justify-space-between ga-2">
-            <div class="font-weight-medium">
-              Tentang tab ini:
-            </div>
-            <VBtn
-              v-if="xs"
-              variant="text"
-              size="small"
-              density="comfortable"
-              color="info"
-              @click="showInfo = !showInfo"
-            >
-              {{ showInfo ? 'Sembunyikan' : 'Lihat' }}
-              <VIcon
-                :icon="showInfo ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'"
-                end
-              />
-            </VBtn>
-          </div>
-          <ul
-            v-show="!xs || showInfo"
-            class="ps-4 mt-2"
-          >
-            <li>Untuk mengisi <strong>saldo awal piutang klien</strong> secara massal — 1 baris = 1 invoice historis, baris dengan <strong>no_urut</strong> yang sama otomatis digabung jadi 1 Opening Balance (pola yang sama seperti Import Master Invoice).</li>
-            <li>Identitas klien (nama_klien, kode_resto, tipe_klien) hanya wajib diisi di <strong>baris pertama</strong> tiap no_urut. tipe_klien: <strong>PT/B2B</strong> (saldo konsolidasi head office, tanpa resto spesifik) atau <strong>RESTO/B2C</strong> (saldo per outlet — <strong>kode_resto</strong> wajib diisi &amp; divalidasi ke MASTER DATA Resto).</li>
-            <li><strong>Tanggal Saldo Awal (cutover)</strong> diisi 1x di form ini sebelum upload — berlaku untuk semua baris dalam file. Bukan tanggal invoice historisnya (itu tetap diisi per baris di kolom tanggal_invoice_asal).</li>
-            <li>Item per invoice historis bersifat <strong>opsional</strong> — didukung oleh <strong>kedua template</strong> (XLSX maupun CSV).</li>
-            <li>Gunakan <strong>Template CSV</strong> untuk volume data besar — mendukung baris jauh lebih banyak dari XLSX.</li>
-            <li>Gunakan <strong>Template XLSX</strong> untuk volume kecil-menengah — item ditulis di sheet terpisah, lebih mudah dibaca manual di Excel.</li>
-            <li>Baris/grup gagal tidak menggagalkan baris/grup lain — hasil akhir menampilkan rincian baris mana yang gagal dan alasannya.</li>
-            <li>Semua Opening Balance hasil import langsung berstatus <strong>APPROVED</strong> — tidak perlu persetujuan manual, karena import hanya dapat dilakukan oleh role tepercaya.</li>
-            <li>Import hanya dapat dilakukan oleh role <strong>ADMIN, MANAGER, atau SUPERVISOR</strong>.</li>
-          </ul>
-        </VAlert>
+          <li>Untuk mengisi <strong>saldo awal piutang klien</strong> secara massal — 1 baris = 1 invoice historis, baris dengan <strong>no_urut</strong> yang sama otomatis digabung jadi 1 Opening Balance (pola yang sama seperti Import Master Invoice).</li>
+          <li>Identitas klien (nama_klien, kode_resto, tipe_klien) hanya wajib diisi di <strong>baris pertama</strong> tiap no_urut. tipe_klien: <strong>PT/B2B</strong> (saldo konsolidasi head office, tanpa resto spesifik) atau <strong>RESTO/B2C</strong> (saldo per outlet — <strong>kode_resto</strong> wajib diisi &amp; divalidasi ke MASTER DATA Resto).</li>
+          <li><strong>Tanggal Saldo Awal (cutover)</strong> diisi 1x di form ini sebelum upload — berlaku untuk semua baris dalam file. Bukan tanggal invoice historisnya (itu tetap diisi per baris di kolom tanggal_invoice_asal).</li>
+          <li>Item per invoice historis bersifat <strong>opsional</strong> — didukung oleh <strong>kedua template</strong> (XLSX maupun CSV).</li>
+          <li>Gunakan <strong>Template CSV</strong> untuk volume data besar — mendukung baris jauh lebih banyak dari XLSX.</li>
+          <li>Gunakan <strong>Template XLSX</strong> untuk volume kecil-menengah — item ditulis di sheet terpisah, lebih mudah dibaca manual di Excel.</li>
+          <li>Baris/grup gagal tidak menggagalkan baris/grup lain — hasil akhir menampilkan rincian baris mana yang gagal dan alasannya.</li>
+          <li>Semua Opening Balance hasil import langsung berstatus <strong>APPROVED</strong> — tidak perlu persetujuan manual, karena import hanya dapat dilakukan oleh role tepercaya.</li>
+          <li>Import hanya dapat dilakukan oleh role <strong>ADMIN, MANAGER, atau SUPERVISOR</strong>.</li>
+        </CollapsibleInfoAlert>
       </VCardText>
     </VCard>
 
@@ -90,42 +66,40 @@
         <VDivider />
 
         <VCardText class="pt-4">
-          <VAlert
+          <CollapsibleInfoAlert
             type="warning"
-            variant="tonal"
+            title="Petunjuk Import"
             class="mb-4"
           >
-            <ul class="ps-4">
-              <li>
-                Hanya untuk saldo piutang historis yang berasal dari luar sistem. Jika invoice sudah pernah diinput
-                di sistem ini, sisa tagihannya sudah otomatis terbawa — tidak perlu Opening Balance.
-              </li>
-              <li>
-                1 baris = 1 invoice historis. Baris dengan <strong>no_urut</strong> yang sama otomatis digabung jadi
-                1 Opening Balance (pola sama seperti Import Master Invoice) — identitas klien hanya wajib di baris
-                pertama tiap no_urut. Item per invoice bersifat <strong>opsional</strong>.
-              </li>
-              <li>
-                Gunakan <strong>CSV</strong> untuk volume data besar (kolom <code>tipe_baris</code>: OB/ITEM). Gunakan
-                <strong>XLSX</strong> untuk volume kecil-menengah — item ditulis di sheet terpisah, kapasitas
-                realistis lebih kecil dari CSV.
-              </li>
-              <li>
-                Isi <strong>tipe_klien</strong>: <code>PT</code> atau <code>B2B</code> (sinonim, kode_resto WAJIB
-                DIKOSONGKAN, resolve via nama_klien — harus unik/tidak kembar) atau <code>RESTO</code> atau
-                <code>B2C</code> (sinonim, <strong>kode_resto</strong> WAJIB diisi, harus sudah terdaftar di Master Resto
-                &amp; punya Client AR aktif tipe RESTO — tidak ada pembuatan otomatis).
-              </li>
-              <li>
-                <strong>Tanggal Saldo Awal (cutover)</strong> di bawah berlaku untuk SEMUA baris di file ini — bukan
-                tanggal invoice historisnya masing-masing (itu tetap diisi per baris di file).
-              </li>
-              <li>
-                <strong>Template versi lama (sheet Rincian Invoice Asal terpisah) tidak lagi didukung</strong> —
-                download ulang Template XLSX/CSV sebelum import berikutnya.
-              </li>
-            </ul>
-          </VAlert>
+            <li>
+              Hanya untuk saldo piutang historis yang berasal dari luar sistem. Jika invoice sudah pernah diinput
+              di sistem ini, sisa tagihannya sudah otomatis terbawa — tidak perlu Opening Balance.
+            </li>
+            <li>
+              1 baris = 1 invoice historis. Baris dengan <strong>no_urut</strong> yang sama otomatis digabung jadi
+              1 Opening Balance (pola sama seperti Import Master Invoice) — identitas klien hanya wajib di baris
+              pertama tiap no_urut. Item per invoice bersifat <strong>opsional</strong>.
+            </li>
+            <li>
+              Gunakan <strong>CSV</strong> untuk volume data besar (kolom <code>tipe_baris</code>: OB/ITEM). Gunakan
+              <strong>XLSX</strong> untuk volume kecil-menengah — item ditulis di sheet terpisah, kapasitas
+              realistis lebih kecil dari CSV.
+            </li>
+            <li>
+              Isi <strong>tipe_klien</strong>: <code>PT</code> atau <code>B2B</code> (sinonim, kode_resto WAJIB
+              DIKOSONGKAN, resolve via nama_klien — harus unik/tidak kembar) atau <code>RESTO</code> atau
+              <code>B2C</code> (sinonim, <strong>kode_resto</strong> WAJIB diisi, harus sudah terdaftar di Master Resto
+              &amp; punya Client AR aktif tipe RESTO — tidak ada pembuatan otomatis).
+            </li>
+            <li>
+              <strong>Tanggal Saldo Awal (cutover)</strong> di bawah berlaku untuk SEMUA baris di file ini — bukan
+              tanggal invoice historisnya masing-masing (itu tetap diisi per baris di file).
+            </li>
+            <li>
+              <strong>Template versi lama (sheet Rincian Invoice Asal terpisah) tidak lagi didukung</strong> —
+              download ulang Template XLSX/CSV sebelum import berikutnya.
+            </li>
+          </CollapsibleInfoAlert>
 
           <div class="d-flex flex-wrap ga-2 mb-4">
             <VBtn
@@ -672,6 +646,7 @@ import { useMasterOpeningBalanceImportStore, WIDGET_ID } from '@/stores/master-o
 import { useMinimizeWidgetStore } from '@/stores/minimize-widget.store'
 import { useImportEta } from '@/composables/useImportEta'
 import { useSweetAlert } from '@/composables/useSweetAlert'
+import CollapsibleInfoAlert from '@/components/shared/CollapsibleInfoAlert.vue'
 
 const { xs } = useDisplay()
 const importStore = useMasterOpeningBalanceImportStore()
@@ -684,7 +659,6 @@ const { elapsedLabel, etaLabel } = useImportEta(
 )
 
 const showImport = ref(false)
-const showInfo = ref(false)
 const showSkippedDetail = ref(false)
 const importFile = ref(null)
 const cutoverDate = ref(null)
