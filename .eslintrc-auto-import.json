@@ -385,6 +385,7 @@
     "useInstallPrompt": true,
     "usePwaUpdate": true,
     "useWibClock": true,
-    "useUserLocation": true
+    "useUserLocation": true,
+    "useImportCancel": true
   }
 }

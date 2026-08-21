@@ -364,11 +364,27 @@
                 >✗{{ importProgress.barang_failed }}</span>
               </div>
             </div>
+
+            <div
+              v-if="importProgress.cancelable"
+              class="d-flex justify-end mt-3"
+            >
+              <VBtn
+                color="error"
+                variant="outlined"
+                size="small"
+                prepend-icon="ri-close-circle-line"
+                :disabled="importStore.cancelRequested"
+                @click="doCancelImport"
+              >
+                {{ importStore.cancelRequested ? 'Membatalkan…' : 'Batalkan' }}
+              </VBtn>
+            </div>
           </div>
 
           <!-- ── Hasil setelah selesai ─────────────────────────── -->
           <div
-            v-if="importResult"
+            v-if="importResult && (importResult.status === 'completed' || !failureAlerted)"
             class="mt-5"
           >
             <div class="d-flex flex-column align-center text-center mb-4">
@@ -638,13 +654,17 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useDisplay } from 'vuetify'
+import { useRouter } from 'vue-router'
 import api from '@/utils/axios'
 import { useMasterDataImportStore, WIDGET_ID } from '@/stores/master-data-import.store'
 import { useMinimizeWidgetStore } from '@/stores/minimize-widget.store'
 import { useImportEta } from '@/composables/useImportEta'
+import { useSweetAlert } from '@/composables/useSweetAlert'
 import CollapsibleInfoAlert from '@/components/shared/CollapsibleInfoAlert.vue'
 
 const { xs } = useDisplay()
+const router = useRouter()
+const { showSuccess, showError } = useSweetAlert()
 const importStore = useMasterDataImportStore()
 const minimizeStore = useMinimizeWidgetStore()
 const { importing, progress: importProgress, result: importResult } = storeToRefs(importStore)
@@ -658,6 +678,11 @@ const importFile = ref(null)
 const downloadingTemplate = ref(false)
 const latestImport = ref(null)
 const loadingLatest = ref(true)
+
+// true begitu SweetAlert asli akan tampil (foreground) — supaya banner "Import Gagal"
+// inline tidak dobel dengan SweetAlert-nya. Tetap false (banner tampil) di jalur
+// minimize→restore, karena watch di bawah early-return sebelum sempat set flag ini.
+const failureAlerted = ref(false)
 
 const summaryCards = [
   {
@@ -715,6 +740,20 @@ const resultStats = computed(() => {
   ]
 })
 
+// Batch 'completed' tetap bisa punya baris gagal per-entitas — dalam kasus itu jangan
+// auto-redirect, biarkan panel hasil (tabel error) tetap terbuka supaya user bisa cek.
+const hasImportIssues = computed(() => {
+  if (!importResult.value) return false
+
+  return (importResult.value.errors?.length ?? 0) > 0 || resultStats.value.some(s => s.failed > 0)
+})
+
+function importSummaryText() {
+  const total = resultStats.value.reduce((sum, s) => sum + s.inserted + s.updated, 0)
+
+  return `${total} data berhasil diproses.`
+}
+
 function formatDateTime(isoString) {
   if (!isoString) return '—'
 
@@ -753,6 +792,7 @@ function openImport() {
 
   importFile.value = null
   importStore.reset()
+  failureAlerted.value = false
   showImport.value = true
 }
 
@@ -787,12 +827,55 @@ async function doImport() {
   await importStore.startImport(importFile.value)
 }
 
+async function doCancelImport() {
+  try {
+    await importStore.cancelImport()
+  } catch (err) {
+    showError({ text: err.response?.data?.message ?? 'Gagal membatalkan import.' })
+  }
+}
+
 watch(importResult, val => {
-  if (val?.status === 'completed') fetchLatestImport()
+  if (!val) return
+
+  if (val.status === 'completed') fetchLatestImport()
+
+  // Cuma auto-close + redirect saat dialog masih terbuka di foreground — kalau
+  // di-minimize, biarkan widget mengambang + restore manual yang jalan (tidak diubah).
+  if (!showImport.value) return
+
+  if (val.status === 'completed' && !hasImportIssues.value) {
+    setTimeout(async () => {
+      showImport.value = false
+      minimizeStore.remove(WIDGET_ID)
+      await showSuccess({ title: 'Import Berhasil!', text: importSummaryText() })
+      router.push({ name: 'master-investor' })
+    }, 700)
+  } else if (val.status === 'failed') {
+    failureAlerted.value = true
+    setTimeout(() => {
+      showImport.value = false
+      minimizeStore.remove(WIDGET_ID)
+
+      const isCancelled = val.message?.startsWith('Dibatalkan')
+
+      showError({
+        title: isCancelled ? 'Import Dibatalkan' : 'Terjadi Kesalahan',
+        icon: isCancelled ? 'warning' : 'error',
+        text: val.message ?? 'Import gagal.',
+      })
+    }, 700)
+  }
 })
 
 onMounted(() => {
   fetchLatestImport()
+
+  // Batch aktif (queued/processing) hidup di server terlepas dari sesi FE — cek
+  // begitu tab dibuka supaya batch yang masih berjalan (mis. reload halaman di
+  // tengah proses) langsung terlihat lagi. Pola sama seperti checkActive() di
+  // master-invoice-import.store.js / master-opening-balance-import.store.js.
+  importStore.checkActive()
 
   const widget = minimizeStore.widgets[WIDGET_ID]
 

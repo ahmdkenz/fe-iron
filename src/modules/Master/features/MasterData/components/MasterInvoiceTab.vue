@@ -164,14 +164,14 @@
               Muat Ulang Tabel
             </VBtn>
             <VBtn
-              v-if="progress.status === 'awaiting_review'"
+              v-if="progress.cancelable"
               color="error"
               variant="outlined"
               prepend-icon="ri-close-circle-line"
-              :disabled="busy"
+              :disabled="store.cancelRequested"
               @click="confirmCancel = true"
             >
-              Batalkan Import
+              {{ store.cancelRequested ? 'Membatalkan…' : 'Batalkan Import' }}
             </VBtn>
           </div>
 
@@ -601,15 +601,7 @@
           </div>
 
           <VAlert
-            v-if="result && result.status === 'failed'"
-            type="error"
-            variant="tonal"
-            class="mt-4"
-          >
-            {{ result.message }}
-          </VAlert>
-          <VAlert
-            v-else-if="result && result.status === 'awaiting_review'"
+            v-if="result && result.status === 'awaiting_review'"
             type="success"
             variant="tonal"
             class="mt-4"
@@ -620,6 +612,15 @@
 
         <VDivider />
         <VCardActions class="pa-4 justify-end ga-2">
+          <VBtn
+            v-if="busy && progress?.cancelable"
+            color="error"
+            variant="outlined"
+            :disabled="store.cancelRequested"
+            @click="confirmCancel = true"
+          >
+            {{ store.cancelRequested ? 'Membatalkan…' : 'Batalkan' }}
+          </VBtn>
           <VBtn
             variant="outlined"
             :disabled="busy"
@@ -689,14 +690,18 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useDisplay } from 'vuetify'
+import { useRouter } from 'vue-router'
 import api from '@/utils/axios'
 import BaseTable from '@/components/base/BaseTable.vue'
 import { useMasterInvoiceImportStore, WIDGET_ID } from '@/stores/master-invoice-import.store'
 import { useMinimizeWidgetStore } from '@/stores/minimize-widget.store'
 import { useImportEta } from '@/composables/useImportEta'
+import { useSweetAlert } from '@/composables/useSweetAlert'
 import CollapsibleInfoAlert from '@/components/shared/CollapsibleInfoAlert.vue'
 
 const { xs } = useDisplay()
+const router = useRouter()
+const { showSuccess, showError } = useSweetAlert()
 const store = useMasterInvoiceImportStore()
 const minimizeStore = useMinimizeWidgetStore()
 const { busy, progress, result } = storeToRefs(store)
@@ -784,6 +789,7 @@ const summaryCards = computed(() => {
 const statusAlert = computed(() => {
   const s = progress.value?.status
 
+  if (store.cancelRequested) return { type: 'warning', icon: 'ri-close-circle-line', title: 'Membatalkan import…' }
   if (s === 'failed') return { type: 'error', icon: 'ri-close-circle-line', title: 'Import gagal' }
   if (s === 'awaiting_review') return { type: 'warning', icon: 'ri-question-answer-line', title: 'Menunggu keputusan Anda' }
   if (s === 'completed') return { type: 'success', icon: 'ri-checkbox-circle-line', title: 'Proses data aman selesai' }
@@ -890,6 +896,7 @@ function openImport() {
 
   importFile.value = null
   store.reset()
+  notifiedCompletion.value = false
   showImport.value = true
 }
 
@@ -956,10 +963,32 @@ async function bulkDecide(action) {
 
 // Klasifikasi selesai → tutup dialog otomatis supaya user langsung melihat tabel review.
 watch(() => progress.value?.status, status => {
-  if (status === 'awaiting_review' && showImport.value && !busy.value) {
+  if (!showImport.value || busy.value) return
+
+  if (status === 'awaiting_review') {
     setTimeout(() => { showImport.value = false }, 900)
+  } else if (status === 'failed') {
+    setTimeout(() => {
+      showImport.value = false
+      minimizeStore.remove(WIDGET_ID)
+      showError({ text: result.value?.message ?? 'Gagal membaca/mengklasifikasi file.' })
+    }, 900)
   }
 })
+
+// "Proses Data Aman" (applySafe) menandai batch completed, tapi baris CN/DN yang
+// masih pending_review tetap perlu diputuskan user di tabel — jangan redirect
+// sampai semuanya benar-benar tuntas (pending_review mencapai 0).
+const notifiedCompletion = ref(false)
+
+watch(progress, val => {
+  if (notifiedCompletion.value || !val) return
+  if (val.status !== 'completed' || (val.pending_review ?? 0) > 0) return
+
+  notifiedCompletion.value = true
+  showSuccess({ title: 'Import Selesai', text: val.message ?? 'Invoice berhasil diproses.' })
+    .then(() => router.push({ name: 'finance-invoice-index' }))
+}, { deep: true })
 
 onMounted(() => {
   const widget = minimizeStore.widgets[WIDGET_ID]

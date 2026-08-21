@@ -26,6 +26,7 @@ export const useMasterOpeningBalanceImportStore = defineStore('master-opening-ba
     progress: null,
     result: null,
     batchId: null,
+    cancelRequested: false, // true sejak respons 202 (cancel optimis) sampai batch berhenti sendiri
   }),
 
   actions: {
@@ -35,6 +36,7 @@ export const useMasterOpeningBalanceImportStore = defineStore('master-opening-ba
       this.progress  = null
       this.result    = null
       this.batchId   = null
+      this.cancelRequested = false
     },
 
     /**
@@ -73,6 +75,7 @@ export const useMasterOpeningBalanceImportStore = defineStore('master-opening-ba
       this.importing = true
       this.result    = null
       this.progress  = initialProgress()
+      this.cancelRequested = false
       useMinimizeWidgetStore().updateImportState(WIDGET_ID, { importing: true, progress: this.progress, result: null })
 
       try {
@@ -132,6 +135,7 @@ export const useMasterOpeningBalanceImportStore = defineStore('master-opening-ba
     finish(data) {
       this.importing = false
       this.result    = data
+      this.cancelRequested = false
       useMinimizeWidgetStore().updateImportState(WIDGET_ID, { importing: false, progress: data, result: data })
     },
 
@@ -149,9 +153,26 @@ export const useMasterOpeningBalanceImportStore = defineStore('master-opening-ba
       this.poll(this.batchId)
     },
 
+    /**
+     * Dua kemungkinan respons server (lihat OpeningBalanceController::importCancel()):
+     *  - 200 (awaiting_confirmation): job tidak aktif, server sudah membatalkan sinkron — aman
+     *    langsung reset().
+     *  - 202 (queued/processing selama masih Pass 1): job MASIH aktif, server cuma menitip flag
+     *    "batal diminta" — polling yang sudah berjalan akan menangkap sendiri begitu batch
+     *    berhenti (status jadi failed). cancelRequested dipakai FE menampilkan "Membatalkan..."
+     *    selama jeda itu.
+     */
     async cancelImport() {
       if (!this.batchId) return
-      await api.post(`${BASE}/${this.batchId}/cancel`)
+
+      const res = await api.post(`${BASE}/${this.batchId}/cancel`)
+
+      if (res.status === 202) {
+        this.cancelRequested = true
+
+        return
+      }
+
       this.reset()
     },
   },

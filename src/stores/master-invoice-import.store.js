@@ -38,6 +38,7 @@ export const useMasterInvoiceImportStore = defineStore('master-invoice-import', 
     busy: false,          // upload/klasifikasi atau proses data aman sedang berjalan
     progress: null,
     result: null,         // terisi saat batch mencapai status terminal
+    cancelRequested: false, // true sejak respons 202 (cancel optimis) sampai batch berhenti sendiri
 
     review: {
       items: [],
@@ -65,6 +66,7 @@ export const useMasterInvoiceImportStore = defineStore('master-invoice-import', 
       this.busy = false
       this.progress = null
       this.result = null
+      this.cancelRequested = false
       this.review = { ...this.review, items: [], total: 0, page: 1, search: '' }
     },
 
@@ -97,11 +99,25 @@ export const useMasterInvoiceImportStore = defineStore('master-invoice-import', 
       }
     },
 
-    /** Batalkan batch yang menggantung di awaiting_review supaya bisa upload file baru. */
+    /**
+     * Batalkan import. Dua kemungkinan respons server (lihat InvoiceImportController::cancel()):
+     *  - 200 (awaiting_review): job tidak lagi aktif, server sudah membatalkan secara sinkron —
+     *    aman langsung reset().
+     *  - 202 (queued/parsing/classifying): job MASIH aktif jalan, server cuma menitip flag "batal
+     *    diminta". Polling yang sudah berjalan (lihat poll()) akan menangkap sendiri begitu batch
+     *    berhenti di boundary chunk berikutnya (status jadi failed) — cancelRequested dipakai FE
+     *    menampilkan "Membatalkan..." selama jeda itu.
+     */
     async cancelImport() {
       if (!this.batchId) return null
 
       const res = await api.post(`${BASE}/${this.batchId}/cancel`)
+
+      if (res.status === 202) {
+        this.cancelRequested = true
+
+        return res.data?.data ?? null
+      }
 
       this.reset()
 
@@ -121,6 +137,7 @@ export const useMasterInvoiceImportStore = defineStore('master-invoice-import', 
       this.busy = true
       this.result = null
       this.progress = initialProgress()
+      this.cancelRequested = false
       this.review.items = []
       this.review.total = 0
       this.syncWidget()
@@ -178,6 +195,7 @@ export const useMasterInvoiceImportStore = defineStore('master-invoice-import', 
       this.busy = false
       this.progress = data
       this.result = data
+      this.cancelRequested = false
       this.syncWidget()
 
       // Begitu klasifikasi selesai, langsung tarik baris yang butuh keputusan.

@@ -216,6 +216,22 @@
                 Item: <strong>+{{ importProgress.inserted_item }}</strong>
               </span>
             </div>
+
+            <div
+              v-if="importProgress?.cancelable"
+              class="d-flex justify-end mt-3"
+            >
+              <VBtn
+                color="error"
+                variant="outlined"
+                size="small"
+                prepend-icon="ri-close-circle-line"
+                :disabled="importStore.cancelRequested"
+                @click="doCancelImport"
+              >
+                {{ importStore.cancelRequested ? 'Membatalkan…' : 'Batalkan' }}
+              </VBtn>
+            </div>
           </div>
 
           <!-- Konflik data — menunggu keputusan user (klien sudah punya OB di tanggal cutover yang sama) -->
@@ -318,7 +334,7 @@
 
           <!-- ── Hasil setelah selesai ─────────────────────────── -->
           <div
-            v-if="importResult"
+            v-if="importResult && (importResult.status === 'completed' || !failureAlerted)"
             class="mt-5"
           >
             <div class="d-flex flex-column align-center text-center mb-4">
@@ -638,9 +654,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useDisplay } from 'vuetify'
+import { useRouter } from 'vue-router'
 import api from '@/utils/axios'
 import { useMasterOpeningBalanceImportStore, WIDGET_ID } from '@/stores/master-opening-balance-import.store'
 import { useMinimizeWidgetStore } from '@/stores/minimize-widget.store'
@@ -649,9 +666,10 @@ import { useSweetAlert } from '@/composables/useSweetAlert'
 import CollapsibleInfoAlert from '@/components/shared/CollapsibleInfoAlert.vue'
 
 const { xs } = useDisplay()
+const router = useRouter()
 const importStore = useMasterOpeningBalanceImportStore()
 const minimizeStore = useMinimizeWidgetStore()
-const { showAlert, showError, resolveThemeTokens } = useSweetAlert()
+const { showAlert, showSuccess, showError, resolveThemeTokens } = useSweetAlert()
 const { importing, progress: importProgress, result: importResult } = storeToRefs(importStore)
 const { elapsedLabel, etaLabel } = useImportEta(
   importProgress,
@@ -664,6 +682,11 @@ const importFile = ref(null)
 const cutoverDate = ref(null)
 const downloadingTemplate = ref({ xlsx: false, csv: false })
 const resolvingConflict = ref(null) // null | 'replace' | 'skip' | 'cancel'
+
+// true begitu SweetAlert asli akan tampil (foreground) — supaya banner "Import Gagal"
+// inline tidak dobel dengan SweetAlert-nya. Tetap false (banner tampil) di jalur
+// minimize→restore, karena watch di bawah early-return sebelum sempat set flag ini.
+const failureAlerted = ref(false)
 
 function formatConflictDate(value) {
   if (!value) return '-'
@@ -732,6 +755,7 @@ function openImport() {
   importFile.value = null
   cutoverDate.value = null
   importStore.reset()
+  failureAlerted.value = false
   showImport.value = true
 }
 
@@ -769,6 +793,49 @@ async function doImport() {
   if (!importFile.value || !cutoverDate.value) return
   await importStore.startImport(importFile.value, cutoverDate.value)
 }
+
+// Batch 'completed' tetap bisa punya baris gagal — dalam kasus itu jangan
+// auto-redirect, biarkan panel hasil (tabel error) tetap terbuka supaya user bisa cek.
+const hasImportIssues = computed(() => {
+  if (!importResult.value) return false
+
+  return (importResult.value.errors?.length ?? 0) > 0 || (importResult.value.failed_ob ?? 0) > 0
+})
+
+function importSummaryText() {
+  const r = importResult.value ?? {}
+
+  return `${r.inserted_ob ?? 0} Opening Balance berhasil ditambahkan.`
+}
+
+watch(importResult, val => {
+  if (!val || !showImport.value) return
+
+  // Cuma auto-close + redirect saat dialog masih terbuka di foreground — kalau
+  // di-minimize, biarkan widget mengambang + restore manual yang jalan (tidak diubah).
+  if (val.status === 'completed' && !hasImportIssues.value) {
+    setTimeout(async () => {
+      showImport.value = false
+      minimizeStore.remove(WIDGET_ID)
+      await showSuccess({ title: 'Import Selesai', text: importSummaryText() })
+      router.push({ name: 'finance-opening-balance' })
+    }, 700)
+  } else if (val.status === 'failed') {
+    failureAlerted.value = true
+    setTimeout(() => {
+      showImport.value = false
+      minimizeStore.remove(WIDGET_ID)
+
+      const isCancelled = val.message?.startsWith('Dibatalkan')
+
+      showError({
+        title: isCancelled ? 'Import Dibatalkan' : 'Terjadi Kesalahan',
+        icon: isCancelled ? 'warning' : 'error',
+        text: val.message ?? 'Import gagal.',
+      })
+    }, 700)
+  }
+})
 
 onMounted(() => {
   importStore.checkActive()
