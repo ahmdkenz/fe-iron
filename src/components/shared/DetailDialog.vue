@@ -177,7 +177,7 @@ const hasAudit = computed(() => (
 
 .detail-meta {
   width: 100%;
-  margin-top: auto;
+  margin-top: 24px;
   background: rgba(0, 0, 0, 0.12);
   border-radius: 12px;
   padding: 14px 16px;
