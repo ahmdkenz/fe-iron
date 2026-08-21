@@ -334,7 +334,7 @@
 
           <!-- ── Hasil setelah selesai ─────────────────────────── -->
           <div
-            v-if="importResult && (importResult.status === 'completed' || !failureAlerted)"
+            v-if="importResult && ((importResult.status === 'completed' && !successAlerted) || (importResult.status !== 'completed' && !failureAlerted))"
             class="mt-5"
           >
             <div class="d-flex flex-column align-center text-center mb-4">
@@ -688,6 +688,10 @@ const resolvingConflict = ref(null) // null | 'replace' | 'skip' | 'cancel'
 // minimize→restore, karena watch di bawah early-return sebelum sempat set flag ini.
 const failureAlerted = ref(false)
 
+// Mirror failureAlerted untuk jalur sukses: true begitu SweetAlert sukses akan tampil
+// (foreground) — supaya banner "Import Selesai" inline tidak dobel dengan SweetAlert-nya.
+const successAlerted = ref(false)
+
 function formatConflictDate(value) {
   if (!value) return '-'
   const date = new Date(value)
@@ -756,6 +760,7 @@ function openImport() {
   cutoverDate.value = null
   importStore.reset()
   failureAlerted.value = false
+  successAlerted.value = false
   showImport.value = true
 }
 
@@ -814,6 +819,7 @@ watch(importResult, val => {
   // Cuma auto-close + redirect saat dialog masih terbuka di foreground — kalau
   // di-minimize, biarkan widget mengambang + restore manual yang jalan (tidak diubah).
   if (val.status === 'completed' && !hasImportIssues.value) {
+    successAlerted.value = true
     setTimeout(async () => {
       showImport.value = false
       minimizeStore.remove(WIDGET_ID)
