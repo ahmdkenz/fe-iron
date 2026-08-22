@@ -2,7 +2,6 @@
   <VDialog
     :model-value="modelValue"
     :width="dialogWidth"
-    :fullscreen="xs"
     @update:model-value="$emit('update:modelValue', $event)"
   >
     <VCard class="detail-card overflow-hidden">
@@ -25,7 +24,7 @@
             </div>
 
             <div
-              v-if="hasAudit"
+              v-if="hasAudit && !xs"
               class="detail-meta"
             >
               <div
@@ -52,12 +51,27 @@
               </div>
             </div>
           </div>
+
+          <VBtn
+            v-if="xs"
+            icon
+            variant="text"
+            size="small"
+            class="detail-close-btn detail-close-btn--hero"
+            @click="$emit('update:modelValue', false)"
+          >
+            <VIcon
+              icon="ri-close-line"
+              size="18"
+            />
+          </VBtn>
         </div>
 
         <div class="detail-content">
           <div class="detail-content-header">
             <span class="detail-content-title">Informasi Lengkap</span>
             <VBtn
+              v-if="!xs"
               icon
               variant="outlined"
               size="small"
@@ -119,8 +133,7 @@ const hasAudit = computed(() => (
 
 .detail-shell--mobile {
   flex-direction: column;
-  max-height: 100dvh;
-  height: 100%;
+  max-height: 85dvh;
 }
 
 /* ─── Sidebar ─────────────────────────────────────────────────────────── */
@@ -264,6 +277,18 @@ const hasAudit = computed(() => (
   border-radius: 8px !important;
   width: 32px !important;
   height: 32px !important;
+}
+
+.detail-close-btn--hero {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  color: #fff !important;
+  background: rgba(0, 0, 0, 0.18) !important;
+}
+
+.detail-close-btn--hero:hover {
+  background: rgba(0, 0, 0, 0.3) !important;
 }
 
 .detail-content-body {
