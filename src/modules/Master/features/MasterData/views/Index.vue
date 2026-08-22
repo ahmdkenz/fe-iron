@@ -18,15 +18,6 @@
           start
         />
         Import Master Invoice
-        <VChip
-          v-if="pendingReview > 0"
-          size="x-small"
-          color="warning"
-          variant="flat"
-          class="ms-2"
-        >
-          {{ pendingReview }}
-        </VChip>
       </VTab>
       <VTab value="opening-balance">
         <VIcon
@@ -38,8 +29,8 @@
     </VTabs>
 
     <!--
-      keep-alive: progress & tabel review tab invoice tidak hilang saat
-      user bolak-balik antar tab sementara import berjalan di latar belakang 
+      eager: progress tab invoice tidak hilang saat user bolak-balik antar tab
+      sementara import berjalan di latar belakang 
     -->
     <VWindow
       v-model="tab"
@@ -68,21 +59,17 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 import MasterDataTab from '../components/MasterDataTab.vue'
 import MasterInvoiceTab from '../components/MasterInvoiceTab.vue'
 import MasterOpeningBalanceTab from '../components/MasterOpeningBalanceTab.vue'
-import { useMasterInvoiceImportStore } from '@/stores/master-invoice-import.store'
 
 const tab = ref('master')
-const invoiceStore = useMasterInvoiceImportStore()
-
-const pendingReview = computed(() => invoiceStore.pendingReview)
 </script>
 
 <style scoped>
 /* VWindow memotong konten yang lebih tinggi dari item aktif (mis. dialog &
-   tabel review), jadi overflow-nya dibiarkan terlihat. */
+   tabel riwayat perubahan), jadi overflow-nya dibiarkan terlihat. */
 .master-data-window :deep(.v-window__container) {
   overflow: visible;
 }

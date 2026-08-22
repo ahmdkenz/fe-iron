@@ -19,13 +19,9 @@ function initialProgress() {
     message: null,
     total_rows: 0, parsed_rows: 0,
     total_groups: 0, classified_groups: 0,
-    cnt_new: 0, cnt_unchanged: 0, cnt_safe_update: 0,
-    cnt_review_required: 0, cnt_rejected: 0,
-    cnt_cn_candidate: 0, cnt_dn_candidate: 0, cnt_metadata_candidate: 0,
+    cnt_new: 0, cnt_unchanged: 0, cnt_safe_update: 0, cnt_rejected: 0,
     applied_total: 0, applied_processed: 0,
     applied_inserted: 0, applied_updated: 0, applied_skipped: 0, applied_failed: 0,
-    adjustment_submitted: 0, adjustment_dismissed: 0,
-    pending_review: 0,
     errors: [],
   }
 }
@@ -39,24 +35,12 @@ export const useMasterInvoiceImportStore = defineStore('master-invoice-import', 
     progress: null,
     result: null,         // terisi saat batch mencapai status terminal
     cancelRequested: false, // true sejak respons 202 (cancel optimis) sampai batch berhenti sendiri
-
-    review: {
-      items: [],
-      total: 0,
-      page: 1,
-      perPage: 20,
-      loading: false,
-      classification: 'REVIEW_REQUIRED',
-      search: '',
-    },
-    submitting: false,
   }),
 
   getters: {
     // Batch sudah diklasifikasi & menunggu keputusan user.
     awaitingReview: state => state.progress?.status === 'awaiting_review',
     hasSafeRows: state => (state.progress?.cnt_new ?? 0) + (state.progress?.cnt_safe_update ?? 0) > 0,
-    pendingReview: state => state.progress?.pending_review ?? 0,
   },
 
   actions: {
@@ -67,7 +51,6 @@ export const useMasterInvoiceImportStore = defineStore('master-invoice-import', 
       this.progress = null
       this.result = null
       this.cancelRequested = false
-      this.review = { ...this.review, items: [], total: 0, page: 1, search: '' }
     },
 
     /**
@@ -75,8 +58,9 @@ export const useMasterInvoiceImportStore = defineStore('master-invoice-import', 
      * FE — batchId cuma disimpan in-memory di Pinia, jadi reload halaman/tab
      * baru bikin FE "buta" terhadap batch lama yang masih menggantung
      * (biasanya di awaiting_review). Dipanggil saat tab dibuka supaya batch
-     * itu langsung terlihat lagi (ringkasan + tabel review) tanpa harus
-     * menunggu upload baru gagal dengan 409 dulu.
+     * itu langsung terlihat lagi (kartu ringkasan) tanpa harus menunggu upload
+     * baru gagal dengan 409 dulu. Tabel Riwayat Perubahan punya sumbernya sendiri
+     * (endpoint import/latest), jadi tidak bergantung pada batch aktif di sini.
      */
     async checkActive() {
       if (this.batchId) return
@@ -90,10 +74,6 @@ export const useMasterInvoiceImportStore = defineStore('master-invoice-import', 
         this.batchId = data.batch_id
         this.progress = data
         this.result = data
-
-        if (data.status === 'awaiting_review' || data.status === 'completed') {
-          this.fetchReview(1)
-        }
       } catch {
         /* bukan data kritis — biarkan tab tampil seperti belum ada batch */
       }
@@ -138,8 +118,6 @@ export const useMasterInvoiceImportStore = defineStore('master-invoice-import', 
       this.result = null
       this.progress = initialProgress()
       this.cancelRequested = false
-      this.review.items = []
-      this.review.total = 0
       this.syncWidget()
 
       try {
@@ -197,11 +175,6 @@ export const useMasterInvoiceImportStore = defineStore('master-invoice-import', 
       this.result = data
       this.cancelRequested = false
       this.syncWidget()
-
-      // Begitu klasifikasi selesai, langsung tarik baris yang butuh keputusan.
-      if (data?.status === 'awaiting_review' || data?.status === 'completed') {
-        this.fetchReview(1)
-      }
     },
 
     /** Jalankan penulisan invoice untuk baris NEW_INVOICE + SAFE_UPDATE. */
@@ -233,51 +206,6 @@ export const useMasterInvoiceImportStore = defineStore('master-invoice-import', 
         }
         this.syncWidget()
         throw err
-      }
-    },
-
-    async fetchReview(page = null) {
-      if (!this.batchId) return
-
-      this.review.loading = true
-      if (page) this.review.page = page
-
-      try {
-        const res = await api.get(`${BASE}/${this.batchId}/review`, {
-          params: {
-            page: this.review.page,
-            per_page: this.review.perPage,
-            classification: this.review.classification,
-            search: this.review.search || undefined,
-          },
-        })
-
-        this.review.items = res.data?.data ?? []
-        this.review.total = res.data?.meta?.total ?? this.review.items.length
-      } catch {
-        this.review.items = []
-        this.review.total = 0
-      } finally {
-        this.review.loading = false
-      }
-    },
-
-    /**
-     * Ajukan / abaikan kandidat penyesuaian.
-     * @param {{group_id: number, action: 'submit'|'dismiss', alasan?: string}[]} decisions
-     */
-    async submitAdjustments(decisions) {
-      if (!this.batchId || !decisions.length) return null
-
-      this.submitting = true
-      try {
-        const res = await api.post(`${BASE}/${this.batchId}/submit-adjustments`, { decisions })
-
-        await Promise.all([this.refreshStatus(), this.fetchReview()])
-
-        return res.data?.data ?? null
-      } finally {
-        this.submitting = false
       }
     },
 

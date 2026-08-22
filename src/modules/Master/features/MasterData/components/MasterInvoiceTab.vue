@@ -21,9 +21,10 @@
           class="mb-4"
         >
           <li>Upload file → sistem <strong>hanya membaca &amp; mengklasifikasi</strong>. Belum ada invoice yang ditulis.</li>
-          <li>Tekan <strong>Proses Data Aman</strong> → hanya invoice <strong>baru</strong> dan <strong>update aman</strong> (belum dibayar, belum cocok rekening koran, periode belum terkunci) yang ditulis.</li>
-          <li>Invoice yang sudah ditagih/dibayar masuk ke tabel <strong>Butuh Review</strong>. Perubahan nilainya diajukan sebagai <strong>Credit Note</strong> (nilai turun) atau <strong>Debit Note</strong> (nilai naik) — bukan menimpa invoice lama.</li>
-          <li>CN/DN mengikuti alur persetujuan koreksi Ending Balance. Sisa tagihan AR baru berubah <strong>setelah disetujui</strong>.</li>
+          <li>Tekan <strong>Proses Data Aman</strong> → invoice <strong>baru</strong> dibuat, invoice lama <strong>diperbarui</strong> mengikuti file.</li>
+          <li>Invoice yang sudah <strong>LUNAS</strong> atau periodenya <strong>terkunci di Ending Balance</strong> tidak pernah disentuh — ubah lewat <strong>Credit/Debit Note manual</strong> di menu Ending Balance.</li>
+          <li>Pembayaran &amp; no. referensi yang sudah ada <strong>tetap utuh</strong>. Sisa tagihan dihitung ulang, jadi kalau nilainya naik sisanya bisa langsung dialokasikan dari <strong>Cocokkan Transaksi</strong>.</li>
+          <li>Hasilnya tercatat di tabel <strong>Riwayat Perubahan</strong> di bawah.</li>
           <li>Pastikan <strong>MASTER DATA</strong> &amp; <strong>MASTER BARANG</strong> sudah diimport lebih dulu di tab sebelah.</li>
         </CollapsibleInfoAlert>
 
@@ -105,45 +106,6 @@
             </VCol>
           </VRow>
 
-          <!-- Rincian kandidat penyesuaian -->
-          <div
-            v-if="progress.cnt_review_required > 0"
-            class="d-flex flex-wrap ga-2 mb-4 mt-2"
-          >
-            <VChip
-              size="small"
-              color="error"
-              variant="tonal"
-              prepend-icon="ri-arrow-down-line"
-            >
-              {{ progress.cnt_cn_candidate }} kandidat Credit Note
-            </VChip>
-            <VChip
-              size="small"
-              color="warning"
-              variant="tonal"
-              prepend-icon="ri-arrow-up-line"
-            >
-              {{ progress.cnt_dn_candidate }} kandidat Debit Note
-            </VChip>
-            <VChip
-              size="small"
-              color="secondary"
-              variant="tonal"
-              prepend-icon="ri-file-text-line"
-            >
-              {{ progress.cnt_metadata_candidate }} perubahan metadata
-            </VChip>
-            <VChip
-              size="small"
-              color="info"
-              variant="tonal"
-              prepend-icon="ri-time-line"
-            >
-              {{ progress.pending_review }} menunggu keputusan
-            </VChip>
-          </div>
-
           <!-- Aksi utama -->
           <div class="d-flex flex-wrap ga-2 mb-4">
             <VBtn
@@ -154,14 +116,6 @@
               @click="doApplySafe"
             >
               Proses Data Aman ({{ safeCount }})
-            </VBtn>
-            <VBtn
-              variant="outlined"
-              prepend-icon="ri-refresh-line"
-              :disabled="busy || !store.batchId"
-              @click="store.fetchReview()"
-            >
-              Muat Ulang Tabel
             </VBtn>
             <VBtn
               v-if="progress.cancelable"
@@ -211,233 +165,6 @@
             />
           </div>
 
-          <!-- ── Tabel review ─────────────────────────────────── -->
-          <VDivider class="mb-4" />
-
-          <div class="d-flex flex-wrap align-center ga-2 mb-3">
-            <VSelect
-              v-model="store.review.classification"
-              :items="classificationOptions"
-              label="Tampilkan"
-              density="compact"
-              variant="outlined"
-              hide-details
-              style="max-inline-size: 240px;"
-              @update:model-value="store.fetchReview(1)"
-            />
-            <VTextField
-              v-model="store.review.search"
-              label="Cari klien / kode resto / no. invoice"
-              density="compact"
-              variant="outlined"
-              hide-details
-              clearable
-              style="max-inline-size: 320px;"
-              @update:model-value="onSearch"
-            />
-            <VSpacer />
-            <VBtn
-              v-if="selectedSubmittable.length"
-              color="error"
-              variant="tonal"
-              size="small"
-              prepend-icon="ri-send-plane-line"
-              :loading="store.submitting"
-              @click="bulkDecide('submit')"
-            >
-              Ajukan {{ selectedSubmittable.length }} Penyesuaian
-            </VBtn>
-            <VBtn
-              v-if="selectedPending.length"
-              variant="outlined"
-              size="small"
-              prepend-icon="ri-close-circle-line"
-              :loading="store.submitting"
-              @click="bulkDecide('dismiss')"
-            >
-              Abaikan {{ selectedPending.length }}
-            </VBtn>
-          </div>
-
-          <BaseTable
-            v-model:selected="selected"
-            :headers="headers"
-            :items="store.review.items"
-            :total="store.review.total"
-            :loading="store.review.loading"
-            :page="store.review.page"
-            :per-page="store.review.perPage"
-            show-select
-            mobile-cards
-            column-resize-key="invoice-import-review"
-            @update:options="onOptions"
-          >
-            <template #item.nama_klien="{ item }">
-              <div class="d-flex flex-column py-1">
-                <span class="font-weight-medium">{{ item.nama_klien }}</span>
-                <span class="text-caption text-medium-emphasis">
-                  {{ item.tipe_invoice }} · {{ item.kode_resto ?? '—' }} · baris {{ item.first_line }}
-                </span>
-              </div>
-            </template>
-
-            <template #item.tanggal_invoice="{ item }">
-              <div class="d-flex flex-column py-1">
-                <span>{{ formatDate(item.tanggal_invoice) }}</span>
-                <span class="text-caption text-medium-emphasis">{{ item.no_invoice ?? 'Belum ada invoice' }}</span>
-              </div>
-            </template>
-
-            <template #item.classification="{ item }">
-              <VChip
-                size="small"
-                :color="classificationColor(item.classification)"
-                variant="tonal"
-              >
-                {{ classificationLabel(item.classification) }}
-              </VChip>
-            </template>
-
-            <template #item.selisih="{ item }">
-              <div class="d-flex flex-column py-1 text-end">
-                <span :class="selisihClass(item.selisih)">{{ formatMoney(item.selisih) }}</span>
-                <span class="text-caption text-medium-emphasis">
-                  {{ formatMoney(item.total_lama) }} → {{ formatMoney(item.total_baru) }}
-                </span>
-              </div>
-            </template>
-
-            <template #item.adjustment_type="{ item }">
-              <VChip
-                v-if="item.adjustment_type"
-                size="small"
-                :color="adjustmentColor(item.adjustment_type)"
-                variant="tonal"
-              >
-                {{ adjustmentLabel(item.adjustment_type) }}
-              </VChip>
-              <span
-                v-else
-                class="text-medium-emphasis"
-              >—</span>
-            </template>
-
-            <template #item.reason="{ item }">
-              <div class="py-1">
-                <div class="text-caption">
-                  {{ item.reason ?? item.apply_message ?? '—' }}
-                </div>
-                <div
-                  v-if="item.risk_flags?.length"
-                  class="d-flex flex-wrap ga-1 mt-1"
-                >
-                  <VChip
-                    v-for="flag in item.risk_flags"
-                    :key="flag"
-                    size="x-small"
-                    :color="flag === 'PEMBAYARAN_MELEBIHI' ? 'error' : 'secondary'"
-                    variant="tonal"
-                  >
-                    {{ riskLabel(flag) }}
-                  </VChip>
-                </div>
-              </div>
-            </template>
-
-            <template #item.review_status="{ item }">
-              <VChip
-                v-if="item.review_status"
-                size="small"
-                :color="reviewColor(item.review_status)"
-                variant="tonal"
-              >
-                {{ reviewLabel(item.review_status) }}
-              </VChip>
-              <VChip
-                v-else-if="item.apply_status"
-                size="small"
-                :color="item.apply_status === 'APPLIED' ? 'success' : 'error'"
-                variant="tonal"
-              >
-                {{ item.apply_status }}
-              </VChip>
-              <span
-                v-else
-                class="text-medium-emphasis"
-              >—</span>
-            </template>
-
-            <template #item.actions="{ item }">
-              <div class="d-flex ga-1 justify-end">
-                <VBtn
-                  v-if="canSubmit(item)"
-                  size="small"
-                  color="primary"
-                  variant="tonal"
-                  :loading="store.submitting"
-                  @click="decide(item, 'submit')"
-                >
-                  Ajukan
-                </VBtn>
-                <VBtn
-                  v-if="item.review_status === 'PENDING'"
-                  size="small"
-                  variant="text"
-                  :loading="store.submitting"
-                  @click="decide(item, 'dismiss')"
-                >
-                  Abaikan
-                </VBtn>
-              </div>
-            </template>
-
-            <template #mobile-card="{ item }">
-              <div class="d-flex flex-column ga-1 pa-1">
-                <div class="d-flex align-center justify-space-between ga-2">
-                  <span class="font-weight-medium">{{ item.nama_klien }}</span>
-                  <VChip
-                    size="x-small"
-                    :color="classificationColor(item.classification)"
-                    variant="tonal"
-                  >
-                    {{ classificationLabel(item.classification) }}
-                  </VChip>
-                </div>
-                <div class="text-caption text-medium-emphasis">
-                  {{ item.tipe_invoice }} · {{ item.kode_resto ?? '—' }} · {{ formatDate(item.tanggal_invoice) }}
-                </div>
-                <div class="text-caption">
-                  {{ formatMoney(item.total_lama) }} → {{ formatMoney(item.total_baru) }}
-                  <strong :class="selisihClass(item.selisih)">({{ formatMoney(item.selisih) }})</strong>
-                </div>
-                <div class="text-caption text-medium-emphasis">
-                  {{ item.reason ?? item.apply_message ?? '—' }}
-                </div>
-                <div class="d-flex ga-1 mt-1">
-                  <VBtn
-                    v-if="canSubmit(item)"
-                    size="small"
-                    color="primary"
-                    variant="tonal"
-                    :loading="store.submitting"
-                    @click="decide(item, 'submit')"
-                  >
-                    Ajukan
-                  </VBtn>
-                  <VBtn
-                    v-if="item.review_status === 'PENDING'"
-                    size="small"
-                    variant="text"
-                    :loading="store.submitting"
-                    @click="decide(item, 'dismiss')"
-                  >
-                    Abaikan
-                  </VBtn>
-                </div>
-              </div>
-            </template>
-          </BaseTable>
-
           <!-- Error parsing -->
           <div
             v-if="progress.errors?.length"
@@ -475,6 +202,208 @@
               </tbody>
             </VTable>
           </div>
+        </template>
+
+        <!--
+          ── Riwayat perubahan (batch import terakhir) ──
+          Sengaja DI LUAR blok v-else di atas: sumbernya endpoint import/latest
+          (batch completed terakhir), bukan batch yang sedang berjalan — jadi
+          tabel tetap tampil setelah reload halaman meski tidak ada batch aktif.
+        -->
+        <VDivider class="my-4" />
+
+        <div class="mb-4">
+          <VAlert
+            v-if="latestImport"
+            type="success"
+            variant="tonal"
+            density="compact"
+            :icon="false"
+          >
+            <div class="d-flex align-center ga-2 flex-wrap">
+              <VIcon
+                icon="ri-history-line"
+                size="16"
+                color="success"
+              />
+              <span class="text-body-2">
+                <strong>Terakhir diimport:</strong>
+                {{ formatDateTime(latestImport.imported_at) }}
+                <span class="text-medium-emphasis">oleh</span>
+                <strong>{{ latestImport.imported_by ?? '—' }}</strong>
+              </span>
+            </div>
+          </VAlert>
+          <VAlert
+            v-else-if="!loadingLatest"
+            type="warning"
+            variant="tonal"
+            density="compact"
+            :icon="false"
+          >
+            <div class="d-flex align-center ga-2">
+              <VIcon
+                icon="ri-information-line"
+                size="16"
+                color="warning"
+              />
+              <span class="text-body-2">
+                Belum ada riwayat perubahan — tekan <strong>Proses Data Aman</strong> untuk mulai menulis invoice.
+              </span>
+            </div>
+          </VAlert>
+        </div>
+
+        <template v-if="latestImport">
+          <div class="d-flex flex-wrap align-center ga-2 mb-3">
+            <VSelect
+              v-model="changeLogFilters.change_type"
+              :items="changeTypeOptions"
+              label="Tipe Perubahan"
+              density="compact"
+              variant="outlined"
+              hide-details
+              clearable
+              style="max-inline-size: 210px;"
+              @update:model-value="fetchChangeLog(1)"
+            />
+            <VSelect
+              v-model="changeLogFilters.status"
+              :items="statusOptions"
+              label="Status"
+              density="compact"
+              variant="outlined"
+              hide-details
+              clearable
+              style="max-inline-size: 180px;"
+              @update:model-value="fetchChangeLog(1)"
+            />
+            <VTextField
+              v-model="changeLogFilters.search"
+              label="Cari perubahan data..."
+              density="compact"
+              variant="outlined"
+              hide-details
+              clearable
+              style="max-inline-size: 280px;"
+              @update:model-value="onChangeLogSearch"
+            />
+          </div>
+
+          <BaseTable
+            :headers="changeLogHeaders"
+            :items="changeLogItems"
+            :total="changeLogTotal"
+            :loading="loadingChangeLog"
+            :page="changeLogPage"
+            :per-page="changeLogPerPage"
+            mobile-cards
+            column-resize-key="invoice-import-change-log"
+            @update:options="onChangeLogOptions"
+          >
+            <template #item.created_at="{ item }">
+              <span class="text-no-wrap">{{ formatDateTimeWithSeconds(item.created_at) }}</span>
+            </template>
+
+            <template #item.change_type="{ item }">
+              <div class="d-flex align-center ga-1 text-no-wrap">
+                <VIcon
+                  :icon="CHANGE_TYPE_META[item.change_type]?.icon"
+                  :color="CHANGE_TYPE_META[item.change_type]?.color"
+                  size="16"
+                />
+                <span>{{ CHANGE_TYPE_META[item.change_type]?.label ?? item.change_type }}</span>
+              </div>
+            </template>
+
+            <template #item.data_sebelum="{ item }">
+              <div class="py-1">
+                <div class="text-caption">
+                  {{ primaryLine(item, 'data_sebelum') }}
+                </div>
+                <VMenu
+                  v-if="extraFields(item, 'data_sebelum').length"
+                  location="bottom start"
+                  open-on-click
+                >
+                  <template #activator="{ props: menuProps }">
+                    <a
+                      href="#"
+                      class="text-caption"
+                      v-bind="menuProps"
+                      @click.prevent
+                    >Lihat detail</a>
+                  </template>
+                  <VCard
+                    min-width="220"
+                    class="pa-3"
+                  >
+                    <div
+                      v-for="f in extraFields(item, 'data_sebelum')"
+                      :key="f.label"
+                      class="text-caption mb-1"
+                    >
+                      <strong>{{ f.label }}:</strong> {{ f.value }}
+                    </div>
+                  </VCard>
+                </VMenu>
+              </div>
+            </template>
+
+            <template #item.data_baru="{ item }">
+              <div class="py-1">
+                <div class="text-caption">
+                  {{ primaryLine(item, 'data_baru') }}
+                </div>
+                <div
+                  v-if="item.change_type === 'gagal' && item.message"
+                  class="text-caption text-error"
+                >
+                  Error: {{ item.message }}
+                </div>
+                <VMenu
+                  v-if="extraFields(item, 'data_baru').length"
+                  location="bottom start"
+                  open-on-click
+                >
+                  <template #activator="{ props: menuProps }">
+                    <a
+                      href="#"
+                      class="text-caption"
+                      v-bind="menuProps"
+                      @click.prevent
+                    >Lihat detail</a>
+                  </template>
+                  <VCard
+                    min-width="220"
+                    class="pa-3"
+                  >
+                    <div
+                      v-for="f in extraFields(item, 'data_baru')"
+                      :key="f.label"
+                      class="text-caption mb-1"
+                    >
+                      <strong>{{ f.label }}:</strong> {{ f.value }}
+                    </div>
+                  </VCard>
+                </VMenu>
+              </div>
+            </template>
+
+            <template #item.imported_by>
+              {{ latestImport?.imported_by ?? '—' }}
+            </template>
+
+            <template #item.status="{ item }">
+              <VChip
+                size="small"
+                :color="STATUS_META[item.change_type]?.color ?? 'secondary'"
+                variant="tonal"
+              >
+                {{ STATUS_META[item.change_type]?.label ?? '-' }}
+              </VChip>
+            </template>
+          </BaseTable>
         </template>
       </VCardText>
     </VCard>
@@ -521,7 +450,7 @@
           >
             <li>
               Upload di sini <strong>tidak langsung menulis invoice</strong>. Sistem membaca &amp; mengklasifikasi dulu,
-              lalu Anda yang memutuskan mana yang diproses dan mana yang diajukan sebagai Credit/Debit Note.
+              lalu Anda yang menekan <strong>Proses Data Aman</strong> setelah melihat ringkasannya.
             </li>
             <li>
               Gunakan <strong>XLSX</strong> untuk data hingga ±13.000 baris; gunakan <strong>CSV</strong> untuk data lebih besar,
@@ -661,14 +590,7 @@
         <VCardText class="pt-4">
           <p>
             File <strong>{{ progress?.original_filename }}</strong> beserta seluruh baris yang belum diproses
-            atau belum diputuskan pada batch ini akan dibuang.
-          </p>
-          <p
-            v-if="progress?.adjustment_submitted > 0"
-            class="text-warning mt-2"
-          >
-            {{ progress.adjustment_submitted }} penyesuaian Credit/Debit Note yang sudah diajukan
-            <strong>tidak ikut dibatalkan</strong> — tetap lanjut ke approval Ending Balance.
+            pada batch ini akan dibuang.
           </p>
           <p class="mt-2 text-medium-emphasis">
             Anda bisa langsung mengunggah file yang sudah dibetulkan setelah ini.
@@ -723,62 +645,150 @@ const { elapsedLabel, etaLabel } = useImportEta(
 const showImport = ref(false)
 const importFile = ref(null)
 const downloadingTemplate = ref({ xlsx: false, csv: false })
-const selected = ref([])
 const confirmCancel = ref(false)
 const canceling = ref(false)
 
-let searchTimer = null
+// ── Riwayat perubahan (menggantikan tabel Review) ──────────────────────────
+// Import Master Invoice single-entity — TIDAK ada entity_type/kolom Sheet, jadi
+// bentuknya mengikuti MasterOpeningBalanceTab.vue, bukan MasterDataTab.vue.
+// Hanya 3 tipe: grup REJECTED (sudah lunas / periode terkunci) & UNCHANGED
+// sengaja tidak dicatat sama sekali (lihat InvoiceImportService::applySafeChunk()),
+// jumlahnya cukup terlihat di kartu ringkasan "Dilewati".
+const CHANGE_TYPE_META = {
+  ditambahkan: { label: 'Ditambahkan', icon: 'ri-add-line', color: 'success' },
+  diperbarui: { label: 'Diperbarui', icon: 'ri-pencil-line', color: 'info' },
+  gagal: { label: 'Gagal', icon: 'ri-close-line', color: 'error' },
+}
 
-const headers = [
-  { title: 'Klien', key: 'nama_klien', minWidth: '200px' },
-  { title: 'Tanggal / Invoice', key: 'tanggal_invoice', minWidth: '150px' },
-  { title: 'Klasifikasi', key: 'classification', minWidth: '140px' },
-  { title: 'Selisih', key: 'selisih', align: 'end', minWidth: '160px' },
-  { title: 'Penyesuaian', key: 'adjustment_type', minWidth: '130px' },
-  { title: 'Alasan', key: 'reason', minWidth: '280px' },
-  { title: 'Status', key: 'review_status', minWidth: '120px' },
-  { title: '', key: 'actions', sortable: false, align: 'end', minWidth: '150px' },
+const STATUS_META = {
+  ditambahkan: { label: 'Berhasil', color: 'success' },
+  diperbarui: { label: 'Berhasil', color: 'success' },
+  gagal: { label: 'Gagal', color: 'error' },
+}
+
+// Field "identitas utama" yang selalu ditampilkan di baris pertama kolom Data
+// Sebelumnya/Data Baru — field lain (kalau ada) disembunyikan di balik "Lihat detail".
+const PRIMARY_FIELDS = ['no_invoice', 'nama_klien']
+
+const FIELD_LABELS = {
+  no_invoice: 'No. Invoice', nama_klien: 'Nama Klien', kode_resto: 'Kode Resto',
+  tanggal_invoice: 'Tanggal Invoice', tanggal_jatuh_tempo: 'Jatuh Tempo',
+  no_surat_jalan: 'No. Surat Jalan', total: 'Total', jumlah_item: 'Jumlah Item',
+}
+
+const changeTypeOptions = [
+  { title: 'Ditambahkan', value: 'ditambahkan' },
+  { title: 'Diperbarui', value: 'diperbarui' },
+  { title: 'Gagal', value: 'gagal' },
 ]
 
-const classificationOptions = [
-  { title: 'Butuh Review', value: 'REVIEW_REQUIRED' },
-  { title: 'Akan Dibuat Baru', value: 'NEW_INVOICE' },
-  { title: 'Update Aman', value: 'SAFE_UPDATE' },
-  { title: 'Tanpa Perubahan', value: 'UNCHANGED' },
-  { title: 'Ditolak', value: 'REJECTED' },
-  { title: 'Semua', value: 'ALL' },
+const statusOptions = [
+  { title: 'Berhasil', value: 'berhasil' },
+  { title: 'Gagal', value: 'gagal' },
 ]
 
-const CLASSIFICATION_META = {
-  NEW_INVOICE: { label: 'Dibuat Baru', color: 'success' },
-  SAFE_UPDATE: { label: 'Update Aman', color: 'info' },
-  UNCHANGED: { label: 'Tanpa Perubahan', color: 'secondary' },
-  REVIEW_REQUIRED: { label: 'Butuh Review', color: 'warning' },
-  REJECTED: { label: 'Ditolak', color: 'error' },
+const changeLogHeaders = [
+  { title: 'Waktu', key: 'created_at', minWidth: '160px' },
+  { title: 'Baris', key: 'row_number', align: 'end', minWidth: '70px' },
+  { title: 'Tipe Perubahan', key: 'change_type', minWidth: '150px' },
+  { title: 'Data Sebelumnya', key: 'data_sebelum', minWidth: '220px' },
+  { title: 'Data Baru', key: 'data_baru', minWidth: '220px' },
+  { title: 'Di Import Oleh', key: 'imported_by', minWidth: '160px' },
+  { title: 'Status', key: 'status', minWidth: '110px' },
+]
+
+const latestImport = ref(null)
+const loadingLatest = ref(true)
+const changeLogItems = ref([])
+const changeLogTotal = ref(0)
+const changeLogPage = ref(1)
+const changeLogPerPage = ref(20)
+const loadingChangeLog = ref(false)
+const changeLogFilters = ref({ change_type: null, status: null, search: '' })
+let changeLogSearchTimer = null
+
+function primaryLine(item, dataKey) {
+  const data = item[dataKey]
+  if (!data) return '-'
+
+  return PRIMARY_FIELDS.map(f => `${FIELD_LABELS[f] ?? f}: ${data[f] ?? '-'}`).join(', ')
 }
 
-const ADJUSTMENT_META = {
-  CREDIT_NOTE: { label: 'Credit Note', color: 'error' },
-  DEBIT_NOTE: { label: 'Debit Note', color: 'warning' },
-  METADATA: { label: 'Metadata', color: 'secondary' },
+function extraFields(item, dataKey) {
+  const data = item[dataKey]
+  if (!data) return []
+
+  return Object.entries(data)
+    .filter(([k]) => k !== 'id' && !PRIMARY_FIELDS.includes(k))
+    .map(([k, v]) => ({ label: FIELD_LABELS[k] ?? k, value: v ?? '-' }))
 }
 
-const REVIEW_META = {
-  PENDING: { label: 'Menunggu', color: 'warning' },
-  SUBMITTED: { label: 'Diajukan', color: 'info' },
-  DISMISSED: { label: 'Diabaikan', color: 'secondary' },
+function formatDateTimeWithSeconds(isoString) {
+  if (!isoString) return '—'
+
+  return new Date(isoString).toLocaleString('id-ID', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  })
 }
 
-const RISK_LABELS = {
-  PEMBAYARAN: 'sudah dibayar',
-  NO_REFERENSI: 'ada no. referensi',
-  BANK_MATCHED: 'cocok rekening koran',
-  PENYESUAIAN: 'sudah ada CN/DN',
-  STATUS_SEBAGIAN: 'status SEBAGIAN',
-  LUNAS: 'status LUNAS',
-  EB_LOCKED: 'periode terkunci',
-  KOREKSI_PENDING: 'koreksi pending',
-  PEMBAYARAN_MELEBIHI: 'bayar > tagihan baru',
+async function fetchLatestImport() {
+  loadingLatest.value = true
+  try {
+    const res = await api.get('/finance/invoices/import/latest')
+
+    latestImport.value = res.data?.data ?? null
+  } catch {
+    latestImport.value = null
+  } finally {
+    loadingLatest.value = false
+  }
+  fetchChangeLog(1)
+}
+
+async function fetchChangeLog(page = null) {
+  if (!latestImport.value?.id) {
+    changeLogItems.value = []
+    changeLogTotal.value = 0
+
+    return
+  }
+  if (page) changeLogPage.value = page
+  loadingChangeLog.value = true
+  try {
+    const res = await api.get(`/finance/invoices/import/${latestImport.value.id}/change-log`, {
+      params: {
+        page: changeLogPage.value,
+        per_page: changeLogPerPage.value,
+        change_type: changeLogFilters.value.change_type || undefined,
+        status: changeLogFilters.value.status || undefined,
+        search: changeLogFilters.value.search || undefined,
+      },
+    })
+
+    changeLogItems.value = res.data?.data ?? []
+    changeLogTotal.value = res.data?.meta?.total ?? changeLogItems.value.length
+  } catch {
+    changeLogItems.value = []
+    changeLogTotal.value = 0
+  } finally {
+    loadingChangeLog.value = false
+  }
+}
+
+function onChangeLogOptions(options) {
+  changeLogPage.value = options.page ?? changeLogPage.value
+  changeLogPerPage.value = options.itemsPerPage ?? changeLogPerPage.value
+  fetchChangeLog()
+}
+
+function onChangeLogSearch() {
+  clearTimeout(changeLogSearchTimer)
+  changeLogSearchTimer = setTimeout(() => fetchChangeLog(1), 400)
 }
 
 const safeCount = computed(() => (progress.value?.cnt_new ?? 0) + (progress.value?.cnt_safe_update ?? 0))
@@ -791,8 +801,8 @@ const summaryCards = computed(() => {
   return [
     { label: 'Dibuat Baru', hint: 'Belum ada invoice-nya', icon: 'ri-add-circle-line', color: 'success', value: p.cnt_new ?? 0 },
     { label: 'Update Aman', hint: 'Belum tersentuh transaksi', icon: 'ri-refresh-line', color: 'info', value: p.cnt_safe_update ?? 0 },
-    { label: 'Butuh Review', hint: 'Perlu CN/DN atau tinjauan', icon: 'ri-alert-line', color: 'warning', value: p.cnt_review_required ?? 0 },
-    { label: 'Dilewati / Ditolak', hint: `${p.cnt_unchanged ?? 0} tanpa perubahan, ${p.cnt_rejected ?? 0} ditolak`, icon: 'ri-forbid-line', color: 'secondary', value: (p.cnt_unchanged ?? 0) + (p.cnt_rejected ?? 0) },
+    { label: 'Dilewati', hint: 'Sudah lunas / periode terkunci', icon: 'ri-forbid-line', color: 'warning', value: p.cnt_rejected ?? 0 },
+    { label: 'Tanpa Perubahan', hint: 'Isi invoice sama dengan data existing', icon: 'ri-checkbox-blank-circle-line', color: 'secondary', value: p.cnt_unchanged ?? 0 },
   ]
 })
 
@@ -800,8 +810,11 @@ const statusAlert = computed(() => {
   const s = progress.value?.status
 
   if (store.cancelRequested) return { type: 'warning', icon: 'ri-close-circle-line', title: 'Membatalkan import…' }
+  if (s === 'failed' && progress.value?.phase === 'canceled') {
+    return { type: 'info', icon: 'ri-information-line', title: 'Tidak ada perubahan — import dibatalkan otomatis' }
+  }
   if (s === 'failed') return { type: 'error', icon: 'ri-close-circle-line', title: 'Import gagal' }
-  if (s === 'awaiting_review') return { type: 'warning', icon: 'ri-question-answer-line', title: 'Menunggu keputusan Anda' }
+  if (s === 'awaiting_review') return { type: 'warning', icon: 'ri-question-answer-line', title: 'Klasifikasi selesai — tekan Proses Data Aman' }
   if (s === 'completed') return { type: 'success', icon: 'ri-checkbox-circle-line', title: 'Proses data aman selesai' }
   if (s === 'processing') return { type: 'info', icon: 'ri-loader-4-line', title: 'Sedang menulis invoice aman…' }
 
@@ -818,75 +831,10 @@ const phaseLabel = computed(() => {
   return 'Memproses'
 })
 
-// Baris terpilih yang benar-benar masih bisa diputuskan.
-const selectedPending = computed(() => selected.value.filter(i => i.review_status === 'PENDING'))
-const selectedSubmittable = computed(() => selected.value.filter(canSubmit))
-
-function canSubmit(item) {
-  return item.review_status === 'PENDING'
-    && (item.adjustment_type === 'CREDIT_NOTE' || item.adjustment_type === 'DEBIT_NOTE')
-}
-
-function classificationLabel(v) {
-  return CLASSIFICATION_META[v]?.label ?? v
-}
-
-function classificationColor(v) {
-  return CLASSIFICATION_META[v]?.color ?? 'secondary'
-}
-
-function adjustmentLabel(v) {
-  return ADJUSTMENT_META[v]?.label ?? v
-}
-
-function adjustmentColor(v) {
-  return ADJUSTMENT_META[v]?.color ?? 'secondary'
-}
-
-function reviewLabel(v) {
-  return REVIEW_META[v]?.label ?? v
-}
-
-function reviewColor(v) {
-  return REVIEW_META[v]?.color ?? 'secondary'
-}
-
-function riskLabel(v) {
-  return RISK_LABELS[v] ?? v
-}
-
-function selisihClass(v) {
-  if (Number(v) < 0) return 'text-error font-weight-medium'
-  if (Number(v) > 0) return 'text-warning font-weight-medium'
-
-  return 'text-medium-emphasis'
-}
-
-function formatMoney(v) {
-  return new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(Number(v ?? 0))
-}
-
-function formatDate(v) {
-  if (!v) return '—'
-
-  return new Date(v).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
-}
-
 function formatDateTime(v) {
   if (!v) return '—'
 
   return new Date(v).toLocaleString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-}
-
-function onOptions(options) {
-  store.review.page = options.page ?? store.review.page
-  store.review.perPage = options.itemsPerPage ?? store.review.perPage
-  store.fetchReview()
-}
-
-function onSearch() {
-  clearTimeout(searchTimer)
-  searchTimer = setTimeout(() => store.fetchReview(1), 400)
 }
 
 function openImport() {
@@ -898,10 +846,10 @@ function openImport() {
     return
   }
 
-  // Masih ada batch (mungkin milik PIC lain) menunggu keputusan — jangan buang
-  // progress/tabel review yang sudah ditampilkan dengan membuka dialog upload
-  // kosong. Tombol sudah didisable di kondisi ini (lihat :disabled di atas),
-  // guard ini jaga-jaga kalau dipanggil lewat jalur lain.
+  // Masih ada batch (mungkin milik PIC lain) menunggu konfirmasi — jangan buang
+  // kartu ringkasan yang sudah ditampilkan dengan membuka dialog upload kosong.
+  // Tombol sudah didisable di kondisi ini (lihat :disabled di atas), guard ini
+  // jaga-jaga kalau dipanggil lewat jalur lain.
   if (store.awaitingReview) return
 
   importFile.value = null
@@ -955,47 +903,39 @@ async function doImport() {
 }
 
 async function doApplySafe() {
-  selected.value = []
   await store.applySafe()
 }
 
-async function decide(item, action) {
-  await store.submitAdjustments([{ group_id: item.id, action }])
-  selected.value = []
-}
-
-async function bulkDecide(action) {
-  const rows = action === 'submit' ? selectedSubmittable.value : selectedPending.value
-
-  await store.submitAdjustments(rows.map(r => ({ group_id: r.id, action })))
-  selected.value = []
-}
-
-// Klasifikasi selesai → tutup dialog otomatis supaya user langsung melihat tabel review.
+// Klasifikasi selesai → tutup dialog otomatis supaya user langsung melihat ringkasannya.
 watch(() => progress.value?.status, status => {
   if (!showImport.value || busy.value) return
 
   if (status === 'awaiting_review') {
     setTimeout(() => { showImport.value = false }, 900)
   } else if (status === 'failed') {
+    const isAutoCancel = progress.value?.phase === 'canceled'
+
     setTimeout(() => {
       showImport.value = false
       minimizeStore.remove(WIDGET_ID)
-      showError({ text: result.value?.message ?? 'Gagal membaca/mengklasifikasi file.' })
+      if (isAutoCancel) {
+        showSuccess({ title: 'Tidak Ada Perubahan', text: result.value?.message ?? 'Data sama dengan yang sudah tersimpan — import dibatalkan otomatis.' })
+      } else {
+        showError({ text: result.value?.message ?? 'Gagal membaca/mengklasifikasi file.' })
+      }
     }, 900)
   }
 })
 
-// "Proses Data Aman" (applySafe) menandai batch completed, tapi baris CN/DN yang
-// masih pending_review tetap perlu diputuskan user di tabel — jangan redirect
-// sampai semuanya benar-benar tuntas (pending_review mencapai 0).
+// "Proses Data Aman" selesai → segarkan tabel Riwayat Perubahan (batch completed
+// terakhir kini adalah batch ini), lalu beri tahu user & arahkan ke daftar invoice.
 const notifiedCompletion = ref(false)
 
 watch(progress, val => {
-  if (notifiedCompletion.value || !val) return
-  if (val.status !== 'completed' || (val.pending_review ?? 0) > 0) return
+  if (notifiedCompletion.value || val?.status !== 'completed') return
 
   notifiedCompletion.value = true
+  fetchLatestImport()
   showSuccess({ title: 'Import Selesai', text: val.message ?? 'Invoice berhasil diproses.' })
     .then(() => router.push({ name: 'finance-invoice-index' }))
 }, { deep: true })
@@ -1016,6 +956,10 @@ onMounted(() => {
   // terlihat tanpa harus gagal upload dulu untuk tahu masih ada yang menggantung.
   store.checkActive()
 })
+
+// Riwayat perubahan punya sumber sendiri (batch completed terakhir), independen
+// dari batch aktif — jadi tetap terisi walau tidak ada import yang berjalan.
+onMounted(fetchLatestImport)
 </script>
 
 <style scoped>
