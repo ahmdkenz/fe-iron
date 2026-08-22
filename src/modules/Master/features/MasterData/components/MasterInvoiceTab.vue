@@ -615,14 +615,15 @@
           <VBtn
             v-if="busy && progress?.cancelable"
             color="error"
-            variant="outlined"
+            variant="flat"
             :disabled="store.cancelRequested"
             @click="confirmCancel = true"
           >
             {{ store.cancelRequested ? 'Membatalkan…' : 'Batalkan' }}
           </VBtn>
           <VBtn
-            variant="outlined"
+            color="error"
+            variant="flat"
             :disabled="busy"
             @click="closeImport"
           >
@@ -630,11 +631,20 @@
           </VBtn>
           <VBtn
             color="primary"
+            variant="flat"
             :loading="busy"
             :disabled="!importFile || busy"
             @click="doImport"
           >
             Baca &amp; Klasifikasi
+            <template #loader>
+              <VProgressCircular
+                indeterminate
+                size="20"
+                width="2"
+                color="white"
+              />
+            </template>
           </VBtn>
         </VCardActions>
       </VCard>

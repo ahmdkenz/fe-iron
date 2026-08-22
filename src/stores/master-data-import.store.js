@@ -11,12 +11,10 @@ function initialProgress() {
     status: 'queued',
     master_total: 0,  master_processed: 0,
     barang_total: 0,  barang_processed: 0,
-    invoice_total: 0, invoice_processed: 0,
     investor_inserted: 0, investor_updated: 0, investor_failed: 0,
     resto_inserted: 0,    resto_updated: 0,    resto_failed: 0,
     klien_inserted: 0,    klien_updated: 0,    klien_failed: 0,    klien_skipped: 0,
     barang_inserted: 0,   barang_updated: 0,   barang_skipped: 0,   barang_failed: 0,
-    invoice_inserted: 0,  invoice_updated: 0,  invoice_skipped: 0, invoice_failed: 0,
   }
 }
 

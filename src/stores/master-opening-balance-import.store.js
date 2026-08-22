@@ -119,12 +119,6 @@ export const useMasterOpeningBalanceImportStore = defineStore('master-opening-ba
             return
           }
 
-          // 'needs_confirmation' bukan status terminal — berhenti polling (menunggu
-          // keputusan user lewat confirmReplace/confirmSkip/cancelImport), TAPI jangan
-          // finish() supaya dialog import tetap terbuka & merender dialog konflik alih-
-          // alih hasil akhir.
-          if (data?.status === 'needs_confirmation') return
-
           this.poll(batchId)
         } catch {
           this.finish({ ...initialProgress(), status: 'failed', message: 'Gagal memuat status import.' })
@@ -137,20 +131,6 @@ export const useMasterOpeningBalanceImportStore = defineStore('master-opening-ba
       this.result    = data
       this.cancelRequested = false
       useMinimizeWidgetStore().updateImportState(WIDGET_ID, { importing: false, progress: data, result: data })
-    },
-
-    async confirmReplace() {
-      if (!this.batchId) return
-      await api.post(`${BASE}/${this.batchId}/confirm-replace`)
-      this.progress = { ...initialProgress(), status: 'queued' }
-      this.poll(this.batchId)
-    },
-
-    async confirmSkip() {
-      if (!this.batchId) return
-      await api.post(`${BASE}/${this.batchId}/confirm-skip`)
-      this.progress = { ...initialProgress(), status: 'queued' }
-      this.poll(this.batchId)
     },
 
     /**

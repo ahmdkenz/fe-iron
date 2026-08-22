@@ -69,104 +69,179 @@
           </VAlert>
         </div>
 
-        <!-- Summary Cards -->
-        <VRow class="mt-1">
-          <VCol
-            v-for="card in summaryCards"
-            :key="card.label"
-            :cols="xs ? 6 : 12"
-            sm="6"
-            md="3"
-          >
-            <VCard
-              variant="tonal"
-              :color="card.color"
-              height="100%"
-            >
-              <VCardText :class="xs ? 'pa-3' : 'pa-4'">
-                <div
-                  class="d-flex align-center"
-                  :class="xs ? 'ga-2 mb-2' : 'ga-3 mb-3'"
-                >
-                  <VIcon
-                    :icon="card.icon"
-                    :size="xs ? 22 : 28"
-                  />
-                  <div class="min-width-0">
-                    <div class="text-subtitle-2 font-weight-medium text-truncate">
-                      {{ card.label }}
-                    </div>
-                    <div
-                      v-if="!xs"
-                      class="text-caption text-medium-emphasis"
-                    >
-                      {{ card.hint }}
-                    </div>
-                  </div>
-                </div>
+        <!-- Riwayat perubahan (batch import terakhir) -->
+        <template v-if="latestImport">
+          <div class="d-flex flex-wrap align-center ga-2 mb-3">
+            <VSelect
+              v-model="changeLogFilters.entity_type"
+              :items="entityTypeOptions"
+              label="Sheet"
+              density="compact"
+              variant="outlined"
+              hide-details
+              clearable
+              style="max-inline-size: 190px;"
+              @update:model-value="fetchChangeLog(1)"
+            />
+            <VSelect
+              v-model="changeLogFilters.change_type"
+              :items="changeTypeOptions"
+              label="Tipe Perubahan"
+              density="compact"
+              variant="outlined"
+              hide-details
+              clearable
+              style="max-inline-size: 210px;"
+              @update:model-value="fetchChangeLog(1)"
+            />
+            <VSelect
+              v-model="changeLogFilters.status"
+              :items="statusOptions"
+              label="Status"
+              density="compact"
+              variant="outlined"
+              hide-details
+              clearable
+              style="max-inline-size: 180px;"
+              @update:model-value="fetchChangeLog(1)"
+            />
+            <VTextField
+              v-model="changeLogFilters.search"
+              label="Cari perubahan data..."
+              density="compact"
+              variant="outlined"
+              hide-details
+              clearable
+              style="max-inline-size: 280px;"
+              @update:model-value="onChangeLogSearch"
+            />
+          </div>
 
-                <VDivider class="mb-2" />
-                <div
-                  v-if="loadingLatest"
-                  class="text-caption text-medium-emphasis"
+          <BaseTable
+            :headers="changeLogHeaders"
+            :items="changeLogItems"
+            :total="changeLogTotal"
+            :loading="loadingChangeLog"
+            :page="changeLogPage"
+            :per-page="changeLogPerPage"
+            mobile-cards
+            column-resize-key="master-data-change-log"
+            @update:options="onChangeLogOptions"
+          >
+            <template #item.created_at="{ item }">
+              <span class="text-no-wrap">{{ formatDateTimeWithSeconds(item.created_at) }}</span>
+            </template>
+
+            <template #item.entity_type="{ item }">
+              <VChip
+                size="small"
+                :color="ENTITY_META[item.entity_type]?.color ?? 'secondary'"
+                variant="tonal"
+              >
+                {{ ENTITY_META[item.entity_type]?.label ?? item.entity_type }}
+              </VChip>
+            </template>
+
+            <template #item.change_type="{ item }">
+              <div class="d-flex align-center ga-1 text-no-wrap">
+                <VIcon
+                  :icon="CHANGE_TYPE_META[item.change_type]?.icon"
+                  :color="CHANGE_TYPE_META[item.change_type]?.color"
+                  size="16"
+                />
+                <span>{{ CHANGE_TYPE_META[item.change_type]?.label ?? item.change_type }}</span>
+              </div>
+            </template>
+
+            <template #item.data_sebelum="{ item }">
+              <div class="py-1">
+                <div class="text-caption">
+                  {{ primaryLine(item, 'data_sebelum') }}
+                </div>
+                <VMenu
+                  v-if="extraFields(item, 'data_sebelum').length"
+                  location="bottom start"
+                  open-on-click
                 >
-                  <VProgressCircular
-                    size="12"
-                    width="2"
-                    indeterminate
-                    class="me-1"
-                  />
-                  Memuat…
+                  <template #activator="{ props: menuProps }">
+                    <a
+                      href="#"
+                      class="text-caption"
+                      v-bind="menuProps"
+                      @click.prevent
+                    >Lihat detail</a>
+                  </template>
+                  <VCard
+                    min-width="220"
+                    class="pa-3"
+                  >
+                    <div
+                      v-for="f in extraFields(item, 'data_sebelum')"
+                      :key="f.label"
+                      class="text-caption mb-1"
+                    >
+                      <strong>{{ f.label }}:</strong> {{ f.value }}
+                    </div>
+                  </VCard>
+                </VMenu>
+              </div>
+            </template>
+
+            <template #item.data_baru="{ item }">
+              <div class="py-1">
+                <div class="text-caption">
+                  {{ primaryLine(item, 'data_baru') }}
                 </div>
                 <div
-                  v-else-if="latestImport"
-                  class="d-flex ga-2 flex-wrap"
+                  v-if="item.change_type === 'gagal' && item.message"
+                  class="text-caption text-error"
                 >
-                  <VChip
-                    size="x-small"
-                    color="success"
-                    variant="tonal"
-                    prepend-icon="ri-add-line"
-                  >
-                    {{ latestImport[card.insKey] ?? 0 }} ditambah
-                  </VChip>
-                  <VChip
-                    size="x-small"
-                    color="warning"
-                    variant="tonal"
-                    prepend-icon="ri-refresh-line"
-                  >
-                    {{ latestImport[card.updKey] ?? 0 }} diperbarui
-                  </VChip>
-                  <VChip
-                    v-if="card.skipKey && (latestImport[card.skipKey] ?? 0) > 0"
-                    size="x-small"
-                    color="secondary"
-                    variant="tonal"
-                    prepend-icon="ri-forbid-line"
-                  >
-                    {{ latestImport[card.skipKey] }} dilewati
-                  </VChip>
-                  <VChip
-                    v-if="(latestImport[card.failKey] ?? 0) > 0"
-                    size="x-small"
-                    color="error"
-                    variant="tonal"
-                    prepend-icon="ri-close-line"
-                  >
-                    {{ latestImport[card.failKey] }} gagal
-                  </VChip>
+                  Error: {{ item.message }}
                 </div>
-                <div
-                  v-else
-                  class="text-caption text-medium-emphasis"
+                <VMenu
+                  v-if="extraFields(item, 'data_baru').length"
+                  location="bottom start"
+                  open-on-click
                 >
-                  Belum ada data import
-                </div>
-              </VCardText>
-            </VCard>
-          </VCol>
-        </VRow>
+                  <template #activator="{ props: menuProps }">
+                    <a
+                      href="#"
+                      class="text-caption"
+                      v-bind="menuProps"
+                      @click.prevent
+                    >Lihat detail</a>
+                  </template>
+                  <VCard
+                    min-width="220"
+                    class="pa-3"
+                  >
+                    <div
+                      v-for="f in extraFields(item, 'data_baru')"
+                      :key="f.label"
+                      class="text-caption mb-1"
+                    >
+                      <strong>{{ f.label }}:</strong> {{ f.value }}
+                    </div>
+                  </VCard>
+                </VMenu>
+              </div>
+            </template>
+
+            <template #item.imported_by>
+              {{ latestImport?.imported_by ?? '—' }}
+            </template>
+
+            <template #item.status="{ item }">
+              <VChip
+                size="small"
+                :color="STATUS_META[item.change_type]?.color ?? 'secondary'"
+                variant="tonal"
+              >
+                {{ STATUS_META[item.change_type]?.label ?? '-' }}
+              </VChip>
+            </template>
+          </BaseTable>
+        </template>
       </VCardText>
     </VCard>
 
@@ -371,7 +446,7 @@
             >
               <VBtn
                 color="error"
-                variant="outlined"
+                variant="flat"
                 size="small"
                 prepend-icon="ri-close-circle-line"
                 :disabled="importStore.cancelRequested"
@@ -381,256 +456,13 @@
               </VBtn>
             </div>
           </div>
-
-          <!-- ── Hasil setelah selesai ─────────────────────────── -->
-          <div
-            v-if="importResult && (importResult.status === 'completed' || !failureAlerted)"
-            class="mt-5"
-          >
-            <div class="d-flex flex-column align-center text-center mb-4">
-              <VIcon
-                :icon="importResult.status === 'completed' ? 'ri-checkbox-circle-fill' : 'ri-close-circle-fill'"
-                :color="importResult.status === 'completed' ? 'success' : 'error'"
-                size="52"
-                class="mb-2"
-              />
-              <div class="text-h6 font-weight-bold">
-                {{ importResult.status === 'completed' ? 'Import Berhasil!' : 'Import Gagal' }}
-              </div>
-              <div
-                v-if="importResult.status === 'completed'"
-                class="text-caption text-medium-emphasis mt-1"
-              >
-                Selesai pada: {{ formatDateTime(new Date().toISOString()) }}
-              </div>
-              <div
-                v-else
-                class="text-body-2 text-error mt-1"
-              >
-                {{ importResult.message }}
-              </div>
-            </div>
-
-            <template v-if="importResult.status === 'completed'">
-              <VDivider class="mb-4" />
-              <VRow dense>
-                <VCol
-                  v-for="stat in resultStats"
-                  :key="stat.label"
-                  cols="6"
-                >
-                  <VCard
-                    variant="tonal"
-                    :color="stat.color"
-                    rounded="lg"
-                  >
-                    <VCardText class="pa-3">
-                      <div class="d-flex align-center ga-2 mb-2">
-                        <VIcon
-                          :icon="stat.icon"
-                          size="18"
-                          :color="stat.color"
-                        />
-                        <span class="text-subtitle-2 font-weight-medium">{{ stat.label }}</span>
-                      </div>
-                      <div class="d-flex flex-wrap ga-1">
-                        <VChip
-                          size="x-small"
-                          color="success"
-                          variant="flat"
-                        >
-                          +{{ stat.inserted }} ditambah
-                        </VChip>
-                        <VChip
-                          size="x-small"
-                          color="warning"
-                          variant="flat"
-                        >
-                          ~{{ stat.updated }} diperbarui
-                        </VChip>
-                        <VChip
-                          v-if="stat.skipped > 0"
-                          size="x-small"
-                          color="secondary"
-                          variant="flat"
-                        >
-                          ⊘{{ stat.skipped }} dilewati
-                        </VChip>
-                        <VChip
-                          v-if="stat.failed > 0"
-                          size="x-small"
-                          color="error"
-                          variant="flat"
-                        >
-                          ✗{{ stat.failed }} gagal
-                        </VChip>
-                      </div>
-                    </VCardText>
-                  </VCard>
-                </VCol>
-              </VRow>
-            </template>
-
-            <div
-              v-if="importResult.errors && importResult.errors.length > 0"
-              class="mt-4"
-            >
-              <div class="text-subtitle-2 mb-2 text-error d-flex align-center ga-1">
-                <VIcon
-                  icon="ri-error-warning-line"
-                  size="16"
-                  color="error"
-                />
-                {{ importResult.errors.length }} catatan / baris gagal diproses:
-              </div>
-              <VTable
-                v-if="!xs"
-                density="compact"
-                fixed-header
-                height="180"
-              >
-                <thead>
-                  <tr>
-                    <th>Sheet</th>
-                    <th>Baris</th>
-                    <th>Pesan</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr
-                    v-for="(err, i) in importResult.errors"
-                    :key="i"
-                  >
-                    <td>{{ err.sheet || '-' }}</td>
-                    <td>{{ err.row }}</td>
-                    <td>{{ err.message }}</td>
-                  </tr>
-                </tbody>
-              </VTable>
-
-              <div
-                v-else
-                class="d-flex flex-column ga-2 overflow-y-auto"
-                style="max-height: 260px;"
-              >
-                <VCard
-                  v-for="(err, i) in importResult.errors"
-                  :key="i"
-                  variant="tonal"
-                  color="error"
-                  rounded="lg"
-                >
-                  <VCardText class="pa-2">
-                    <div class="d-flex flex-wrap ga-1 mb-1">
-                      <VChip
-                        size="x-small"
-                        color="error"
-                        variant="flat"
-                      >
-                        {{ err.sheet || '-' }}
-                      </VChip>
-                      <VChip
-                        size="x-small"
-                        color="error"
-                        variant="tonal"
-                      >
-                        Baris {{ err.row }}
-                      </VChip>
-                    </div>
-                    <div class="text-caption">
-                      {{ err.message }}
-                    </div>
-                  </VCardText>
-                </VCard>
-              </div>
-            </div>
-
-            <div
-              v-if="importResult.details && importResult.details.length > 0"
-              class="mt-4"
-            >
-              <div class="text-subtitle-2 mb-1 text-info d-flex align-center ga-1">
-                <VIcon
-                  icon="ri-information-line"
-                  size="16"
-                  color="info"
-                />
-                {{ importResult.details.length }} baris diperbarui/dilewati:
-              </div>
-              <div
-                v-if="importResult.details_total > importResult.details.length"
-                class="text-caption text-medium-emphasis mb-2"
-              >
-                Menampilkan {{ importResult.details.length }} dari {{ importResult.details_total }} baris — sisanya tetap terhitung pada ringkasan di atas, tidak ditampilkan satu per satu.
-              </div>
-              <VTable
-                v-if="!xs"
-                density="compact"
-                fixed-header
-                height="180"
-              >
-                <thead>
-                  <tr>
-                    <th>Sheet</th>
-                    <th>Baris</th>
-                    <th>Pesan</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr
-                    v-for="(det, i) in importResult.details"
-                    :key="i"
-                  >
-                    <td>{{ det.sheet || '-' }}</td>
-                    <td>{{ det.row }}</td>
-                    <td>{{ det.message }}</td>
-                  </tr>
-                </tbody>
-              </VTable>
-
-              <div
-                v-else
-                class="d-flex flex-column ga-2 overflow-y-auto"
-                style="max-height: 260px;"
-              >
-                <VCard
-                  v-for="(det, i) in importResult.details"
-                  :key="i"
-                  variant="tonal"
-                  color="secondary"
-                  rounded="lg"
-                >
-                  <VCardText class="pa-2">
-                    <div class="d-flex flex-wrap ga-1 mb-1">
-                      <VChip
-                        size="x-small"
-                        color="secondary"
-                        variant="flat"
-                      >
-                        {{ det.sheet || '-' }}
-                      </VChip>
-                      <VChip
-                        size="x-small"
-                        color="secondary"
-                        variant="tonal"
-                      >
-                        Baris {{ det.row }}
-                      </VChip>
-                    </div>
-                    <div class="text-caption">
-                      {{ det.message }}
-                    </div>
-                  </VCardText>
-                </VCard>
-              </div>
-            </div>
-          </div>
         </VCardText>
 
         <VDivider />
         <VCardActions class="pa-4 justify-end ga-2">
           <VBtn
-            variant="outlined"
+            color="error"
+            variant="flat"
             :disabled="importing"
             @click="closeImport"
           >
@@ -638,11 +470,20 @@
           </VBtn>
           <VBtn
             color="primary"
+            variant="flat"
             :loading="importing"
             :disabled="!importFile || importing"
             @click="doImport"
           >
             Import
+            <template #loader>
+              <VProgressCircular
+                indeterminate
+                size="20"
+                width="2"
+                color="white"
+              />
+            </template>
           </VBtn>
         </VCardActions>
       </VCard>
@@ -661,6 +502,7 @@ import { useMinimizeWidgetStore } from '@/stores/minimize-widget.store'
 import { useImportEta } from '@/composables/useImportEta'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import CollapsibleInfoAlert from '@/components/shared/CollapsibleInfoAlert.vue'
+import BaseTable from '@/components/base/BaseTable.vue'
 
 const { xs } = useDisplay()
 const router = useRouter()
@@ -679,53 +521,159 @@ const downloadingTemplate = ref(false)
 const latestImport = ref(null)
 const loadingLatest = ref(true)
 
-// true begitu SweetAlert asli akan tampil (foreground) — supaya banner "Import Gagal"
-// inline tidak dobel dengan SweetAlert-nya. Tetap false (banner tampil) di jalur
-// minimize→restore, karena watch di bawah early-return sebelum sempat set flag ini.
-const failureAlerted = ref(false)
+// ── Riwayat perubahan (tabel yang menggantikan 4 card ringkasan lama) ──────
+const ENTITY_META = {
+  investor: { label: 'Investor', color: 'primary' },
+  resto: { label: 'Resto', color: 'success' },
+  klien_ar: { label: 'Client AR', color: 'warning' },
+  barang: { label: 'Barang', color: 'info' },
+}
 
-const summaryCards = [
-  {
-    label: 'Investor',
-    hint: 'Upsert by nama+cabang',
-    icon: 'ri-money-dollar-circle-line',
-    color: 'primary',
-    insKey: 'investor_inserted',
-    updKey: 'investor_updated',
-    failKey: 'investor_failed',
-    skipKey: 'investor_skipped',
-  },
-  {
-    label: 'Resto',
-    hint: 'Upsert by kode_resto',
-    icon: 'ri-store-2-line',
-    color: 'success',
-    insKey: 'resto_inserted',
-    updKey: 'resto_updated',
-    failKey: 'resto_failed',
-    skipKey: 'resto_skipped',
-  },
-  {
-    label: 'Client AR',
-    hint: 'Upsert by entitas (PT) / resto (RESTO)',
-    icon: 'ri-building-4-line',
-    color: 'warning',
-    insKey: 'klien_inserted',
-    updKey: 'klien_updated',
-    failKey: 'klien_failed',
-    skipKey: 'klien_skipped',
-  },
-  {
-    label: 'Barang',
-    hint: 'Upsert by kode_barang',
-    icon: 'ri-box-3-line',
-    color: 'info',
-    insKey: 'barang_inserted',
-    updKey: 'barang_updated',
-    failKey: 'barang_failed',
-    skipKey: 'barang_skipped',
-  },
+const CHANGE_TYPE_META = {
+  ditambahkan: { label: 'Ditambahkan', icon: 'ri-add-line', color: 'success' },
+  diperbarui: { label: 'Diperbarui', icon: 'ri-pencil-line', color: 'info' },
+  gagal: { label: 'Gagal', icon: 'ri-close-line', color: 'error' },
+}
+
+const STATUS_META = {
+  ditambahkan: { label: 'Berhasil', color: 'success' },
+  diperbarui: { label: 'Berhasil', color: 'success' },
+  gagal: { label: 'Gagal', color: 'error' },
+}
+
+// Field "identitas utama" (nama+kode) yang selalu ditampilkan di baris pertama kolom
+// Data Sebelumnya/Data Baru — field lain (kalau ada) disembunyikan di balik "Lihat detail".
+const PRIMARY_FIELDS = {
+  investor: ['nama_investor', 'kode_cabang'],
+  resto: ['nama_resto', 'kode_resto'],
+  klien_ar: ['nama_klien', 'kode_klien'],
+  barang: ['nama_barang', 'kode_barang'],
+}
+
+// Duplikasi ringan dari *_FIELD_LABELS di MasterImportService.php — labelnya stabil &
+// sedikit, jadi lebih murah dijaga manual di sini daripada mengirim label dari backend
+// di tiap baris JSON.
+const FIELD_LABELS = {
+  nama_investor: 'Nama', kode_cabang: 'Kode', ktp: 'KTP', npwp: 'NPWP', no_hp: 'No. HP',
+  pengelola: 'Pengelola', no_hp_pengelola: 'No. HP Pengelola', email: 'Email', id_cabang: 'ID Cabang',
+  nama_resto: 'Nama', kode_resto: 'Kode', supervisor: 'Supervisor', no_hp_supervisor: 'No. HP Supervisor',
+  stokis: 'Stokis', area: 'Area', kota: 'Kota', alamat: 'Alamat', no_telp: 'No. Telp', tgl_aktif: 'Tanggal Aktif',
+  keterangan: 'Keterangan', nama_klien: 'Nama', kode_klien: 'Kode', tipe_klien: 'Tipe Klien',
+  no_npwp: 'NPWP', no_wa: 'No. WA', nama_barang: 'Nama', kode_barang: 'Kode', spesifikasi: 'Spesifikasi',
+  status: 'Status',
+}
+
+const entityTypeOptions = [
+  { title: 'Investor', value: 'investor' },
+  { title: 'Resto', value: 'resto' },
+  { title: 'Client AR', value: 'klien_ar' },
+  { title: 'Barang', value: 'barang' },
 ]
+
+const changeTypeOptions = [
+  { title: 'Ditambahkan', value: 'ditambahkan' },
+  { title: 'Diperbarui', value: 'diperbarui' },
+  { title: 'Gagal', value: 'gagal' },
+]
+
+const statusOptions = [
+  { title: 'Berhasil', value: 'berhasil' },
+  { title: 'Gagal', value: 'gagal' },
+]
+
+const changeLogHeaders = [
+  { title: 'Waktu', key: 'created_at', minWidth: '160px' },
+  { title: 'Sheet', key: 'entity_type', minWidth: '110px' },
+  { title: 'Baris', key: 'row_number', align: 'end', minWidth: '70px' },
+  { title: 'Tipe Perubahan', key: 'change_type', minWidth: '150px' },
+  { title: 'Data Sebelumnya', key: 'data_sebelum', minWidth: '220px' },
+  { title: 'Data Baru', key: 'data_baru', minWidth: '220px' },
+  { title: 'Di Import Oleh', key: 'imported_by', minWidth: '160px' },
+  { title: 'Status', key: 'status', minWidth: '110px' },
+]
+
+const changeLogItems = ref([])
+const changeLogTotal = ref(0)
+const changeLogPage = ref(1)
+const changeLogPerPage = ref(20)
+const loadingChangeLog = ref(false)
+const changeLogFilters = ref({ entity_type: null, change_type: null, status: null, search: '' })
+let changeLogSearchTimer = null
+
+function primaryLine(item, dataKey) {
+  const data = item[dataKey]
+  if (!data) return '-'
+  const fields = PRIMARY_FIELDS[item.entity_type] ?? []
+
+  return fields.map(f => `${FIELD_LABELS[f] ?? f}: ${data[f] ?? '-'}`).join(', ')
+}
+
+function extraFields(item, dataKey) {
+  const data = item[dataKey]
+  if (!data) return []
+  const primary = PRIMARY_FIELDS[item.entity_type] ?? []
+
+  return Object.entries(data)
+    .filter(([k]) => k !== 'id' && !primary.includes(k))
+    .map(([k, v]) => ({ label: FIELD_LABELS[k] ?? k, value: v ?? '-' }))
+}
+
+function formatDateTimeWithSeconds(isoString) {
+  if (!isoString) return '—'
+
+  const d = new Date(isoString)
+
+  return d.toLocaleString('id-ID', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  })
+}
+
+async function fetchChangeLog(page = null) {
+  if (!latestImport.value?.id) {
+    changeLogItems.value = []
+    changeLogTotal.value = 0
+
+    return
+  }
+  if (page) changeLogPage.value = page
+  loadingChangeLog.value = true
+  try {
+    const res = await api.get(`/master/master-data/import/${latestImport.value.id}/change-log`, {
+      params: {
+        page: changeLogPage.value,
+        per_page: changeLogPerPage.value,
+        entity_type: changeLogFilters.value.entity_type || undefined,
+        change_type: changeLogFilters.value.change_type || undefined,
+        status: changeLogFilters.value.status || undefined,
+        search: changeLogFilters.value.search || undefined,
+      },
+    })
+
+    changeLogItems.value = res.data?.data ?? []
+    changeLogTotal.value = res.data?.meta?.total ?? changeLogItems.value.length
+  } catch {
+    changeLogItems.value = []
+    changeLogTotal.value = 0
+  } finally {
+    loadingChangeLog.value = false
+  }
+}
+
+function onChangeLogOptions(options) {
+  changeLogPage.value = options.page ?? changeLogPage.value
+  changeLogPerPage.value = options.itemsPerPage ?? changeLogPerPage.value
+  fetchChangeLog()
+}
+
+function onChangeLogSearch() {
+  clearTimeout(changeLogSearchTimer)
+  changeLogSearchTimer = setTimeout(() => fetchChangeLog(1), 400)
+}
 
 const resultStats = computed(() => {
   if (!importResult.value) return []
@@ -738,14 +686,6 @@ const resultStats = computed(() => {
     { label: 'Client AR', icon: 'ri-building-4-line', color: 'warning', inserted: r.klien_inserted ?? 0, updated: r.klien_updated ?? 0, skipped: r.klien_skipped ?? 0, failed: r.klien_failed ?? 0 },
     { label: 'Barang', icon: 'ri-box-3-line', color: 'info', inserted: r.barang_inserted ?? 0, updated: r.barang_updated ?? 0, skipped: r.barang_skipped ?? 0, failed: r.barang_failed ?? 0 },
   ]
-})
-
-// Batch 'completed' tetap bisa punya baris gagal per-entitas — dalam kasus itu jangan
-// auto-redirect, biarkan panel hasil (tabel error) tetap terbuka supaya user bisa cek.
-const hasImportIssues = computed(() => {
-  if (!importResult.value) return false
-
-  return (importResult.value.errors?.length ?? 0) > 0 || resultStats.value.some(s => s.failed > 0)
 })
 
 function importSummaryText() {
@@ -779,6 +719,7 @@ async function fetchLatestImport() {
   } finally {
     loadingLatest.value = false
   }
+  fetchChangeLog(1)
 }
 
 function openImport() {
@@ -792,7 +733,6 @@ function openImport() {
 
   importFile.value = null
   importStore.reset()
-  failureAlerted.value = false
   showImport.value = true
 }
 
@@ -844,7 +784,7 @@ watch(importResult, val => {
   // di-minimize, biarkan widget mengambang + restore manual yang jalan (tidak diubah).
   if (!showImport.value) return
 
-  if (val.status === 'completed' && !hasImportIssues.value) {
+  if (val.status === 'completed') {
     setTimeout(async () => {
       showImport.value = false
       minimizeStore.remove(WIDGET_ID)
@@ -852,7 +792,6 @@ watch(importResult, val => {
       router.push({ name: 'master-investor' })
     }, 700)
   } else if (val.status === 'failed') {
-    failureAlerted.value = true
     setTimeout(() => {
       showImport.value = false
       minimizeStore.remove(WIDGET_ID)

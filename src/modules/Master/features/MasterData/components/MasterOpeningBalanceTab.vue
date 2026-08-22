@@ -25,9 +25,204 @@
           <li>Gunakan <strong>Template CSV</strong> untuk volume data besar — mendukung baris jauh lebih banyak dari XLSX.</li>
           <li>Gunakan <strong>Template XLSX</strong> untuk volume kecil-menengah — item ditulis di sheet terpisah, lebih mudah dibaca manual di Excel.</li>
           <li>Baris/grup gagal tidak menggagalkan baris/grup lain — hasil akhir menampilkan rincian baris mana yang gagal dan alasannya.</li>
+          <li>Kalau klien sudah punya Opening Balance di tanggal cutover yang sama: data yang <strong>identik</strong> otomatis <strong>dilewati</strong>, data yang <strong>berbeda</strong> otomatis <strong>menggantikan</strong> yang lama (tercatat sebagai "Diperbarui" di Riwayat Import) — tanpa perlu konfirmasi manual.</li>
           <li>Semua Opening Balance hasil import langsung berstatus <strong>APPROVED</strong> — tidak perlu persetujuan manual, karena import hanya dapat dilakukan oleh role tepercaya.</li>
           <li>Import hanya dapat dilakukan oleh role <strong>ADMIN, MANAGER, atau SUPERVISOR</strong>.</li>
         </CollapsibleInfoAlert>
+
+        <!-- Banner riwayat import terakhir -->
+        <div class="mb-4 mt-4">
+          <VAlert
+            v-if="latestImport"
+            type="success"
+            variant="tonal"
+            density="compact"
+            :icon="false"
+          >
+            <div class="d-flex align-center ga-2 flex-wrap">
+              <VIcon
+                icon="ri-history-line"
+                size="16"
+                color="success"
+              />
+              <span class="text-body-2">
+                <strong>Terakhir diimport:</strong>
+                {{ formatDateTime(latestImport.imported_at) }}
+                <span class="text-medium-emphasis">oleh</span>
+                <strong>{{ latestImport.imported_by ?? '—' }}</strong>
+              </span>
+            </div>
+          </VAlert>
+          <VAlert
+            v-else-if="!loadingLatest"
+            type="warning"
+            variant="tonal"
+            density="compact"
+            :icon="false"
+          >
+            <div class="d-flex align-center ga-2">
+              <VIcon
+                icon="ri-information-line"
+                size="16"
+                color="warning"
+              />
+              <span class="text-body-2">Belum ada riwayat import — upload file pertama Anda untuk memulai.</span>
+            </div>
+          </VAlert>
+        </div>
+
+        <!-- Riwayat perubahan (batch import terakhir) -->
+        <template v-if="latestImport">
+          <div class="d-flex flex-wrap align-center ga-2 mb-3">
+            <VSelect
+              v-model="changeLogFilters.change_type"
+              :items="changeTypeOptions"
+              label="Tipe Perubahan"
+              density="compact"
+              variant="outlined"
+              hide-details
+              clearable
+              style="max-inline-size: 210px;"
+              @update:model-value="fetchChangeLog(1)"
+            />
+            <VSelect
+              v-model="changeLogFilters.status"
+              :items="statusOptions"
+              label="Status"
+              density="compact"
+              variant="outlined"
+              hide-details
+              clearable
+              style="max-inline-size: 180px;"
+              @update:model-value="fetchChangeLog(1)"
+            />
+            <VTextField
+              v-model="changeLogFilters.search"
+              label="Cari perubahan data..."
+              density="compact"
+              variant="outlined"
+              hide-details
+              clearable
+              style="max-inline-size: 280px;"
+              @update:model-value="onChangeLogSearch"
+            />
+          </div>
+
+          <BaseTable
+            :headers="changeLogHeaders"
+            :items="changeLogItems"
+            :total="changeLogTotal"
+            :loading="loadingChangeLog"
+            :page="changeLogPage"
+            :per-page="changeLogPerPage"
+            mobile-cards
+            column-resize-key="opening-balance-change-log"
+            @update:options="onChangeLogOptions"
+          >
+            <template #item.created_at="{ item }">
+              <span class="text-no-wrap">{{ formatDateTimeWithSeconds(item.created_at) }}</span>
+            </template>
+
+            <template #item.change_type="{ item }">
+              <div class="d-flex align-center ga-1 text-no-wrap">
+                <VIcon
+                  :icon="CHANGE_TYPE_META[item.change_type]?.icon"
+                  :color="CHANGE_TYPE_META[item.change_type]?.color"
+                  size="16"
+                />
+                <span>{{ CHANGE_TYPE_META[item.change_type]?.label ?? item.change_type }}</span>
+              </div>
+            </template>
+
+            <template #item.data_sebelum="{ item }">
+              <div class="py-1">
+                <div class="text-caption">
+                  {{ primaryLine(item, 'data_sebelum') }}
+                </div>
+                <VMenu
+                  v-if="extraFields(item, 'data_sebelum').length"
+                  location="bottom start"
+                  open-on-click
+                >
+                  <template #activator="{ props: menuProps }">
+                    <a
+                      href="#"
+                      class="text-caption"
+                      v-bind="menuProps"
+                      @click.prevent
+                    >Lihat detail</a>
+                  </template>
+                  <VCard
+                    min-width="220"
+                    class="pa-3"
+                  >
+                    <div
+                      v-for="f in extraFields(item, 'data_sebelum')"
+                      :key="f.label"
+                      class="text-caption mb-1"
+                    >
+                      <strong>{{ f.label }}:</strong> {{ f.value }}
+                    </div>
+                  </VCard>
+                </VMenu>
+              </div>
+            </template>
+
+            <template #item.data_baru="{ item }">
+              <div class="py-1">
+                <div class="text-caption">
+                  {{ primaryLine(item, 'data_baru') }}
+                </div>
+                <div
+                  v-if="item.change_type === 'gagal' && item.message"
+                  class="text-caption text-error"
+                >
+                  Error: {{ item.message }}
+                </div>
+                <VMenu
+                  v-if="extraFields(item, 'data_baru').length"
+                  location="bottom start"
+                  open-on-click
+                >
+                  <template #activator="{ props: menuProps }">
+                    <a
+                      href="#"
+                      class="text-caption"
+                      v-bind="menuProps"
+                      @click.prevent
+                    >Lihat detail</a>
+                  </template>
+                  <VCard
+                    min-width="220"
+                    class="pa-3"
+                  >
+                    <div
+                      v-for="f in extraFields(item, 'data_baru')"
+                      :key="f.label"
+                      class="text-caption mb-1"
+                    >
+                      <strong>{{ f.label }}:</strong> {{ f.value }}
+                    </div>
+                  </VCard>
+                </VMenu>
+              </div>
+            </template>
+
+            <template #item.imported_by>
+              {{ latestImport?.imported_by ?? '—' }}
+            </template>
+
+            <template #item.status="{ item }">
+              <VChip
+                size="small"
+                :color="STATUS_META[item.change_type]?.color ?? 'secondary'"
+                variant="tonal"
+              >
+                {{ STATUS_META[item.change_type]?.label ?? '-' }}
+              </VChip>
+            </template>
+          </BaseTable>
+        </template>
       </VCardText>
     </VCard>
 
@@ -149,7 +344,7 @@
 
           <!-- Progress saat import berjalan -->
           <div
-            v-if="importing && importProgress && importProgress.status !== 'needs_confirmation'"
+            v-if="importing && importProgress"
             class="mt-5"
           >
             <div
@@ -223,7 +418,7 @@
             >
               <VBtn
                 color="error"
-                variant="outlined"
+                variant="flat"
                 size="small"
                 prepend-icon="ri-close-circle-line"
                 :disabled="importStore.cancelRequested"
@@ -233,407 +428,13 @@
               </VBtn>
             </div>
           </div>
-
-          <!-- Konflik data — menunggu keputusan user (klien sudah punya OB di tanggal cutover yang sama) -->
-          <div
-            v-if="importing && importProgress && importProgress.status === 'needs_confirmation'"
-            class="mt-5"
-          >
-            <VAlert
-              type="warning"
-              variant="tonal"
-              class="mb-3"
-            >
-              <div class="font-weight-medium mb-1">
-                {{ importProgress.conflicts?.length ?? 0 }} klien bentrok dengan Opening Balance yang sudah ada pada tanggal cutover ini.
-              </div>
-              <div class="text-caption">
-                <strong>Ganti Data Lama</strong> — Opening Balance lama DIHAPUS PERMANEN, digantikan data dari file ini (berlaku untuk SEMUA klien yang bentrok, bukan pilih satu-satu).<br>
-                <strong>Lewati yang Bentrok</strong> — Opening Balance lama tetap dipakai apa adanya, hanya klien yang tidak bentrok yang diproses (perilaku sama seperti sebelumnya).
-              </div>
-            </VAlert>
-
-            <VTable
-              v-if="!xs"
-              density="compact"
-              fixed-header
-              height="220"
-            >
-              <thead>
-                <tr>
-                  <th>Klien</th>
-                  <th>Kode Resto</th>
-                  <th>OB Lama</th>
-                  <th>Tanggal OB Lama</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  v-for="(c, i) in importProgress.conflicts"
-                  :key="i"
-                >
-                  <td>{{ c.nama_klien || '-' }}</td>
-                  <td>{{ c.kode_resto || '-' }}</td>
-                  <td>{{ c.existing_no_invoice || '-' }}</td>
-                  <td>{{ formatConflictDate(c.existing_tanggal_invoice) }}</td>
-                </tr>
-              </tbody>
-            </VTable>
-
-            <div
-              v-else
-              class="d-flex flex-column ga-2 overflow-y-auto"
-              style="max-height: 260px;"
-            >
-              <VCard
-                v-for="(c, i) in importProgress.conflicts"
-                :key="i"
-                variant="tonal"
-                color="warning"
-                rounded="lg"
-              >
-                <VCardText class="pa-2">
-                  <div class="font-weight-medium">
-                    {{ c.nama_klien || '-' }}
-                  </div>
-                  <div class="text-caption">
-                    <template v-if="c.kode_resto">Kode Resto: {{ c.kode_resto }} · </template>OB Lama: {{ c.existing_no_invoice || '-' }} ({{ formatConflictDate(c.existing_tanggal_invoice) }})
-                  </div>
-                </VCardText>
-              </VCard>
-            </div>
-
-            <div class="d-flex flex-wrap ga-2 mt-4 justify-end">
-              <VBtn
-                variant="outlined"
-                :disabled="!!resolvingConflict"
-                :loading="resolvingConflict === 'cancel'"
-                @click="doCancelImport"
-              >
-                Batalkan
-              </VBtn>
-              <VBtn
-                color="secondary"
-                variant="tonal"
-                :disabled="!!resolvingConflict"
-                :loading="resolvingConflict === 'skip'"
-                @click="doConfirmSkip"
-              >
-                Lewati yang Bentrok
-              </VBtn>
-              <VBtn
-                color="warning"
-                :disabled="!!resolvingConflict"
-                :loading="resolvingConflict === 'replace'"
-                @click="doConfirmReplace"
-              >
-                Ganti Data Lama
-              </VBtn>
-            </div>
-          </div>
-
-          <!-- ── Hasil setelah selesai ─────────────────────────── -->
-          <div
-            v-if="importResult && ((importResult.status === 'completed' && !successAlerted) || (importResult.status !== 'completed' && !failureAlerted))"
-            class="mt-5"
-          >
-            <div class="d-flex flex-column align-center text-center mb-4">
-              <VIcon
-                :icon="importResult.status === 'completed' ? 'ri-checkbox-circle-fill' : 'ri-close-circle-fill'"
-                :color="importResult.status === 'completed' ? 'success' : 'error'"
-                size="52"
-                class="mb-2"
-              />
-              <div class="text-h6 font-weight-bold">
-                {{ importResult.status === 'completed' ? 'Import Selesai' : 'Import Gagal' }}
-              </div>
-              <div
-                v-if="importResult.status !== 'completed'"
-                class="text-body-2 text-error mt-1"
-              >
-                {{ importResult.message }}
-              </div>
-            </div>
-
-            <template v-if="importResult.status === 'completed'">
-              <VDivider class="mb-4" />
-              <VRow dense>
-                <VCol cols="12">
-                  <VCard
-                    variant="tonal"
-                    color="primary"
-                    rounded="lg"
-                  >
-                    <VCardText class="pa-3">
-                      <div class="d-flex align-center ga-2 mb-2">
-                        <VIcon
-                          icon="ri-wallet-3-line"
-                          size="18"
-                          color="primary"
-                        />
-                        <span class="text-subtitle-2 font-weight-medium">Opening Balance</span>
-                      </div>
-                      <div class="d-flex flex-wrap ga-1">
-                        <VChip
-                          size="x-small"
-                          color="success"
-                          variant="flat"
-                        >
-                          +{{ importResult.inserted_ob ?? 0 }} ditambah
-                        </VChip>
-                        <VChip
-                          v-if="(importResult.skipped_ob ?? 0) > 0"
-                          size="x-small"
-                          color="secondary"
-                          variant="flat"
-                        >
-                          ⊘{{ importResult.skipped_ob }} dilewati (duplikat)
-                        </VChip>
-                        <VChip
-                          v-if="(importResult.failed_ob ?? 0) > 0"
-                          size="x-small"
-                          color="error"
-                          variant="flat"
-                        >
-                          ✗{{ importResult.failed_ob }} gagal
-                        </VChip>
-                      </div>
-                    </VCardText>
-                  </VCard>
-                </VCol>
-                <VCol
-                  v-if="(importResult.inserted_detail ?? 0) > 0"
-                  cols="6"
-                >
-                  <VCard
-                    variant="tonal"
-                    color="secondary"
-                    rounded="lg"
-                  >
-                    <VCardText class="pa-3">
-                      <div class="d-flex align-center ga-2">
-                        <VIcon
-                          icon="ri-file-list-3-line"
-                          size="18"
-                          color="secondary"
-                        />
-                        <span class="text-subtitle-2 font-weight-medium">Rincian +{{ importResult.inserted_detail }}</span>
-                      </div>
-                    </VCardText>
-                  </VCard>
-                </VCol>
-                <VCol
-                  v-if="(importResult.inserted_item ?? 0) > 0"
-                  cols="6"
-                >
-                  <VCard
-                    variant="tonal"
-                    color="info"
-                    rounded="lg"
-                  >
-                    <VCardText class="pa-3">
-                      <div class="d-flex align-center ga-2">
-                        <VIcon
-                          icon="ri-box-3-line"
-                          size="18"
-                          color="info"
-                        />
-                        <span class="text-subtitle-2 font-weight-medium">Item +{{ importResult.inserted_item }}</span>
-                      </div>
-                    </VCardText>
-                  </VCard>
-                </VCol>
-              </VRow>
-            </template>
-
-            <div
-              v-if="importResult.errors && importResult.errors.length > 0"
-              class="mt-4"
-            >
-              <div class="text-subtitle-2 mb-2 text-error d-flex align-center ga-1">
-                <VIcon
-                  icon="ri-error-warning-line"
-                  size="16"
-                  color="error"
-                />
-                {{ importResult.errors.length }} catatan / baris gagal diproses:
-              </div>
-              <VTable
-                v-if="!xs"
-                density="compact"
-                fixed-header
-                height="180"
-              >
-                <thead>
-                  <tr>
-                    <th>Sheet</th>
-                    <th>Baris</th>
-                    <th>Pesan</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr
-                    v-for="(err, i) in importResult.errors"
-                    :key="i"
-                  >
-                    <td>{{ err.sheet || '-' }}</td>
-                    <td>{{ err.row }}</td>
-                    <td>{{ err.message }}</td>
-                  </tr>
-                </tbody>
-              </VTable>
-
-              <div
-                v-else
-                class="d-flex flex-column ga-2 overflow-y-auto"
-                style="max-height: 260px;"
-              >
-                <VCard
-                  v-for="(err, i) in importResult.errors"
-                  :key="i"
-                  variant="tonal"
-                  color="error"
-                  rounded="lg"
-                >
-                  <VCardText class="pa-2">
-                    <div class="d-flex flex-wrap ga-1 mb-1">
-                      <VChip
-                        size="x-small"
-                        color="error"
-                        variant="flat"
-                      >
-                        {{ err.sheet || '-' }}
-                      </VChip>
-                      <VChip
-                        size="x-small"
-                        color="error"
-                        variant="tonal"
-                      >
-                        Baris {{ err.row }}
-                      </VChip>
-                    </div>
-                    <div class="text-caption">
-                      {{ err.message }}
-                    </div>
-                  </VCardText>
-                </VCard>
-              </div>
-            </div>
-
-            <div
-              v-if="importResult.skipped_details && importResult.skipped_details.length > 0"
-              class="mt-4"
-            >
-              <div class="d-flex align-center justify-space-between ga-2 mb-2">
-                <div class="text-subtitle-2 text-secondary d-flex align-center ga-1">
-                  <VIcon
-                    icon="ri-file-copy-2-line"
-                    size="16"
-                    color="secondary"
-                  />
-                  {{ importResult.skipped_details.length }} baris dilewati (klien sudah memiliki Opening Balance di tanggal cutover ini):
-                </div>
-                <VBtn
-                  variant="text"
-                  size="small"
-                  density="comfortable"
-                  color="secondary"
-                  @click="showSkippedDetail = !showSkippedDetail"
-                >
-                  {{ showSkippedDetail ? 'Sembunyikan' : 'Lihat detail' }}
-                  <VIcon
-                    :icon="showSkippedDetail ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'"
-                    end
-                  />
-                </VBtn>
-              </div>
-
-              <template v-if="showSkippedDetail">
-                <VTable
-                  v-if="!xs"
-                  density="compact"
-                  fixed-header
-                  height="180"
-                >
-                  <thead>
-                    <tr>
-                      <th>Sheet</th>
-                      <th>Baris</th>
-                      <th>No Urut</th>
-                      <th>Klien</th>
-                      <th>Kode Resto</th>
-                      <th>OB Lama</th>
-                      <th>Pesan</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr
-                      v-for="(row, i) in importResult.skipped_details"
-                      :key="i"
-                    >
-                      <td>{{ row.sheet || '-' }}</td>
-                      <td>{{ row.row }}</td>
-                      <td>{{ row.no_urut || '-' }}</td>
-                      <td>{{ row.klien || '-' }}</td>
-                      <td>{{ row.kode_resto || '-' }}</td>
-                      <td>{{ row.existing_no_invoice || '-' }}</td>
-                      <td>{{ row.message }}</td>
-                    </tr>
-                  </tbody>
-                </VTable>
-
-                <div
-                  v-else
-                  class="d-flex flex-column ga-2 overflow-y-auto"
-                  style="max-height: 260px;"
-                >
-                  <VCard
-                    v-for="(row, i) in importResult.skipped_details"
-                    :key="i"
-                    variant="tonal"
-                    color="secondary"
-                    rounded="lg"
-                  >
-                    <VCardText class="pa-2">
-                      <div class="d-flex flex-wrap ga-1 mb-1">
-                        <VChip
-                          size="x-small"
-                          color="secondary"
-                          variant="flat"
-                        >
-                          {{ row.sheet || '-' }}
-                        </VChip>
-                        <VChip
-                          size="x-small"
-                          color="secondary"
-                          variant="tonal"
-                        >
-                          Baris {{ row.row }}
-                        </VChip>
-                        <VChip
-                          v-if="row.existing_no_invoice"
-                          size="x-small"
-                          color="secondary"
-                          variant="tonal"
-                        >
-                          OB Lama: {{ row.existing_no_invoice }}
-                        </VChip>
-                      </div>
-                      <div class="text-caption">
-                        {{ row.message }}
-                      </div>
-                    </VCardText>
-                  </VCard>
-                </div>
-              </template>
-            </div>
-          </div>
         </VCardText>
 
         <VDivider />
         <VCardActions class="pa-4 justify-end ga-2">
           <VBtn
-            variant="outlined"
+            color="error"
+            variant="flat"
             :disabled="importing"
             @click="closeImport"
           >
@@ -641,11 +442,20 @@
           </VBtn>
           <VBtn
             color="primary"
+            variant="flat"
             :loading="importing"
             :disabled="!importFile || !cutoverDate || importing"
             @click="doImport"
           >
             Import
+            <template #loader>
+              <VProgressCircular
+                indeterminate
+                size="20"
+                width="2"
+                color="white"
+              />
+            </template>
           </VBtn>
         </VCardActions>
       </VCard>
@@ -654,7 +464,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useDisplay } from 'vuetify'
 import { useRouter } from 'vue-router'
@@ -664,12 +474,13 @@ import { useMinimizeWidgetStore } from '@/stores/minimize-widget.store'
 import { useImportEta } from '@/composables/useImportEta'
 import { useSweetAlert } from '@/composables/useSweetAlert'
 import CollapsibleInfoAlert from '@/components/shared/CollapsibleInfoAlert.vue'
+import BaseTable from '@/components/base/BaseTable.vue'
 
 const { xs } = useDisplay()
 const router = useRouter()
 const importStore = useMasterOpeningBalanceImportStore()
 const minimizeStore = useMinimizeWidgetStore()
-const { showAlert, showSuccess, showError, resolveThemeTokens } = useSweetAlert()
+const { showSuccess, showError } = useSweetAlert()
 const { importing, progress: importProgress, result: importResult } = storeToRefs(importStore)
 const { elapsedLabel, etaLabel } = useImportEta(
   importProgress,
@@ -677,73 +488,174 @@ const { elapsedLabel, etaLabel } = useImportEta(
 )
 
 const showImport = ref(false)
-const showSkippedDetail = ref(false)
 const importFile = ref(null)
 const cutoverDate = ref(null)
 const downloadingTemplate = ref({ xlsx: false, csv: false })
-const resolvingConflict = ref(null) // null | 'replace' | 'skip' | 'cancel'
+const latestImport = ref(null)
+const loadingLatest = ref(true)
 
-// true begitu SweetAlert asli akan tampil (foreground) — supaya banner "Import Gagal"
-// inline tidak dobel dengan SweetAlert-nya. Tetap false (banner tampil) di jalur
-// minimize→restore, karena watch di bawah early-return sebelum sempat set flag ini.
-const failureAlerted = ref(false)
-
-// Mirror failureAlerted untuk jalur sukses: true begitu SweetAlert sukses akan tampil
-// (foreground) — supaya banner "Import Selesai" inline tidak dobel dengan SweetAlert-nya.
-const successAlerted = ref(false)
-
-function formatConflictDate(value) {
-  if (!value) return '-'
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return value
-
-  return new Intl.DateTimeFormat('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(date)
+// ── Riwayat perubahan (tabel yang menggantikan panel hasil di modal) ───────
+// OB AR single-entity — TIDAK ada entity_type/kolom Sheet (beda dari Master Data yang
+// punya 4 entitas). 'diperbarui' = resolusi konflik otomatis (OB lama dihapus &
+// digantikan data baru saat data yang diimport berbeda dari OB lama pada klien+tanggal
+// cutover yang sama — lihat OpeningBalanceImportService::openingBalanceUnchanged()).
+const CHANGE_TYPE_META = {
+  ditambahkan: { label: 'Ditambahkan', icon: 'ri-add-line', color: 'success' },
+  diperbarui: { label: 'Diperbarui', icon: 'ri-pencil-line', color: 'info' },
+  gagal: { label: 'Gagal', icon: 'ri-close-line', color: 'error' },
 }
 
-async function doConfirmReplace() {
-  const result = await showAlert({
-    icon: 'warning',
-    title: 'Ganti Data Lama?',
-    text: `Opening Balance lama untuk ${importProgress.value.conflicts?.length ?? 0} klien akan DIHAPUS PERMANEN dan digantikan data dari file ini.`,
-    confirmButtonText: 'Ya, Ganti',
-    confirmButtonColor: resolveThemeTokens().error,
-    cancelButtonText: 'Batal',
-    showCancelButton: true,
-    focusCancel: true,
-    reverseButtons: true,
+const STATUS_META = {
+  ditambahkan: { label: 'Berhasil', color: 'success' },
+  diperbarui: { label: 'Berhasil', color: 'success' },
+  gagal: { label: 'Gagal', color: 'error' },
+}
+
+// Field "identitas utama" yang selalu ditampilkan di baris pertama kolom Data
+// Sebelumnya/Data Baru — field lain (kalau ada) disembunyikan di balik "Lihat detail".
+const PRIMARY_FIELDS = ['no_invoice', 'nama_klien']
+
+const FIELD_LABELS = {
+  no_invoice: 'No. Invoice', nama_klien: 'Nama Klien', kode_resto: 'Kode Resto',
+  tipe_klien: 'Tipe Klien', tanggal: 'Tanggal', tanggal_invoice: 'Tanggal Invoice',
+  saldo_awal: 'Saldo Awal', jumlah_detail: 'Jumlah Rincian', jumlah_item: 'Jumlah Item',
+  existing_no_invoice: 'No. Invoice Lama',
+}
+
+const changeTypeOptions = [
+  { title: 'Ditambahkan', value: 'ditambahkan' },
+  { title: 'Diperbarui', value: 'diperbarui' },
+  { title: 'Gagal', value: 'gagal' },
+]
+
+const statusOptions = [
+  { title: 'Berhasil', value: 'berhasil' },
+  { title: 'Gagal', value: 'gagal' },
+]
+
+const changeLogHeaders = [
+  { title: 'Waktu', key: 'created_at', minWidth: '160px' },
+  { title: 'Baris', key: 'row_number', align: 'end', minWidth: '70px' },
+  { title: 'Tipe Perubahan', key: 'change_type', minWidth: '150px' },
+  { title: 'Data Sebelumnya', key: 'data_sebelum', minWidth: '220px' },
+  { title: 'Data Baru', key: 'data_baru', minWidth: '220px' },
+  { title: 'Di Import Oleh', key: 'imported_by', minWidth: '160px' },
+  { title: 'Status', key: 'status', minWidth: '110px' },
+]
+
+const changeLogItems = ref([])
+const changeLogTotal = ref(0)
+const changeLogPage = ref(1)
+const changeLogPerPage = ref(20)
+const loadingChangeLog = ref(false)
+const changeLogFilters = ref({ change_type: null, status: null, search: '' })
+let changeLogSearchTimer = null
+
+function primaryLine(item, dataKey) {
+  const data = item[dataKey]
+  if (!data) return '-'
+
+  return PRIMARY_FIELDS.map(f => `${FIELD_LABELS[f] ?? f}: ${data[f] ?? '-'}`).join(', ')
+}
+
+function extraFields(item, dataKey) {
+  const data = item[dataKey]
+  if (!data) return []
+
+  return Object.entries(data)
+    .filter(([k]) => k !== 'id' && !PRIMARY_FIELDS.includes(k))
+    .map(([k, v]) => ({ label: FIELD_LABELS[k] ?? k, value: v ?? '-' }))
+}
+
+function formatDateTime(isoString) {
+  if (!isoString) return '—'
+
+  const d = new Date(isoString)
+
+  return d.toLocaleString('id-ID', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
   })
+}
 
-  if (!result.isConfirmed) return
+function formatDateTimeWithSeconds(isoString) {
+  if (!isoString) return '—'
 
-  resolvingConflict.value = 'replace'
+  const d = new Date(isoString)
+
+  return d.toLocaleString('id-ID', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  })
+}
+
+async function fetchLatestImport() {
+  loadingLatest.value = true
   try {
-    await importStore.confirmReplace()
-  } catch (err) {
-    showError({ text: err.response?.data?.message ?? 'Gagal melanjutkan import.' })
+    const res = await api.get('/master/master-data/opening-balance/import/latest')
+
+    latestImport.value = res.data?.data ?? null
+  } catch {
+    latestImport.value = null
   } finally {
-    resolvingConflict.value = null
+    loadingLatest.value = false
+  }
+  fetchChangeLog(1)
+}
+
+async function fetchChangeLog(page = null) {
+  if (!latestImport.value?.id) {
+    changeLogItems.value = []
+    changeLogTotal.value = 0
+
+    return
+  }
+  if (page) changeLogPage.value = page
+  loadingChangeLog.value = true
+  try {
+    const res = await api.get(`/master/master-data/opening-balance/import/${latestImport.value.id}/change-log`, {
+      params: {
+        page: changeLogPage.value,
+        per_page: changeLogPerPage.value,
+        change_type: changeLogFilters.value.change_type || undefined,
+        status: changeLogFilters.value.status || undefined,
+        search: changeLogFilters.value.search || undefined,
+      },
+    })
+
+    changeLogItems.value = res.data?.data ?? []
+    changeLogTotal.value = res.data?.meta?.total ?? changeLogItems.value.length
+  } catch {
+    changeLogItems.value = []
+    changeLogTotal.value = 0
+  } finally {
+    loadingChangeLog.value = false
   }
 }
 
-async function doConfirmSkip() {
-  resolvingConflict.value = 'skip'
-  try {
-    await importStore.confirmSkip()
-  } catch (err) {
-    showError({ text: err.response?.data?.message ?? 'Gagal melanjutkan import.' })
-  } finally {
-    resolvingConflict.value = null
-  }
+function onChangeLogOptions(options) {
+  changeLogPage.value = options.page ?? changeLogPage.value
+  changeLogPerPage.value = options.itemsPerPage ?? changeLogPerPage.value
+  fetchChangeLog()
+}
+
+function onChangeLogSearch() {
+  clearTimeout(changeLogSearchTimer)
+  changeLogSearchTimer = setTimeout(() => fetchChangeLog(1), 400)
 }
 
 async function doCancelImport() {
-  resolvingConflict.value = 'cancel'
   try {
     await importStore.cancelImport()
   } catch (err) {
     showError({ text: err.response?.data?.message ?? 'Gagal membatalkan import.' })
-  } finally {
-    resolvingConflict.value = null
   }
 }
 
@@ -759,8 +671,6 @@ function openImport() {
   importFile.value = null
   cutoverDate.value = null
   importStore.reset()
-  failureAlerted.value = false
-  successAlerted.value = false
   showImport.value = true
 }
 
@@ -799,14 +709,6 @@ async function doImport() {
   await importStore.startImport(importFile.value, cutoverDate.value)
 }
 
-// Batch 'completed' tetap bisa punya baris gagal — dalam kasus itu jangan
-// auto-redirect, biarkan panel hasil (tabel error) tetap terbuka supaya user bisa cek.
-const hasImportIssues = computed(() => {
-  if (!importResult.value) return false
-
-  return (importResult.value.errors?.length ?? 0) > 0 || (importResult.value.failed_ob ?? 0) > 0
-})
-
 function importSummaryText() {
   const r = importResult.value ?? {}
 
@@ -814,12 +716,15 @@ function importSummaryText() {
 }
 
 watch(importResult, val => {
-  if (!val || !showImport.value) return
+  if (!val) return
+
+  if (val.status === 'completed') fetchLatestImport()
 
   // Cuma auto-close + redirect saat dialog masih terbuka di foreground — kalau
   // di-minimize, biarkan widget mengambang + restore manual yang jalan (tidak diubah).
-  if (val.status === 'completed' && !hasImportIssues.value) {
-    successAlerted.value = true
+  if (!showImport.value) return
+
+  if (val.status === 'completed') {
     setTimeout(async () => {
       showImport.value = false
       minimizeStore.remove(WIDGET_ID)
@@ -827,7 +732,6 @@ watch(importResult, val => {
       router.push({ name: 'finance-opening-balance' })
     }, 700)
   } else if (val.status === 'failed') {
-    failureAlerted.value = true
     setTimeout(() => {
       showImport.value = false
       minimizeStore.remove(WIDGET_ID)
@@ -845,6 +749,7 @@ watch(importResult, val => {
 
 onMounted(() => {
   importStore.checkActive()
+  fetchLatestImport()
 
   const widget = minimizeStore.widgets[WIDGET_ID]
 
